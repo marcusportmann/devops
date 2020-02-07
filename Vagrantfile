@@ -18,7 +18,7 @@ network:
       addresses:
         - #{ip}
       gateway4: #{gateway}
-      namehosts:
+      nameservers:
         search: [#{dns_search}]
         addresses: [#{dns_server}]
 """
@@ -317,15 +317,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           host_vm.vm.provider :virtualbox do |virtualbox, override|
 
             # NOTE: This box must have been added to Vagrant before executing this project.
-            #
-            #       Clone the mmp-packer Git repository and build and add the Vagrant boxes.
-            #
             if host['type'] == "centos"
-	            override.vm.box = "mmp/centos77"
-	        end
-			if host['type'] == "ubuntu"
-				override.vm.box = "mmp/ubuntu1804"
-			end
+	            override.vm.box = "devops/centos77"
+	          end
+      			if host['type'] == "ubuntu"
+	      			override.vm.box = "devops/ubuntu1804"
+		      	end
 
             override.vm.synced_folder '.', '/vagrant', disabled: true
 
@@ -352,14 +349,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   # ------------------------------------------------------------------------------------
-  # VMware Fusion Configuration
+  # VMware Configuration
   # ------------------------------------------------------------------------------------
-  if provider == "vmware_fusion"
+  if provider == "vmware"
 
     puts "Using the '%s' provider..." % provider
 
-    config.vm.provider "vmware_fusion" do |vmware_fusion|
-      vmware_fusion.gui = true
+    config.vm.provider "vmware_desktop" do |vmware_desktop|
+      vmware_desktop.gui = true
     end
 
     profile['hosts'].each do |hostName|
@@ -369,30 +366,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         host = hosts[hostName]
 
         config.vm.define host['name'] do |host_vm|
-          host_vm.vm.provider :vmware_fusion do |vmware_fusion, override|
+          host_vm.vm.provider :vmware_desktop do |vmware_desktop, override|
 
             # NOTE: This box must have been added to Vagrant before executing this project.
-            #
-            #       Clone the mmp-packer Git repository and build and add the Vagrant boxes.
-            #
             if host['type'] == "centos"
-	            override.vm.box = "mmp/centos77"
-	        end
-			if host['type'] == "ubuntu"
-				override.vm.box = "mmp/ubuntu1804"
-			end
+	            override.vm.box = "devops/centos77"
+	          end
+    		  	if host['type'] == "ubuntu"
+		 	      	override.vm.box = "devops/ubuntu1804"
+			      end
 
             override.vm.synced_folder '.', '/vagrant', disabled: true
 
             # Perform the VMware Fusion specific initialisation
-            vmware_fusion.gui = true
-            vmware_fusion.vmx["numvcpus"] = host['vmware_fusion']['cpus']
-            vmware_fusion.vmx["memsize"] = host['vmware_fusion']['ram']
-            vmware_fusion.vmx["ethernet0.connectionType"] = "nat"
-            vmware_fusion.vmx["ethernet0.virtualDev"] = "vmxnet3"
-            vmware_fusion.vmx["ethernet0.vnet"] = "vmnet8"
-            vmware_fusion.vmx["guestinfo.metadata.encoding"] = "base64"
-            vmware_fusion.vmx["guestinfo.metadata"] = Base64.encode64(generate_guest_info_meta_data(host['name'], host['vmware_fusion']['hostname'], host['vmware_fusion']['dhcp'], host['vmware_fusion']['ip'], host['vmware_fusion']['gateway'], host['vmware_fusion']['dns_server'], host['vmware_fusion']['dns_search'])).gsub(/\n/, '')
+            vmware_desktop.gui = true
+            vmware_desktop.vmx["numvcpus"] = host['vmware']['cpus']
+            vmware_desktop.vmx["memsize"] = host['vmware']['ram']
+            vmware_desktop.vmx["ethernet0.connectionType"] = "nat"
+            vmware_desktop.vmx["ethernet0.virtualDev"] = "vmxnet3"
+            vmware_desktop.vmx["ethernet0.vnet"] = "vmnet8"
+            vmware_desktop.vmx["guestinfo.metadata.encoding"] = "base64"
+            vmware_desktop.vmx["guestinfo.metadata"] = Base64.encode64(generate_guest_info_meta_data(host['name'], host['vmware']['hostname'], host['vmware']['dhcp'], host['vmware']['ip'], host['vmware']['gateway'], host['vmware']['dns_server'], host['vmware']['dns_search'])).gsub(/\n/, '')
 
             # Write out the /etc/hosts file
             override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, hosts)

@@ -114,7 +114,7 @@ hosts:
       ip:                     192.168.184.41/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   1
       ram:                    512
       hostname:               etcd-local-01
@@ -140,7 +140,7 @@ hosts:
       ip:                     192.168.184.42/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   1
       ram:                    512
       hostname:               etcd-local-02
@@ -166,7 +166,7 @@ hosts:
       ip:                     192.168.184.43/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   1
       ram:                    512
       hostname:               etcd-local-03
@@ -192,7 +192,7 @@ hosts:
       ip:                     192.168.184.51/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   2
       ram:                    1024
       hostname:               k8s-local-m-01
@@ -218,7 +218,7 @@ hosts:
       ip:                     192.168.184.52/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   2
       ram:                    1024
       hostname:               k8s-local-m-02
@@ -244,7 +244,7 @@ hosts:
       ip:                     192.168.184.53/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   2
       ram:                    1024
       hostname:               k8s-local-m-03
@@ -270,7 +270,7 @@ hosts:
       ip:                     192.168.184.54/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   2
       ram:                    1024
       hostname:               k8s-local-w-01
@@ -296,7 +296,7 @@ hosts:
       ip:                     192.168.184.55/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   2
       ram:                    1024
       hostname:               k8s-local-w-02
@@ -322,7 +322,7 @@ hosts:
       ip:                     192.168.184.56/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   2
       ram:                    1024
       hostname:               k8s-local-w-03
@@ -348,7 +348,7 @@ hosts:
       ip:                     192.168.184.50/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-    vmware_fusion:
+    vmware:
       cpus:                   2
       ram:                    4096
       hostname:               devops
