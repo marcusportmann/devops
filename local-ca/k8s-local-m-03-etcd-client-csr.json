@@ -1,0 +1,15 @@
+{
+  "CN": "k8s-local-master-03-etcd-client",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "k8s-local-master-03-etcd-client"
+    }
+  ],
+  "hosts": [
+    "k8s-local-master-03.local"
+  ]
+}

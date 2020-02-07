@@ -1,0 +1,5 @@
+# file: roles/etcd/tasks/centos.yml
+
+- debug:
+    msg: Applying the CentOS-specific etcd configuration
+

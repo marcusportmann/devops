@@ -1,0 +1,162 @@
+{% set monitored_hosts = [] -%}
+{% for host in groups["monitored"] -%}
+  {% set _ = monitored_hosts.append("'%s:9100'" % (hostvars[host]['inventory_hostname'])) -%}
+{% endfor -%}
+
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    static_configs:
+      - targets: ['{{ inventory_hostname }}:9090']
+
+  - job_name: node
+    static_configs:
+      - targets: [{{ monitored_hosts | join(',') }}]
+
+{% if 'k8s_master' in groups %}
+
+  - job_name: 'kubernetes-apiservers'
+    scheme: https
+    bearer_token_file: /etc/prometheus/k8s/token
+    tls_config:
+      ca_file: /etc/prometheus/k8s/ca.crt
+    kubernetes_sd_configs:
+      - role: endpoints
+        api_server: https://{{ groups['k8s_master'][0] }}:6443
+        tls_config:
+          ca_file: /etc/prometheus/k8s/ca.crt
+        bearer_token_file: /etc/prometheus/k8s/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  - job_name: 'kubernetes-nodes'
+    scheme: https
+    bearer_token_file: /etc/prometheus/k8s/token
+    tls_config:
+      ca_file: /etc/prometheus/k8s/ca.crt
+    kubernetes_sd_configs:
+      - role: node
+        api_server: https://{{ groups['k8s_master'][0] }}:6443
+        tls_config:
+          ca_file: /etc/prometheus/k8s/ca.crt
+        bearer_token_file: /etc/prometheus/k8s/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: {{ groups['k8s_master'][0] }}:6443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+
+  - job_name: 'kubernetes-cadvisor'
+    scheme: https
+    bearer_token_file: /etc/prometheus/k8s/token
+    tls_config:
+      ca_file: /etc/prometheus/k8s/ca.crt
+    kubernetes_sd_configs:
+      - role: node
+        api_server: https://{{ groups['k8s_master'][0] }}:6443
+        tls_config:
+          ca_file: /etc/prometheus/k8s/ca.crt
+        bearer_token_file: /etc/prometheus/k8s/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: {{ groups['k8s_master'][0] }}:6443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+  - job_name: 'kubernetes-service-endpoints'
+    scheme: https
+    bearer_token_file: /etc/prometheus/k8s/token
+    tls_config:
+      ca_file: /etc/prometheus/k8s/ca.crt
+    kubernetes_sd_configs:
+      - role: endpoints
+        api_server: https://{{ groups['k8s_master'][0] }}:6443
+        tls_config:
+          ca_file: /etc/prometheus/k8s/ca.crt
+        bearer_token_file: /etc/prometheus/k8s/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        regex: (\d+)
+        target_label: __meta_kubernetes_pod_container_port_number
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        regex: ()
+        target_label: __meta_kubernetes_service_annotation_prometheus_io_path
+        replacement: /metrics
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_pod_container_port_number, __meta_kubernetes_service_annotation_prometheus_io_path]
+        target_label: __metrics_path__
+        regex: (.+);(.+);(.+);(.+)
+        replacement: /api/v1/namespaces/$1/services/$2:$3/proxy$4
+      - target_label: __address__
+        replacement: {{ groups['k8s_master'][0] }}:6443
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_name
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: instance
+
+  - job_name: 'kubernetes-pods'
+    scheme: https
+    bearer_token_file: /etc/prometheus/k8s/token
+    tls_config:
+      ca_file: /etc/prometheus/k8s/ca.crt
+    kubernetes_sd_configs:
+      - role: pod
+        api_server: https://{{ groups['k8s_master'][0] }}:6443
+        tls_config:
+          ca_file: /etc/prometheus/k8s/ca.crt
+        bearer_token_file: /etc/prometheus/k8s/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        regex: ()
+        target_label: __meta_kubernetes_pod_annotation_prometheus_io_path
+        replacement: /metrics
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_name, __meta_kubernetes_pod_container_port_number, __meta_kubernetes_pod_annotation_prometheus_io_path]
+        target_label: __metrics_path__
+        regex: (.+);(.+);(.+);(.+)
+        replacement: /api/v1/namespaces/$1/pods/$2:$3/proxy$4
+      - target_label: __address__
+        replacement: master_ip:443
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        action: replace
+        target_label: instance
+
+
+{% endif %}

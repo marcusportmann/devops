@@ -1,0 +1,45 @@
+{% set initial_cluster_hosts = [] -%}
+{% for host in groups["etcd"] -%}
+  {% set _ = initial_cluster_hosts.append("%s=https://%s:2380" % (hostvars[host]['inventory_hostname_short'], host)) -%}
+{% endfor -%}
+
+[Unit]
+Description=etcd - highly-available key value store
+Documentation=https://github.com/coreos/etcd
+Documentation=man:etcd
+After=network.target
+Wants=network-online.target
+
+[Service]
+Environment=DAEMON_ARGS=
+Environment=ETCD_NAME={{ inventory_hostname_short }}
+Environment=ETCD_DATA_DIR=/var/lib/etcd/default
+EnvironmentFile=-/etc/default/%p
+Type=notify
+User=etcd
+PermissionsStartOnly=true
+#ExecStart=/bin/sh -c "GOMAXPROCS=$(nproc) /usr/bin/etcd $DAEMON_ARGS"
+ExecStart=/usr/bin/etcd $DAEMON_ARGS \
+  --cert-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}.crt \
+  --key-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}.key \
+  --peer-cert-file=/etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt \
+  --peer-key-file=/etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.key \
+  --trusted-ca-file=/etc/etcd/pki/ca.crt \
+  --peer-trusted-ca-file=/etc/etcd/pki/ca.crt \
+  --peer-client-cert-auth \
+  --client-cert-auth \
+  --initial-advertise-peer-urls https://{{ inventory_hostname }}:2380 \
+  --listen-peer-urls https://{{ ansible_default_ipv4.address }}:2380 \
+  --listen-client-urls https://127.0.0.1:2379,https://{{ ansible_default_ipv4.address }}:2379 \
+  --advertise-client-urls https://{{ inventory_hostname }}:2379 \
+  --initial-cluster-token etcd-{{ etcd_cluster_name }}-cluster \
+  --initial-cluster {{ initial_cluster_hosts | join(',') }} \
+  --initial-cluster-state new
+Restart=always
+RestartSec=10s
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+Alias=etcd2.service
+

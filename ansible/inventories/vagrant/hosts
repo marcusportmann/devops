@@ -1,0 +1,6 @@
+[k8s_master]
+k8s-master-01
+
+[k8s_worker]
+k8s-worker-01
+

@@ -1,0 +1,42 @@
+---
+# file: roles/k8s_common/tasks/ubuntu.yml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kubernetes common configuration
+
+- name: Disable swap since Kubernetes cannot work with swap enabled (1/2)
+  shell: |
+    swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Disable swap in /etc/fstab since Kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+  when: ansible_swaptotal_mb > 0
+
+- name: Add the Kubernets GPG apt key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add the Kubernetes repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io kubernetes-xenial main
+    state: present
+
+- name: Disable the firewall
+  ufw:
+    state: disabled
+
+- name: Update the Apt cache
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Install the arptables package
+  apt: name=arptables state=latest
+
+- name: Install the ebtables package
+  apt: name=ebtables state=latest
+
+

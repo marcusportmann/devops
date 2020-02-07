@@ -1,0 +1,58 @@
+---
+# file: roles/grafana/tasks/ubuntu.yml
+
+- debug:
+    msg: Applying the Ubuntu-specific Grafana configuration
+
+- name: Allow all access to tcp port 3000
+  ufw:
+    rule: allow
+    port: '3000'
+    proto: tcp
+
+- name: Add the Grafana GPG apt key
+  apt_key:
+    url: https://packages.grafana.com/gpg.key
+    state: present
+
+- name: Add the Grafana repository
+  apt_repository:
+    repo: deb https://packages.grafana.com/oss/deb stable main
+    state: present
+
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+
+- name: Retrieve the version of the installed grafana package
+  debug:
+    msg: Found grafana package version {{ ansible_facts.packages['grafana'][0].version  }}
+  when: "'grafana' in ansible_facts.packages"
+
+- name: Install the grafana package
+  block:
+
+    - name: Update the Apt cache
+      apt: update_cache=yes cache_valid_time=3600
+
+    - name: Unlock the version of the grafana package
+      command:
+        cmd: apt-mark unhold grafana
+
+    - name: Install the grafana package ({{ grafana_ubuntu_package_version }})
+      apt:
+        state: present
+        force: yes
+        policy_rc_d: 101
+        name:
+         - grafana={{ grafana_ubuntu_package_version }}
+
+    - name: Lock the version of the grafana package
+      command:
+        cmd: apt-mark hold grafana
+
+  when: (('grafana' not in ansible_facts.packages) or (ansible_facts.packages['grafana'][0].version != grafana_ubuntu_package_version))
+
+
+
+

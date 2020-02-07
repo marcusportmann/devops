@@ -1,0 +1,86 @@
+---
+# file: roles/k8s_worker/tasks/ubuntu.yml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kubernetes worker configuration
+
+- name: Allow all access to tcp port 10250 (API which allows full node access)
+  ufw:
+    rule: allow
+    port: '10250'
+    proto: tcp
+
+- name: Allow all access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
+  ufw:
+    rule: allow
+    port: '10255'
+    proto: tcp
+
+- name: Allow all access to tcp ports 30000-32767 (Nodeport)
+  ufw:
+    rule: allow
+    port: 30000:32767
+    proto: tcp
+
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+
+- name: Retrieve the version of the installed kubelet package
+  debug:
+    msg: Found kubelet package version {{ ansible_facts.packages['kubelet'][0].version  }}
+  when: "'kubelet' in ansible_facts.packages"
+
+- name: Install the kubelet package
+  block:
+
+    - name: Update the Apt cache
+      apt: update_cache=yes cache_valid_time=3600
+
+    - name: Unlock the version of the kubelet package
+      command:
+        cmd: apt-mark unhold kubelet
+
+    - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
+      apt:
+        state: present
+        force: yes
+        policy_rc_d: 101
+        name:
+         - kubelet={{ k8s_ubuntu_package_version }}
+
+    - name: Lock the version of the kubelet package
+      command:
+        cmd: apt-mark hold kubelet
+
+  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_ubuntu_package_version))
+
+- name: Retrieve the version of the installed kubeadm package
+  debug:
+    msg: Found kubeadm package version {{ ansible_facts.packages['kubeadm'][0].version  }}
+  when: "'kubeadm' in ansible_facts.packages"
+
+- name: Install the kubeadm package
+  block:
+
+    - name: Update the Apt cache
+      apt: update_cache=yes cache_valid_time=3600
+
+    - name: Unlock the version of the kubeadm package
+      command:
+        cmd: apt-mark unhold kubeadm
+
+    - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
+      apt:
+        state: present
+        force: yes
+        policy_rc_d: 101
+        name:
+         - kubeadm={{ k8s_ubuntu_package_version }}
+
+    - name: Lock the version of the kubeadm package
+      command:
+        cmd: apt-mark hold kubeadm
+
+  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
+

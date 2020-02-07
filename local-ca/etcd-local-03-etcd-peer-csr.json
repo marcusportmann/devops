@@ -1,0 +1,15 @@
+{
+  "CN": "etcd-local-03-etcd-peer",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "etcd-local-03-etcd-peer"
+    }
+  ],
+  "hosts": [
+    "etcd-local-03.local"
+  ]
+}

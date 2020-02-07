@@ -1,0 +1,140 @@
+#!/bin/python3
+# -*- coding: utf-8 -*-
+
+import netifaces
+import yaml
+import subprocess
+import sys
+import base64
+import os.path
+import argparse
+
+parser = argparse.ArgumentParser(description='Configure the CentOS network.')
+
+parser.add_argument("--interface", help="The name of the network interface.")
+parser.add_argument("--ip", help="The static IP for the network interface.")
+parser.add_argument("--netmask", help="The netmask for the network interface.")
+parser.add_argument("--dhcp", help="Enable DHCP for the interface (yes/no).")
+parser.add_argument("--hostname", help="The optional hostname.")
+parser.add_argument("--gateway", help="The optional gateway IP for the network interface.")
+parser.add_argument("--dnsservers", help="The optional comma delimited list of IPs for the DNS servers for the network interface.")
+parser.add_argument("--dnssearch", help="The optional comma delimited list of DNS search domains.")
+parser.add_argument("--proxy", help="The optional HTTP and HTTPS proxy server.")
+
+args = vars(parser.parse_args())
+
+if len(sys.argv) < 2:
+  parser.print_help()
+  sys.exit(-1)
+
+# Retrieve the list of interface names
+interface_names = netifaces.interfaces()
+
+# Set the hostname if required
+if "hostname" in args and args["hostname"] is not None:
+  
+  print("Setting the hostname to " + args["hostname"] + ".")
+  
+  subprocess = subprocess.call(["hostname", args["hostname"]])
+  
+  if os.path.isfile("/etc/hostname"):
+    os.remove("/etc/hostname")
+  
+  hostname_file = open("/etc/hostname", "w")
+  hostname_file.write(args["hostname"] + "\n")
+  hostname_file.close()
+
+# Extract the appropriate configuration for the available network interfaces
+if "interface" in args and args["interface"] is not None:
+  for interface_name in interface_names:
+    if interface_name == args["interface"]:
+      print("Configuring the network interface " + interface_name + ".")
+    
+      # Write the /etc/sysconfig/network-scripts/ifcfg-XXX file
+      interface_config_file_path = "/etc/sysconfig/network-scripts/ifcfg-" + interface_name
+    
+      if os.path.isfile(interface_config_file_path):
+        os.remove(interface_config_file_path)
+    
+      interface_config_file = open(interface_config_file_path, "w")
+      interface_config_file.write("NAME=\"" + interface_name + "\"\n")
+      interface_config_file.write("DEVICE=\"" + interface_name + "\"\n")
+      interface_config_file.write("TYPE=Ethernet\n")
+      interface_config_file.write("NM_CONTROLLED=\"yes\"\n")
+      interface_config_file.write("ONBOOT=yes\n")
+      interface_config_file.write("IPV6INIT=no\n")
+    
+      if (("dhcp" in args) and (args["dhcp"] is not None) and (args["dhcp"] == "yes")):
+        interface_config_file.write("BOOTPROTO=dhcp\n")
+      else:
+        interface_config_file.write("BOOTPROTO=static\n")
+
+      if (("ip" in args) and (args["ip"] is not None) and (args["ip"] != "")):
+        interface_config_file.write("IPADDR=" + args["ip"] + "\n")
+
+      if (("netmask" in args) and (args["netmask"] is not None) and (args["netmask"] != "")):
+        interface_config_file.write("NETMASK=" + args["netmask"] + "\n")
+    
+      interface_config_file.close()
+
+# Write the /etc/sysconfig/network file
+if os.path.isfile("/etc/sysconfig/network"):
+  os.remove("/etc/sysconfig/network")
+
+network_file = open("/etc/sysconfig/network", "w")
+network_file.write("NOZEROCONF=yes\n")
+network_file.write("NETWORKING_IPV6=no\n")
+network_file.write("IPV6INIT=no\n")
+
+if (("gateway" in args) and (args["gateway"] is not None) and (args["gateway"] != "")):
+  network_file.write("GATEWAY=" + args["gateway"] + "\n")
+
+network_file.close()
+    
+# Write the /etc/resolv.conf file
+if (("dnsservers" in args) and (args["dnsservers"] is not None)) or (("dnssearch" in args) and (args["dnssearch"] is not None)):
+
+  if os.path.isfile("/etc/resolv.conf"):
+    os.remove("/etc/resolv.conf")
+  
+  resolv_conf_file = open("/etc/resolv.conf", "w")
+
+  if "dnsservers" in args:      
+    for dns_server in args["dnsservers"].split(","):
+      resolv_conf_file.write("nameserver " + dns_server + "\n")
+      
+  if "dnssearch" in args:      
+  
+    resolv_conf_file.write("search")
+  
+    for dns_search in args["dnssearch"].split(","):
+      resolv_conf_file.write(" " + dns_search)
+      
+    resolv_conf_file.write("\n")
+
+  resolv_conf_file.close()
+
+# Set the proxy configuration file
+if "proxy" in args and args["proxy"] is not None:
+
+  print("Setting the HTTP and HTTPS proxy to " + args["proxy"] + ".")
+  
+  if os.path.isfile("/etc/profile.d/proxy.sh"):
+    os.remove("/etc/profile.d/proxy.sh")
+
+  resolv_conf_file = open("/etc/profile.d/proxy.sh", "w")
+  resolv_conf_file.write("http_proxy=" + args["proxy"] + "\n")
+  resolv_conf_file.write("https_proxy=" + args["proxy"] + "\n")
+  resolv_conf_file.close()
+    
+    
+    
+    
+            
+ 
+
+
+
+
+
+

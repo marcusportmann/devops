@@ -1,0 +1,23 @@
+{
+  "CN": "Kubernetes",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "Kubernetes",
+      "O": "Local"
+    }
+  ],
+  "hosts": [
+    "127.0.0.1",
+    "localhost.localdomain",
+    "k8s-master-01.local",
+    "k8s-master-02.local",
+    "k8s-master-03.local",
+    "k8s-worker-01.local",
+    "k8s-worker-02.local",
+    "k8s-worker-03.local"
+  ]
+}

@@ -1,0 +1,89 @@
+#!/bin/sh
+
+programname=$0
+
+function usage {
+    echo "Usage: $programname [options] <action> <profile> [host]"
+    echo ""
+    echo "Where <action> is one of up, provision or destroy and <profile> is the name of a profile in the config.yml file."
+    echo ""
+    echo "Options:"
+    echo "  -h           Print this message and exit."
+    echo "  -p PROVIDER  One of the following providers: virtualbox, vmware, vsphere."
+    echo "               If not specified the provider will default to vmware."
+}
+
+action=""
+profile=""
+host=""
+provider="vmware"
+
+if [ "$#" -lt 2 ]; then
+    usage
+    exit 1
+fi
+
+while getopts ":h:p:" opt; do
+    case ${opt} in
+        h )
+            usage
+            exit 0
+            ;;
+        p)
+            if [[ ${OPTARG} =~ ^virtualbox|vmware|vsphere$ ]]
+            then
+                provider=${OPTARG}
+            else
+                usage
+                exit 1
+            fi
+            ;;
+        \? )
+            echo "Invalid Option: -$OPTARG" 1>&2
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND -1))
+
+subcommand=$1; shift
+
+case "$subcommand" in
+  up)
+    profile=$1; shift
+    host=$1; shift
+    vagrant --provider=$provider --profile=$profile up --no-parallel $host
+    ;;
+  provision)
+    profile=$1; shift
+    host=$1; shift
+    vagrant --provider=$provider --profile=$profile provision $host
+    ;;
+  destroy)
+    profile=$1; shift
+    host=$1; shift
+    vagrant --provider=$provider --profile=$profile destroy $host
+    ;;
+   \? )
+     echo "Invalid Action: -$OPTARG" 1>&2
+     exit 1
+     ;;
+
+esac
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,159 @@
+#!/bin/python
+# -*- coding: utf-8 -*-
+
+import netifaces
+import yaml
+import subprocess
+import sys
+import base64
+import os.path
+
+cloud_config_data = ""
+
+# Check if we have been passed the configuration as a command-line paramater
+if len(sys.argv) > 1:
+  print("Processing command-line configuration")
+  cloud_config_data = sys.argv[1]
+  
+else:
+  # Check for Open VM Tools
+  if not os.path.isfile("/usr/bin/vmtoolsd"):
+    print("No Open VM Tools installed")
+    sys.exit(0)
+    
+  # Retrieve the cloud-config configuration data encoding from the VMware guest info variable
+  cloud_config_data_encoding_subprocess = subprocess.Popen(["vmtoolsd", "--cmd", "info-get guestinfo.centos.config.data.encoding"], stdout=subprocess.PIPE)
+  cloud_config_data_encoding = cloud_config_data_encoding_subprocess.stdout.read()
+  cloud_config_data_encoding_subprocess.wait()
+    
+  if cloud_config_data_encoding_subprocess.returncode != 0:
+    print("No cloud-config configuration data encoding VMware guestinfo parameter found")
+    sys.exit(0)
+  
+  cloud_config_data_encoding = cloud_config_data_encoding.rstrip()
+  
+  # Retrieve the cloud-config configuration data from the VMware guest info variable
+  cloud_config_data_subprocess = subprocess.Popen(["vmtoolsd", "--cmd", "info-get guestinfo.centos.config.data"], stdout=subprocess.PIPE)
+  cloud_config_data = cloud_config_data_subprocess.stdout.read()
+  cloud_config_data_subprocess.wait()
+  
+  if cloud_config_data_subprocess.returncode != 0:
+    print("No cloud-config configuration data VMware guestinfo parameter found")
+    sys.exit(0)
+  else:
+    print("Retrieving the cloud-config configuration data from the VMware guestinfo parameter.")
+
+# Retrieve the list of interface names
+interface_names = netifaces.interfaces()
+
+# Decode the base64 encoded cloud-config configuration data
+cloud_config_data = cloud_config_data.rstrip()
+cloud_config_data = base64.b64decode(cloud_config_data)
+
+# Parse the YAML for the cloud-config configuration data
+cloud_config = yaml.load(cloud_config_data)
+
+# Set the hostname if required
+if "hostname" in cloud_config:
+
+  print("Setting the hostname to " + cloud_config["hostname"] + ".")
+
+  subprocess_call_result = subprocess.call(["hostname", cloud_config["hostname"]])
+
+  if os.path.isfile("/etc/hostname"):
+    os.remove("/etc/hostname")
+  
+  hostname_file = open("/etc/hostname", "w")
+  hostname_file.write(cloud_config["hostname"] + "\n")
+  hostname_file.close()
+
+# Extract the appropriate configuration for the available network interfaces
+if "centos" in cloud_config:
+  if "network" in cloud_config["centos"]:
+    if "interfaces" in cloud_config["centos"]["network"]:
+      for interface_config in cloud_config['centos']['network']['interfaces']:
+        
+        if not "match" in interface_config:
+          print("Failed to configure the network: Failed to find the 'match' configuration item under the interface configuration '" + interface_config['name'] + "'")
+        interface_matches = interface_config["match"].split(",")
+
+        for interface_match in interface_matches:
+          for interface_name in interface_names:
+            if interface_name == interface_match:
+              print("Configuring the network interface " + interface_name + " using the cloud-config configuration.")
+              
+              # Write the /etc/sysconfig/network-scripts/ifcfg-XXX file
+              interface_config_file_path = "/etc/sysconfig/network-scripts/ifcfg-" + interface_name
+              
+              if os.path.isfile(interface_config_file_path):
+                os.remove(interface_config_file_path)
+              
+              interface_config_file = open(interface_config_file_path, "w")
+              interface_config_file.write("NAME=\"" + interface_name + "\"\n")
+              interface_config_file.write("DEVICE=\"" + interface_name + "\"\n")
+              interface_config_file.write("TYPE=Ethernet\n")
+              interface_config_file.write("NM_CONTROLLED=\"no\"\n")
+              interface_config_file.write("ONBOOT=yes\n")
+              interface_config_file.write("IPV6INIT=no\n")
+              
+              if (("dhcp" in interface_config) and (interface_config["dhcp"] == "yes")):
+                interface_config_file.write("BOOTPROTO=dhcp\n")
+              else:
+                interface_config_file.write("BOOTPROTO=static\n")
+
+              if (("ip" in interface_config) and (interface_config["ip"] != "")):
+                interface_config_file.write("IPADDR=" + interface_config["ip"] + "\n")
+
+              if (("netmask" in interface_config) and (interface_config["netmask"] != "")):
+                interface_config_file.write("NETMASK=" + interface_config["netmask"] + "\n")
+              
+              interface_config_file.close()
+              
+    # Write the /etc/sysconfig/network file
+    if os.path.isfile("/etc/sysconfig/network"):
+      os.remove("/etc/sysconfig/network")
+    
+    network_file = open("/etc/sysconfig/network", "w")
+    network_file.write("NOZEROCONF=yes\n")
+    
+    if (("gateway" in cloud_config["centos"]["network"]) and (cloud_config["centos"]["network"]["gateway"] != "")):
+      network_file.write("GATEWAY=" + cloud_config["centos"]["network"]["gateway"] + "\n")
+    
+    network_file.close()
+    
+    # Write the /etc/resolv.conf file
+    if "dns" in cloud_config["centos"]["network"]:
+    
+      if os.path.isfile("/etc/resolv.conf"):
+        os.remove("/etc/resolv.conf")
+      
+      resolv_conf_file = open("/etc/resolv.conf", "w")
+    
+      if "servers" in cloud_config["centos"]["network"]["dns"]:      
+        for dns_server in cloud_config["centos"]["network"]["dns"]["servers"]:
+          resolv_conf_file.write("nameserver " + dns_server + "\n")
+          
+      if "search" in cloud_config["centos"]["network"]["dns"]:      
+      
+        resolv_conf_file.write("search")
+      
+        for dns_search in cloud_config["centos"]["network"]["dns"]["search"]:
+          resolv_conf_file.write(" " + dns_search)
+          
+        resolv_conf_file.write("\n")
+
+      resolv_conf_file.close()
+
+    # Set the proxy configuration file
+    if "proxy" in cloud_config["centos"]["network"]:
+    
+      print("Setting the HTTP and HTTPS proxy to " + cloud_config["centos"]["network"]["proxy"] + ".")
+      
+      if os.path.isfile("/etc/profile.d/proxy.sh"):
+        os.remove("/etc/profile.d/proxy.sh")
+    
+      resolv_conf_file = open("/etc/profile.d/proxy.sh", "w")
+      resolv_conf_file.write("http_proxy=" + cloud_config["centos"]["network"]["proxy"] + "\n")
+      resolv_conf_file.write("https_proxy=" + cloud_config["centos"]["network"]["proxy"] + "\n")
+      resolv_conf_file.close()
+

@@ -1,0 +1,31 @@
+---
+# file: roles/k8s_common/tasks/main.yml
+
+- name: Create the /var/cache/ansible directory
+  file:
+    path: /var/cache/ansible
+    state: directory
+
+- name: Add the k8s-admin group
+  group:
+    name: k8s-admin
+    gid: 301
+    state: present
+
+- name: Allow k8s-admin group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%k8s-admin'
+    line: '%k8s-admin ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- include_tasks: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+  tags:
+    - unbound
+
+- include_tasks: centos.yml
+  when: ansible_distribution == "CentOS"
+  tags:
+    - unbound

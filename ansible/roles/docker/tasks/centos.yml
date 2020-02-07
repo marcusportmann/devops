@@ -1,0 +1,6 @@
+---
+# file: roles/docker/tasks/centos.yml
+
+- debug:
+    msg: Applying the CentOS-specific Docker configuration
+

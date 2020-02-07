@@ -1,0 +1,15 @@
+---
+# file: roles/k8s_load_balancer/tasks/ubuntu.yml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kubernetes load balancer configuration
+
+- name: Update the Apt cache
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Install the haproxy package
+  apt: name=haproxy state=latest
+
+- name: Configure the haproxy
+  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg    
+

@@ -1,0 +1,56 @@
+---
+# file: roles/grafana/tasks/main.yml
+
+- include_tasks: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+  tags:
+    - unbound
+
+- include_tasks: centos.yml
+  when: ansible_distribution == "CentOS"
+  tags:
+    - unbound
+
+- name: Create the Grafana configuration file
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+
+- name: Create the Prometheus data source provisioning file
+  template:
+    src: prometheus-data-source.yaml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus-data-source.yaml
+
+- name: Create the dashboard provisioning file
+  template:
+    src: all-dashboards.yaml.j2
+    dest: /etc/grafana/provisioning/dashboards/all-dashboards.yaml
+
+- name: Create the /var/lib/grafana/dashboards directory
+  file:
+    path: /var/lib/grafana/dashboards
+    owner: grafana
+    group: grafana
+    mode: 0775
+    state: directory
+
+- name: Copy the prometheus-2-0-overview_rev2.json dashboard file
+  template:
+    src: dashboards/prometheus-2-0-overview_rev2.json.j2
+    dest: /var/lib/grafana/dashboards/prometheus-2-0-overview_rev2.json
+
+- name: Copy the node-exporter-full_rev16.json dashboard file
+  template:
+    src: dashboards/node-exporter-full_rev16.json.j2
+    dest: /var/lib/grafana/dashboards/node-exporter-full_rev16.json
+
+- name: Copy the kubernetes.json dashboard file
+  template:
+    src: dashboards/kubernetes.json.j2
+    dest: /var/lib/grafana/dashboards/kubernetes.json
+
+- name: Restart the Grafana systemd service
+  systemd:
+    name: grafana-server.service
+    state: restarted
+    daemon_reload: yes

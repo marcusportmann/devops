@@ -1,0 +1,133 @@
+{
+  "variables": {
+    "headless": "false",
+    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-dvd1.iso",
+    "iso_checksum_type": "sha256",
+    "iso_checksum": "ea17ef71e0df3f6bf1d4bf1fc25bec1a76d1f211c115d39618fe688be34503e8",
+    "ssh_username": "root",
+    "ssh_password": "root",
+    "ssh_wait_timeout": "1200s",
+    "build_directory": "build"
+  },
+  "builders": [
+    {
+      "boot_command": [
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos80.cfg<enter><wait>"
+      ],
+      "disk_size": "20480",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_additions_sha256": "c5e46533a6ff8df177ed5c9098624f6cec46ca392bab16de2017195580088670",
+      "guest_os_type": "RedHat_64",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "http",
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "centos80-virtualbox",
+      "output_directory": "{{ user `build_directory` }}/virtualbox/centos80/",
+      "shutdown_command": "/sbin/halt -p",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_wait_timeout": "{{ user `ssh_wait_timeout` }}",
+      "type": "virtualbox-iso",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "1024"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "1"
+        ]
+      ]
+    },
+    {
+      "boot_command": [
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos80.cfg<enter><wait>"
+      ],
+      "disk_size": "15360",
+      "disk_type_id": "0",
+      "guest_os_type": "centos-64",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "http",
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "centos80-vmware_desktop",
+      "output_directory": "{{ user `build_directory` }}/vmware/centos80/",
+      "shutdown_command": "/sbin/halt -p",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_wait_timeout": "{{ user `ssh_wait_timeout` }}",
+      "type": "vmware-iso",
+      "vm_name": "centos80",
+      "vmdk_name": "centos80",
+      "vmx_data": {
+        "memsize": "1024",
+        "numvcpus": "1",
+        "ethernet0.connectiontype": "nat",
+        "ethernet0.virtualDev": "vmxnet3"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "files/centos80/configure-centos-network",
+      "destination": "/tmp/configure-centos-network"
+    },
+    {
+      "type": "file",
+      "source": "files/centos80/create-swap-file",
+      "destination": "/tmp/create-swap-file"
+    },
+    {
+      "type": "file",
+      "source": "files/centos80/resize-root-partition",
+      "destination": "/tmp/resize-root-partition"
+    },
+    {
+      "type": "shell",
+      "inline":
+      [
+        "sudo cp /tmp/configure-centos-network /usr/bin/",
+        "sudo chmod a+x /usr/bin/configure-centos-network",
+        "sudo cp /tmp/create-swap-file /usr/bin/",
+        "sudo chmod a+x /usr/bin/create-swap-file",
+        "sudo cp /tmp/resize-root-partition /usr/bin/",
+        "sudo chmod a+x /usr/bin/resize-root-partition"
+      ]
+    },
+    {
+      "type": "shell",
+      "execute_command": "{{.Vars}} sh {{.Path}}",
+      "expect_disconnect": true,
+      "only": [
+        "centos80-vmware_desktop",
+        "centos80-virtualbox"
+      ],
+      "scripts": [
+        "scripts/centos80/base.sh",
+        "scripts/centos80/cloud-init.sh",
+        "scripts/centos80/vmtools.sh",
+        "scripts/centos80/cleanup.sh",
+        "scripts/centos80/zerodisk.sh"
+      ]
+    }
+  ],
+ "push": {
+    "name": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+    "vcs": true
+  },
+  "post-processors": [
+    [{
+    "type": "vagrant",
+    "keep_input_artifact": true,
+    "output": "{{ user `build_directory` }}/boxes/centos80-{{.Provider}}.box"
+    }]
+  ]
+}

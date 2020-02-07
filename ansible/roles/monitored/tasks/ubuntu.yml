@@ -1,0 +1,10 @@
+# file: roles/monitored/tasks/ubuntu.yml
+
+- debug:
+    msg: Applying the Ubuntu-specific monitored configuration
+
+- name: Allow all access to tcp port 9100
+  ufw:
+    rule: allow
+    port: '9100'
+    proto: tcp

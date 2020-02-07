@@ -1,0 +1,44 @@
+---
+# This playbook configures a Kubernetes cluster.
+
+- name: Configure the Kubernetes API load balancer hosts
+  hosts: k8s_load_balancer
+  become: yes
+  become_user: root
+  roles:
+    - k8s_load_balancer
+
+- name: Apply the common configuration to both Kubernetes master and worker hosts
+  hosts: k8s_master:k8s_worker
+  vars:
+    docker_ubuntu_package_version: 5:18.09.9~3-0~ubuntu-bionic
+  become: yes
+  become_user: root
+  roles:
+    - docker
+    - k8s_common
+
+- name: Configure the Kubernetes master hosts
+  hosts: k8s_master
+  vars:
+    helm_version: 3.0.2
+    helm_package_hash: sha256:c6b7aa7e4ffc66e8abb4be328f71d48c643cb8f398d95c74d075cfb348710e1d
+    istio_version: 1.4.3
+    istio_package_hash: sha256:781e2c4391ba344d86fb6a4c321b76af31543e7479ea689dd7c7395fb1a41ff0
+    istioctl_version: 1.4.3
+    istioctl_package_hash: sha256:53ab94711a9646434bbcba6d74cd11a2ef665028e4307fd9b1a89bc9ea9264b6
+    k8s_ubuntu_package_version: 1.15.9-00
+    kube_state_metrics_version: 1.9.4
+  become: yes
+  become_user: root
+  roles:
+    - k8s_master
+
+- name: Configure the Kubernetes worker hosts
+  hosts: k8s_worker
+  vars:
+    k8s_ubuntu_package_version: 1.15.9-00
+  become: yes
+  become_user: root
+  roles:
+    - k8s_worker

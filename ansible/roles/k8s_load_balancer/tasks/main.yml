@@ -1,0 +1,17 @@
+---
+# file: roles/k8s_load_balancer/tasks/main.yml
+
+- name: Create the /var/cache/ansible directory
+  file:
+    path: /var/cache/ansible
+    state: directory
+
+- include_tasks: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+  tags:
+    - unbound
+
+- include_tasks: centos.yml
+  when: ansible_distribution == "CentOS"
+  tags:
+    - unbound

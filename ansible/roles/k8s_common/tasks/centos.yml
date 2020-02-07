@@ -1,0 +1,6 @@
+---
+# file: roles/k8s_common/tasks/centos.yml
+
+- debug:
+    msg: Applying the CentOS-specific Kubernetes common configuration
+

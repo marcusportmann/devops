@@ -1,0 +1,5 @@
+# file: roles/grafana/tasks/centos.yml
+
+- debug:
+    msg: Applying the CentOS-specific Grafana configuration
+

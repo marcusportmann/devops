@@ -1,0 +1,12 @@
+---
+# This playbook configures a Kubernetes cluster.
+
+- name: Configure the etcd hosts
+  hosts: etcd
+  vars:
+    etcd_ubuntu_package_version: 3.2.17+dfsg-1
+  become: yes
+  become_user: root
+
+  roles:
+    - etcd
