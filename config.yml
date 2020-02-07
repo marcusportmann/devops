@@ -111,7 +111,7 @@ hosts:
       hostname:               etcd-local-01
       fqdn:                   etcd-local-01.local
       dhcp:                   yes
-      ip:                     192.168.184.41/24
+      ip:                     192.168.184.41
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -137,7 +137,7 @@ hosts:
       hostname:               etcd-local-02
       fqdn:                   etcd-local-02.local
       dhcp:                   yes
-      ip:                     192.168.184.42/24
+      ip:                     192.168.184.42
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -163,7 +163,7 @@ hosts:
       hostname:               etcd-local-03
       fqdn:                   etcd-local-03.local
       dhcp:                   yes
-      ip:                     192.168.184.43/24
+      ip:                     192.168.184.43
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -189,7 +189,7 @@ hosts:
       hostname:               k8s-local-m-01
       fqdn:                   k8s-local-m-01.local
       dhcp:                   yes
-      ip:                     192.168.184.51/24
+      ip:                     192.168.184.51
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -215,7 +215,7 @@ hosts:
       hostname:               k8s-local-m-02
       fqdn:                   k8s-local-m-02.local
       dhcp:                   yes
-      ip:                     192.168.184.52/24
+      ip:                     192.168.184.52
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -241,7 +241,7 @@ hosts:
       hostname:               k8s-local-m-03
       fqdn:                   k8s-local-m-03.local
       dhcp:                   yes
-      ip:                     192.168.184.53/24
+      ip:                     192.168.184.53
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -267,7 +267,7 @@ hosts:
       hostname:               k8s-local-w-01
       fqdn:                   k8s-local-w-01.local
       dhcp:                   yes
-      ip:                     192.168.184.54/24
+      ip:                     192.168.184.54
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -293,7 +293,7 @@ hosts:
       hostname:               k8s-local-w-02
       fqdn:                   k8s-local-w-02.local
       dhcp:                   yes
-      ip:                     192.168.184.55/24
+      ip:                     192.168.184.55
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -319,7 +319,7 @@ hosts:
       hostname:               k8s-local-w-03
       fqdn:                   k8s-local-w-03.local
       dhcp:                   yes
-      ip:                     192.168.184.56/24
+      ip:                     192.168.184.56
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
@@ -345,7 +345,7 @@ hosts:
       hostname:               devops
       fqdn:                   devops.local
       dhcp:                   yes
-      ip:                     192.168.184.50/24
+      ip:                     192.168.184.50
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:

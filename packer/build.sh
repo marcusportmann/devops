@@ -21,6 +21,10 @@ function build_image {
     rm -rf build/virtualbox/${operating_system}
 
     vagrant box remove --force --provider virtualbox --all devops/${operating_system};
+    
+    packer build -only=${operating_system}-virtualbox ${operating_system}.json
+
+	  vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-virtualbox.box    
   fi
 
   if [[ "$provider" == "vmware" ]]; then
