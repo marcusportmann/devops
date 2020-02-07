@@ -91,7 +91,7 @@ Build the required templates by executing the *build-os-image.sh* script, under 
 ```
 ./build-os-image.sh -p PROVIDER -o OPERATING_SYSTEM
 
-e.g. ./build.sh -p vmware_desktop -o ubuntu1804
+e.g. ./build.sh -p vmware -o ubuntu1804
 ```
 
 
@@ -104,21 +104,15 @@ provisioned as a related unit. This allows a portion of the DevOps platform to b
 deployed using commands similar to the following:
 
 ```
-vagrant --profile=<PROFILE NAME> --provider=<PROVIDER NAME> --no-parallel up
-
-or
-
-vagrant --profile=<PROFILE NAME> --provider=<PROVIDER NAME> --force destroy
+devops.sh -p <PROVIDER> <ACTION> <PROFILE>
 
 e.g.
 
-vagrant --profile=k8s_minimal --provider=virtualbox --no-parallel up
+devops.sh -p vmware up etcd
 
-vagrant --profile=k8s_minimal --provider=vmware_fusion --no-parallel up
+devops.sh -p vmware provision etcd
 
-or
-
-vagrant --profile=k8s_minimal --provider=vmware_fusion destroy --force
+devops.sh -p vmware destroy etcd
 ```
 
 You can connect to a server using SSH with the username **cloud-user** and the password **cloud**. This user is able to **su** to the **root** user.
