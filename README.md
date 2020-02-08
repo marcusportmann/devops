@@ -22,19 +22,12 @@ The **devops** project provides the capability to provision the various technolo
 	```
 4. Download and install VirtualBox from https://virtualbox.org.
 
-5. Configure the VirtualBox Host-Only Ethernet Adapter as follows:
+5. Start VirtualBox and add a new NAT Network with the following settings:
 
   ```
-  Adapter:
-    IPv4 Address: 192.168.184.1
-    IPv4 Network Mask: 255.255.255.0
-
-  DHCP Server:
-    Enable Server: True
-    Server Address: 192.168.184.100
-    Server Mask: 255.255.255.0
-    Lower Address Bound: 192.168.184.101
-    Upper Address Bound: 192.168.184.254
+  Network Name: devops
+  Network CIDR: 192.168.184/24
+  Network Options: Supports DHCP
  ```
 6. Install Ansible by executing the following command in a Terminal window:
 	```

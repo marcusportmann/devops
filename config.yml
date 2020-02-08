@@ -90,6 +90,7 @@ profiles:
   - name: k8s_minimal
     hosts:
       - k8s-local-m-01.local
+      - k8s-local-w-01.local
 
   - name: k8s_full
     hosts:
@@ -110,7 +111,6 @@ hosts:
       ram:                    512
       hostname:               etcd-local-01
       fqdn:                   etcd-local-01.local
-      dhcp:                   yes
       ip:                     192.168.184.41
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -119,7 +119,6 @@ hosts:
       ram:                    512
       hostname:               etcd-local-01
       fqdn:                   etcd-local-01.local
-      dhcp:                   yes
       ip:                     192.168.184.41/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -136,7 +135,6 @@ hosts:
       ram:                    512
       hostname:               etcd-local-02
       fqdn:                   etcd-local-02.local
-      dhcp:                   yes
       ip:                     192.168.184.42
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -145,7 +143,6 @@ hosts:
       ram:                    512
       hostname:               etcd-local-02
       fqdn:                   etcd-local-02.local
-      dhcp:                   yes
       ip:                     192.168.184.42/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -162,7 +159,6 @@ hosts:
       ram:                    512
       hostname:               etcd-local-03
       fqdn:                   etcd-local-03.local
-      dhcp:                   yes
       ip:                     192.168.184.43
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -171,7 +167,6 @@ hosts:
       ram:                    512
       hostname:               etcd-local-03
       fqdn:                   etcd-local-03.local
-      dhcp:                   yes
       ip:                     192.168.184.43/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -188,16 +183,14 @@ hosts:
       ram:                    2048
       hostname:               k8s-local-m-01
       fqdn:                   k8s-local-m-01.local
-      dhcp:                   yes
       ip:                     192.168.184.51
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
       cpus:                   2
-      ram:                    1024
+      ram:                    2048
       hostname:               k8s-local-m-01
       fqdn:                   k8s-local-m-01.local
-      dhcp:                   yes
       ip:                     192.168.184.51/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -214,7 +207,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-m-02
       fqdn:                   k8s-local-m-02.local
-      dhcp:                   yes
       ip:                     192.168.184.52
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -223,7 +215,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-m-02
       fqdn:                   k8s-local-m-02.local
-      dhcp:                   yes
       ip:                     192.168.184.52/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -240,7 +231,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-m-03
       fqdn:                   k8s-local-m-03.local
-      dhcp:                   yes
       ip:                     192.168.184.53
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -249,7 +239,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-m-03
       fqdn:                   k8s-local-m-03.local
-      dhcp:                   yes
       ip:                     192.168.184.53/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -263,19 +252,17 @@ hosts:
     ansible_groups:           k8s_worker
     virtualbox:
       cpus:                   2
-      ram:                    1024
+      ram:                    2048
       hostname:               k8s-local-w-01
       fqdn:                   k8s-local-w-01.local
-      dhcp:                   yes
       ip:                     192.168.184.54
       netmask:                255.255.255.0
       network:                192.168.184.0/24
     vmware:
       cpus:                   2
-      ram:                    1024
+      ram:                    2048
       hostname:               k8s-local-w-01
       fqdn:                   k8s-local-w-01.local
-      dhcp:                   yes
       ip:                     192.168.184.54/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -292,7 +279,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-w-02
       fqdn:                   k8s-local-w-02.local
-      dhcp:                   yes
       ip:                     192.168.184.55
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -301,7 +287,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-w-02
       fqdn:                   k8s-local-w-02.local
-      dhcp:                   yes
       ip:                     192.168.184.55/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -318,7 +303,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-w-03
       fqdn:                   k8s-local-w-03.local
-      dhcp:                   yes
       ip:                     192.168.184.56
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -327,7 +311,6 @@ hosts:
       ram:                    1024
       hostname:               k8s-local-w-03
       fqdn:                   k8s-local-w-03.local
-      dhcp:                   yes
       ip:                     192.168.184.56/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -338,13 +321,12 @@ hosts:
   - name:                     devops.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_load_balancer,k8s_master,prometheus,grafana
+    ansible_groups:           momitored,k8s_master
     virtualbox:
       cpus:                   2
       ram:                    4096
       hostname:               devops
       fqdn:                   devops.local
-      dhcp:                   yes
       ip:                     192.168.184.50
       netmask:                255.255.255.0
       network:                192.168.184.0/24
@@ -353,7 +335,6 @@ hosts:
       ram:                    4096
       hostname:               devops
       fqdn:                   devops.local
-      dhcp:                   yes
       ip:                     192.168.184.50/24
       netmask:                255.255.255.0
       network:                192.168.184.0/24

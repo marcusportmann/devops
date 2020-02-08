@@ -6,7 +6,7 @@ require 'yaml'
 require 'getoptlong'
 
 
-def generate_guest_info_meta_data(name, hostname, dhcp, ip, gateway, dns_server, dns_search)
+def generate_guest_info_meta_data(name, hostname, ip, gateway, dns_server, dns_search)
 
 ubuntu_boot_cloud_config = """
 instance-id: #{name}
@@ -28,7 +28,7 @@ end
 
 def generate_hosts_file(provider, profile, hosts)
 
-  hosts = """127.0.0.1 localhost
+  hosts_file = """127.0.0.1 localhost
 ::1 localhost
 
 """
@@ -38,25 +38,25 @@ def generate_hosts_file(provider, profile, hosts)
     if hosts.include?(hostName)
 
       host = hosts[hostName]
-
+      
       if ((not host[provider]['ip'].nil?) && (not host[provider]['ip'].empty?) && (not host[provider]['hostname'].nil?) && (not host[provider]['hostname'].empty?))
 
         ip = host[provider]['ip']
-
+        
         if not (ip.index "/").nil?
           ip = ip[0, (ip.index "/")]
         end
 
-        hosts += "%-15.15s" % ip
-        hosts += " "
-        hosts += host[provider]['hostname']
+        hosts_file += "%-15.15s" % ip
+        hosts_file += " "
+        hosts_file += host[provider]['hostname']
 
         if ((not host[provider]['fqdn'].nil?) && (not host[provider]['fqdn'].empty?))
-          hosts += " "
-          hosts += host[provider]['fqdn']
+          hosts_file += " "
+          hosts_file += host[provider]['fqdn']
         end
 
-        hosts += "\n"
+        hosts_file += "\n"
 
       end
 
@@ -64,7 +64,7 @@ def generate_hosts_file(provider, profile, hosts)
 
   end
 
-  hosts
+  hosts_file
 
 end
 
@@ -312,7 +312,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         host = hosts[hostName]
 
         puts "Provisioning host: %s" % host['name']
-
+                
         config.vm.define host['name'] do |host_vm|
           host_vm.vm.provider :virtualbox do |virtualbox, override|
 
@@ -327,9 +327,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             override.vm.synced_folder '.', '/vagrant', disabled: true
 
             override.vm.hostname = host['virtualbox']['fqdn']
-
+            
+            #  override.vm.network "private_network", ip: host['virtualbox']['ip'], virtualbox__intnet: "devops"
             override.vm.network "private_network", ip: host['virtualbox']['ip']
 
+            #virtualbox.customize ["modifyvm", :id, "--nic1", "natnetwork", "--nat-network1", "devops", "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
             virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
 
             # Write out the /etc/hosts file
@@ -344,6 +346,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
           end
         end
+        
+#  				config.vm.network :forwarded_port, id: 'ssh', guest: 22, host: 2222, disabled: true
+#  				config.ssh.guest_port = 2222        
+
+        
       end
     end
   end
@@ -386,7 +393,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             vmware_desktop.vmx["ethernet0.virtualDev"] = "vmxnet3"
             vmware_desktop.vmx["ethernet0.vnet"] = "vmnet8"
             vmware_desktop.vmx["guestinfo.metadata.encoding"] = "base64"
-            vmware_desktop.vmx["guestinfo.metadata"] = Base64.encode64(generate_guest_info_meta_data(host['name'], host['vmware']['hostname'], host['vmware']['dhcp'], host['vmware']['ip'], host['vmware']['gateway'], host['vmware']['dns_server'], host['vmware']['dns_search'])).gsub(/\n/, '')
+            vmware_desktop.vmx["guestinfo.metadata"] = Base64.encode64(generate_guest_info_meta_data(host['name'], host['vmware']['hostname'], host['vmware']['ip'], host['vmware']['gateway'], host['vmware']['dns_server'], host['vmware']['dns_search'])).gsub(/\n/, '')
 
             # Write out the /etc/hosts file
             override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, hosts)

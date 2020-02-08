@@ -173,15 +173,19 @@
 
         - name: Initialize the Weave CNI provider
           shell:
-            cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_pod_subnet}}"
+            cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_pod_subnet}}"
 
       when: ((etc_cni_stat_result.stat.exists == False) and (k8s_cni_provider == 'weave'))
+
+    - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
+      wait_for:
+        timeout: 15
 
     - name: Wait for Kubernetes node initialization to complete
       command:
         cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
 
-    - name: Deploy the kube-state-metrics service
+    - name: Deploy the kube-state-metrics service if there are no worker nodes
       block:
 
         - template:
@@ -190,10 +194,7 @@
 
         - shell:
             cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yml
-
-    - name: Wait for kube-state-metrics deployment to complete
-      command:
-        cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
+      when: ("k8s_worker" not in groups.keys())
 
   when: groups['k8s_master'][0] == inventory_hostname
 
