@@ -37,7 +37,7 @@
   "annotations": {
     "list": [
       {
-        "datasource": "Prometheus",
+        "datasource": "prometheus",
         "enable": true,
         "expr": "sum(changes(prometheus_config_last_reload_success_timestamp_seconds{instance=~\"$instance\"}[10m])) by (instance)",
         "hide": false,
@@ -49,7 +49,7 @@
         "type": "alert"
       },
       {
-        "datasource": "Prometheus",
+        "datasource": "prometheus",
         "enable": true,
         "expr": "count(sum(up{instance=\"$instance\"}) by (instance) < 1)",
         "hide": false,
@@ -84,7 +84,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(50, 172, 45, 0.97)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "decimals": 3,
           "description": "Percentage of uptime during the most recent $interval period.  Change the period with the 'interval' dropdown above.",
           "format": "none",
@@ -156,7 +156,7 @@
         },
         {
           "columns": [],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Servers which are DOWN RIGHT NOW! \nFIX THEM!!",
           "fontSize": "100%",
           "hideTimeOverride": true,
@@ -236,7 +236,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Total number of time series in prometheus",
           "format": "none",
           "gauge": {
@@ -313,7 +313,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(50, 172, 45, 0.97)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "format": "none",
           "gauge": {
             "maxValue": 100,
@@ -401,7 +401,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "The total number of rule group evaluations missed due to slow rule group evaluation.",
           "format": "none",
           "gauge": {
@@ -478,7 +478,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "The total number of rule group evaluations skipped due to throttled metric storage.",
           "format": "none",
           "gauge": {
@@ -555,7 +555,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Total number of scrapes that hit the sample limit and were rejected.",
           "format": "none",
           "gauge": {
@@ -632,7 +632,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Number of times the database failed to reload block data from disk.",
           "format": "none",
           "gauge": {
@@ -709,7 +709,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Sum of all skipped scrapes",
           "format": "none",
           "gauge": {
@@ -794,7 +794,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "All non-zero failures and errors",
           "fill": 1,
           "id": 33,
@@ -1035,7 +1035,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 1,
           "legend": {
@@ -1113,7 +1113,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 5,
           "legend": {
@@ -1201,7 +1201,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 3,
           "legend": {
@@ -1277,7 +1277,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 32,
           "legend": {
@@ -1380,7 +1380,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Rate of total number of appended samples",
           "fill": 1,
           "id": 4,
@@ -1469,7 +1469,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Total number of syncs that were executed on a scrape pool.",
           "fill": 1,
           "id": 6,
@@ -1547,7 +1547,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Actual interval to sync the scrape pool.",
           "fill": 1,
           "id": 21,
@@ -1636,7 +1636,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 29,
           "legend": {
@@ -1712,7 +1712,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Total number of rejected scrapes",
           "fill": 1,
           "id": 30,
@@ -1829,7 +1829,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "The duration of rule group evaluations",
           "fill": 1,
           "id": 10,
@@ -1906,7 +1906,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 11,
           "legend": {
@@ -1982,7 +1982,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 15,
           "legend": {
@@ -2058,7 +2058,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "Rule-group evaluations \n - total\n - missed due to slow rule group evaluation\n - skipped due to throttled metric storage",
           "fill": 1,
           "id": 31,
@@ -2163,7 +2163,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 22,
           "legend": {
@@ -2251,7 +2251,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 23,
           "legend": {
@@ -2327,7 +2327,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "fill": 1,
           "id": 24,
           "legend": {
@@ -2416,7 +2416,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "prometheus",
           "description": "GC invocation durations",
           "fill": 1,
           "id": 28,
@@ -2505,7 +2505,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "Prometheus",
+        "datasource": "prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -2525,7 +2525,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "Prometheus",
+        "datasource": "prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,

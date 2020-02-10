@@ -37,6 +37,9 @@ echo "install sctp /bin/false" > /etc/modprobe.d/sctp.conf
 echo "install rds /bin/false" > /etc/modprobe.d/rds.conf
 echo "install tipc /bin/false" > /etc/modprobe.d/tipc.conf
 
+echo "Enabling the EPEL repo"
+yum -y install epel-release
+
 echo "Installing additional packages"
 yum -y install bzip2 ntp ntpdate python-yaml screen net-tools
 

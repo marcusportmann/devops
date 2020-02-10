@@ -57,7 +57,7 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "name": "centos80-vmware_desktop",
+      "name": "centos80-vmware",
       "output_directory": "{{ user `build_directory` }}/vmware/centos80/",
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
@@ -107,7 +107,7 @@
       "execute_command": "{{.Vars}} sh {{.Path}}",
       "expect_disconnect": true,
       "only": [
-        "centos80-vmware_desktop",
+        "centos80-vmware",
         "centos80-virtualbox"
       ],
       "scripts": [

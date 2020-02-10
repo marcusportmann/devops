@@ -114,7 +114,8 @@
         "memsize": "1024",
         "numvcpus": "1",
         "ethernet0.connectiontype": "nat",
-        "ethernet0.virtualDev": "vmxnet3"
+        "ethernet0.virtualDev": "vmxnet3",
+        "rtc.diffFromUTC": "0"
       }
     }
   ],

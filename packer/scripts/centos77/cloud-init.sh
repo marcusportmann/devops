@@ -15,7 +15,7 @@ chmod 0440 /etc/sudoers.d/cloud-user
 sed -i 's/^.*requiretty/#Defaults requiretty/' /etc/sudoers
 
 # Install cloud-init
-yum -y install cloud-init
+yum -y install python2-pip cloud-init
 
 # Install the VMware Guest Info provider for cloud-init
 curl -sSL https://raw.githubusercontent.com/vmware/cloud-init-vmware-guestinfo/master/install.sh | sh -
