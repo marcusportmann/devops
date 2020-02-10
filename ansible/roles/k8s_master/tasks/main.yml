@@ -451,6 +451,8 @@
             creates: /usr/bin/istioctl
 
       when: (istioctl_installed_version != istioctl_version)
+      
+  when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true)) 
 
 - name: Initialize the Istio service mesh
   block:
@@ -634,7 +636,7 @@
 
       when: istio_system_namespace_exists_output.stdout == "0"
 
-  when: groups['k8s_master'][0] == inventory_hostname
+  when: ((groups['k8s_master'][0] == inventory_hostname) and (istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
 
 
 

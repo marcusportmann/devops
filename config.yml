@@ -54,6 +54,9 @@ variables:
   - name: k8s_cni_provider
     values:
       - weave
+  - name: istio_enabled
+    values:
+      - false
   - name: istio_profile
     values:
       - sds
