@@ -160,7 +160,27 @@
           command:
             cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
           when: ("k8s_worker" not in groups.keys())
+          
+        - name: Create the Prometheus service account
+          block:
 
+            - template:
+                src: prometheus-service-account.yml.j2
+                dest: /tmp/prometheus-service-account.yml
+
+            - shell:
+                cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yml   
+                
+        - name: Deploy the kube-state-metrics service if there are no worker nodes
+          block:
+
+            - template:
+                src: kube-state-metrics.yml.j2
+                dest: /tmp/kube-state-metrics.yml
+
+            - shell:
+                cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yml
+                       
       when: kubelet_config_stat_result.stat.exists == False
 
     - name: Check whether a CNI provider has been configured
@@ -184,17 +204,6 @@
     - name: Wait for Kubernetes node initialization to complete
       command:
         cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
-
-    - name: Deploy the kube-state-metrics service if there are no worker nodes
-      block:
-
-        - template:
-            src: kube-state-metrics.yml.j2
-            dest: /tmp/kube-state-metrics.yml
-
-        - shell:
-            cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yml
-      when: ("k8s_worker" not in groups.keys())
 
   when: groups['k8s_master'][0] == inventory_hostname
 
@@ -572,7 +581,8 @@
 
         - name: Wait for the Istio service mesh initialization to complete
           command:
-            cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=600s
+            cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
+          when: ("k8s_worker" not in groups.keys()) 
 
         - block:
 

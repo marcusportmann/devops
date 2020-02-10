@@ -160,35 +160,6 @@
         mode: 0775
         state: directory
 
-    - name: Create the Prometheus service account
-      block:
-
-        - template:
-            src: prometheus-service-account.yml.j2
-            dest: /tmp/prometheus-service-account.yml
-          delegate_to: "{{ groups['k8s_master'][0] }}"
-
-        - shell:
-            cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yml
-
-
-#        - shell:
-#            cmd: kubectl -n kube-system get serviceaccounts/prometheusx 2>&1 | grep "not found" | wc -l
-#          register: prometheus_service_account_exists_output
-#
-#        - block:
-#
-#          - template:
-#              src: prometheus-service-account.yml.j2
-#              dest: /tmp/prometheus-service-account.yml
-#            delegate_to: "{{ groups['k8s_master'][0] }}"
-#
-#          - command:
-#              cmd: /usr/bin/kubectl create -f /tmp/prometheus-service-account.yml
-#            delegate_to: "{{ groups['k8s_master'][0] }}"
-#
-#          when: prometheus_service_account_exists_output.stdout == '0'
-
     - name: Copy the certificate for the Kubernetes CA to the Prometheus host
       block:
 

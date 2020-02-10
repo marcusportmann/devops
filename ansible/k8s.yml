@@ -26,7 +26,7 @@
     istio_version: 1.4.3
     istio_package_hash: sha256:781e2c4391ba344d86fb6a4c321b76af31543e7479ea689dd7c7395fb1a41ff0
     istioctl_version: 1.4.3
-    istioctl_package_hash: sha256:53ab94711a9646434bbcba6d74cd11a2ef665028e4307fd9b1a89bc9ea9264b6
+    istioctl_package_hash: sha256:53ab94711a9646434bbcba6d74cd11a2ef665028e4307fd9b1a89bc9ea9264b6    
     k8s_ubuntu_package_version: 1.15.9-00
     kube_state_metrics_version: 1.9.4
   become: yes
@@ -42,3 +42,5 @@
   become_user: root
   roles:
     - k8s_worker
+
+

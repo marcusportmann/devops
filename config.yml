@@ -91,6 +91,7 @@ profiles:
     hosts:
       - k8s-local-m-01.local
       - k8s-local-w-01.local
+      - monitor.local
 
   - name: k8s_full
     hosts:
@@ -129,7 +130,7 @@ hosts:
   - name:                     etcd-local-02.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           etcd
+    ansible_groups:           monitored,etcd
     virtualbox:
       cpus:                   1
       ram:                    512
@@ -153,7 +154,7 @@ hosts:
   - name:                     etcd-local-03.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           etcd
+    ansible_groups:           monitored,etcd
     virtualbox:
       cpus:                   1
       ram:                    512
@@ -177,7 +178,7 @@ hosts:
   - name:                     k8s-local-m-01.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           k8s_load_balancer,k8s_master
+    ansible_groups:           monitored,k8s_load_balancer,k8s_master
     virtualbox:
       cpus:                   2
       ram:                    2048
@@ -201,7 +202,7 @@ hosts:
   - name:                     k8s-local-m-02.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           k8s_master
+    ansible_groups:           monitored,k8s_master
     virtualbox:
       cpus:                   2
       ram:                    1024
@@ -225,7 +226,7 @@ hosts:
   - name:                     k8s-local-m-03.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           k8s_master
+    ansible_groups:           monitored,k8s_master
     virtualbox:
       cpus:                   2
       ram:                    1024
@@ -249,7 +250,7 @@ hosts:
   - name:                     k8s-local-w-01.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           k8s_worker
+    ansible_groups:           monitored,k8s_worker
     virtualbox:
       cpus:                   2
       ram:                    2048
@@ -273,7 +274,7 @@ hosts:
   - name:                     k8s-local-w-02.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           k8s_worker
+    ansible_groups:           monitored,k8s_worker
     virtualbox:
       cpus:                   2
       ram:                    1024
@@ -297,7 +298,7 @@ hosts:
   - name:                     k8s-local-w-03.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
-    ansible_groups:           k8s_worker
+    ansible_groups:           monitored,k8s_worker
     virtualbox:
       cpus:                   2
       ram:                    1024
@@ -317,6 +318,30 @@ hosts:
       gateway:                192.168.184.2
       dns_server:             192.168.184.2
       dns_search:             local
+      
+  - name:                     monitor.local
+    type:                     ubuntu
+    ansible_playbook:         ansible/devops.yml
+    ansible_groups:           monitored,prometheus,grafana
+    virtualbox:
+      cpus:                   2
+      ram:                    1024
+      hostname:               monitor
+      fqdn:                   monitor.local
+      ip:                     192.168.184.30
+      netmask:                255.255.255.0
+      network:                192.168.184.0/24
+    vmware:
+      cpus:                   2
+      ram:                    1024
+      hostname:               monitor
+      fqdn:                   monitor.local
+      ip:                     192.168.184.30/24
+      netmask:                255.255.255.0
+      network:                192.168.184.0/24
+      gateway:                192.168.184.2
+      dns_server:             192.168.184.2
+      dns_search:             local      
 
   - name:                     devops.local
     type:                     ubuntu
