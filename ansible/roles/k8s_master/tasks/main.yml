@@ -101,13 +101,20 @@
 
           when: k8s_etcd_topology == "external"
 
+        - command:
+            cmd: hostname -i
+          register: hostname_i_result
+
+        - set_fact:
+            k8s_apiserver_advertise_address: "{{ hostname_i_result.stdout_lines[0] }}"
+
         - name: Create the Kubernetes cluster configuration
           template:
             src: k8s-config.yml.j2
             dest: /tmp/k8s-config.yml
 
         - name: Initialize the Kubernetes cluster
-          command:
+          shell:
             cmd: /usr/bin/kubeadm init --config /tmp/k8s-config.yml
 
         - name: Copy the Kubernetes configuration to the root user

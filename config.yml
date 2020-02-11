@@ -190,6 +190,7 @@ hosts:
       ip:                     192.168.184.51
       netmask:                255.255.255.0
       network:                192.168.184.0/24
+      private_networks:       172.20.0.0/14,172.24.0.0/13
     vmware:
       cpus:                   2
       ram:                    2048
@@ -214,6 +215,7 @@ hosts:
       ip:                     192.168.184.52
       netmask:                255.255.255.0
       network:                192.168.184.0/24
+      private_networks:       172.20.0.0/14,172.24.0.0/13
     vmware:
       cpus:                   2
       ram:                    1024
@@ -225,7 +227,7 @@ hosts:
       gateway:                192.168.184.2
       dns_server:             192.168.184.2
       dns_search:             local
-
+  
   - name:                     k8s-local-m-03.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
@@ -238,6 +240,7 @@ hosts:
       ip:                     192.168.184.53
       netmask:                255.255.255.0
       network:                192.168.184.0/24
+      private_networks:       172.20.0.0/14,172.24.0.0/13
     vmware:
       cpus:                   2
       ram:                    1024
@@ -249,7 +252,7 @@ hosts:
       gateway:                192.168.184.2
       dns_server:             192.168.184.2
       dns_search:             local
-
+  
   - name:                     k8s-local-w-01.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
@@ -262,6 +265,7 @@ hosts:
       ip:                     192.168.184.54
       netmask:                255.255.255.0
       network:                192.168.184.0/24
+      private_networks:       172.20.0.0/14,172.24.0.0/13
     vmware:
       cpus:                   2
       ram:                    2048
@@ -286,6 +290,7 @@ hosts:
       ip:                     192.168.184.55
       netmask:                255.255.255.0
       network:                192.168.184.0/24
+      private_networks:       172.20.0.0/14,172.24.0.0/13
     vmware:
       cpus:                   2
       ram:                    1024
@@ -310,6 +315,7 @@ hosts:
       ip:                     192.168.184.56
       netmask:                255.255.255.0
       network:                192.168.184.0/24
+      private_networks:       172.20.0.0/14,172.24.0.0/13
     vmware:
       cpus:                   2
       ram:                    1024
@@ -358,6 +364,7 @@ hosts:
       ip:                     192.168.184.50
       netmask:                255.255.255.0
       network:                192.168.184.0/24
+      private_networks:       172.20.0.0/14,172.24.0.0/13
     vmware:
       cpus:                   2
       ram:                    4096

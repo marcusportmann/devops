@@ -334,6 +334,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             #virtualbox.customize ["modifyvm", :id, "--nic1", "natnetwork", "--nat-network1", "devops", "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
             virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
 
+            # Add the additional networks to the private network interface
+            override.vm.provision "shell", inline: "ip route add 172.20.0.0/14 dev eth1 src %s" % host['virtualbox']['ip']
+
             # Write out the /etc/hosts file
             override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, hosts)
 
