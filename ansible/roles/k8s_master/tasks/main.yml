@@ -167,7 +167,7 @@
           command:
             cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
           when: ("k8s_worker" not in groups.keys())
-          
+
         - name: Create the Prometheus service account
           block:
 
@@ -176,8 +176,8 @@
                 dest: /tmp/prometheus-service-account.yml
 
             - shell:
-                cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yml   
-                
+                cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yml
+
         - name: Deploy the kube-state-metrics service if there are no worker nodes
           block:
 
@@ -187,7 +187,7 @@
 
             - shell:
                 cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yml
-                       
+
       when: kubelet_config_stat_result.stat.exists == False
 
     - name: Check whether a CNI provider has been configured
@@ -201,6 +201,18 @@
         - name: Initialize the Weave CNI provider
           shell:
             cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_pod_subnet}}"
+
+        - name: Install the Weave script
+          shell:
+            cmd: curl -L git.io/weave -o /usr/bin/weave
+
+        - name: Set the permissions for the /usr/bin/weave file
+          file:
+            path: /usr/bin/weave
+            owner: root
+            group: root
+            mode: 0770
+            state: file
 
       when: ((etc_cni_stat_result.stat.exists == False) and (k8s_cni_provider == 'weave'))
 
@@ -458,8 +470,8 @@
             creates: /usr/bin/istioctl
 
       when: (istioctl_installed_version != istioctl_version)
-      
-  when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true)) 
+
+  when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
 
 - name: Initialize the Istio service mesh
   block:
@@ -591,7 +603,7 @@
         - name: Wait for the Istio service mesh initialization to complete
           command:
             cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
-          when: ("k8s_worker" not in groups.keys()) 
+          when: ("k8s_worker" not in groups.keys())
 
         - block:
 
