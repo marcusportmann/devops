@@ -64,6 +64,11 @@ case "$subcommand" in
     host=$1; shift
     vagrant --provider=$provider --profile=$profile destroy $host --force
     ;;
+  halt)
+    profile=$1; shift
+    host=$1; shift
+    vagrant --provider=$provider --profile=$profile halt $host --force
+    ;;    
    \? )
      echo "Invalid Action: -$OPTARG" 1>&2
      exit 1
