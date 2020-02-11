@@ -5,7 +5,7 @@ programname=$0
 function usage {
     echo "Usage: $programname [options] <action> <profile> [host]"
     echo ""
-    echo "Where <action> is one of up, provision or destroy and <profile> is the name of a profile in the config.yml file."
+    echo "Where <action> is one of up, provision, halt or destroy and <profile> is the name of a profile in the config.yml file."
     echo ""
     echo "Options:"
     echo "  -h           Print this message and exit."
