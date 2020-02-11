@@ -190,7 +190,7 @@ hosts:
       ip:                     192.168.184.51
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14,172.24.0.0/13
+      private_networks:       172.20.0.0/14
     vmware:
       cpus:                   2
       ram:                    2048
@@ -215,7 +215,7 @@ hosts:
       ip:                     192.168.184.52
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14,172.24.0.0/13
+      private_networks:       172.20.0.0/14
     vmware:
       cpus:                   2
       ram:                    1024
@@ -240,7 +240,7 @@ hosts:
       ip:                     192.168.184.53
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14,172.24.0.0/13
+      private_networks:       172.20.0.0/14
     vmware:
       cpus:                   2
       ram:                    1024
@@ -265,7 +265,7 @@ hosts:
       ip:                     192.168.184.54
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14,172.24.0.0/13
+      private_networks:       172.20.0.0/14
     vmware:
       cpus:                   2
       ram:                    2048
@@ -290,7 +290,7 @@ hosts:
       ip:                     192.168.184.55
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14,172.24.0.0/13
+      private_networks:       172.20.0.0/14
     vmware:
       cpus:                   2
       ram:                    1024
@@ -315,7 +315,7 @@ hosts:
       ip:                     192.168.184.56
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14,172.24.0.0/13
+      private_networks:       172.20.0.0/14
     vmware:
       cpus:                   2
       ram:                    1024
@@ -364,7 +364,7 @@ hosts:
       ip:                     192.168.184.50
       netmask:                255.255.255.0
       network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14,172.24.0.0/13
+      private_networks:       172.20.0.0/14
     vmware:
       cpus:                   2
       ram:                    4096

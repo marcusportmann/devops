@@ -202,9 +202,10 @@
           shell:
             cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_pod_subnet}}"
 
-        - name: Install the Weave script
-          shell:
-            cmd: curl -L git.io/weave -o /usr/bin/weave
+        - name: Download the Weave script
+          get_url:
+            url: https://git.io/weave
+            dest: /usr/bin/weave
 
         - name: Set the permissions for the /usr/bin/weave file
           file:
