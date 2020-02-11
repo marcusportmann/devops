@@ -56,7 +56,7 @@ variables:
       - weave
   - name: istio_enabled
     values:
-      - false
+      - true
   - name: istio_profile
     values:
       - sds
@@ -321,7 +321,7 @@ hosts:
       gateway:                192.168.184.2
       dns_server:             192.168.184.2
       dns_search:             local
-      
+
   - name:                     monitor.local
     type:                     ubuntu
     ansible_playbook:         ansible/devops.yml
@@ -344,7 +344,7 @@ hosts:
       network:                192.168.184.0/24
       gateway:                192.168.184.2
       dns_server:             192.168.184.2
-      dns_search:             local      
+      dns_search:             local
 
   - name:                     devops.local
     type:                     ubuntu
