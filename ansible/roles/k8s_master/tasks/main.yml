@@ -645,7 +645,7 @@
 
   when: ((groups['k8s_master'][0] == inventory_hostname) and (istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
 
-- name: Install Longhorn if Longhorn is enabled and there are no worker nodes
+- name: Install Longhorn if it is enabled and there are no worker nodes
   block:
 
   - name: Check if longhorn-system namespace exists
@@ -658,7 +658,7 @@
         src: longhorn.yml.j2
         dest: /tmp/longhorn.yml
 
-    - name: Apply the Longhorn configuration to Kubernetes
+    - name: Apply the Longhorn manifest to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/longhorn.yml
   
@@ -666,8 +666,44 @@
 
   when: (("k8s_worker" not in groups.keys()) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
 
+#- name: Install the Operator Lifecycle Manager if it is enabled
+#  block:
+#
+#  - name: Retrieve the Operator Lifecycle Manager Custom Resource Definitions Manifest
+#    get_url:
+#      url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
+#      dest: /tmp/operator-lifecycle-manager-crds.yaml
+#   
+#  - name: Apply the Postgres Operator ConfigMap Manifest
+#    command: 
+#      cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-crds.yaml
+#
+#
+#  
+#  when: (("k8s_worker" not in groups.keys()) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+  
 
 
+#- name: Install the Postgres Operator if it is enabled
+#  block:
+#  
+#  - name: Retrieve the Postgres Operator ConfigMap Manifest
+#    get_url:
+#      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
+#      dest: /tmp/postgres-operator-configmap.yml
+#    
+#  - name: Apply the Postgres Operator ConfigMap Manifest
+#    command: 
+#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yml
+#
+#  - name: Retrieve the Postgres Operator ConfigMap Manifest
+#    get_url:
+#      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
+#      dest: /tmp/postgres-operator-configmap.yml
+#    
+#  - name: Apply the Postgres Operator ConfigMap Manifest
+#    command: 
+#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yml
 
 
 
