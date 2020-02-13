@@ -1,4 +1,4 @@
-# file: roles/k8s_load_balancer/tasks/centos.yml
+# file: roles/k8s_load_balancer/tasks/centos.yaml
 
 - debug:
     msg: Applying the CentOS-specific Kubernetes load balancer configuration

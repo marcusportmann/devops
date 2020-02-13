@@ -1,4 +1,4 @@
-# file: roles/prometheus/tasks/ubuntu.yml
+# file: roles/prometheus/tasks/ubuntu.yaml
 
 - debug:
     msg: Applying the Ubuntu-specific Prometheus configuration

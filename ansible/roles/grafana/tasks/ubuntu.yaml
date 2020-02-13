@@ -1,5 +1,5 @@
 ---
-# file: roles/grafana/tasks/ubuntu.yml
+# file: roles/grafana/tasks/ubuntu.yaml
 
 - debug:
     msg: Applying the Ubuntu-specific Grafana configuration

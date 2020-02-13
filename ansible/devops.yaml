@@ -1,0 +1,9 @@
+# This playbook configures a single server with all the DevOps tools
+
+- import_playbook: etcd.yaml
+
+- import_playbook: k8s.yaml
+
+- import_playbook: monitoring.yaml
+
+

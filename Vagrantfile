@@ -108,7 +108,7 @@ else
   puts "Using the Vagrant provider: %s" % provider
 end
 
-CONFIG_FILE = 'config.yml'
+CONFIG_FILE = 'config.yaml'
 CONFIG_FILE_PATH = File.join(File.dirname(__FILE__), CONFIG_FILE)
 
 if File.exist?(CONFIG_FILE_PATH)

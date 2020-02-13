@@ -1,4 +1,4 @@
-# file: roles/etcd/tasks/centos.yml
+# file: roles/etcd/tasks/centos.yaml
 
 - debug:
     msg: Applying the CentOS-specific etcd configuration

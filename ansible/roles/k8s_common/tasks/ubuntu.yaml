@@ -1,4 +1,4 @@
-# file: roles/k8s_common/tasks/ubuntu.yml
+# file: roles/k8s_common/tasks/ubuntu.yaml
 
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes common configuration

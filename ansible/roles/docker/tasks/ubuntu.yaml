@@ -1,5 +1,5 @@
 ---
-# file: roles/docker/tasks/ubuntu.yml
+# file: roles/docker/tasks/ubuntu.yaml
 
 - debug:
     msg: Applying the Ubuntu-specific Docker configuration

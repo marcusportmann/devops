@@ -1,4 +1,4 @@
-# file: roles/k8s_master/tasks/centos.yml
+# file: roles/k8s_master/tasks/centos.yaml
 
 - debug:
     msg: Applying the CentOS-specific Kubernetes master configuration

@@ -1,4 +1,4 @@
-# file: roles/monitored/tasks/centos.yml
+# file: roles/monitored/tasks/centos.yaml
 
 - debug:
     msg: Applying the CentOS-specific monitored configuration

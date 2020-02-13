@@ -1,4 +1,4 @@
-# file: roles/prometheus/tasks/main.yml
+# file: roles/prometheus/tasks/main.yaml
 
 - name: Create the /var/cache/ansible directory
   file:
@@ -8,12 +8,12 @@
 - set_fact:
     prometheus_data_directory: "{{ prometheus_data_directory if ((prometheus_data_directory is defined) and (prometheus_data_directory != None)) else '/var/lib/prometheus' }}"
 
-- include_tasks: ubuntu.yml
+- include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
   - unbound
 
-- include_tasks: centos.yml
+- include_tasks: centos.yaml
   when: ansible_distribution == "CentOS"
   tags:
   - unbound
@@ -135,7 +135,7 @@
 
 - name: Generate the Prometheus configuration
   template:
-    src: prometheus.yml.j2
+    src: prometheus.yaml.j2
     dest: /etc/prometheus/prometheus.yml
 
 - name: Generate the Prometheus environment

@@ -1,4 +1,4 @@
-# file: roles/k8s_master/tasks/main.yml
+# file: roles/k8s_master/tasks/main.yaml
 
 - name: Create the /var/cache/ansible directory
   file:
@@ -21,12 +21,12 @@
     shell: /bin/bash
     state: present
 
-- include_tasks: ubuntu.yml
+- include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
     - unbound
 
-- include_tasks: centos.yml
+- include_tasks: centos.yaml
   when: ansible_distribution == "CentOS"
   tags:
     - unbound
@@ -104,12 +104,12 @@
 
     - name: Create the Kubernetes cluster configuration
       template:
-        src: k8s-config.yml.j2
-        dest: /tmp/k8s-config.yml
+        src: k8s-config.yaml.j2
+        dest: /tmp/k8s-config.yaml
 
     - name: Initialize the Kubernetes cluster
       shell:
-        cmd: /usr/bin/kubeadm init --config /tmp/k8s-config.yml
+        cmd: /usr/bin/kubeadm init --config /tmp/k8s-config.yaml
 
     - name: Copy the Kubernetes configuration to the root user
       block:
@@ -163,20 +163,20 @@
     - name: Create the Prometheus service account
       block:
       - template:
-          src: prometheus-service-account.yml.j2
-          dest: /tmp/prometheus-service-account.yml
+          src: prometheus-service-account.yaml.j2
+          dest: /tmp/prometheus-service-account.yaml
 
       - shell:
-          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yml
+          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yaml
 
     - name: Deploy the kube-state-metrics service if there are no worker nodes
       block:
       - template:
-          src: kube-state-metrics.yml.j2
-          dest: /tmp/kube-state-metrics.yml
+          src: kube-state-metrics.yaml.j2
+          dest: /tmp/kube-state-metrics.yaml
 
       - shell:
-          cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yml
+          cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yaml
 
     when: kubelet_config_stat_result.stat.exists == False
 
@@ -574,23 +574,23 @@
     - name: Initialize the Kiali secret
       block:
       - template:
-          src: kiali-secret.yml.j2
-          dest: /tmp/kiali-secret.yml
+          src: kiali-secret.yaml.j2
+          dest: /tmp/kiali-secret.yaml
 
       - name: Create the Kiali secret
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/kiali-secret.yml
+          cmd: /usr/bin/kubectl apply -f /tmp/kiali-secret.yaml
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
     - name: Create the Istio configuration file
       template:
-        src: istio-config.yml.j2
-        dest: /tmp/istio-config.yml
+        src: istio-config.yaml.j2
+        dest: /tmp/istio-config.yaml
 
     - name: Initialize the Istio service mesh
       shell:
-        cmd: /usr/bin/istioctl manifest apply -f /tmp/istio-config.yml
+        cmd: /usr/bin/istioctl manifest apply -f /tmp/istio-config.yaml
 
     - name: Wait for the Istio service mesh initialization to complete
       command:
@@ -599,45 +599,45 @@
 
     - block:
       - template:
-          src: jaeger-ingress.yml.j2
-          dest: /tmp/jaeger-ingress.yml
+          src: jaeger-ingress.yaml.j2
+          dest: /tmp/jaeger-ingress.yaml
 
       - name: Enable ingress for Jaeger
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/jaeger-ingress.yml
+          cmd: /usr/bin/kubectl apply -f /tmp/jaeger-ingress.yaml
 
       when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
 
     - block:
       - template:
-          src: kiali-ingress.yml.j2
-          dest: /tmp/kiali-ingress.yml
+          src: kiali-ingress.yaml.j2
+          dest: /tmp/kiali-ingress.yaml
 
       - name: Enable ingress for Kiali
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/kiali-ingress.yml
+          cmd: /usr/bin/kubectl apply -f /tmp/kiali-ingress.yaml
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
     - block:
       - template:
-          src: grafana-ingress.yml.j2
-          dest: /tmp/grafana-ingress.yml
+          src: grafana-ingress.yaml.j2
+          dest: /tmp/grafana-ingress.yaml
 
       - name: Enable ingress for Grafana
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/grafana-ingress.yml
+          cmd: /usr/bin/kubectl apply -f /tmp/grafana-ingress.yaml
 
       when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
 
     - block:
       - template:
-          src: prometheus-ingress.yml.j2
-          dest: /tmp/prometheus-ingress.yml
+          src: prometheus-ingress.yaml.j2
+          dest: /tmp/prometheus-ingress.yaml
 
       - name: Enable ingress for Prometheus
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-ingress.yml
+          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-ingress.yaml
 
       when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
 
@@ -655,12 +655,12 @@
 
   - block:
     - template:
-        src: longhorn.yml.j2
-        dest: /tmp/longhorn.yml
+        src: longhorn.yaml.j2
+        dest: /tmp/longhorn.yaml
 
     - name: Apply the Longhorn manifest to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/longhorn.yml
+        cmd: /usr/bin/kubectl apply -f /tmp/longhorn.yaml
   
     when: longhorn_system_namespace_exists_output.stdout == "0"
 
@@ -690,20 +690,20 @@
 #  - name: Retrieve the Postgres Operator ConfigMap Manifest
 #    get_url:
 #      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
-#      dest: /tmp/postgres-operator-configmap.yml
+#      dest: /tmp/postgres-operator-configmap.yaml
 #    
 #  - name: Apply the Postgres Operator ConfigMap Manifest
 #    command: 
-#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yml
+#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
 #
 #  - name: Retrieve the Postgres Operator ConfigMap Manifest
 #    get_url:
 #      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
-#      dest: /tmp/postgres-operator-configmap.yml
+#      dest: /tmp/postgres-operator-configmap.yaml
 #    
 #  - name: Apply the Postgres Operator ConfigMap Manifest
 #    command: 
-#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yml
+#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
 
 
 

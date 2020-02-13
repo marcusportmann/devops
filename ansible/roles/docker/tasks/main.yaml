@@ -1,11 +1,11 @@
-# file: roles/docker/tasks/main.yml
+# file: roles/docker/tasks/main.yaml
 
-- include_tasks: ubuntu.yml
+- include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
   - unbound
 
-- include_tasks: centos.yml
+- include_tasks: centos.yaml
   when: ansible_distribution == "CentOS"
   tags:
   - unbound

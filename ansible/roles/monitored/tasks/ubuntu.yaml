@@ -1,4 +1,4 @@
-# file: roles/monitored/tasks/ubuntu.yml
+# file: roles/monitored/tasks/ubuntu.yaml
 
 - debug:
     msg: Applying the Ubuntu-specific monitored configuration

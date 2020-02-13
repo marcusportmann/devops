@@ -1,4 +1,4 @@
-# file: roles/prometheus/tasks/centos.yml
+# file: roles/prometheus/tasks/centos.yaml
 
 - debug:
     msg: Applying the CentOS-specific Prometheus configuration

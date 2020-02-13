@@ -1,5 +1,5 @@
 ---
-# file: roles/k8s_load_balancer/tasks/ubuntu.yml
+# file: roles/k8s_load_balancer/tasks/ubuntu.yaml
 
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes load balancer configuration
