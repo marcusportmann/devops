@@ -1,15 +1,14 @@
----
 # file: roles/grafana/tasks/main.yml
 
 - include_tasks: ubuntu.yml
   when: ansible_distribution == "Ubuntu"
   tags:
-    - unbound
+  - unbound
 
 - include_tasks: centos.yml
   when: ansible_distribution == "CentOS"
   tags:
-    - unbound
+  - unbound
 
 - name: Create the Grafana configuration file
   template:
@@ -53,4 +52,5 @@
   systemd:
     name: grafana-server.service
     state: restarted
+    enabled: yes
     daemon_reload: yes

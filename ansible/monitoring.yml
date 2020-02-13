@@ -1,4 +1,3 @@
----
 # This playbook configures a monitoring server.
 
 
@@ -11,7 +10,7 @@
   become_user: root
 
   roles:
-    - monitored
+  - monitored
 
 - name: Configure a Prometheus host
   hosts: prometheus
@@ -22,7 +21,7 @@
   become_user: root
 
   roles:
-    - prometheus
+  - prometheus
 
 - name: Configure a Grafana host
   hosts: grafana
@@ -32,5 +31,5 @@
   become_user: root
 
   roles:
-    - grafana
+  - grafana
 

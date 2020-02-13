@@ -1,5 +1,3 @@
----
-
 #
 # VARIABLES
 #
@@ -22,360 +20,364 @@
 #
 
 variables:
-  - name: etcd_cluster_name
-    values:
-      - local
-  - name: k8s_etcd_topology
-    values:
-      - stacked
-  - name: k8s_cluster_name
-    values:
-      - local
-  - name: k8s_cluster_domain
-    values:
-      - local.internal
+- name: etcd_cluster_name
+  values:
+  - local
+- name: k8s_etcd_topology
+  values:
+  - stacked
+- name: k8s_cluster_name
+  values:
+  - local
+- name: k8s_cluster_domain
+  values:
+  - local.internal
 #  - name: k8s_control_plane_endpoint
 #    values:
 #      - k8s-local-api.local
 #  - name: k8s_kube_state_metrics_endpoint
 #    values:
 #      - k8s-local-metrics.local
-  - name: k8s_api_server_cert_sans
-    values:
-      - localhost
-      - 127.0.0.1
-      - k8s-local-api.local
-  - name: k8s_pod_subnet
-    values:
-      - 172.24.0.0/13
-  - name: k8s_service_subnet
-    values:
-      - 172.20.0.0/14
-  - name: k8s_cni_provider
-    values:
-      - weave
-  - name: istio_enabled
-    values:
-      - true
-  - name: istio_profile
-    values:
-      - sds
-  - name: istio_grafana_enabled
-    values:
-      - false
-  - name: istio_kiali_enabled
-    values:
-      - false
-  - name: istio_prometheus_enabled
-    values:
-      - false
-  - name: istio_tracing_enabled
-    values:
-      - false
-  - name: istio_download_package
-    values:
-      - true
-  - name: prometheus_data_directory
-    values:
-      - /var/lib/prometheus
+- name: k8s_api_server_cert_sans
+  values:
+  - localhost
+  - 127.0.0.1
+  - k8s-local-api.local
+- name: k8s_pod_subnet
+  values:
+  - 172.24.0.0/13
+- name: k8s_service_subnet
+  values:
+  - 172.20.0.0/14
+- name: k8s_cni_provider
+  values:
+  - weave
+- name: longhorn_enabled
+  values:
+  - true
+- name: istio_enabled
+  values:
+  - true
+- name: istio_profile
+  values:
+  - sds
+- name: istio_grafana_enabled
+  values:
+  - false
+- name: istio_kiali_enabled
+  values:
+  - false
+- name: istio_prometheus_enabled
+  values:
+  - false
+- name: istio_tracing_enabled
+  values:
+  - false
+- name: istio_download_package
+  values:
+  - false
+- name: prometheus_data_directory
+  values:
+  - /var/lib/prometheus
 
 profiles:
-  - name: devops
-    hosts:
-      - devops.local
+- name: devops
+  hosts:
+  - devops.local
 
-  - name: etcd_cluster
-    hosts:
-      - etcd-local-01.local
-      - etcd-local-02.local
-      - etcd-local-03.local
+- name: etcd_cluster
+  hosts:
+  - etcd-local-01.local
+  - etcd-local-02.local
+  - etcd-local-03.local
 
-  - name: k8s_minimal
-    hosts:
-      - k8s-local-m-01.local
-      - k8s-local-w-01.local
-      - monitor.local
+- name: k8s_minimal
+  hosts:
+  - k8s-local-m-01.local
+  - k8s-local-m-02.local
+  - k8s-local-m-03.local  
+  - monitor.local
 
-  - name: k8s_full
-    hosts:
-      - k8s-local-m-01.local
-      - k8s-local-m-02.local
-      - k8s-local-m-03.local
-      - k8s-local-w-01.local
-      - k8s-local-w-02.local
-      - k8s-local-w-03.local
+- name: k8s_full
+  hosts:
+  - k8s-local-m-01.local
+  - k8s-local-m-02.local
+  - k8s-local-m-03.local
+  - k8s-local-w-01.local
+  - k8s-local-w-02.local
+  - k8s-local-w-03.local
 
 hosts:
-  - name:                     etcd-local-01.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,etcd
-    virtualbox:
-      cpus:                   1
-      ram:                    512
-      hostname:               etcd-local-01
-      fqdn:                   etcd-local-01.local
-      ip:                     192.168.184.41
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-    vmware:
-      cpus:                   1
-      ram:                    512
-      hostname:               etcd-local-01
-      fqdn:                   etcd-local-01.local
-      ip:                     192.168.184.41/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     etcd-local-01.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,etcd
+  virtualbox:
+    cpus:                   1
+    ram:                    512
+    hostname:               etcd-local-01
+    fqdn:                   etcd-local-01.local
+    ip:                     192.168.184.41
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+  vmware:
+    cpus:                   1
+    ram:                    512
+    hostname:               etcd-local-01
+    fqdn:                   etcd-local-01.local
+    ip:                     192.168.184.41/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     etcd-local-02.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,etcd
-    virtualbox:
-      cpus:                   1
-      ram:                    512
-      hostname:               etcd-local-02
-      fqdn:                   etcd-local-02.local
-      ip:                     192.168.184.42
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-    vmware:
-      cpus:                   1
-      ram:                    512
-      hostname:               etcd-local-02
-      fqdn:                   etcd-local-02.local
-      ip:                     192.168.184.42/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     etcd-local-02.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,etcd
+  virtualbox:
+    cpus:                   1
+    ram:                    512
+    hostname:               etcd-local-02
+    fqdn:                   etcd-local-02.local
+    ip:                     192.168.184.42
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+  vmware:
+    cpus:                   1
+    ram:                    512
+    hostname:               etcd-local-02
+    fqdn:                   etcd-local-02.local
+    ip:                     192.168.184.42/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     etcd-local-03.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,etcd
-    virtualbox:
-      cpus:                   1
-      ram:                    512
-      hostname:               etcd-local-03
-      fqdn:                   etcd-local-03.local
-      ip:                     192.168.184.43
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-    vmware:
-      cpus:                   1
-      ram:                    512
-      hostname:               etcd-local-03
-      fqdn:                   etcd-local-03.local
-      ip:                     192.168.184.43/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     etcd-local-03.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,etcd
+  virtualbox:
+    cpus:                   1
+    ram:                    512
+    hostname:               etcd-local-03
+    fqdn:                   etcd-local-03.local
+    ip:                     192.168.184.43
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+  vmware:
+    cpus:                   1
+    ram:                    512
+    hostname:               etcd-local-03
+    fqdn:                   etcd-local-03.local
+    ip:                     192.168.184.43/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     k8s-local-m-01.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_load_balancer,k8s_master
-    virtualbox:
-      cpus:                   2
-      ram:                    2048
-      hostname:               k8s-local-m-01
-      fqdn:                   k8s-local-m-01.local
-      ip:                     192.168.184.51
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14
-    vmware:
-      cpus:                   2
-      ram:                    2048
-      hostname:               k8s-local-m-01
-      fqdn:                   k8s-local-m-01.local
-      ip:                     192.168.184.51/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     k8s-local-m-01.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,k8s_load_balancer,k8s_master
+  virtualbox:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-m-01
+    fqdn:                   k8s-local-m-01.local
+    ip:                     192.168.184.51
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    private_networks:       172.20.0.0/14
+  vmware:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-m-01
+    fqdn:                   k8s-local-m-01.local
+    ip:                     192.168.184.51/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     k8s-local-m-02.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_master
-    virtualbox:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-m-02
-      fqdn:                   k8s-local-m-02.local
-      ip:                     192.168.184.52
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14
-    vmware:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-m-02
-      fqdn:                   k8s-local-m-02.local
-      ip:                     192.168.184.52/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
-  
-  - name:                     k8s-local-m-03.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_master
-    virtualbox:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-m-03
-      fqdn:                   k8s-local-m-03.local
-      ip:                     192.168.184.53
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14
-    vmware:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-m-03
-      fqdn:                   k8s-local-m-03.local
-      ip:                     192.168.184.53/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
-  
-  - name:                     k8s-local-w-01.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_worker
-    virtualbox:
-      cpus:                   2
-      ram:                    2048
-      hostname:               k8s-local-w-01
-      fqdn:                   k8s-local-w-01.local
-      ip:                     192.168.184.54
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14
-    vmware:
-      cpus:                   2
-      ram:                    2048
-      hostname:               k8s-local-w-01
-      fqdn:                   k8s-local-w-01.local
-      ip:                     192.168.184.54/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     k8s-local-m-02.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,k8s_master
+  virtualbox:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-m-02
+    fqdn:                   k8s-local-m-02.local
+    ip:                     192.168.184.52
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    private_networks:       172.20.0.0/14
+  vmware:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-m-02
+    fqdn:                   k8s-local-m-02.local
+    ip:                     192.168.184.52/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     k8s-local-w-02.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_worker
-    virtualbox:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-w-02
-      fqdn:                   k8s-local-w-02.local
-      ip:                     192.168.184.55
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14
-    vmware:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-w-02
-      fqdn:                   k8s-local-w-02.local
-      ip:                     192.168.184.55/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     k8s-local-m-03.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,k8s_master
+  virtualbox:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-m-03
+    fqdn:                   k8s-local-m-03.local
+    ip:                     192.168.184.53
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    private_networks:       172.20.0.0/14
+  vmware:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-m-03
+    fqdn:                   k8s-local-m-03.local
+    ip:                     192.168.184.53/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     k8s-local-w-03.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_worker
-    virtualbox:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-w-03
-      fqdn:                   k8s-local-w-03.local
-      ip:                     192.168.184.56
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14
-    vmware:
-      cpus:                   2
-      ram:                    1024
-      hostname:               k8s-local-w-03
-      fqdn:                   k8s-local-w-03.local
-      ip:                     192.168.184.56/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     k8s-local-w-01.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,k8s_worker
+  virtualbox:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-w-01
+    fqdn:                   k8s-local-w-01.local
+    ip:                     192.168.184.54
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    private_networks:       172.20.0.0/14
+  vmware:
+    cpus:                   2
+    ram:                    2048
+    hostname:               k8s-local-w-01
+    fqdn:                   k8s-local-w-01.local
+    ip:                     192.168.184.54/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     monitor.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,prometheus,grafana
-    virtualbox:
-      cpus:                   2
-      ram:                    1024
-      hostname:               monitor
-      fqdn:                   monitor.local
-      ip:                     192.168.184.30
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-    vmware:
-      cpus:                   2
-      ram:                    1024
-      hostname:               monitor
-      fqdn:                   monitor.local
-      ip:                     192.168.184.30/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     k8s-local-w-02.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,k8s_worker
+  virtualbox:
+    cpus:                   2
+    ram:                    1024
+    hostname:               k8s-local-w-02
+    fqdn:                   k8s-local-w-02.local
+    ip:                     192.168.184.55
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    private_networks:       172.20.0.0/14
+  vmware:
+    cpus:                   2
+    ram:                    1024
+    hostname:               k8s-local-w-02
+    fqdn:                   k8s-local-w-02.local
+    ip:                     192.168.184.55/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
-  - name:                     devops.local
-    type:                     ubuntu
-    ansible_playbook:         ansible/devops.yml
-    ansible_groups:           monitored,k8s_load_balancer,k8s_master,prometheus,grafana
-    virtualbox:
-      cpus:                   2
-      ram:                    4096
-      hostname:               devops
-      fqdn:                   devops.local
-      ip:                     192.168.184.50
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      private_networks:       172.20.0.0/14
-    vmware:
-      cpus:                   2
-      ram:                    4096
-      hostname:               devops
-      fqdn:                   devops.local
-      ip:                     192.168.184.50/24
-      netmask:                255.255.255.0
-      network:                192.168.184.0/24
-      gateway:                192.168.184.2
-      dns_server:             192.168.184.2
-      dns_search:             local
+- name:                     k8s-local-w-03.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,k8s_worker
+  virtualbox:
+    cpus:                   2
+    ram:                    1024
+    hostname:               k8s-local-w-03
+    fqdn:                   k8s-local-w-03.local
+    ip:                     192.168.184.56
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    private_networks:       172.20.0.0/14
+  vmware:
+    cpus:                   2
+    ram:                    1024
+    hostname:               k8s-local-w-03
+    fqdn:                   k8s-local-w-03.local
+    ip:                     192.168.184.56/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
+
+- name:                     monitor.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,prometheus,grafana
+  virtualbox:
+    cpus:                   2
+    ram:                    512
+    hostname:               monitor
+    fqdn:                   monitor.local
+    ip:                     192.168.184.30
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+  vmware:
+    cpus:                   2
+    ram:                    1024
+    hostname:               monitor
+    fqdn:                   monitor.local
+    ip:                     192.168.184.30/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
+
+- name:                     devops.local
+  type:                     ubuntu
+  ansible_playbook:         ansible/devops.yml
+  ansible_groups:           monitored,k8s_load_balancer,k8s_master,prometheus,grafana
+  virtualbox:
+    cpus:                   2
+    ram:                    4096
+    hostname:               devops
+    fqdn:                   devops.local
+    ip:                     192.168.184.50
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    private_networks:       172.20.0.0/14
+  vmware:
+    cpus:                   2
+    ram:                    4096
+    hostname:               devops
+    fqdn:                   devops.local
+    ip:                     192.168.184.50/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
 
 # monitored,k8s_load_balancer,k8s_master,prometheus,grafana
 

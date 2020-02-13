@@ -26,38 +26,35 @@
 
 - name: Install the etcd package
   block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
 
-    - name: Update the Apt cache
-      apt: update_cache=yes cache_valid_time=3600
+  - name: Unlock the version of the etcd package
+    command:
+      cmd: apt-mark unhold etcd
 
-    - name: Unlock the version of the etcd package
-      command:
-        cmd: apt-mark unhold etcd
+  - name: Install the etcd package ({{ etcd_ubuntu_package_version }})
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - etcd={{ etcd_ubuntu_package_version }}
 
-    - name: Install the etcd package ({{ etcd_ubuntu_package_version }})
-      apt:
-        state: present
-        force: yes
-        policy_rc_d: 101
-        name:
-         - etcd={{ etcd_ubuntu_package_version }}
-
-    - name: Lock the version of the etcd package
-      command:
-        cmd: apt-mark hold etcd
+  - name: Lock the version of the etcd package
+    command:
+      cmd: apt-mark hold etcd
 
   when: (('etcd' not in ansible_facts.packages) or (ansible_facts.packages['etcd'][0].version != etcd_ubuntu_package_version))
 
 - name: Reconfigure etcd to apply the cluster and security settings
   block:
+  - template:
+      src: ubuntu-etcd.service.j2
+      dest: /lib/systemd/system/etcd.service
 
-    - template:
-        src: ubuntu-etcd.service.j2
-        dest: /lib/systemd/system/etcd.service
-
-    - file:
-        state: absent
-        path: /var/lib/etcd/default
+  - file:
+      state: absent
+      path: /var/lib/etcd/default
 
   when: "'etcd' not in ansible_facts.packages"
 
@@ -70,5 +67,6 @@
   systemd:
     name: etcd.service
     state: restarted
+    enabled: yes
     daemon_reload: yes
     no_block: yes

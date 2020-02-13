@@ -7,15 +7,15 @@ spec:
   selector:
     istio: ingressgateway
   servers:
-    - port:
-        number: 15029
-        name: https-kiali
-        protocol: HTTPS
-      hosts:
-        - "*"
-      tls:
-        mode: SIMPLE
-        credentialName: telemetry-gateway-cert
+	- port:
+			number: 15029
+			name: https-kiali
+			protocol: HTTPS
+		hosts:
+		- "*"
+		tls:
+			mode: SIMPLE
+			credentialName: telemetry-gateway-cert
 
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -25,17 +25,17 @@ metadata:
   namespace: istio-system
 spec:
   hosts:
-    - "*"
+	- "*"
   gateways:
-    - kiali-gateway
+	- kiali-gateway
   http:
-    - match:
-        - port: 15029
-      route:
-        - destination:
-            host: kiali
-            port:
-              number: 20001
+	- match:
+		- port: 15029
+		route:
+		- destination:
+				host: kiali
+				port:
+					number: 20001
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule

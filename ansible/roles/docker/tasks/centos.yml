@@ -1,4 +1,3 @@
----
 # file: roles/docker/tasks/centos.yml
 
 - debug:

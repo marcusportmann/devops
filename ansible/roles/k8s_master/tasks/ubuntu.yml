@@ -1,5 +1,9 @@
 # file: roles/k8s_master/tasks/ubuntu.yml
 
+- name: Collect facts about system services
+  service_facts:
+  register: services_state
+
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes master configuration
 
@@ -75,23 +79,23 @@
 
 - name: Open TCP and UDP pprts for the Weave CNI provider
   block:
-    - name: Allow all access to tcp port 6783 for the Weave CNI provider
-      ufw:
-        rule: allow
-        port: '6783'
-        proto: tcp
+  - name: Allow all access to tcp port 6783 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6783'
+      proto: tcp
 
-    - name: Allow all access to udp port 6783 for the Weave CNI provider
-      ufw:
-        rule: allow
-        port: '6783'
-        proto: udp
+  - name: Allow all access to udp port 6783 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6783'
+      proto: udp
 
-    - name: Allow all access to udp port 6784 for the Weave CNI provider
-      ufw:
-        rule: allow
-        port: '6784'
-        proto: udp
+  - name: Allow all access to udp port 6784 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6784'
+      proto: udp
 
   when: (k8s_cni_provider == 'weave')
 
@@ -107,56 +111,25 @@
 
 - name: Install the kubelet package
   block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
 
-    - name: Update the Apt cache
-      apt: update_cache=yes cache_valid_time=3600
+  - name: Unlock the version of the kubelet package
+    command:
+      cmd: apt-mark unhold kubelet
 
-    - name: Unlock the version of the kubelet package
-      command:
-        cmd: apt-mark unhold kubelet
+  - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - kubelet={{ k8s_ubuntu_package_version }}
 
-    - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
-      apt:
-        state: present
-        force: yes
-        policy_rc_d: 101
-        name:
-         - kubelet={{ k8s_ubuntu_package_version }}
-
-    - name: Lock the version of the kubelet package
-      command:
-        cmd: apt-mark hold kubelet
+  - name: Lock the version of the kubelet package
+    command:
+      cmd: apt-mark hold kubelet
 
   when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_ubuntu_package_version))
-
-- name: Retrieve the version of the installed kubeadm package
-  debug:
-    msg: Found kubeadm package version {{ ansible_facts.packages['kubeadm'][0].version  }}
-  when: "'kubeadm' in ansible_facts.packages"
-
-- name: Install the kubeadm package
-  block:
-
-    - name: Update the Apt cache
-      apt: update_cache=yes cache_valid_time=3600
-
-    - name: Unlock the version of the kubeadm package
-      command:
-        cmd: apt-mark unhold kubeadm
-
-    - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
-      apt:
-        state: present
-        force: yes
-        policy_rc_d: 101
-        name:
-         - kubeadm={{ k8s_ubuntu_package_version }}
-
-    - name: Lock the version of the kubeadm package
-      command:
-        cmd: apt-mark hold kubeadm
-
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
 
 - name: Retrieve the version of the installed kubectl package
   debug:
@@ -165,25 +138,72 @@
 
 - name: Install the kubectl package
   block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
 
-    - name: Update the Apt cache
-      apt: update_cache=yes cache_valid_time=3600
+  - name: Unlock the version of the kubectl package
+    command:
+      cmd: apt-mark unhold kubectl
 
-    - name: Unlock the version of the kubectl package
-      command:
-        cmd: apt-mark unhold kubectl
+  - name: Install the kubectl package ({{ k8s_ubuntu_package_version }})
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - kubectl={{ k8s_ubuntu_package_version }}
 
-    - name: Install the kubectl package ({{ k8s_ubuntu_package_version }})
-      apt:
-        state: present
-        force: yes
-        policy_rc_d: 101
-        name:
-         - kubectl={{ k8s_ubuntu_package_version }}
-
-    - name: Lock the version of the kubectl package
-      command:
-        cmd: apt-mark hold kubectl
+  - name: Lock the version of the kubectl package
+    command:
+      cmd: apt-mark hold kubectl
 
   when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_ubuntu_package_version))
+
+- name: Retrieve the version of the installed kubeadm package
+  debug:
+    msg: Found kubeadm package version {{ ansible_facts.packages['kubeadm'][0].version  }}
+  when: "'kubeadm' in ansible_facts.packages"
+
+- name: Install the kubeadm package
+  block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: Unlock the version of the kubeadm package
+    command:
+      cmd: apt-mark unhold kubeadm
+
+  - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - kubeadm={{ k8s_ubuntu_package_version }}
+
+  - name: Lock the version of the kubeadm package
+    command:
+      cmd: apt-mark hold kubeadm
+
+  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
+
+- name: Install the iSCSI client if Longhorn is enabled and there are no worker nodes
+  block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: Install the open-iscsi package
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - open-iscsi
+       
+  - name: Start the iscsid service
+    systemd:
+      name: iscsid.service
+      state: started
+      enabled: yes
+           
+  when: (("k8s_worker" not in groups.keys()) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+  
+
 

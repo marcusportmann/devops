@@ -1,4 +1,3 @@
----
 # file: roles/k8s_common/tasks/main.yml
 
 - name: Create the /var/cache/ansible directory
@@ -23,9 +22,9 @@
 - include_tasks: ubuntu.yml
   when: ansible_distribution == "Ubuntu"
   tags:
-    - unbound
+  - unbound
 
 - include_tasks: centos.yml
   when: ansible_distribution == "CentOS"
   tags:
-    - unbound
+  - unbound

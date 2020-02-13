@@ -337,7 +337,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             # Add the additional networks to the private network interface
             if host['virtualbox']['private_networks']
 							host['virtualbox']['private_networks'].split(/\s*,\s*/).each do |private_network|
-								override.vm.provision "shell", inline: "ip route add %s dev eth1 src %s" % [private_network, host['virtualbox']['ip']]
+								override.vm.provision "shell", inline: "ip route replace %s dev eth1 src %s" % [private_network, host['virtualbox']['ip']]
 							end
 						end
 

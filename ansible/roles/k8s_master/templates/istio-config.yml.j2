@@ -50,49 +50,49 @@ spec:
         enabled: true
         k8s:
           overlays:
-            - kind: Deployment
-              name: istio-egressgateway
-              patches:
-                - path: spec.template.spec.volumes
-                  value:
-                    - name: istio-token
-                      projected:
-                        sources:
-                          - serviceAccountToken:
-                              audience: istio-ca
-                              expirationSeconds: 43200
-                              path: istio-token
-                    - hostPath:
-                        path: /var/run/sds
-                      name: sdsudspath
-                    - name: istio-certs
-                      secret:
-                        optional: true
-                        secretName: istio.default
-                    - name: egressgateway-certs
-                      secret:
-                        optional: true
-                        secretName: istio-egressgateway-certs
-                    - name: egressgateway-ca-certs
-                      secret:
-                        optional: true
-                        secretName: istio-egressgateway-ca-certs
-                - path: spec.template.spec.containers.[name:istio-proxy].volumeMounts
-                  value:
-                    - mountPath: /var/run/sds
-                      name: sdsudspath
-                      readOnly: true
-                    - mountPath: /var/run/secrets/tokens
-                      name: istio-token
-                    - mountPath: /etc/certs
-                      name: istio-certs
-                      readOnly: true
-                    - mountPath: /etc/istio/egressgateway-certs
-                      name: egressgateway-certs
-                      readOnly: true
-                    - mountPath: /etc/istio/egressgateway-ca-certs
-                      name: egressgateway-ca-certs
-                      readOnly: true
+          - kind: Deployment
+            name: istio-egressgateway
+            patches:
+            - path: spec.template.spec.volumes
+              value:
+              - name: istio-token
+                projected:
+                  sources:
+                    - serviceAccountToken:
+                        audience: istio-ca
+                        expirationSeconds: 43200
+                        path: istio-token
+              - hostPath:
+                  path: /var/run/sds
+                name: sdsudspath
+              - name: istio-certs
+                secret:
+                  optional: true
+                  secretName: istio.default
+              - name: egressgateway-certs
+                secret:
+                  optional: true
+                  secretName: istio-egressgateway-certs
+              - name: egressgateway-ca-certs
+                secret:
+                  optional: true
+                  secretName: istio-egressgateway-ca-certs
+            - path: spec.template.spec.containers.[name:istio-proxy].volumeMounts
+              value:
+                - mountPath: /var/run/sds
+                  name: sdsudspath
+                  readOnly: true
+                - mountPath: /var/run/secrets/tokens
+                  name: istio-token
+                - mountPath: /etc/certs
+                  name: istio-certs
+                  readOnly: true
+                - mountPath: /etc/istio/egressgateway-certs
+                  name: egressgateway-certs
+                  readOnly: true
+                - mountPath: /etc/istio/egressgateway-ca-certs
+                  name: egressgateway-ca-certs
+                  readOnly: true
 
 {% endif %}
 
@@ -144,57 +144,55 @@ spec:
     gateways:
       istio-ingressgateway:
         labels:
-          app: xxx-ingressgateway
-          istio: xxx-ingressgateway
+          app: TODO-ingressgateway
+          istio: TODO-ingressgateway
         type: NodePort
         sds:
           enabled: true
         ports:
-          - name: tcp-envoy
-            port: 15000
-            targetPort: 15000
-          - name: http-ingress-gateway
-            port: 15020
-            targetPort: 15020
-          - name: http-80
-            port: 80
-            targetPort: 80
-            nodePort: 30080
-          - name: https-443
-            port: 443
-            targetPort: 443
-            nodePort: 30443
-#           - name: tcp
-#             port: 31400
-#             nodePort: 31400
+        - name: tcp-envoy
+          port: 15000
+          targetPort: 15000
+        - name: http-ingress-gateway
+          port: 15020
+          targetPort: 15020
+        - name: http-80
+          port: 80
+          targetPort: 80
+          nodePort: 30080
+        - name: https-443
+          port: 443
+          targetPort: 443
+          nodePort: 30443
+
 
 {% if ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == True))  %}
-          - name: https-kiali
-            port: 15029
-            targetPort: 15029
-            nodePort: 30029
+        - name: https-kiali
+          port: 15029
+          targetPort: 15029
+          nodePort: 30029
 {% endif %}
 {% if ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True))  %}
-          - name: https-prometheus
-            port: 15030
-            targetPort: 15030
-            nodePort: 30030
+        - name: https-prometheus
+          port: 15030
+          targetPort: 15030
+          nodePort: 30030
 {% endif %}
 {% if ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True))  %}
-          - name: https-grafana
-            port: 15031
-            targetPort: 15031
-            nodePort: 30031
+        - name: https-grafana
+          port: 15031
+          targetPort: 15031
+          nodePort: 30031
 {% endif %}
 {% if ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True))  %}
-          - name: https-tracing
-            port: 15032
-            targetPort: 15032
-            nodePort: 30032
+        - name: https-tracing
+          port: 15032
+          targetPort: 15032
+          nodePort: 30032
 {% endif %}
-          - name: tls-ingress
-            port: 15443
-            targetPort: 15443
+        - name: tls-ingress
+          port: 15443
+          targetPort: 15443
     global:
       mtls:
         enabled: true
@@ -246,3 +244,4 @@ spec:
 {% endif %}
 
 {% endif %}
+

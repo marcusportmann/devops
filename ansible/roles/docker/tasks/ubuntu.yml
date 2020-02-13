@@ -25,46 +25,45 @@
 
 - name: Install the docker-ce and docker-ce-cli packages
   block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
 
-    - name: Update the Apt cache
-      apt: update_cache=yes cache_valid_time=3600
+  - name: Unlock the version of the docker-ce and docker-ce-cli packages
+    command:
+      cmd: apt-mark unhold docker-ce docker-ce-cli
 
-    - name: Unlock the version of the docker-ce and docker-ce-cli packages
-      command:
-        cmd: apt-mark unhold docker-ce docker-ce-cli
+  - name: Install the docker-ce and docker-ce-cli packages ({{ docker_ubuntu_package_version }})
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - docker-ce={{ docker_ubuntu_package_version }}
+       - docker-ce-cli={{ docker_ubuntu_package_version }}
 
-    - name: Install the docker-ce and docker-ce-cli packages ({{ docker_ubuntu_package_version }})
-      apt:
-        state: present
-        force: yes
-        policy_rc_d: 101
-        name:
-         - docker-ce={{ docker_ubuntu_package_version }}
-         - docker-ce-cli={{ docker_ubuntu_package_version }}
+  - name: Lock the version of the docker-ce and docker-ce-cli packages
+    command:
+      cmd: apt-mark hold docker-ce docker-ce-cli
 
-    - name: Lock the version of the docker-ce and docker-ce-cli packages
-      command:
-        cmd: apt-mark hold docker-ce docker-ce-cli
+  - name: Install Docker module for Python
+    pip:
+      name: docker
 
-    - name: Install Docker module for Python
-      pip:
-        name: docker
+  - name: Create the /etc/docker directory
+    file:
+      path: /etc/docker
+      state: directory
 
-    - name: Create the /etc/docker directory
-      file:
-        path: /etc/docker
-        state: directory
+  - name: Create the Docker daemon configuration file
+    template:
+      src: daemon.json.j2
+      dest: /etc/docker/daemon.json
 
-    - name: Create the Docker daemon configuration file
-      template:
-        src: daemon.json.j2
-        dest: /etc/docker/daemon.json
-
-    - name: Restart the docker service
-      systemd:
-        name: docker.service
-        state: restarted
-        daemon_reload: yes
+  - name: Restart the docker service
+    systemd:
+      name: docker.service
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
 
   when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ubuntu_package_version))
 

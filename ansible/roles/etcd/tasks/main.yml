@@ -1,4 +1,3 @@
----
 # file: roles/etcd/tasks/main.yml
 
 - debug:
@@ -6,35 +5,35 @@
 
 - name: Copying the keys and certificates for the "{{ etcd_cluster_name }}" etcd cluster
   block:
-    - name: Create the /etc/etcd/pki directory
-      file:
-        path: /etc/etcd/pki
-        state: directory
+  - name: Create the /etc/etcd/pki directory
+    file:
+      path: /etc/etcd/pki
+      state: directory
 
-    - name: Copy the ca.crt certificate to the /etc/etcd/pki directory
-      copy:
-        src: pki/{{ etcd_cluster_name }}/ca.crt
-        dest: /etc/etcd/pki/ca.crt
+  - name: Copy the ca.crt certificate to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/ca.crt
+      dest: /etc/etcd/pki/ca.crt
 
-    - name: Copy the etcd-{{ etcd_cluster_name }}.key private key to the /etc/etcd/pki directory
-      copy:
-        src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.key
-        dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}.key
+  - name: Copy the etcd-{{ etcd_cluster_name }}.key private key to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.key
+      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}.key
 
-    - name: Copy the etcd-{{ etcd_cluster_name }}.crt certificate to the /etc/etcd/pki directory
-      copy:
-        src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.crt
-        dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}.crt
+  - name: Copy the etcd-{{ etcd_cluster_name }}.crt certificate to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.crt
+      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}.crt
 
-    - name: Copy the {{ inventory_hostname_short }}-etcd-peer.key private key to the /etc/etcd/pki directory
-      copy:
-        src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.key
-        dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.key
+  - name: Copy the {{ inventory_hostname_short }}-etcd-peer.key private key to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.key
+      dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.key
 
-    - name: Copy the {{ inventory_hostname_short }}-etcd-peer.crt certificate to the /etc/etcd/pki directory
-      copy:
-        src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.crt
-        dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt
+  - name: Copy the {{ inventory_hostname_short }}-etcd-peer.crt certificate to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.crt
+      dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt
 
 - name: Add the etcd group
   group:
@@ -63,12 +62,12 @@
 - include_tasks: ubuntu.yml
   when: ansible_distribution == "Ubuntu"
   tags:
-    - unbound
+  - unbound
 
 - include_tasks: centos.yml
   when: ansible_distribution == "CentOS"
   tags:
-    - unbound
+  - unbound
 
 
 

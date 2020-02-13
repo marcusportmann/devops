@@ -1,4 +1,3 @@
----
 # file: roles/k8s_master/tasks/main.yml
 
 - name: Create the /var/cache/ansible directory
@@ -34,629 +33,640 @@
 
 - name: Copying the standard keys and certificates for the "{{ k8s_cluster_name }}" Kubernetes cluster
   block:
+  - name: Create the /etc/kubernetes/pki directory
+    file:
+      path: /etc/kubernetes/pki
+      state: directory
 
-    - name: Create the /etc/kubernetes/pki directory
-      file:
-        path: /etc/kubernetes/pki
-        state: directory
+  - name: Create the /etc/kubernetes/pki/etcd directory
+    file:
+      path: /etc/kubernetes/pki/etcd
+      state: directory
 
-    - name: Create the /etc/kubernetes/pki/etcd directory
-      file:
-        path: /etc/kubernetes/pki/etcd
-        state: directory
+  - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki directory
+    copy:
+      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.key
+      dest: /etc/kubernetes/pki/ca.key
 
-    - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki directory
-      copy:
-        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.key
-        dest: /etc/kubernetes/pki/ca.key
-
-    - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki directory
-      copy:
-        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
-        dest: /etc/kubernetes/pki/ca.crt
+  - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki directory
+    copy:
+      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
+      dest: /etc/kubernetes/pki/ca.crt
 
 - name: Initialize the first master node in the Kubernetes cluster
   block:
+  - name: Check whether the kubelet service has been configured
+    stat:
+      path: /var/lib/kubelet/config.yaml
+    register: kubelet_config_stat_result
 
-    - name: Check whether the kubelet service has been configured
-      stat:
-        path: /var/lib/kubelet/config.yaml
-      register: kubelet_config_stat_result
-
-    - name: Initializing the first master node in the Kubernetes cluster
+  - name: Initializing the first master node in the Kubernetes cluster
+    block:
+    - name: Copying the keys and certificates for the stacked etcd topology
       block:
+      - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki/etcd directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-etcd-ca.key
+          dest: /etc/kubernetes/pki/etcd/ca.key
 
-        - name: Copying the keys and certificates for the stacked etcd topology
-          block:
+      - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki/etcd directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-etcd-ca.crt
+          dest: /etc/kubernetes/pki/etcd/ca.crt
 
-            - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki/etcd directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-etcd-ca.key
-                dest: /etc/kubernetes/pki/etcd/ca.key
+      when: k8s_etcd_topology == "stacked"
 
-            - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki/etcd directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-etcd-ca.crt
-                dest: /etc/kubernetes/pki/etcd/ca.crt
-
-          when: k8s_etcd_topology == "stacked"
-
-        - name: Copying the keys and certificates for the external etcd topology
-          block:
-
-            - name: Copy the etcd-ca.crt certificate to the /etc/kubernetes/pki/etcd directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/etcd-ca.crt
-                dest: /etc/kubernetes/pki/etcd/ca.crt
-
-            - name: Copy the {{ inventory_hostname_short }}-etcd-client.key private key to the /etc/kubernetes/pki/etcd directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/{{ inventory_hostname_short }}-etcd-client.key
-                dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.key
-
-            - name: Copy the {{ inventory_hostname_short }}-etcd-client.crt certificate to the /etc/kubernetes/pki/etcd directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/{{ inventory_hostname_short }}-etcd-client.crt
-                dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.crt
-
-          when: k8s_etcd_topology == "external"
-
-        - command:
-            cmd: hostname -i
-          register: hostname_i_result
-
-        - set_fact:
-            k8s_apiserver_advertise_address: "{{ hostname_i_result.stdout_lines[0] }}"
-
-        - name: Create the Kubernetes cluster configuration
-          template:
-            src: k8s-config.yml.j2
-            dest: /tmp/k8s-config.yml
-
-        - name: Initialize the Kubernetes cluster
-          shell:
-            cmd: /usr/bin/kubeadm init --config /tmp/k8s-config.yml
-
-        - name: Copy the Kubernetes configuration to the root user
-          block:
-
-            - name: Create the /root/.kube directory
-              file:
-                path: /root/.kube
-                owner: root
-                group: root
-                mode: 0750
-                state: directory
-
-            - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
-              command:
-                cmd: cp /etc/kubernetes/admin.conf /root/.kube/config
-
-            - name: Set the permissions for the /root/.kube/config file
-              file:
-                path: /root/.kube/config
-                owner: k8s-admin
-                group: k8s-admin
-                mode: 0640
-                state: file
-
-        - name: Copy the Kubernetes configuration to the k8s-admin user
-          block:
-
-            - name: Create the /home/k8s-admin/.kube directory
-              file:
-                path: /home/k8s-admin/.kube
-                owner: k8s-admin
-                group: k8s-admin
-                mode: 0750
-                state: directory
-
-            - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
-              command:
-                cmd: cp /etc/kubernetes/admin.conf /home/k8s-admin/.kube/config
-
-            - name: Set the permissions for the /home/k8s-admin/.kube/config file
-              file:
-                path: /home/k8s-admin/.kube/config
-                owner: k8s-admin
-                group: k8s-admin
-                mode: 0640
-                state: file
-
-        - name: Allows pods to scheduled on the master if there are no worker nodes
-          command:
-            cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
-          when: ("k8s_worker" not in groups.keys())
-
-        - name: Create the Prometheus service account
-          block:
-
-            - template:
-                src: prometheus-service-account.yml.j2
-                dest: /tmp/prometheus-service-account.yml
-
-            - shell:
-                cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yml
-
-        - name: Deploy the kube-state-metrics service if there are no worker nodes
-          block:
-
-            - template:
-                src: kube-state-metrics.yml.j2
-                dest: /tmp/kube-state-metrics.yml
-
-            - shell:
-                cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yml
-
-      when: kubelet_config_stat_result.stat.exists == False
-
-    - name: Check whether a CNI provider has been configured
-      stat:
-        path: /etc/cni
-      register: etc_cni_stat_result
-
-    - name: Configure the Weave CNI provider
+    - name: Copying the keys and certificates for the external etcd topology
       block:
+      - name: Copy the etcd-ca.crt certificate to the /etc/kubernetes/pki/etcd directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/etcd-ca.crt
+          dest: /etc/kubernetes/pki/etcd/ca.crt
 
-        - name: Initialize the Weave CNI provider
-          shell:
-            cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_pod_subnet}}"
+      - name: Copy the {{ inventory_hostname_short }}-etcd-client.key private key to the /etc/kubernetes/pki/etcd directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/{{ inventory_hostname_short }}-etcd-client.key
+          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.key
 
-        - name: Download the Weave script
-          get_url:
-            url: https://git.io/weave
-            dest: /usr/bin/weave
+      - name: Copy the {{ inventory_hostname_short }}-etcd-client.crt certificate to the /etc/kubernetes/pki/etcd directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/{{ inventory_hostname_short }}-etcd-client.crt
+          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.crt
 
-        - name: Set the permissions for the /usr/bin/weave file
-          file:
-            path: /usr/bin/weave
-            owner: root
-            group: root
-            mode: 0770
-            state: file
+      when: k8s_etcd_topology == "external"
 
-      when: ((etc_cni_stat_result.stat.exists == False) and (k8s_cni_provider == 'weave'))
+    - command:
+        cmd: hostname -i
+      register: hostname_i_result
 
-    - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
-      wait_for:
-        timeout: 15
+    - set_fact:
+        k8s_apiserver_advertise_address: "{{ hostname_i_result.stdout_lines[0] }}"
 
-    - name: Wait for Kubernetes node initialization to complete
+    - name: Create the Kubernetes cluster configuration
+      template:
+        src: k8s-config.yml.j2
+        dest: /tmp/k8s-config.yml
+
+    - name: Initialize the Kubernetes cluster
+      shell:
+        cmd: /usr/bin/kubeadm init --config /tmp/k8s-config.yml
+
+    - name: Copy the Kubernetes configuration to the root user
+      block:
+      - name: Create the /root/.kube directory
+        file:
+          path: /root/.kube
+          owner: root
+          group: root
+          mode: 0750
+          state: directory
+
+      - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
+        command:
+          cmd: cp /etc/kubernetes/admin.conf /root/.kube/config
+
+      - name: Set the permissions for the /root/.kube/config file
+        file:
+          path: /root/.kube/config
+          owner: k8s-admin
+          group: k8s-admin
+          mode: 0640
+          state: file
+
+    - name: Copy the Kubernetes configuration to the k8s-admin user
+      block:
+      - name: Create the /home/k8s-admin/.kube directory
+        file:
+          path: /home/k8s-admin/.kube
+          owner: k8s-admin
+          group: k8s-admin
+          mode: 0750
+          state: directory
+
+      - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
+        command:
+          cmd: cp /etc/kubernetes/admin.conf /home/k8s-admin/.kube/config
+
+      - name: Set the permissions for the /home/k8s-admin/.kube/config file
+        file:
+          path: /home/k8s-admin/.kube/config
+          owner: k8s-admin
+          group: k8s-admin
+          mode: 0640
+          state: file
+
+    - name: Allows pods to scheduled on the master if there are no worker nodes
       command:
-        cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
+        cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
+      when: ("k8s_worker" not in groups.keys())
+
+    - name: Create the Prometheus service account
+      block:
+      - template:
+          src: prometheus-service-account.yml.j2
+          dest: /tmp/prometheus-service-account.yml
+
+      - shell:
+          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yml
+
+    - name: Deploy the kube-state-metrics service if there are no worker nodes
+      block:
+      - template:
+          src: kube-state-metrics.yml.j2
+          dest: /tmp/kube-state-metrics.yml
+
+      - shell:
+          cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yml
+
+    when: kubelet_config_stat_result.stat.exists == False
+
+  - name: Check whether a CNI provider has been configured
+    stat:
+      path: /etc/cni
+    register: etc_cni_stat_result
+
+  - name: Configure the Weave CNI provider
+    block:
+    - name: Initialize the Weave CNI provider
+      shell:
+        cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_pod_subnet}}"
+
+    - name: Download the Weave script
+      get_url:
+        url: https://git.io/weave
+        dest: /usr/bin/weave
+
+    - name: Set the permissions for the /usr/bin/weave file
+      file:
+        path: /usr/bin/weave
+        owner: root
+        group: root
+        mode: 0770
+        state: file
+
+    when: ((etc_cni_stat_result.stat.exists == False) and (k8s_cni_provider == 'weave'))
+
+  - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
+    wait_for:
+      timeout: 15
+
+  - name: Wait for Kubernetes node initialization to complete
+    command:
+      cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
 
   when: groups['k8s_master'][0] == inventory_hostname
 
 - name: Initialize an additional master node in the Kubernetes cluster
   block:
+  - name: Check whether the kubelet service has been configured
+    stat:
+      path: /var/lib/kubelet/config.yaml
+    register: kubelet_config_stat_result
 
-    - name: Check whether the kubelet service has been configured
-      stat:
-        path: /var/lib/kubelet/config.yaml
-      register: kubelet_config_stat_result
+  - name: Initializing the additional master node in the Kubernetes cluster
+    block:
+    - name: Fetch the /etc/kubernetes/pki/sa.key from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/pki/sa.key
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
 
-    - name: Initializing the additional master node in the Kubernetes cluster
+    - name: Copy the /etc/kubernetes/pki/sa.key to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/sa.key
+        dest: /etc/kubernetes/pki/sa.key
+
+    - name: Fetch the /etc/kubernetes/pki/sa.pub from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/pki/sa.pub
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Copy the /etc/kubernetes/pki/sa.pub to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/sa.pub
+        dest: /etc/kubernetes/pki/sa.pub
+
+    - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.key from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/pki/front-proxy-ca.key
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Copy the /etc/kubernetes/pki/front-proxy-ca.key to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/front-proxy-ca.key
+        dest: /etc/kubernetes/pki/front-proxy-ca.key
+
+    - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.crt from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/pki/front-proxy-ca.crt
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Copy the /etc/kubernetes/pki/front-proxy-ca.crt to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/front-proxy-ca.crt
+        dest: /etc/kubernetes/pki/front-proxy-ca.crt
+
+    - name: Fetch the /etc/kubernetes/pki/etcd/ca.key from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/pki/etcd/ca.key
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Copy the /etc/kubernetes/pki/etcd/ca.key to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/etcd/ca.key
+        dest: /etc/kubernetes/pki/etcd/ca.key
+
+    - name: Fetch the /etc/kubernetes/pki/etcd/ca.crt from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/pki/etcd/ca.crt
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Copy the /etc/kubernetes/pki/etcd/ca.crt to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/etcd/ca.crt
+        dest: /etc/kubernetes/pki/etcd/ca.crt
+
+    - command:
+        cmd: hostname -i
+      register: hostname_i_result
+
+    - set_fact:
+        k8s_apiserver_advertise_address: "{{ hostname_i_result.stdout_lines[0] }}"
+
+    - name: Retrieve the Kubernetes join command from the first master
+      command:
+        cmd: /usr/bin/kubeadm token create --print-join-command
+      register: kubeadm_join_command_result
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Save the Kubernetes join command
+      set_fact:
+        kubeadm_join_command: "{{ kubeadm_join_command_result.stdout_lines[0] }}"
+
+    - name: Execute the command to Join the additional master to the Kubernetes cluster
+      command:
+        cmd: "{{ kubeadm_join_command }} --control-plane --apiserver-advertise-address={{ k8s_apiserver_advertise_address }}"
+
+    - name: Copy the Kubernetes configuration to the root user
       block:
+      - name: Create the /root/.kube directory
+        file:
+          path: /root/.kube
+          owner: root
+          group: root
+          mode: 0750
+          state: directory
 
-        - name: Fetch the /etc/kubernetes/pki/sa.key from the first master node in the Kubernetes cluster
-          fetch:
-            src: /etc/kubernetes/pki/sa.key
-            dest: fetched_files
-          delegate_to: "{{ groups['k8s_master'][0] }}"
+      - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
+        command:
+          cmd: cp /etc/kubernetes/admin.conf /root/.kube/config
 
-        - name: Copy the /etc/kubernetes/pki/sa.key to the additional master
-          copy:
-            src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/sa.key
-            dest: /etc/kubernetes/pki/sa.key
+      - name: Set the permissions for the /root/.kube/config file
+        file:
+          path: /root/.kube/config
+          owner: k8s-admin
+          group: k8s-admin
+          mode: 0640
+          state: file
 
-        - name: Fetch the /etc/kubernetes/pki/sa.pub from the first master node in the Kubernetes cluster
-          fetch:
-            src: /etc/kubernetes/pki/sa.pub
-            dest: fetched_files
-          delegate_to: "{{ groups['k8s_master'][0] }}"
+    - name: Copy the Kubernetes configuration to the k8s-admin user
+      block:
+      - name: Create the /home/k8s-admin/.kube directory
+        file:
+          path: /home/k8s-admin/.kube
+          owner: k8s-admin
+          group: k8s-admin
+          mode: 0750
+          state: directory
 
-        - name: Copy the /etc/kubernetes/pki/sa.pub to the additional master
-          copy:
-            src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/sa.pub
-            dest: /etc/kubernetes/pki/sa.pub
+      - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
+        command:
+          cmd: cp /etc/kubernetes/admin.conf /home/k8s-admin/.kube/config
 
-        - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.key from the first master node in the Kubernetes cluster
-          fetch:
-            src: /etc/kubernetes/pki/front-proxy-ca.key
-            dest: fetched_files
-          delegate_to: "{{ groups['k8s_master'][0] }}"
+      - name: Set the permissions for the /home/k8s-admin/.kube/config file
+        file:
+          path: /home/k8s-admin/.kube/config
+          owner: k8s-admin
+          group: k8s-admin
+          mode: 0640
+          state: file
 
-        - name: Copy the /etc/kubernetes/pki/front-proxy-ca.key to the additional master
-          copy:
-            src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/front-proxy-ca.key
-            dest: /etc/kubernetes/pki/front-proxy-ca.key
+    - name: Allows pods to scheduled on the master if there are no worker nodes
+      command:
+        cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
+      when: ("k8s_worker" not in groups.keys())
 
-        - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.crt from the first master node in the Kubernetes cluster
-          fetch:
-            src: /etc/kubernetes/pki/front-proxy-ca.crt
-            dest: fetched_files
-          delegate_to: "{{ groups['k8s_master'][0] }}"
-
-        - name: Copy the /etc/kubernetes/pki/front-proxy-ca.crt to the additional master
-          copy:
-            src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/front-proxy-ca.crt
-            dest: /etc/kubernetes/pki/front-proxy-ca.crt
-
-        - name: Fetch the /etc/kubernetes/pki/etcd/ca.key from the first master node in the Kubernetes cluster
-          fetch:
-            src: /etc/kubernetes/pki/etcd/ca.key
-            dest: fetched_files
-          delegate_to: "{{ groups['k8s_master'][0] }}"
-
-        - name: Copy the /etc/kubernetes/pki/etcd/ca.key to the additional master
-          copy:
-            src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/etcd/ca.key
-            dest: /etc/kubernetes/pki/etcd/ca.key
-
-        - name: Fetch the /etc/kubernetes/pki/etcd/ca.crt from the first master node in the Kubernetes cluster
-          fetch:
-            src: /etc/kubernetes/pki/etcd/ca.crt
-            dest: fetched_files
-          delegate_to: "{{ groups['k8s_master'][0] }}"
-
-        - name: Copy the /etc/kubernetes/pki/etcd/ca.crt to the additional master
-          copy:
-            src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/etcd/ca.crt
-            dest: /etc/kubernetes/pki/etcd/ca.crt
-
-        - command:
-            cmd: /usr/bin/kubeadm token create --print-join-command
-          register: kubeadm_join_command_result
-          delegate_to: "{{ groups['k8s_master'][0] }}"
-
-        - set_fact:
-            kubeadm_join_command: "{{ kubeadm_join_command_result.stdout_lines[0] }}"
-
-        - command:
-            cmd: "{{ kubeadm_join_command }} --control-plane"
-
-        - name: Copy the Kubernetes configuration to the root user
-          block:
-
-            - name: Create the /root/.kube directory
-              file:
-                path: /root/.kube
-                owner: root
-                group: root
-                mode: 0750
-                state: directory
-
-            - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
-              command:
-                cmd: cp /etc/kubernetes/admin.conf /root/.kube/config
-
-            - name: Set the permissions for the /root/.kube/config file
-              file:
-                path: /root/.kube/config
-                owner: k8s-admin
-                group: k8s-admin
-                mode: 0640
-                state: file
-
-        - name: Copy the Kubernetes configuration to the k8s-admin user
-          block:
-
-            - name: Create the /home/k8s-admin/.kube directory
-              file:
-                path: /home/k8s-admin/.kube
-                owner: k8s-admin
-                group: k8s-admin
-                mode: 0750
-                state: directory
-
-            - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
-              command:
-                cmd: cp /etc/kubernetes/admin.conf /home/k8s-admin/.kube/config
-
-            - name: Set the permissions for the /home/k8s-admin/.kube/config file
-              file:
-                path: /home/k8s-admin/.kube/config
-                owner: k8s-admin
-                group: k8s-admin
-                mode: 0640
-                state: file
-
-        - name: Allows pods to scheduled on the master if there are no worker nodes
-          command:
-            cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
-          when: ("k8s_worker" not in groups.keys())
-
-      when: kubelet_config_stat_result.stat.exists == False
+    when: kubelet_config_stat_result.stat.exists == False
 
   when: groups['k8s_master'][0] != inventory_hostname
 
 - name: Install Helm
   block:
+  - debug:
+      msg: Check whether the helm {{ helm_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/helm
+    register: helm_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/helm version --short | head -1 | awk -F '+' {'print $1'} | cut -c2-
+    register: helm_installed_version_output
+    when: (helm_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      helm_installed_version: '{{ helm_installed_version_output.stdout }}'
+    when: (helm_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      helm_installed_version: ''
+    when: (helm_installed_stat_result.stat.exists == False)
+
+  - block:
     - debug:
-        msg: Check whether the helm {{ helm_version }} package has been installed
+        msg: Install the helm {{ helm_version }} package
 
-    - stat:
+    - name: Check whether the helm {{ helm_version }} package has been downloaded
+      stat:
+        path: /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz
+      register: helm_downloaded_stat_result
+
+    - name: Download the helm {{ helm_version }} package
+      get_url:
+        url: https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz
+        dest: /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz
+        checksum: '{{ helm_package_hash }}'
+      when: (helm_downloaded_stat_result.stat.exists == False)
+
+    - name: Remove the existing helm binary
+      file:
         path: /usr/bin/helm
-      register: helm_installed_stat_result
+        state: absent
 
-    - shell:
-        cmd: /usr/bin/helm version --short | head -1 | awk -F '+' {'print $1'} | cut -c2-
-      register: helm_installed_version_output
-      when: (helm_installed_stat_result.stat.exists == True)
+    - name: Extract the helm binary from the helm {{ helm_version }} package
+      command:
+        cmd: tar xzvf /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz -C /usr/bin --strip-components=1 linux-amd64/helm
+        warn: false
+        creates: /usr/bin/helm
 
-    - set_fact:
-        helm_installed_version: '{{ helm_installed_version_output.stdout }}'
-      when: (helm_installed_stat_result.stat.exists == True)
-
-    - set_fact:
-        helm_installed_version: ''
-      when: (helm_installed_stat_result.stat.exists == False)
-
-    - block:
-        - debug:
-            msg: Install the helm {{ helm_version }} package
-
-        - name: Check whether the helm {{ helm_version }} package has been downloaded
-          stat:
-            path: /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz
-          register: helm_downloaded_stat_result
-
-        - name: Download the helm {{ helm_version }} package
-          get_url:
-            url: https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz
-            dest: /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz
-            checksum: '{{ helm_package_hash }}'
-          when: (helm_downloaded_stat_result.stat.exists == False)
-
-        - name: Remove the existing helm binary
-          file:
-            path: /usr/bin/helm
-            state: absent
-
-        - name: Extract the helm binary from the helm {{ helm_version }} package
-          command:
-            cmd: tar xzvf /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz -C /usr/bin --strip-components=1 linux-amd64/helm
-            warn: false
-            creates: /usr/bin/helm
-
-      when: (helm_installed_version != helm_version)
+    when: (helm_installed_version != helm_version)
 
 - name: Install istioctl
   block:
+  - debug:
+      msg: Check whether the istioctl {{ istioctl_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/istioctl
+    register: istioctl_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/istioctl version --remote=false
+    register: istioctl_installed_version_output
+    when: (istioctl_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      istioctl_installed_version: '{{ istioctl_installed_version_output.stdout }}'
+    when: (istioctl_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      istioctl_installed_version: ''
+    when: (istioctl_installed_stat_result.stat.exists == False)
+
+  - block:
     - debug:
-        msg: Check whether the istioctl {{ istioctl_version }} package has been installed
+        msg: Install the istioctl {{ istioctl_version }} package
 
-    - stat:
+    - name: Check whether the istioctl {{ istioctl_version }} package has been downloaded
+      stat:
+        path: /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz
+      register: istioctl_downloaded_stat_result
+
+    - name: Download the istioctl {{ istioctl_version }} package
+      get_url:
+        url: https://github.com/istio/istio/releases/download/{{ istioctl_version }}/istioctl-{{ istioctl_version }}-linux.tar.gz
+        dest: /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz
+        checksum: '{{ istioctl_package_hash }}'
+      when: (istioctl_downloaded_stat_result.stat.exists == False)
+
+    - name: Remove the existing istioctl binary
+      file:
         path: /usr/bin/istioctl
-      register: istioctl_installed_stat_result
+        state: absent
 
-    - shell:
-        cmd: /usr/bin/istioctl version --remote=false
-      register: istioctl_installed_version_output
-      when: (istioctl_installed_stat_result.stat.exists == True)
+    - name: Extract the istioctl binary from the istioctl {{ istioctl_version }} package
+      command:
+        cmd: tar xzvf /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz -C /usr/bin
+        warn: false
+        creates: /usr/bin/istioctl
 
-    - set_fact:
-        istioctl_installed_version: '{{ istioctl_installed_version_output.stdout }}'
-      when: (istioctl_installed_stat_result.stat.exists == True)
-
-    - set_fact:
-        istioctl_installed_version: ''
-      when: (istioctl_installed_stat_result.stat.exists == False)
-
-    - block:
-        - debug:
-            msg: Install the istioctl {{ istioctl_version }} package
-
-        - name: Check whether the istioctl {{ istioctl_version }} package has been downloaded
-          stat:
-            path: /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz
-          register: istioctl_downloaded_stat_result
-
-        - name: Download the istioctl {{ istioctl_version }} package
-          get_url:
-            url: https://github.com/istio/istio/releases/download/{{ istioctl_version }}/istioctl-{{ istioctl_version }}-linux.tar.gz
-            dest: /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz
-            checksum: '{{ istioctl_package_hash }}'
-          when: (istioctl_downloaded_stat_result.stat.exists == False)
-
-        - name: Remove the existing istioctl binary
-          file:
-            path: /usr/bin/istioctl
-            state: absent
-
-        - name: Extract the istioctl binary from the istioctl {{ istioctl_version }} package
-          command:
-            cmd: tar xzvf /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz -C /usr/bin
-            warn: false
-            creates: /usr/bin/istioctl
-
-      when: (istioctl_installed_version != istioctl_version)
+    when: (istioctl_installed_version != istioctl_version)
 
   when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
 
 - name: Initialize the Istio service mesh
   block:
+  - name: Download and extract the Istio package if required
+    block:
+    - name: Check whether the istio {{ istio_version }} package has been downloaded
+      stat:
+        path: /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz
+      register: istio_downloaded_stat_result
 
-    - name: Download and extract the Istio package if required
+    - name: Download the istio {{ istio_version }} package
+      get_url:
+        url: https://github.com/istio/istio/releases/download/{{ istio_version }}/istio-{{ istio_version }}-linux.tar.gz
+        dest: /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz
+        checksum: '{{ istio_package_hash }}'
+      when: (istio_downloaded_stat_result.stat.exists == False)
+
+    - name: Extract the istio {{ istio_version }} package
+      command:
+        cmd: tar xzvf /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz -C /tmp
+        warn: false
+        creates: /tmp/istio-{{ istio_version }}
+
+    when: ((istio_download_package is defined) and (istio_download_package != None) and (istio_download_package == true))
+
+  - name: Check if istio-system namespace exists
+    shell:
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep istio-system | wc -l
+    register: istio_system_namespace_exists_output
+
+  - name: Install and configure the Istio service mesh
+    block:
+    - name: Copying the keys and certificates for the Istio service mesh
       block:
+      - name: Create the /tmp/istio-pki directory
+        file:
+          path: /tmp/istio-pki
+          state: directory
 
-        - name: Check whether the istio {{ istio_version }} package has been downloaded
-          stat:
-            path: /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz
-          register: istio_downloaded_stat_result
+      - name: Copy the Istio intermediate CA private key to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.key
+          dest: /tmp/istio-pki/ca-key.pem
 
-        - name: Download the istio {{ istio_version }} package
-          get_url:
-            url: https://github.com/istio/istio/releases/download/{{ istio_version }}/istio-{{ istio_version }}-linux.tar.gz
-            dest: /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz
-            checksum: '{{ istio_package_hash }}'
-          when: (istio_downloaded_stat_result.stat.exists == False)
+      - name: Copy the Istio intermediate CA certificate to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.crt
+          dest: /tmp/istio-pki/ca-cert.pem
 
-        - name: Extract the istio {{ istio_version }} package
-          command:
-            cmd: tar xzvf /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz -C /tmp
-            warn: false
-            creates: /tmp/istio-{{ istio_version }}
+      - name: Copy the Root CA certificate to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/ca.crt
+          dest: /tmp/istio-pki/root-cert.pem
 
-      when: ((istio_download_package is defined) and (istio_download_package != None) and (istio_download_package == true))
+      - name: Copy the Istio intermediate CA certificate chain to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca-chain.crt
+          dest: /tmp/istio-pki/cert-chain.pem
 
-    - shell:
-        cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep istio-system | wc -l
-      register: istio_system_namespace_exists_output
+      - name: Copy the Istio ingress gateway private key to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.key
+          dest: /tmp/istio-pki/ingressgateway-key.pem
 
-    - name: Install and configure the Istio service mesh
+      - name: Copy the Istio ingress gateway certificate to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.crt
+          dest: /tmp/istio-pki/ingressgateway-cert.pem
+
+      - name: Copy the Istio telemetry gateway private key to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.key
+          dest: /tmp/istio-pki/telemetry-gateway-key.pem
+
+      - name: Copy the Istio telemetry gateway certificate to the /tmp/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.crt
+          dest: /tmp/istio-pki/telemetry-gateway-cert.pem
+
+    - name: Create the istio-system namespace
+      command:
+        cmd: /usr/bin/kubectl create ns istio-system
+
+    - name: Create the secret in the istio-system namespace for the Istio intermediate CA private key and certificates
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret generic cacerts  --from-file=/tmp/istio-pki/ca-cert.pem --from-file=/tmp/istio-pki/ca-key.pem --from-file=/tmp/istio-pki/root-cert.pem --from-file=/tmp/istio-pki/cert-chain.pem
+
+    - name: Create the secret in the istio-system namespace for the Istio ingress gateway private key and certificate
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret tls istio-ingressgateway-certs --key=/tmp/istio-pki/ingressgateway-key.pem --cert=/tmp/istio-pki/ingressgateway-cert.pem
+
+    - name: Create the secret in the istio-system namespace for the Istio ingress gateway CA certificate
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/tmp/istio-pki/root-cert.pem
+
+    - name: Create the secret in the istio-system namespace for the Istio telemetry gateway private key and certificate
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret tls telemetry-gateway-cert --key=/tmp/istio-pki/telemetry-gateway-key.pem --cert=/tmp/istio-pki/telemetry-gateway-cert.pem
+
+    - name: Create the secret in the istio-system namespace for the Istio telemetry gateway CA certificate
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret generic telemetry-gateway-cert-cacert --from-file=/tmp/istio-pki/root-cert.pem
+
+    - name: Initialize the Kiali secret
       block:
+      - template:
+          src: kiali-secret.yml.j2
+          dest: /tmp/kiali-secret.yml
 
-        - name: Copying the keys and certificates for the Istio service mesh
-          block:
+      - name: Create the Kiali secret
+        command:
+          cmd: /usr/bin/kubectl apply -f /tmp/kiali-secret.yml
 
-            - name: Create the /tmp/istio-pki directory
-              file:
-                path: /tmp/istio-pki
-                state: directory
+      when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
-            - name: Copy the Istio intermediate CA private key to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.key
-                dest: /tmp/istio-pki/ca-key.pem
+    - name: Create the Istio configuration file
+      template:
+        src: istio-config.yml.j2
+        dest: /tmp/istio-config.yml
 
-            - name: Copy the Istio intermediate CA certificate to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.crt
-                dest: /tmp/istio-pki/ca-cert.pem
+    - name: Initialize the Istio service mesh
+      shell:
+        cmd: /usr/bin/istioctl manifest apply -f /tmp/istio-config.yml
 
-            - name: Copy the Root CA certificate to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/ca.crt
-                dest: /tmp/istio-pki/root-cert.pem
+    - name: Wait for the Istio service mesh initialization to complete
+      command:
+        cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
+      when: ("k8s_worker" not in groups.keys())
 
-            - name: Copy the Istio intermediate CA certificate chain to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca-chain.crt
-                dest: /tmp/istio-pki/cert-chain.pem
+    - block:
+      - template:
+          src: jaeger-ingress.yml.j2
+          dest: /tmp/jaeger-ingress.yml
 
-            - name: Copy the Istio ingress gateway private key to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.key
-                dest: /tmp/istio-pki/ingressgateway-key.pem
+      - name: Enable ingress for Jaeger
+        command:
+          cmd: /usr/bin/kubectl apply -f /tmp/jaeger-ingress.yml
 
-            - name: Copy the Istio ingress gateway certificate to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.crt
-                dest: /tmp/istio-pki/ingressgateway-cert.pem
+      when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
 
-            - name: Copy the Istio telemetry gateway private key to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.key
-                dest: /tmp/istio-pki/telemetry-gateway-key.pem
+    - block:
+      - template:
+          src: kiali-ingress.yml.j2
+          dest: /tmp/kiali-ingress.yml
 
-            - name: Copy the Istio telemetry gateway certificate to the /tmp/istio-pki directory
-              copy:
-                src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.crt
-                dest: /tmp/istio-pki/telemetry-gateway-cert.pem
+      - name: Enable ingress for Kiali
+        command:
+          cmd: /usr/bin/kubectl apply -f /tmp/kiali-ingress.yml
 
-        - name: Create the istio-system namespace
-          command:
-            cmd: /usr/bin/kubectl create ns istio-system
+      when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
-        - name: Create the secret in the istio-system namespace for the Istio intermediate CA private key and certificates
-          command:
-            cmd: /usr/bin/kubectl create -n istio-system secret generic cacerts  --from-file=/tmp/istio-pki/ca-cert.pem --from-file=/tmp/istio-pki/ca-key.pem --from-file=/tmp/istio-pki/root-cert.pem --from-file=/tmp/istio-pki/cert-chain.pem
+    - block:
+      - template:
+          src: grafana-ingress.yml.j2
+          dest: /tmp/grafana-ingress.yml
 
-        - name: Create the secret in the istio-system namespace for the Istio ingress gateway private key and certificate
-          command:
-            cmd: /usr/bin/kubectl create -n istio-system secret tls istio-ingressgateway-certs --key=/tmp/istio-pki/ingressgateway-key.pem --cert=/tmp/istio-pki/ingressgateway-cert.pem
+      - name: Enable ingress for Grafana
+        command:
+          cmd: /usr/bin/kubectl apply -f /tmp/grafana-ingress.yml
 
-        - name: Create the secret in the istio-system namespace for the Istio ingress gateway CA certificate
-          command:
-            cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/tmp/istio-pki/root-cert.pem
+      when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
 
-        - name: Create the secret in the istio-system namespace for the Istio telemetry gateway private key and certificate
-          command:
-            cmd: /usr/bin/kubectl create -n istio-system secret tls telemetry-gateway-cert --key=/tmp/istio-pki/telemetry-gateway-key.pem --cert=/tmp/istio-pki/telemetry-gateway-cert.pem
+    - block:
+      - template:
+          src: prometheus-ingress.yml.j2
+          dest: /tmp/prometheus-ingress.yml
 
-        - name: Create the secret in the istio-system namespace for the Istio telemetry gateway CA certificate
-          command:
-            cmd: /usr/bin/kubectl create -n istio-system secret generic telemetry-gateway-cert-cacert --from-file=/tmp/istio-pki/root-cert.pem
+      - name: Enable ingress for Prometheus
+        command:
+          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-ingress.yml
 
-        - name: Initialize the Kiali secret
-          block:
+      when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
 
-            - template:
-                src: kiali-secret.yml.j2
-                dest: /tmp/kiali-secret.yml
-
-            - name: Create the Kiali secret
-              command:
-                cmd: /usr/bin/kubectl apply -f /tmp/kiali-secret.yml
-
-          when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
-
-        - name: Create the Istio configuration file
-          template:
-            src: istio-config.yml.j2
-            dest: /tmp/istio-config.yml
-
-        - name: Initialize the Istio service mesh
-          shell:
-            cmd: /usr/bin/istioctl manifest apply -f /tmp/istio-config.yml
-
-        - name: Wait for the Istio service mesh initialization to complete
-          command:
-            cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
-          when: ("k8s_worker" not in groups.keys())
-
-        - block:
-
-            - template:
-                src: jaeger-ingress.yml.j2
-                dest: /tmp/jaeger-ingress.yml
-
-            - name: Enable ingress for Jaeger
-              command:
-                cmd: /usr/bin/kubectl apply -f /tmp/jaeger-ingress.yml
-
-          when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
-
-        - block:
-
-            - template:
-                src: kiali-ingress.yml.j2
-                dest: /tmp/kiali-ingress.yml
-
-            - name: Enable ingress for Kiali
-              command:
-                cmd: /usr/bin/kubectl apply -f /tmp/kiali-ingress.yml
-
-          when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
-
-        - block:
-
-            - template:
-                src: grafana-ingress.yml.j2
-                dest: /tmp/grafana-ingress.yml
-
-            - name: Enable ingress for Grafana
-              command:
-                cmd: /usr/bin/kubectl apply -f /tmp/grafana-ingress.yml
-
-          when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
-
-        - block:
-
-            - template:
-                src: prometheus-ingress.yml.j2
-                dest: /tmp/prometheus-ingress.yml
-
-            - name: Enable ingress for Prometheus
-              command:
-                cmd: /usr/bin/kubectl apply -f /tmp/prometheus-ingress.yml
-
-          when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
-
-      when: istio_system_namespace_exists_output.stdout == "0"
+    when: istio_system_namespace_exists_output.stdout == "0"
 
   when: ((groups['k8s_master'][0] == inventory_hostname) and (istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
+
+- name: Install Longhorn if Longhorn is enabled and there are no worker nodes
+  block:
+
+  - name: Check if longhorn-system namespace exists
+    shell:
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep longhorn-system | wc -l
+    register: longhorn_system_namespace_exists_output
+
+  - block:
+    - template:
+        src: longhorn.yml.j2
+        dest: /tmp/longhorn.yml
+
+    - name: Apply the Longhorn configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/longhorn.yml
+  
+    when: longhorn_system_namespace_exists_output.stdout == "0"
+
+  when: (("k8s_worker" not in groups.keys()) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+
+
 
 
 

@@ -6,7 +6,7 @@
   become: yes
   become_user: root
   roles:
-    - k8s_load_balancer
+  - k8s_load_balancer
 
 - name: Apply the common configuration to both Kubernetes master and worker hosts
   hosts: k8s_master:k8s_worker
@@ -15,8 +15,8 @@
   become: yes
   become_user: root
   roles:
-    - docker
-    - k8s_common
+  - docker
+  - k8s_common
 
 - name: Configure the Kubernetes master hosts
   hosts: k8s_master
@@ -32,7 +32,7 @@
   become: yes
   become_user: root
   roles:
-    - k8s_master
+  - k8s_master
 
 - name: Configure the Kubernetes worker hosts
   hosts: k8s_worker
@@ -41,6 +41,6 @@
   become: yes
   become_user: root
   roles:
-    - k8s_worker
+  - k8s_worker
 
 
