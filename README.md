@@ -22,14 +22,7 @@ The **devops** project provides the capability to provision the various technolo
 	```
 4. Download and install VirtualBox from https://virtualbox.org.
 
-5. Start VirtualBox and add a new NAT Network with the following settings:
-
-  ```
-  Network Name: devops
-  Network CIDR: 192.168.184/24
-  Network Options: Supports DHCP
- ```
-6. Install Ansible by executing the following command in a Terminal window:
+5. Install Ansible by executing the following command in a Terminal window:
 	```
 	brew install ansible
 	```
@@ -112,6 +105,8 @@ You can connect to a server using SSH with the username **cloud-user** and the p
 
 ## Users and Groups
 
+The following users and groups are provisioned by the various Ansible scripts:
+
 ### Users
 
 * etcd (301)
@@ -128,5 +123,22 @@ You can connect to a server using SSH with the username **cloud-user** and the p
 * k8s-admin (310)
 
 
+## Troubleshooting
 
+### Increasing the size of a VirtualBox virtual disk
+
+1. Download the vmware-vdiskmanager utility archive from https://kb.vmware.com/s/article/1023856.
+
+2. Extract the vmware-vdiskmanager utility archive and place the vmware-vdiskmanger on the path.
+
+3. Navigate to the directory containing the VMDK file for the virtual disk, e.g. 
+   ~/VirtualBox VMs/devops_devopslocal_1581670889760_49077, and execute the following command:
+   
+   vmware-vdiskmanager -x <size> <virtual disk file>
+   
+   e.g. 
+   
+   vmware-vdiskmanager -x 35GB ubuntu1804-disk001.vmdk 
+  
+   
 

@@ -52,7 +52,7 @@ case "$subcommand" in
   up)
     profile=$1; shift
     host=$1; shift
-    vagrant --provider=$provider --profile=$profile up --no-parallel $host
+    vagrant --provider=$provider --profile=$profile up --no-parallel --no-provision $host
     ;;
   provision)
     profile=$1; shift

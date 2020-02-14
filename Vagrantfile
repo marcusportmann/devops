@@ -5,6 +5,17 @@ require 'fileutils'
 require 'yaml'
 require 'getoptlong'
 
+$xxx = 'XXX'
+
+
+
+
+
+provision_second_disk = """
+
+"""
+
+
 
 def generate_guest_info_meta_data(name, hostname, ip, gateway, dns_server, dns_search)
 
@@ -120,10 +131,10 @@ end
 config_file = YAML.load_file(CONFIG_FILE_PATH)
 hosts_config = config_file['hosts']
 
-hosts = Hash.new
+$hosts = Hash.new
 
 hosts_config.each do |host_config|
-  hosts[host_config['name']] = host_config
+  $hosts[host_config['name']] = host_config
 end
 
 if (profileName.nil? || profileName.empty?)
@@ -141,7 +152,7 @@ profiles.each do |tmpProfile|
 end
 
 if !profile
-  raise "Failed to find the profile %s in the config.yml file" % profileName
+  raise "Failed to find the profile %s in the config.yaml file" % profileName
 else
   puts "Executing with profile: %s" % profileName
 end
@@ -154,7 +165,7 @@ ansible_groups = Hash.new
 
 profile['hosts'].each do |hostName|
 
-  host = hosts[hostName]
+  host = $hosts[hostName]
 
   if !host
 	raise "Failed to find the host (%s) for the profile (%s)" % [hostName, profileName]
@@ -191,7 +202,7 @@ if (!provider.nil? && !provider.empty?)
 
   profile['hosts'].each do |hostName|
 
-    host = hosts[hostName]
+    host = $hosts[hostName]
 
     host_var = Hash.new
 
@@ -260,9 +271,9 @@ File.open(INVENTORY_FILE_PATH, 'w') { |file|
 
   profile['hosts'].each do |hostName|
 
-    if hosts.include?(hostName)
+    if $hosts.include?(hostName)
 
-      host = hosts[hostName]
+      host = $hosts[hostName]
 
       file.puts "%s ansible_host=%s\n" % [hostName, host[provider]['ip'].split("/").first]
 
@@ -282,6 +293,59 @@ File.open(INVENTORY_FILE_PATH, 'w') { |file|
     file.puts "\n"
   end
 }
+
+
+
+
+
+
+
+class VagrantPlugins::ProviderVirtualBox::Action::SetName
+  alias_method :original_call, :call
+  def call(env)
+    machine = env[:machine]
+    driver = machine.provider.driver
+    uuid = driver.instance_eval { @uuid }
+    ui = env[:ui]
+
+    # Find out folder of VM
+    vm_folder = ""
+    vm_info = driver.execute("showvminfo", uuid, "--machinereadable")
+    lines = vm_info.split("\n")
+    lines.each do |line|
+      if line.start_with?("CfgFile")
+        vm_folder = line.split("=")[1].gsub('"','')
+        vm_folder = File.expand_path("..", vm_folder)
+        ui.info "VM Folder is: #{vm_folder}"
+      end
+    end
+    
+    if $hosts.include?("%s" % machine.name)
+       
+    	host = $hosts["%s" % machine.name]
+        
+			if host["virtualbox"]["second_disk"]
+		
+				disk_file = vm_folder + "/disk002.vmdk"
+
+				ui.info "Adding disk to VM"
+				if File.exist?(disk_file)
+					ui.info "Disk already exists"
+				else
+					ui.info "Creating new disk"
+					driver.execute("createmedium", "disk", "--filename", disk_file, "--size", "#{host['virtualbox']['second_disk']}", "--format", "VMDK")
+					ui.info "Attaching disk to VM"
+					driver.execute("storageattach", uuid, "--storagectl", "IDE Controller", "--port", "1", "--device", "0", "--type", "hdd", "--medium", disk_file)
+				end
+				
+			end       
+			
+    end
+
+    original_call(env)
+  end
+end
+
 
 
 
@@ -307,9 +371,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     profile['hosts'].each do |hostName|
 
-      if hosts.include?(hostName)
+      if $hosts.include?(hostName)
 
-        host = hosts[hostName]
+        host = $hosts[hostName]
 
         puts "Provisioning host: %s" % host['name']
                 
@@ -323,7 +387,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       			if host['type'] == "ubuntu"
 	      			override.vm.box = "devops/ubuntu1804"
 		      	end
-
+		      	
             override.vm.synced_folder '.', '/vagrant', disabled: true
 
             override.vm.hostname = host['virtualbox']['fqdn']
@@ -342,7 +406,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 						end
 
             # Write out the /etc/hosts file
-            override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, hosts)
+            override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, $hosts)
 
             override.vm.provision "ansible" do |ansible|
               #ansible.inventory_path = '.vagrant/provisioners/ansible/inventory/custom_ansible_inventory'
@@ -389,6 +453,33 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     		  	if host['type'] == "ubuntu"
 		 	      	override.vm.box = "devops/ubuntu1804"
 			      end
+			      
+		      	if host['virtualbox']['second_disk']
+		      		vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
+		      		
+		      		
+            dir = "#{ENV['HOME']}/vagrant-additional-disk"
+            
+            puts 'DEBUG: %s' % dir
+
+#             unless File.directory?( dir )
+#                 Dir.mkdir dir
+#             end
+# 
+#             file_to_disk = "#{dir}/var-lib-mysql.vmdk"
+# 
+#             unless File.exists?( file_to_disk )
+#                 `#{vdiskmanager} -c -s 20GB -a lsilogic -t 1 #{file_to_disk}`
+#             end
+# 
+#             vm.vmx['scsi0:1.filename'] = file_to_disk
+#             vm.vmx['scsi0:1.present']  = 'TRUE'
+#             vm.vmx['scsi0:1.redo']     = ''		      		
+		      	
+		      	
+							
+		      	end
+			      
 
             override.vm.synced_folder '.', '/vagrant', disabled: true
 

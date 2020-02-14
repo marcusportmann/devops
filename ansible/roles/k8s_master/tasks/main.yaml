@@ -658,7 +658,7 @@
         src: longhorn.yaml.j2
         dest: /tmp/longhorn.yaml
 
-    - name: Apply the Longhorn manifest to Kubernetes
+    - name: Apply the Longhorn configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/longhorn.yaml
   
@@ -666,42 +666,78 @@
 
   when: (("k8s_worker" not in groups.keys()) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
 
-#- name: Install the Operator Lifecycle Manager if it is enabled
-#  block:
-#
-#  - name: Retrieve the Operator Lifecycle Manager Custom Resource Definitions Manifest
-#    get_url:
-#      url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
-#      dest: /tmp/operator-lifecycle-manager-crds.yaml
-#   
-#  - name: Apply the Postgres Operator ConfigMap Manifest
-#    command: 
-#      cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-crds.yaml
-#
-#
-#  
-#  when: (("k8s_worker" not in groups.keys()) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+- name: Install the Operator Lifecycle Manager if it is enabled
+  block:
   
+  - name: Check if Operator Lifecycle Manager (olm) namespace exists
+    shell:
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep olm | wc -l
+    register: operator_lifecycle_manager_namespace_exists_output
+  
+  - block:
+    - name: Retrieve the Operator Lifecycle Manager Custom Resource Definitions configuration
+      get_url:
+        url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
+        dest: /tmp/operator-lifecycle-manager-crds.yaml
+  
+    - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-crds.yaml
 
+    - name: Retrieve the Operator Lifecycle Manager configuration
+      get_url:
+        url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/olm.yaml
+        dest: /tmp/operator-lifecycle-manager-olm.yaml
+  
+    - name: Apply the Operator Lifecycle Manager configuration
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-olm.yaml
+        
+    when: operator_lifecycle_manager_namespace_exists_output.stdout == "0"        
+ 
+  when: ((operator_lifecycle_manager_enabled is defined) and (operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
+  
+- name: Install the Postgres Operator if it is enabled
+  block:
+  
+  - name: Check if Postgres Operator is installed
+    shell:
+      cmd: kubectl get pod -l name=postgres-operator -n operators 2>&1 | grep postgres-operator | wc -l
+    register: postgres_operator_installed_output
+    
+  - block:
+    - name: Retrieve the Postgres Operator configuration
+      get_url:
+        url: https://operatorhub.io/install/postgres-operator.yaml
+        dest: /tmp/postgres-operator.yaml
+  
+    - name: Apply the Postgres Operator configuration
+      command: 
+        cmd: /usr/bin/kubectl create -f /tmp/postgres-operator.yaml
+    
+    when: postgres_operator_installed_output.stdout == "0"
+  
+  when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
+ 
 
 #- name: Install the Postgres Operator if it is enabled
 #  block:
 #  
-#  - name: Retrieve the Postgres Operator ConfigMap Manifest
+#  - name: Retrieve the Postgres Operator ConfigMap configuration
 #    get_url:
 #      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
 #      dest: /tmp/postgres-operator-configmap.yaml
 #    
-#  - name: Apply the Postgres Operator ConfigMap Manifest
+#  - name: Apply the Postgres Operator ConfigMap configuration
 #    command: 
 #      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
 #
-#  - name: Retrieve the Postgres Operator ConfigMap Manifest
+#  - name: Retrieve the Postgres Operator ConfigMap configuration
 #    get_url:
 #      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
 #      dest: /tmp/postgres-operator-configmap.yaml
 #    
-#  - name: Apply the Postgres Operator ConfigMap Manifest
+#  - name: Apply the Postgres Operator ConfigMap configuration
 #    command: 
 #      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
 

@@ -76,6 +76,12 @@ variables:
 - name: istio_download_package
   values:
   - false
+- name: operator_lifecycle_manager_enabled
+  values:
+  - true
+- name: postgres_operator_enabled
+  values:
+  - true  
 - name: prometheus_data_directory
   values:
   - /var/lib/prometheus
@@ -110,7 +116,7 @@ profiles:
 hosts:
 - name:                     etcd-local-01.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,etcd
   virtualbox:
     cpus:                   1
@@ -134,7 +140,7 @@ hosts:
 
 - name:                     etcd-local-02.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,etcd
   virtualbox:
     cpus:                   1
@@ -158,7 +164,7 @@ hosts:
 
 - name:                     etcd-local-03.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,etcd
   virtualbox:
     cpus:                   1
@@ -182,7 +188,7 @@ hosts:
 
 - name:                     k8s-local-m-01.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_load_balancer,k8s_master
   virtualbox:
     cpus:                   2
@@ -207,7 +213,7 @@ hosts:
 
 - name:                     k8s-local-m-02.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_master
   virtualbox:
     cpus:                   2
@@ -232,7 +238,7 @@ hosts:
 
 - name:                     k8s-local-m-03.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_master
   virtualbox:
     cpus:                   2
@@ -257,7 +263,7 @@ hosts:
 
 - name:                     k8s-local-w-01.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_worker
   virtualbox:
     cpus:                   2
@@ -282,7 +288,7 @@ hosts:
 
 - name:                     k8s-local-w-02.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_worker
   virtualbox:
     cpus:                   2
@@ -307,7 +313,7 @@ hosts:
 
 - name:                     k8s-local-w-03.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_worker
   virtualbox:
     cpus:                   2
@@ -332,7 +338,7 @@ hosts:
 
 - name:                     monitor.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
+  ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,prometheus,grafana
   virtualbox:
     cpus:                   2
@@ -356,20 +362,21 @@ hosts:
 
 - name:                     devops.local
   type:                     ubuntu
-  ansible_playbook:         ansible/devops.yml
-  ansible_groups:           monitored,k8s_load_balancer,k8s_master,prometheus,grafana
+  ansible_playbook:         ansible/devops.yaml
+  ansible_groups:           k8s_load_balancer,k8s_master
   virtualbox:
-    cpus:                   2
-    ram:                    4096
+    cpus:                   3
+    ram:                    7168
     hostname:               devops
     fqdn:                   devops.local
     ip:                     192.168.184.50
     netmask:                255.255.255.0
     network:                192.168.184.0/24
     private_networks:       172.20.0.0/14
+    second_disk:            15360
   vmware:
-    cpus:                   2
-    ram:                    4096
+    cpus:                   3
+    ram:                    7168
     hostname:               devops
     fqdn:                   devops.local
     ip:                     192.168.184.50/24
@@ -378,6 +385,7 @@ hosts:
     gateway:                192.168.184.2
     dns_server:             192.168.184.2
     dns_search:             local
+    second_disk:            15360
 
 # monitored,k8s_load_balancer,k8s_master,prometheus,grafana
 
