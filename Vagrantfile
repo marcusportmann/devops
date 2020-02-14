@@ -282,6 +282,9 @@ File.open(INVENTORY_FILE_PATH, 'w') { |file|
   end
 }
 
+# ------------------------------------------------------------------------------------
+# Override the VagrantPlugins::ProviderVirtualBox::Action::SetName method
+# ------------------------------------------------------------------------------------
 class VagrantPlugins::ProviderVirtualBox::Action::SetName
   alias_method :original_call, :call
   def call(env)
@@ -327,6 +330,7 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
     original_call(env)
   end
 end
+
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -399,11 +403,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
           end
         end
-        
-#  				config.vm.network :forwarded_port, id: 'ssh', guest: 22, host: 2222, disabled: true
-#  				config.ssh.guest_port = 2222        
-
-        
+                
       end
     end
   end
@@ -436,7 +436,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		 	      	override.vm.box = "devops/ubuntu1804"
 			      end
 			      
-		      	if host['virtualbox']['data_disk']
+		      	if host['vmware']['data_disk']
 		      		vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
 		      		
 		      		
