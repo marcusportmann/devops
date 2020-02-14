@@ -5,18 +5,6 @@ require 'fileutils'
 require 'yaml'
 require 'getoptlong'
 
-$xxx = 'XXX'
-
-
-
-
-
-provision_second_disk = """
-
-"""
-
-
-
 def generate_guest_info_meta_data(name, hostname, ip, gateway, dns_server, dns_search)
 
 ubuntu_boot_cloud_config = """
@@ -294,12 +282,6 @@ File.open(INVENTORY_FILE_PATH, 'w') { |file|
   end
 }
 
-
-
-
-
-
-
 class VagrantPlugins::ProviderVirtualBox::Action::SetName
   alias_method :original_call, :call
   def call(env)
@@ -324,16 +306,16 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
        
     	host = $hosts["%s" % machine.name]
         
-			if host["virtualbox"]["second_disk"]
+			if host["virtualbox"]["data_disk"]
 		
-				disk_file = vm_folder + "/disk002.vmdk"
+				disk_file = vm_folder + "/data-disk002.vmdk"
 
 				ui.info "Adding disk to VM"
 				if File.exist?(disk_file)
 					ui.info "Disk already exists"
 				else
 					ui.info "Creating new disk"
-					driver.execute("createmedium", "disk", "--filename", disk_file, "--size", "#{host['virtualbox']['second_disk']}", "--format", "VMDK")
+					driver.execute("createmedium", "disk", "--filename", disk_file, "--size", "#{host['virtualbox']['data_disk']}", "--format", "VMDK")
 					ui.info "Attaching disk to VM"
 					driver.execute("storageattach", uuid, "--storagectl", "IDE Controller", "--port", "1", "--device", "0", "--type", "hdd", "--medium", disk_file)
 				end
@@ -345,9 +327,6 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
     original_call(env)
   end
 end
-
-
-
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -392,10 +371,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
             override.vm.hostname = host['virtualbox']['fqdn']
             
-            #  override.vm.network "private_network", ip: host['virtualbox']['ip'], virtualbox__intnet: "devops"
             override.vm.network "private_network", ip: host['virtualbox']['ip']
 
-            #virtualbox.customize ["modifyvm", :id, "--nic1", "natnetwork", "--nat-network1", "devops", "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
             virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
 
             # Add the additional networks to the private network interface
@@ -403,6 +380,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 							host['virtualbox']['private_networks'].split(/\s*,\s*/).each do |private_network|
 								override.vm.provision "shell", inline: "ip route replace %s dev eth1 src %s" % [private_network, host['virtualbox']['ip']]
 							end
+						end
+
+						# Initialize the LVM configuration for the data disk if required
+						if host["virtualbox"]["data_disk"]
+						  override.vm.provision "shell", inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
 						end
 
             # Write out the /etc/hosts file
@@ -454,7 +436,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		 	      	override.vm.box = "devops/ubuntu1804"
 			      end
 			      
-		      	if host['virtualbox']['second_disk']
+		      	if host['virtualbox']['data_disk']
 		      		vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
 		      		
 		      		
@@ -492,6 +474,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             vmware_desktop.vmx["ethernet0.vnet"] = "vmnet8"
             vmware_desktop.vmx["guestinfo.metadata.encoding"] = "base64"
             vmware_desktop.vmx["guestinfo.metadata"] = Base64.encode64(generate_guest_info_meta_data(host['name'], host['vmware']['hostname'], host['vmware']['ip'], host['vmware']['gateway'], host['vmware']['dns_server'], host['vmware']['dns_search'])).gsub(/\n/, '')
+
+						# Initialize the LVM configuration for the data disk if required
+						if host["virtualbox"]["data_disk"]
+						  override.vm.provision "shell", inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+						end
 
             # Write out the /etc/hosts file
             override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, hosts)

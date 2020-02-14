@@ -373,7 +373,7 @@ hosts:
     netmask:                255.255.255.0
     network:                192.168.184.0/24
     private_networks:       172.20.0.0/14
-    second_disk:            15360
+    data_disk:              15360
   vmware:
     cpus:                   3
     ram:                    7168
@@ -385,7 +385,7 @@ hosts:
     gateway:                192.168.184.2
     dns_server:             192.168.184.2
     dns_search:             local
-    second_disk:            15360
+    data_disk:              15360
 
 # monitored,k8s_load_balancer,k8s_master,prometheus,grafana
 
