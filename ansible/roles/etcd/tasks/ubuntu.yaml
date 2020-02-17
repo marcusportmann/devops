@@ -15,7 +15,7 @@
     port: '2380'
     proto: tcp
 
-- name: Gather the package facts
+- name: Collect the package facts
   package_facts:
     manager: auto
 

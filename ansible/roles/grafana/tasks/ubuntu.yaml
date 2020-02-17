@@ -20,7 +20,7 @@
     repo: deb https://packages.grafana.com/oss/deb stable main
     state: present
 
-- name: Gather the package facts
+- name: Collect the package facts
   package_facts:
     manager: auto
 

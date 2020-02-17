@@ -113,6 +113,12 @@ cp k8s-local-default-ingressgateway.key ../ansible/roles/k8s_master/files/pki/lo
 cp k8s-local-default-ingressgateway.crt ../ansible/roles/k8s_master/files/pki/local
 
 
+# Generate the default ingress gateway private key and certificate
+cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server topolvm-mutatingwebhook-csr.json | cfssljson -bare topolvm-mutatingwebhook
+mv -f topolvm-mutatingwebhook-key.pem topolvm-mutatingwebhook.key
+mv -f topolvm-mutatingwebhook.pem topolvm-mutatingwebhook.crt
+cp topolvm-mutatingwebhook.key ../ansible/roles/k8s_master/files/pki/local
+cp topolvm-mutatingwebhook.crt ../ansible/roles/k8s_master/files/pki/local
 
 
 

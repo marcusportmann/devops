@@ -1,27 +1,6 @@
 ---
 # file: roles/k8s_worker/tasks/main.yaml
 
-- name: Create the /var/cache/ansible directory
-  file:
-    path: /var/cache/ansible
-    state: directory
-
-- name: Add the k8s-admin group
-  group:
-    name: k8s-admin
-    gid: 310
-    state: present
-
-- name: Add the k8s-admin user with a specific uid and a primary group of 'k8s-admin'
-  user:
-    name: k8s-admin
-    comment: Kubernetes Administrator
-    uid: 310
-    group: k8s-admin
-    groups: docker
-    shell: /bin/bash
-    state: present
-
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:

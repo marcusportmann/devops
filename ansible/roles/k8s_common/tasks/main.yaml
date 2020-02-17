@@ -8,7 +8,17 @@
 - name: Add the k8s-admin group
   group:
     name: k8s-admin
-    gid: 301
+    gid: 310
+    state: present
+
+- name: Add the k8s-admin user with a specific uid and a primary group of 'k8s-admin'
+  user:
+    name: k8s-admin
+    comment: Kubernetes Administrator
+    uid: 310
+    group: k8s-admin
+    groups: docker
+    shell: /bin/bash
     state: present
 
 - name: Allow k8s-admin group to have passwordless sudo
@@ -28,3 +38,66 @@
   when: ansible_distribution == "CentOS"
   tags:
   - unbound
+
+- name: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
+  block:
+  - debug:
+      msg: Check whether the TopoLVM lvmd {{ topolvm_lvmd_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/lvmd
+    register: topolvm_lvmd_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/lvmd --version | awk  {'print $3'} 
+    register: topolvm_lvmd_installed_version_output
+    when: (topolvm_lvmd_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      topolvm_lvmd_installed_version: '{{ topolvm_lvmd_installed_version_output.stdout }}'
+    when: (topolvm_lvmd_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      topolvm_lvmd_installed_version: ''
+    when: (topolvm_lvmd_installed_stat_result.stat.exists == False)
+
+  - block:
+    - debug:
+        msg: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package
+
+    - name: Check whether the TopoLVM lvmd {{ topolvm_lvmd_version }} package has been downloaded
+      stat:
+        path: /var/cache/ansible/lvmd-{{ topolvm_lvmd_version }}.tar.gz
+      register: topolvm_lvmd_downloaded_stat_result
+
+    - name: Download the TopoLVM lvmd {{ topolvm_lvmd_version }} package
+      get_url:
+        url: https://github.com/cybozu-go/topolvm/releases/download/v{{ topolvm_lvmd_version }}/lvmd-{{ topolvm_lvmd_version }}.tar.gz
+        dest: /var/cache/ansible/lvmd-{{ topolvm_lvmd_version }}.tar.gz
+      when: (topolvm_lvmd_downloaded_stat_result.stat.exists == False)
+
+    - name: Remove the existing TopoLVM lvmd binary
+      file:
+        path: /usr/bin/lvmd
+        state: absent
+
+    - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ topolvm_lvmd_version }} package
+      command:
+        cmd: tar xzvf /var/cache/ansible/lvmd-{{ topolvm_lvmd_version }}.tar.gz -C /usr/bin
+        warn: false
+        creates: /usr/bin/lvmd
+
+    - template:
+        src: topolvm-lvmd.service.j2
+        dest: /lib/systemd/system/lvmd.service
+        
+    - name: Restart the lvmd systemd service
+      systemd:
+        name: lvmd.service
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+    
+    when: (topolvm_lvmd_installed_version != topolvm_lvmd_version)
+    
+  when: ((("k8s_worker" not in groups.keys()) or ("k8s_worker" in role_names)) and (topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))

@@ -23,6 +23,7 @@ variables:
 - name: etcd_cluster_name
   values:
   - local
+
 - name: k8s_etcd_topology
   values:
   - stacked
@@ -52,9 +53,11 @@ variables:
 - name: k8s_cni_provider
   values:
   - weave
+
 - name: longhorn_enabled
   values:
   - true
+
 - name: istio_enabled
   values:
   - true
@@ -76,15 +79,26 @@ variables:
 - name: istio_download_package
   values:
   - false
+
 - name: operator_lifecycle_manager_enabled
   values:
   - true
+
 - name: postgres_operator_enabled
   values:
   - true  
+
 - name: prometheus_data_directory
   values:
   - /var/lib/prometheus
+
+- name: topolvm_enabled
+  values:
+  - true  
+- name: topolvm_volume_group
+  values:
+  - data  
+
 
 profiles:
 - name: devops

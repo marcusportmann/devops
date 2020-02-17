@@ -1,26 +1,5 @@
 # file: roles/k8s_master/tasks/main.yaml
 
-- name: Create the /var/cache/ansible directory
-  file:
-    path: /var/cache/ansible
-    state: directory
-
-- name: Add the k8s-admin group
-  group:
-    name: k8s-admin
-    gid: 310
-    state: present
-
-- name: Add the k8s-admin user with a specific uid and a primary group of 'k8s-admin'
-  user:
-    name: k8s-admin
-    comment: Kubernetes Administrator
-    uid: 310
-    group: k8s-admin
-    groups: docker
-    shell: /bin/bash
-    state: present
-
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
@@ -680,7 +659,7 @@
         url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
         dest: /tmp/operator-lifecycle-manager-crds.yaml
   
-    - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration
+    - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-crds.yaml
 
@@ -689,7 +668,7 @@
         url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/olm.yaml
         dest: /tmp/operator-lifecycle-manager-olm.yaml
   
-    - name: Apply the Operator Lifecycle Manager configuration
+    - name: Apply the Operator Lifecycle Manager configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-olm.yaml
         
@@ -711,14 +690,127 @@
         url: https://operatorhub.io/install/postgres-operator.yaml
         dest: /tmp/postgres-operator.yaml
   
-    - name: Apply the Postgres Operator configuration
+    - name: Apply the Postgres Operator configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl create -f /tmp/postgres-operator.yaml
+        cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator.yaml
     
     when: postgres_operator_installed_output.stdout == "0"
   
   when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
  
+- name: Install the TopoLVM CSI plugin
+  block:
+  
+  - name: Check if topolvm-system namespace exists
+    shell:
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep topolvm-system | wc -l
+    register: topolvm_system_namespace_exists_output
+
+  - block:
+  
+    - set_fact:
+        topolvm_mutatingwebhook_key: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/topolvm-mutatingwebhook.key') | b64encode }}"
+        
+    - set_fact:
+        topolvm_mutatingwebhook_crt: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/topolvm-mutatingwebhook.crt') | b64encode }}"
+  
+    - name: Generate the initial TopoLVM configuration
+      template:
+        src: topolvm-init.yaml.j2
+        dest: /tmp/topolvm-init.yaml
+        
+    - name: Apply the initial TopoLVM configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-init.yaml  
+        
+    - name: Disable the TopoLVM mutating webhook for the kube-system namespace
+      command:
+        cmd: /usr/bin/kubectl label --overwrite ns kube-system topolvm.cybozu.com/webhook=ignore
+
+    - name: Disable the TopoLVM mutating webhook for the istio-system namespace
+      command:
+        cmd: /usr/bin/kubectl label --overwrite ns istio-system topolvm.cybozu.com/webhook=ignore
+      when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
+
+    - name: Disable the TopoLVM mutating webhook for the longhorn-system namespace
+      command:
+        cmd: /usr/bin/kubectl label --overwrite ns longhorn-system topolvm.cybozu.com/webhook=ignore
+      when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+
+    - name: Disable the TopoLVM mutating webhook for the olm namespace
+      command:
+        cmd: /usr/bin/kubectl label --overwrite ns olm topolvm.cybozu.com/webhook=ignore
+      when: ((operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
+
+    - name: Generate the TopoLVM Custom Resource Definition configuration
+      template:
+        src: topolvm-crd.yaml.j2
+        dest: /tmp/topolvm-crd.yaml
+    
+    - name: Apply the TopoLVM Custom Resource Definition configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-crd.yaml
+
+    - name: Generate the TopoLVM Pod Security Policy configuration
+      template:
+        src: topolvm-psp.yaml.j2
+        dest: /tmp/topolvm-psp.yaml
+
+    - name: Apply the TopoLVM Pod Security Policy configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-psp.yaml
+
+    - name: Generate the TopoLVM Scheduler configuration
+      template:
+        src: topolvm-scheduler.yaml.j2
+        dest: /tmp/topolvm-scheduler.yaml
+
+    - name: Apply the TopoLVM Scheduler configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-scheduler.yaml
+
+    - name: Retrieve the TopoLVM Mutating Webhooks configuration
+      template:
+        src: topolvm-mutatingwebhooks.yaml.j2
+        dest: /tmp/topolvm-mutatingwebhooks.yaml
+    
+    - name: Apply the TopoLVM Mutating Webhooks configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-mutatingwebhooks.yaml
+
+    - name: Retrieve the TopoLVM Controller configuration
+      template:
+        src: topolvm-controller.yaml.j2
+        dest: /tmp/topolvm-controller.yaml
+    
+    - name: Apply the TopoLVM Controller configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-controller.yaml
+
+    - name: Retrieve the TopoLVM Node configuration    
+      template:
+        src: topolvm-node.yaml.j2
+        dest: /tmp/topolvm-node.yaml
+    
+    - name: Apply the TopoLVM Node configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-node.yaml
+
+    when: topolvm_system_namespace_exists_output.stdout == "0"        
+
+  when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+
+
+
+
+
+
+
+
+
+
+
+
 
 #- name: Install the Postgres Operator if it is enabled
 #  block:
@@ -728,7 +820,7 @@
 #      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
 #      dest: /tmp/postgres-operator-configmap.yaml
 #    
-#  - name: Apply the Postgres Operator ConfigMap configuration
+#  - name: Apply the Postgres Operator ConfigMap configuration to Kubernetes
 #    command: 
 #      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
 #
@@ -737,7 +829,7 @@
 #      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
 #      dest: /tmp/postgres-operator-configmap.yaml
 #    
-#  - name: Apply the Postgres Operator ConfigMap configuration
+#  - name: Apply the Postgres Operator ConfigMap configuration to Kubernetes
 #    command: 
 #      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
 
