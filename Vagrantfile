@@ -37,11 +37,11 @@ def generate_hosts_file(provider, profile, hosts)
     if hosts.include?(hostName)
 
       host = hosts[hostName]
-      
+
       if ((not host[provider]['ip'].nil?) && (not host[provider]['ip'].empty?) && (not host[provider]['hostname'].nil?) && (not host[provider]['hostname'].empty?))
 
         ip = host[provider]['ip']
-        
+
         if not (ip.index "/").nil?
           ip = ip[0, (ip.index "/")]
         end
@@ -284,6 +284,10 @@ File.open(INVENTORY_FILE_PATH, 'w') { |file|
 
 # ------------------------------------------------------------------------------------
 # Override the VagrantPlugins::ProviderVirtualBox::Action::SetName method
+#
+# NOTE: This "hack" is required as it is the only way to determine the location of the
+#       VirtualBox VM, which is necessary to ensure that the data disk for the VM is
+#       created in the same location and removed automatcally along with the VM.
 # ------------------------------------------------------------------------------------
 class VagrantPlugins::ProviderVirtualBox::Action::SetName
   alias_method :original_call, :call
@@ -304,13 +308,13 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
         ui.info "VM Folder is: #{vm_folder}"
       end
     end
-    
+
     if $hosts.include?("%s" % machine.name)
-       
+
     	host = $hosts["%s" % machine.name]
-        
+
 			if host["virtualbox"]["data_disk"]
-		
+
 				disk_file = vm_folder + "/data-disk002.vmdk"
 
 				ui.info "Adding disk to VM"
@@ -322,15 +326,14 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
 					ui.info "Attaching disk to VM"
 					driver.execute("storageattach", uuid, "--storagectl", "IDE Controller", "--port", "1", "--device", "0", "--type", "hdd", "--medium", disk_file)
 				end
-				
-			end       
-			
+
+			end
+
     end
 
     original_call(env)
   end
 end
-
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -359,7 +362,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         host = $hosts[hostName]
 
         puts "Provisioning host: %s" % host['name']
-                
+
         config.vm.define host['name'] do |host_vm|
           host_vm.vm.provider :virtualbox do |virtualbox, override|
 
@@ -370,11 +373,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       			if host['type'] == "ubuntu"
 	      			override.vm.box = "devops/ubuntu1804"
 		      	end
-		      	
+
             override.vm.synced_folder '.', '/vagrant', disabled: true
 
             override.vm.hostname = host['virtualbox']['fqdn']
-            
+
             override.vm.network "private_network", ip: host['virtualbox']['ip']
 
             virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
@@ -403,7 +406,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
           end
         end
-                
+
       end
     end
   end
@@ -421,9 +424,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     profile['hosts'].each do |hostName|
 
-      if hosts.include?(hostName)
+      if $hosts.include?(hostName)
 
-        host = hosts[hostName]
+        host = $hosts[hostName]
 
         config.vm.define host['name'] do |host_vm|
           host_vm.vm.provider :vmware_desktop do |vmware_desktop, override|
@@ -435,33 +438,36 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     		  	if host['type'] == "ubuntu"
 		 	      	override.vm.box = "devops/ubuntu1804"
 			      end
-			      
-		      	if host['vmware']['data_disk']
-		      		vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
-		      		
-		      		
-            dir = "#{ENV['HOME']}/vagrant-additional-disk"
-            
-            puts 'DEBUG: %s' % dir
 
-#             unless File.directory?( dir )
-#                 Dir.mkdir dir
-#             end
-# 
-#             file_to_disk = "#{dir}/var-lib-mysql.vmdk"
-# 
-#             unless File.exists?( file_to_disk )
-#                 `#{vdiskmanager} -c -s 20GB -a lsilogic -t 1 #{file_to_disk}`
-#             end
-# 
-#             vm.vmx['scsi0:1.filename'] = file_to_disk
-#             vm.vmx['scsi0:1.present']  = 'TRUE'
-#             vm.vmx['scsi0:1.redo']     = ''		      		
-		      	
-		      	
-							
+            # Create the data disk if required and associate it with the VM
+		      	if host['vmware']['data_disk']
+
+   		      	vdiskmanager = ""
+
+		      	  if Vagrant::Util::Platform.darwin?
+		            vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
+		          elsif Vagrant::Util::Platform.windows?
+		            raise "The location of the vmware-vdiskmanager application has not been set."
+		          elsif Vagrant::Util::Platform.linux?
+		            raise "The location of the vmware-vdiskmanager application has not been set."
+		          else
+		            raise "The location of the vmware-vdiskmanager application has not been set."
+		          end
+
+              vm_folder = ".vagrant/machines/#{ host['name'] }/vmware_desktop"
+
+              if File.exists?(vm_folder)
+                disk_file = vm_folder + "/data-disk002.vmdk"
+
+                unless File.exists?( disk_file )
+                     `#{vdiskmanager} -c -s #{ host['vmware']['data_disk'] }MB -a lsilogic -t 0 #{disk_file}`
+                end
+
+                vmware_desktop.vmx['scsi0:1.filename'] = "../data-disk002.vmdk"
+                vmware_desktop.vmx['scsi0:1.present']  = 'TRUE'
+                vmware_desktop.vmx['scsi0:1.redo']     = ''
+              end
 		      	end
-			      
 
             override.vm.synced_folder '.', '/vagrant', disabled: true
 
@@ -476,12 +482,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             vmware_desktop.vmx["guestinfo.metadata"] = Base64.encode64(generate_guest_info_meta_data(host['name'], host['vmware']['hostname'], host['vmware']['ip'], host['vmware']['gateway'], host['vmware']['dns_server'], host['vmware']['dns_search'])).gsub(/\n/, '')
 
 						# Initialize the LVM configuration for the data disk if required
-						if host["virtualbox"]["data_disk"]
+						if host["vmware"]["data_disk"]
 						  override.vm.provision "shell", inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
 						end
 
             # Write out the /etc/hosts file
-            override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, hosts)
+            override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, $hosts)
 
             override.vm.provision "ansible" do |ansible|
               #ansible.inventory_path = '.vagrant/provisioners/ansible/inventory/custom_ansible_inventory'
