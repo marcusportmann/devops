@@ -39,9 +39,6 @@
   tags:
   - unbound
   
-- debug:
-    msg: ----------> k8s_worker group = {{ groups['k8s_worker'] }}
-
 - name: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
   block:
   - debug:

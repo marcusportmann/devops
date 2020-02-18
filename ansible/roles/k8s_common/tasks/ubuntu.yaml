@@ -241,7 +241,7 @@
       state: started
       enabled: yes
            
-  when: ((("k8s_worker" not in groups.keys()) or ("k8s_worker" in role_names)) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+  when: ((("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
     
 
 
