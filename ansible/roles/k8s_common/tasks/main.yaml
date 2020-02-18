@@ -38,6 +38,9 @@
   when: ansible_distribution == "CentOS"
   tags:
   - unbound
+  
+- debug:
+    msg: ----------> k8s_worker group = {{ groups['k8s_worker'] }}
 
 - name: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
   block:
@@ -104,4 +107,4 @@
     
     when: (topolvm_lvmd_installed_version != topolvm_lvmd_version)
     
-  when: ((("k8s_worker" not in groups.keys()) or ("k8s_worker" in role_names)) and (topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+  when: ((("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
