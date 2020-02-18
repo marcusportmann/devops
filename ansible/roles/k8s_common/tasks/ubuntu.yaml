@@ -24,10 +24,6 @@
   apt_repository:
     repo: deb https://apt.kubernetes.io kubernetes-xenial main
     state: present
-    
-    
-    
-    
 
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes master configuration

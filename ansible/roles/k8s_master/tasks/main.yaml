@@ -189,6 +189,10 @@
       get_url:
         url: https://git.io/weave
         dest: /usr/bin/weave
+      register: download_weave_script_result
+      until: download_weave_script_result is succeeded
+      retries: 3
+      delay: 10
 
     - name: Set the permissions for the /usr/bin/weave file
       file:
@@ -411,6 +415,10 @@
         dest: /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz
         checksum: '{{ helm_package_hash }}'
       when: (helm_downloaded_stat_result.stat.exists == False)
+      register: download_helm_package_result
+      until: download_helm_package_result is succeeded
+      retries: 3
+      delay: 10
 
     - name: Remove the existing helm binary
       file:
@@ -462,6 +470,10 @@
         dest: /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz
         checksum: '{{ istioctl_package_hash }}'
       when: (istioctl_downloaded_stat_result.stat.exists == False)
+      register: download_istioctl_package_result
+      until: download_istioctl_package_result is succeeded
+      retries: 3
+      delay: 10      
 
     - name: Remove the existing istioctl binary
       file:
@@ -493,6 +505,10 @@
         dest: /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz
         checksum: '{{ istio_package_hash }}'
       when: (istio_downloaded_stat_result.stat.exists == False)
+      register: download_istio_package_result
+      until: download_istio_package_result is succeeded
+      retries: 3
+      delay: 10      
 
     - name: Extract the istio {{ istio_version }} package
       command:
@@ -688,7 +704,11 @@
       get_url:
         url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
         dest: /tmp/operator-lifecycle-manager-crds.yaml
-          
+      register: get_operator_lifecycle_manager_crds_result
+      until: get_operator_lifecycle_manager_crds_result is succeeded
+      retries: 3
+      delay: 10      
+    
     - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-crds.yaml
@@ -701,6 +721,10 @@
       get_url:
         url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/olm.yaml
         dest: /tmp/operator-lifecycle-manager-olm.yaml
+      register: get_operator_lifecycle_manager_configuration_result
+      until: get_operator_lifecycle_manager_configuration_result is succeeded
+      retries: 3
+      delay: 10      
   
     - name: Apply the Operator Lifecycle Manager configuration to Kubernetes
       command: 
@@ -723,6 +747,10 @@
       get_url:
         url: https://operatorhub.io/install/postgres-operator.yaml
         dest: /tmp/postgres-operator.yaml
+      register: get_postgres_operator_configuration_result
+      until: get_postgres_operator_configuration_result is succeeded
+      retries: 3
+      delay: 10      
   
     - name: Apply the Postgres Operator configuration to Kubernetes
       command: 
@@ -867,39 +895,6 @@
     when: topolvm_system_namespace_exists_output.stdout == "0"        
 
   when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
-
-
-
-
-
-
-
-
-
-
-
-
-
-#- name: Install the Postgres Operator if it is enabled
-#  block:
-#  
-#  - name: Retrieve the Postgres Operator ConfigMap configuration
-#    get_url:
-#      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
-#      dest: /tmp/postgres-operator-configmap.yaml
-#    
-#  - name: Apply the Postgres Operator ConfigMap configuration to Kubernetes
-#    command: 
-#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
-#
-#  - name: Retrieve the Postgres Operator ConfigMap configuration
-#    get_url:
-#      url: https://raw.githubusercontent.com/zalando/postgres-operator/master/manifests/configmap.yaml
-#      dest: /tmp/postgres-operator-configmap.yaml
-#    
-#  - name: Apply the Postgres Operator ConfigMap configuration to Kubernetes
-#    command: 
-#      cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator-configmap.yaml
 
 
 

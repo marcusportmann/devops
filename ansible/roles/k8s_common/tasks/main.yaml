@@ -75,6 +75,10 @@
         url: https://github.com/cybozu-go/topolvm/releases/download/v{{ topolvm_lvmd_version }}/lvmd-{{ topolvm_lvmd_version }}.tar.gz
         dest: /var/cache/ansible/lvmd-{{ topolvm_lvmd_version }}.tar.gz
       when: (topolvm_lvmd_downloaded_stat_result.stat.exists == False)
+      register: download_topo_lvmd_package_result
+      until: download_topo_lvmd_package_result is succeeded
+      retries: 3
+      delay: 10
 
     - name: Remove the existing TopoLVM lvmd binary
       file:
