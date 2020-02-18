@@ -1,0 +1,30 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-longhorn-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: longhorn
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-longhorn
+  labels:
+    app.kubernetes.io/name: test-longhorn
+spec:
+  containers:
+  - name: ubuntu
+    image: quay.io/cybozu/ubuntu:18.04
+    command: ["/usr/local/bin/pause"]
+    volumeMounts:
+    - mountPath: /data
+      name: test-longhorn-volume
+  volumes:
+    - name: test-longhorn-volume
+      persistentVolumeClaim:
+        claimName: test-longhorn-pvc

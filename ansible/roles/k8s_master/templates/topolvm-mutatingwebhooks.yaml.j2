@@ -15,6 +15,7 @@ webhooks:
         values: ["ignore"]
     failurePolicy: Fail
     clientConfig:
+      caBundle: {{ topolvm_mutatingwebhook_ca_bundle }}
       service:
         namespace: topolvm-system
         name: controller
@@ -32,6 +33,7 @@ webhooks:
         values: ["ignore"]
     failurePolicy: Fail
     clientConfig:
+      caBundle: {{ topolvm_mutatingwebhook_ca_bundle }}
       service:
         namespace: topolvm-system
         name: controller

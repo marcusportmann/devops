@@ -133,6 +133,21 @@
           group: k8s-admin
           mode: 0640
           state: file
+              
+    - name: Setup the kubeshell script
+      block:
+      - name: Create the kubeshell script
+        template:
+          src: kubeshell.j2
+          dest: /usr/bin/kubeshell
+          
+      - name: Set the permissions for the kubeshell script
+        file:
+          path: /usr/bin/kubeshell
+          owner: root
+          group: root
+          mode: 0770
+          state: file          
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
       command:
@@ -333,6 +348,21 @@
           owner: k8s-admin
           group: k8s-admin
           mode: 0640
+          state: file
+
+    - name: Setup the kubeshell script
+      block:
+      - name: Create the kubeshell script
+        template:
+          src: kubeshell.j2
+          dest: /usr/bin/kubeshell
+          
+      - name: Set the permissions for the kubeshell script
+        file:
+          path: /usr/bin/kubeshell
+          owner: root
+          group: root
+          mode: 0770
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
@@ -658,10 +688,14 @@
       get_url:
         url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
         dest: /tmp/operator-lifecycle-manager-crds.yaml
-  
+          
     - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-crds.yaml
+
+    - name: Sleep for 15 seconds to allow the Operator Lifecycle Manager Custom Resource Definitions configuration to be applied
+      wait_for:
+        timeout: 15
 
     - name: Retrieve the Operator Lifecycle Manager configuration
       get_url:
@@ -701,10 +735,25 @@
 - name: Install the TopoLVM CSI plugin
   block:
   
+  - name: Create the /etc/kubernetes/topolvm directory
+    file:
+      path: /etc/kubernetes/topolvm
+      state: directory
+
+  - name: Create the TopoLVM scheduler-config.yaml configuration file under the /etc/kubernetes/topolvm directory
+    template:
+      src: topolvm-scheduler-config.yaml.j2
+      dest: /etc/kubernetes/topolvm/scheduler-config.yaml
+
+  - name: Create the TopoLVM scheduler-policy.cfg configuration file under the /etc/kubernetes/topolvm directory
+    template:
+      src: topolvm-scheduler-policy.cfg.j2
+      dest: /etc/kubernetes/topolvm/scheduler-policy.cfg
+  
   - name: Check if topolvm-system namespace exists
     shell:
       cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep topolvm-system | wc -l
-    register: topolvm_system_namespace_exists_output
+    register: topolvm_system_namespace_exists_output    
 
   - block:
   
@@ -713,6 +762,9 @@
         
     - set_fact:
         topolvm_mutatingwebhook_crt: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/topolvm-mutatingwebhook.crt') | b64encode }}"
+
+    - set_fact:
+        topolvm_mutatingwebhook_ca_bundle: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/ca-bundle.crt') | b64encode }}"
   
     - name: Generate the initial TopoLVM configuration
       template:
@@ -740,7 +792,7 @@
     - name: Disable the TopoLVM mutating webhook for the olm namespace
       command:
         cmd: /usr/bin/kubectl label --overwrite ns olm topolvm.cybozu.com/webhook=ignore
-      when: ((operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
+      when: ((operator_lifecycle_manager_enabled is defined) and (operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
 
     - name: Generate the TopoLVM Custom Resource Definition configuration
       template:
@@ -760,16 +812,23 @@
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/topolvm-psp.yaml
 
-    - name: Generate the TopoLVM Scheduler configuration
+    - name: Generate the TopoLVM Scheduler daemonset configuration
       template:
-        src: topolvm-scheduler.yaml.j2
+        src: topolvm-scheduler-daemonset.yaml.j2
         dest: /tmp/topolvm-scheduler.yaml
-
+      when: ("k8s_worker" in groups.keys())
+        
+    - name: Generate the TopoLVM Scheduler service configuration
+      template:
+        src: topolvm-scheduler-service.yaml.j2
+        dest: /tmp/topolvm-scheduler.yaml
+      when: ("k8s_worker" not in groups.keys())
+        
     - name: Apply the TopoLVM Scheduler configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/topolvm-scheduler.yaml
 
-    - name: Retrieve the TopoLVM Mutating Webhooks configuration
+    - name: Generate the TopoLVM Mutating Webhooks configuration
       template:
         src: topolvm-mutatingwebhooks.yaml.j2
         dest: /tmp/topolvm-mutatingwebhooks.yaml
@@ -778,7 +837,7 @@
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/topolvm-mutatingwebhooks.yaml
 
-    - name: Retrieve the TopoLVM Controller configuration
+    - name: Generate the TopoLVM Controller configuration
       template:
         src: topolvm-controller.yaml.j2
         dest: /tmp/topolvm-controller.yaml
@@ -787,7 +846,7 @@
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/topolvm-controller.yaml
 
-    - name: Retrieve the TopoLVM Node configuration    
+    - name: Generate the TopoLVM Node configuration    
       template:
         src: topolvm-node.yaml.j2
         dest: /tmp/topolvm-node.yaml
@@ -795,7 +854,16 @@
     - name: Apply the TopoLVM Node configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/topolvm-node.yaml
-
+        
+    - name: Generate the TopoLVM Provisioner configuration    
+      template:
+        src: topolvm-provisioner.yaml.j2
+        dest: /tmp/topolvm-provisioner.yaml
+    
+    - name: Apply the TopoLVM Provisioner configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-provisioner.yaml
+        
     when: topolvm_system_namespace_exists_output.stdout == "0"        
 
   when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))

@@ -6,7 +6,9 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 mv -f ca.pem ca.crt
 mv -f ca-key.pem ca.key
 cp ca.crt ../ansible/roles/etcd/files/pki/local
+cp ca.crt ../ansible/roles/etcd/files/pki/ca-bundle.crt
 cp ca.crt ../ansible/roles/k8s_master/files/pki/local/ca.crt
+cp ca.crt ../ansible/roles/k8s_master/files/pki/local/ca-bundle.crt
 cp ca.crt ../ansible/roles/k8s_master/files/pki/local/etcd-ca.crt
 
 

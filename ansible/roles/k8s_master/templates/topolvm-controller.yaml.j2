@@ -223,7 +223,12 @@ metadata:
   name: controller
   namespace: topolvm-system
 spec:
+{% if ('k8s_worker' in groups) %}
   replicas: 2
+{% endif %}
+{% if ('k8s_worker' not in groups) %}
+  replicas: 1
+{% endif %}
   selector:
     matchLabels:
       app.kubernetes.io/name: controller

@@ -1,0 +1,24 @@
+{
+  "kind" : "Policy",
+  "apiVersion" : "v1",
+  "extenders" :
+    [{
+{% if ('k8s_worker' in groups) %}
+      "urlPrefix": "http://127.0.0.1:9251",
+{% endif %}
+
+{% if ('k8s_worker' not in groups) %}
+      "urlPrefix": "http://topolvm-scheduler.topolvm-system:9251",
+{% endif %}
+
+      "filterVerb": "predicate",
+      "prioritizeVerb": "prioritize",
+      "nodeCacheCapable": false,
+      "weight": 1,
+      "managedResources":
+      [{
+        "name": "topolvm.cybozu.com/capacity",
+        "ignoredByScheduler": true
+      }]
+    }]
+}
