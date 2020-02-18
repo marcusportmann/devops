@@ -8,27 +8,5 @@
     msg: Found kubeadm package version {{ ansible_facts.packages['kubeadm'][0].version  }}
   when: "'kubeadm' in ansible_facts.packages"
 
-- name: Install the kubeadm package
-  block:
-  - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
-
-  - name: Unlock the version of the kubeadm package
-    command:
-      cmd: apt-mark unhold kubeadm
-
-  - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
-    apt:
-      state: present
-      policy_rc_d: 101
-      name:
-       - kubeadm={{ k8s_ubuntu_package_version }}
-
-  - name: Lock the version of the kubeadm package
-    command:
-      cmd: apt-mark hold kubeadm
-
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
-
 
 
