@@ -654,7 +654,7 @@
 
   when: ((groups['k8s_master'][0] == inventory_hostname) and (istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
 
-- name: Install Longhorn if it is enabled and there are no worker nodes
+- name: Install Longhorn if it is enabled
   block:
 
   - name: Check if longhorn-system namespace exists
@@ -673,7 +673,7 @@
   
     when: longhorn_system_namespace_exists_output.stdout == "0"
 
-  when: (("k8s_worker" not in groups.keys()) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+  when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
 
 - name: Install the Operator Lifecycle Manager if it is enabled
   block:
