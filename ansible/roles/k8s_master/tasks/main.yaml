@@ -86,6 +86,26 @@
         src: k8s-config.yaml.j2
         dest: /tmp/k8s-config.yaml
 
+    - name: Create the TopoLVM scheduler configuration
+      block:
+  
+      - name: Create the /etc/kubernetes/topolvm directory
+        file:
+          path: /etc/kubernetes/topolvm
+          state: directory
+
+      - name: Create the TopoLVM scheduler-config.yaml configuration file under the /etc/kubernetes/topolvm directory
+        template:
+          src: topolvm-scheduler-config.yaml.j2
+          dest: /etc/kubernetes/topolvm/scheduler-config.yaml
+
+      - name: Create the TopoLVM scheduler-policy.cfg configuration file under the /etc/kubernetes/topolvm directory
+        template:
+          src: topolvm-scheduler-policy.cfg.j2
+          dest: /etc/kubernetes/topolvm/scheduler-policy.cfg
+
+      when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+
     - name: Initialize the Kubernetes cluster
       shell:
         cmd: /usr/bin/kubeadm init --config /tmp/k8s-config.yaml
@@ -759,24 +779,9 @@
     when: postgres_operator_installed_output.stdout == "0"
   
   when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
- 
+   
 - name: Install the TopoLVM CSI plugin
   block:
-  
-  - name: Create the /etc/kubernetes/topolvm directory
-    file:
-      path: /etc/kubernetes/topolvm
-      state: directory
-
-  - name: Create the TopoLVM scheduler-config.yaml configuration file under the /etc/kubernetes/topolvm directory
-    template:
-      src: topolvm-scheduler-config.yaml.j2
-      dest: /etc/kubernetes/topolvm/scheduler-config.yaml
-
-  - name: Create the TopoLVM scheduler-policy.cfg configuration file under the /etc/kubernetes/topolvm directory
-    template:
-      src: topolvm-scheduler-policy.cfg.j2
-      dest: /etc/kubernetes/topolvm/scheduler-policy.cfg
   
   - name: Check if topolvm-system namespace exists
     shell:

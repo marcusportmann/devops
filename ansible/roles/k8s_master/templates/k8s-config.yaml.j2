@@ -48,3 +48,17 @@ networking:
 {% if k8s_cni_provider != "weave" %}
   podSubnet: {{ k8s_pod_subnet }}
 {% endif %}
+
+
+{% if ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))  %}
+
+scheduler:
+  extraVolumes:
+    - name: "config"
+      hostPath: /etc/kubernetes/topolvm
+      mountPath: /var/lib/scheduler
+      readOnly: true
+  extraArgs:
+    config: /var/lib/scheduler/scheduler-config.yaml
+    
+{% endif %}
