@@ -206,7 +206,7 @@ hosts:
   ansible_groups:           monitored,k8s_load_balancer,k8s_master
   virtualbox:
     cpus:                   2
-    ram:                    2048
+    ram:                    2560
     hostname:               k8s-local-m-01
     fqdn:                   k8s-local-m-01.local
     ip:                     192.168.184.51
@@ -215,7 +215,7 @@ hosts:
     private_networks:       172.20.0.0/14
   vmware:
     cpus:                   2
-    ram:                    2048
+    ram:                    2560
     hostname:               k8s-local-m-01
     fqdn:                   k8s-local-m-01.local
     ip:                     192.168.184.51/24
@@ -231,7 +231,7 @@ hosts:
   ansible_groups:           monitored,k8s_load_balancer,k8s_master
   virtualbox:
     cpus:                   2
-    ram:                    2048
+    ram:                    2560
     hostname:               k8s-local-m-02
     fqdn:                   k8s-local-m-02.local
     ip:                     192.168.184.52
@@ -240,7 +240,7 @@ hosts:
     private_networks:       172.20.0.0/14
   vmware:
     cpus:                   2
-    ram:                    2048
+    ram:                    2560
     hostname:               k8s-local-m-02
     fqdn:                   k8s-local-m-02.local
     ip:                     192.168.184.52/24
@@ -256,7 +256,7 @@ hosts:
   ansible_groups:           monitored,k8s_load_balancer,k8s_master
   virtualbox:
     cpus:                   2
-    ram:                    2048
+    ram:                    2560
     hostname:               k8s-local-m-03
     fqdn:                   k8s-local-m-03.local
     ip:                     192.168.184.53
@@ -265,7 +265,7 @@ hosts:
     private_networks:       172.20.0.0/14
   vmware:
     cpus:                   2
-    ram:                    2048
+    ram:                    2560
     hostname:               k8s-local-m-03
     fqdn:                   k8s-local-m-03.local
     ip:                     192.168.184.53/24
@@ -281,7 +281,7 @@ hosts:
   ansible_groups:           monitored,k8s_worker
   virtualbox:
     cpus:                   2
-    ram:                    1024
+    ram:                    2048
     hostname:               k8s-local-w-01
     fqdn:                   k8s-local-w-01.local
     ip:                     192.168.184.54
@@ -291,7 +291,7 @@ hosts:
     data_disk:              5120    
   vmware:
     cpus:                   2
-    ram:                    1024
+    ram:                    2048
     hostname:               k8s-local-w-01
     fqdn:                   k8s-local-w-01.local
     ip:                     192.168.184.54/24
@@ -308,7 +308,7 @@ hosts:
   ansible_groups:           monitored,k8s_worker
   virtualbox:
     cpus:                   2
-    ram:                    1024
+    ram:                    2048
     hostname:               k8s-local-w-02
     fqdn:                   k8s-local-w-02.local
     ip:                     192.168.184.55
@@ -318,7 +318,7 @@ hosts:
     data_disk:              5120    
   vmware:
     cpus:                   2
-    ram:                    1024
+    ram:                    2048
     hostname:               k8s-local-w-02
     fqdn:                   k8s-local-w-02.local
     ip:                     192.168.184.55/24
@@ -335,7 +335,7 @@ hosts:
   ansible_groups:           monitored,k8s_worker
   virtualbox:
     cpus:                   2
-    ram:                    1024
+    ram:                    2048
     hostname:               k8s-local-w-03
     fqdn:                   k8s-local-w-03.local
     ip:                     192.168.184.56
@@ -345,7 +345,7 @@ hosts:
     data_disk:              5120    
   vmware:
     cpus:                   2
-    ram:                    1024
+    ram:                    2048
     hostname:               k8s-local-w-03
     fqdn:                   k8s-local-w-03.local
     ip:                     192.168.184.56/24
