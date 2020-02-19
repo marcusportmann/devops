@@ -383,7 +383,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
 
 			      # Ensure that the /etc/rc.local file exists
-			      override.vm.provision "shell", inline: "if [ ! -f /etc/rc.local ]; then > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
+			      override.vm.provision "shell", inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
 
             # Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
             if host['virtualbox']['private_networks']
@@ -391,7 +391,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 							  static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host['virtualbox']['ip']]
 														  
 						  	override.vm.provision "shell", inline: static_route_command
-						  	override.vm.provision "shell", inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }\n' >> /etc/rc.local; fi"						  	
+						  	override.vm.provision "shell", inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"						  	
 							end
 						end
 
