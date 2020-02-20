@@ -44,12 +44,12 @@ variables:
   - localhost
   - 127.0.0.1
   - k8s-local-api.local
-- name: k8s_pod_subnet
-  values:
-  - 172.24.0.0/13
 - name: k8s_service_subnet
   values:
-  - 172.20.0.0/14
+  - 10.254.0.0/16
+- name: k8s_pod_subnet
+  values:
+  - 10.255.0.0/16  
 - name: k8s_cni_provider
   values:
   - weave
@@ -212,7 +212,7 @@ hosts:
     ip:                     192.168.184.51
     netmask:                255.255.255.0
     network:                192.168.184.0/24
-    private_networks:       172.20.0.0/14
+    private_networks:       10.254.0.0/16
   vmware:
     cpus:                   2
     ram:                    2560
@@ -237,7 +237,7 @@ hosts:
     ip:                     192.168.184.52
     netmask:                255.255.255.0
     network:                192.168.184.0/24
-    private_networks:       172.20.0.0/14
+    private_networks:       10.254.0.0/16
   vmware:
     cpus:                   2
     ram:                    2560
@@ -262,7 +262,7 @@ hosts:
     ip:                     192.168.184.53
     netmask:                255.255.255.0
     network:                192.168.184.0/24
-    private_networks:       172.20.0.0/14
+    private_networks:       10.254.0.0/16
   vmware:
     cpus:                   2
     ram:                    2560
@@ -287,7 +287,7 @@ hosts:
     ip:                     192.168.184.54
     netmask:                255.255.255.0
     network:                192.168.184.0/24
-    private_networks:       172.20.0.0/14
+    private_networks:       10.254.0.0/16
     data_disk:              5120    
   vmware:
     cpus:                   2
@@ -314,7 +314,7 @@ hosts:
     ip:                     192.168.184.55
     netmask:                255.255.255.0
     network:                192.168.184.0/24
-    private_networks:       172.20.0.0/14
+    private_networks:       10.254.0.0/16
     data_disk:              5120    
   vmware:
     cpus:                   2
@@ -341,7 +341,7 @@ hosts:
     ip:                     192.168.184.56
     netmask:                255.255.255.0
     network:                192.168.184.0/24
-    private_networks:       172.20.0.0/14
+    private_networks:       10.254.0.0/16
     data_disk:              5120    
   vmware:
     cpus:                   2
@@ -392,7 +392,7 @@ hosts:
     ip:                     192.168.184.50
     netmask:                255.255.255.0
     network:                192.168.184.0/24
-    private_networks:       172.20.0.0/14
+    private_networks:       10.254.0.0/16
     data_disk:              15360
   vmware:
     cpus:                   3

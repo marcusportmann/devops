@@ -849,13 +849,13 @@
       template:
         src: topolvm-scheduler-daemonset.yaml.j2
         dest: /tmp/topolvm-scheduler.yaml
-      when: ("k8s_worker" in groups.keys())
+      when: ("k8s_master" in groups.keys())
         
     - name: Generate the TopoLVM Scheduler service configuration
       template:
         src: topolvm-scheduler-service.yaml.j2
         dest: /tmp/topolvm-scheduler.yaml
-      when: ("k8s_worker" not in groups.keys())
+      when: ("k8s_master" not in groups.keys())
         
     - name: Apply the TopoLVM Scheduler configuration to Kubernetes
       command: 
