@@ -58,6 +58,38 @@ The **devops** project provides the capability to provision the various technolo
 	```
 
 
+### Option 3: Install Packer, Vagrant,Hyper-V and Ansible on Windows 64-bit
+
+1. Enable the Hyper-V Windows feature.
+
+2. Download and install Git for 64-bit Windows from *https://git-scm.com/download/win*.
+
+3. Download the Packer for 64-bit Windows archive from *https://packer.io/* and extact the packer binary somewhere on your path e.g. C:\DevOpsTools.
+
+4. Download Vagrant for 64-bit Windows from *https://www.vagrantup.com/downloads.html* and install.
+
+
+
+
+3. Install HashiCorp Vagrant by executing the following command in a Terminal window:
+	```
+	brew cask install vagrant
+	```
+4. Install VMware Fusion Pro.
+5. Download and install the Vagrant VMware Utility for your MacOS from *https://www.vagrantup.com/vmware/downloads.html*.
+6. Install the Vagrant VMware provider plugin by executing the following command in a Terminal window:
+	```
+	vagrant plugin install vagrant-vmware-desktop
+	```
+7. Install the license for the Vagrant VMware provider plugin by executing the following command in a Terminal window:
+	```
+	vagrant plugin license vagrant-vmware-desktop ~/Downloads/license.lic
+	```
+8. Install Ansible by executing the following command in a Terminal window:
+	```
+	brew install ansible
+	```
+
 ### Build OS Images
 
 "Packer is an open source tool for creating identical machine images for multiple platforms

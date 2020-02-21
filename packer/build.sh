@@ -6,7 +6,7 @@ function usage {
     echo "Usage: $programname -p provider -o operating_system"
     echo "Options:"
     echo "  -h                   Print this message and exit."
-    echo "  -p PROVIDER          One of the following providers: virtualbox, vmware, vsphere."
+    echo "  -p PROVIDER          One of the following providers: virtualbox, vmware, vsphere, hyperv."
     echo "  -o OPERATING_SYSTEM  One of the following operating systems: centos77, centos80, ubuntu1804."
 }
 
@@ -53,6 +53,17 @@ function build_image {
 
  	  vagrant box add --force --provider vsphere --name devops/${operating_system} build/boxes/${operating_system}-vsphere.box
   fi
+  
+  if [[ "$provider" == "hyperv" ]]; then
+    rm -rf build/boxes/${operating_system}-hyperv.box
+    rm -rf build/hyperv/${operating_system}
+
+    vagrant box remove --force --provider hyperv --all devops/${operating_system}
+
+    packer build -only=${operating_system}-hyperv ${operating_system}.json
+
+	  vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-hyperv.box
+  fi  
 }
 
 if [ "$#" -ne 4 ]; then
@@ -68,7 +79,7 @@ case "${option}" in
         exit 1
         ;;
     p)
-        if [[ ${OPTARG} =~ ^virtualbox|vmware|vsphere$ ]]
+        if [[ ${OPTARG} =~ ^virtualbox|vmware|vsphere|hyperv$ ]]
         then
             provider=${OPTARG}
         else
