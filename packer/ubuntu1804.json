@@ -142,7 +142,7 @@
         " -- <wait>",
         "<enter><wait>"
       ],
-      "boot_wait": "5s",
+      "boot_wait": "600s",
       "disk_size": "15360",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
