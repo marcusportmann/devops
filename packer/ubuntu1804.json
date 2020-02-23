@@ -179,7 +179,8 @@
       "expect_disconnect": true,
       "only": [
         "ubuntu1804-vmware",
-        "ubuntu1804-virtualbox"
+        "ubuntu1804-virtualbox",
+        "ubuntu1804-hyperv"
       ],
       "scripts": [
         "scripts/ubuntu1804/base.sh",

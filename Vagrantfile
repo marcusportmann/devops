@@ -507,6 +507,82 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
     end
   end
+  
+  # ------------------------------------------------------------------------------------
+  # Hyper-V Configuration
+  # ------------------------------------------------------------------------------------
+  if provider == "hyperv"
+
+    puts "Using the '%s' provider..." % provider
+
+    profile['hosts'].each do |hostName|
+
+      if $hosts.include?(hostName)
+
+        host = $hosts[hostName]
+
+        puts "Provisioning host: %s" % host['name']
+
+        config.vm.define host['name'] do |host_vm|
+        
+          host_vm.trigger.after :up do |trigger|
+            trigger.info = 'Hello World!!!!!!!'
+            trigger.run_remote = {inline: "echo 'Hello World' > /tmp/message"}
+          end
+       
+          host_vm.vm.provider :hyperv do |hyperv, override|
+
+            # NOTE: This box must have been added to Vagrant before executing this project.
+            if host['type'] == "centos"
+	            override.vm.box = "devops/centos77"
+	          end
+      			if host['type'] == "ubuntu"
+	      			override.vm.box = "devops/ubuntu1804"
+		      	end
+
+            override.vm.synced_folder '.', '/vagrant', disabled: true
+
+            override.vm.hostname = host['hyperv']['fqdn']
+
+            #override.vm.network "private_network", ip: host['hyperv']['ip'], bridge: "Vagrant Switch" 
+            override.vm.network "private_network", bridge: "Vagrant Switch" 
+
+            #virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
+
+			      # Ensure that the /etc/rc.local file exists
+			      #override.vm.provision "shell", inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
+
+            # Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
+            #if host['virtualbox']['private_networks']
+						#	host['virtualbox']['private_networks'].split(/\s*,\s*/).each do |private_network|
+						#	  static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host['virtualbox']['ip']]
+						#								  
+						#  	override.vm.provision "shell", inline: static_route_command
+						#  	override.vm.provision "shell", inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"						  	
+						#	end
+						#end
+
+						# Initialize the LVM configuration for the data disk if required
+						#if host["virtualbox"]["data_disk"]
+						#  override.vm.provision "shell", inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+						#end
+
+            # Write out the /etc/hosts file
+            # override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, $hosts)
+
+            override.vm.provision "ansible" do |ansible|
+              #ansible.inventory_path = '.vagrant/provisioners/ansible/inventory/custom_ansible_inventory'
+              ansible.playbook = host['ansible_playbook']
+              ansible.groups = ansible_groups
+              ansible.extra_vars = ansible_vars
+            end
+
+          end
+        end
+
+      end
+    end
+  end  
 
 end
 

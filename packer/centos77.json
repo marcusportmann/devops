@@ -133,7 +133,8 @@
       "expect_disconnect": true,
       "only": [
         "centos77-vmware",
-        "centos77-virtualbox"
+        "centos77-virtualbox",
+        "centos77-hyperv"
       ],
       "scripts": [
         "scripts/centos77/base.sh",

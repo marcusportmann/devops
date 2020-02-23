@@ -133,7 +133,8 @@
       "expect_disconnect": true,
       "only": [
         "centos80-vmware",
-        "centos80-virtualbox"
+        "centos80-virtualbox",
+        "centos80-hyperv"
       ],
       "scripts": [
         "scripts/centos80/base.sh",

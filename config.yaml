@@ -383,7 +383,7 @@ hosts:
 - name:                     devops.local
   type:                     ubuntu
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_load_balancer,k8s_master,prometheus,grafana
+  ansible_groups:           monitored
   virtualbox:
     cpus:                   3
     ram:                    6144
@@ -395,6 +395,18 @@ hosts:
     private_networks:       10.254.0.0/16
     data_disk:              15360
   vmware:
+    cpus:                   3
+    ram:                    6144
+    hostname:               devops
+    fqdn:                   devops.local
+    ip:                     192.168.184.50/24
+    netmask:                255.255.255.0
+    network:                192.168.184.0/24
+    gateway:                192.168.184.2
+    dns_server:             192.168.184.2
+    dns_search:             local
+    data_disk:              15360
+  hyperv:
     cpus:                   3
     ram:                    6144
     hostname:               devops

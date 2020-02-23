@@ -60,12 +60,15 @@ chmod a+x /usr/bin/configure-ubuntu-network
 cp /tmp/resize-root-partition /usr/bin
 chmod a+x /usr/bin/resize-root-partition
 
-#echo "Updating packages"
 apt-get -y update
 apt-get -y upgrade
 apt-get -y dist-upgrade
 
 
+VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
+if [[ $VIRT == "Microsoft HyperV" || $VIRT == "Microsoft Hyper-V" ]]; then
+	apt-get -y install linux-azure
+fi
 
 
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **devops** project provides the capability to provision the various technologies that make up the DevOps platform in an automated manner using Packer, Vagrant and Ansible. Support is provided for the Virtualbox and VMware virtualisation platforms.
+The **devops** project provides the capability to provision the various technologies that make up the DevOps platform in an automated manner using Packer, Vagrant and Ansible. Support is provided for the Virtualbox, VMware and Hyper-V virtualisation platforms.
 
 ## Setup
 
@@ -62,13 +62,20 @@ The **devops** project provides the capability to provision the various technolo
 
 1. Enable the Hyper-V Windows feature.
 
-2. Download and install Git for 64-bit Windows from *https://git-scm.com/download/win*.
+2. Create a new Virtual Switch for Hyper-V named "Vagrant Switch" by launching Windows PowerShell as an administrator and executing the following commands:
+```
+New-VMSwitch –SwitchName "Vagrant Switch" –SwitchType Internal
+New-NetIPAddress –IPAddress 192.168.184.1 -PrefixLength 24 -InterfaceAlias "vEthernet (Vagrant Switch)"
+New-NetNat –Name VagrantSwitchNetwork –InternalIPInterfaceAddressPrefix 192.168.184.0/24
+```
 
-3. Download the Packer for 64-bit Windows archive from *https://packer.io/* and extact the packer binary somewhere on your path e.g. C:\DevOpsTools.
+3. Download and install Git for 64-bit Windows from *https://git-scm.com/download/win*.
 
-4. Download Vagrant for 64-bit Windows from *https://www.vagrantup.com/downloads.html* and install.
+4. Download the Packer for 64-bit Windows archive from *https://packer.io/* and extact the packer binary somewhere on your path e.g. C:\DevOpsTools.
 
-5. Launch the Git Bash console as an Administrator.
+5. Download Vagrant for 64-bit Windows from *https://www.vagrantup.com/downloads.html* and install.
+
+6. Launch the Git Bash console as an Administrator.
 
 6. 
 
