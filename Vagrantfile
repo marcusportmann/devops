@@ -67,8 +67,9 @@ def generate_hosts_file(provider, profile, hosts)
 
 end
 
-
-
+if ARGV.length == 0
+  abort
+end
 
 profileName = ''
 provider = ''
@@ -366,11 +367,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.vm.define host['name'] do |host_vm|
           host_vm.vm.provider :virtualbox do |virtualbox, override|
 
-            # NOTE: This box must have been added to Vagrant before executing this project.
-            if host['type'] == "centos"
+            # NOTE: These boxes must have been added to Vagrant before executing this project.
+            if host['type'] == "centos77"
 	            override.vm.box = "devops/centos77"
 	          end
-      			if host['type'] == "ubuntu"
+            if host['type'] == "centos80"
+	            override.vm.box = "devops/centos80"
+	          end          
+      			if host['type'] == "ubuntu1804"
 	      			override.vm.box = "devops/ubuntu1804"
 		      	end
 
@@ -378,9 +382,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
             override.vm.hostname = host['virtualbox']['fqdn']
 
-            override.vm.network "private_network", ip: host['virtualbox']['ip']
+            override.vm.network "private_network", ip: host['virtualbox']['ip'], netmask: host['virtualbox']['netmask']
 
-            virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
+            virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['memory'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
 
 			      # Ensure that the /etc/rc.local file exists
 			      override.vm.provision "shell", inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
@@ -437,13 +441,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.vm.define host['name'] do |host_vm|
           host_vm.vm.provider :vmware_desktop do |vmware_desktop, override|
 
-            # NOTE: This box must have been added to Vagrant before executing this project.
-            if host['type'] == "centos"
+            # NOTE: These boxes must have been added to Vagrant before executing this project.
+            if host['type'] == "centos77"
 	            override.vm.box = "devops/centos77"
 	          end
-    		  	if host['type'] == "ubuntu"
-		 	      	override.vm.box = "devops/ubuntu1804"
-			      end
+            if host['type'] == "centos80"
+	            override.vm.box = "devops/centos80"
+	          end          
+      			if host['type'] == "ubuntu1804"
+	      			override.vm.box = "devops/ubuntu1804"
+		      	end
 
             # Create the data disk if required and associate it with the VM
 		      	if host['vmware']['data_disk']
@@ -480,7 +487,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             # Perform the VMware Fusion specific initialisation
             vmware_desktop.gui = true
             vmware_desktop.vmx["numvcpus"] = host['vmware']['cpus']
-            vmware_desktop.vmx["memsize"] = host['vmware']['ram']
+            vmware_desktop.vmx["memsize"] = host['vmware']['memory']
             vmware_desktop.vmx["ethernet0.connectionType"] = "nat"
             vmware_desktop.vmx["ethernet0.virtualDev"] = "vmxnet3"
             vmware_desktop.vmx["ethernet0.vnet"] = "vmnet8"
@@ -526,28 +533,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.vm.define host['name'] do |host_vm|
         
           host_vm.trigger.after :up do |trigger|
-            trigger.info = 'Hello World!!!!!!!'
-            trigger.run_remote = {inline: "echo 'Hello World' > /tmp/message"}
+            trigger.info = 'Configuring the VM network...'
+            trigger.run_remote = {inline: "/usr/bin/configure-network --interface eth0 --ip #{host['hyperv']['ip']} --hostname #{host['hyperv']['hostname']} --gateway #{host['hyperv']['gateway']} --dnsservers #{host['hyperv']['dns_server']} --dnssearch #{host['hyperv']['dns_search']}"}
           end
        
           host_vm.vm.provider :hyperv do |hyperv, override|
 
-            # NOTE: This box must have been added to Vagrant before executing this project.
-            if host['type'] == "centos"
+					  hyperv.cpus = host['hyperv']['cpus']
+					  hyperv.memory = host['hyperv']['memory']
+						hyperv.maxmemory = host['hyperv']['memory']
+					  hyperv.vmname = host['hyperv']['hostname']
+
+            # NOTE: These boxes must have been added to Vagrant before executing this project.
+            if host['type'] == "centos77"
 	            override.vm.box = "devops/centos77"
 	          end
-      			if host['type'] == "ubuntu"
+            if host['type'] == "centos80"
+	            override.vm.box = "devops/centos80"
+	          end          
+      			if host['type'] == "ubuntu1804"
 	      			override.vm.box = "devops/ubuntu1804"
 		      	end
 
             override.vm.synced_folder '.', '/vagrant', disabled: true
 
-            override.vm.hostname = host['hyperv']['fqdn']
-
-            #override.vm.network "private_network", ip: host['hyperv']['ip'], bridge: "Vagrant Switch" 
             override.vm.network "private_network", bridge: "Vagrant Switch" 
-
-            #virtualbox.customize ["modifyvm", :id, "--memory", host['virtualbox']['ram'], "--cpus", host['virtualbox']['cpus'], "--cableconnected1", "on", "--cableconnected2", "on"]
 
 			      # Ensure that the /etc/rc.local file exists
 			      #override.vm.provision "shell", inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
@@ -568,7 +578,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 						#end
 
             # Write out the /etc/hosts file
-            # override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, $hosts)
+            override.vm.provision "shell", inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file(provider, profile, $hosts)
 
             override.vm.provision "ansible" do |ansible|
               #ansible.inventory_path = '.vagrant/provisioners/ansible/inventory/custom_ansible_inventory'

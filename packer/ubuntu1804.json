@@ -160,8 +160,8 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "files/ubuntu1804/configure-ubuntu-network",
-      "destination": "/tmp/configure-ubuntu-network"
+      "source": "files/ubuntu1804/configure-network",
+      "destination": "/tmp/configure-network"
     },
     {
       "type": "file",

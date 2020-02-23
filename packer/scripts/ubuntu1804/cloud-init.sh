@@ -4,11 +4,17 @@ touch /home/cloud-user/.ssh/authorized_keys
 chmod 600 /home/cloud-user/.ssh/authorized_keys
 chown -R cloud-user:cloud-user /home/cloud-user/.ssh
 
+# Set the password for the cloud user
+echo "cloud" | passwd --stdin cloud-user
+
 # Enable sudo for the cloud-user user
 echo 'cloud-user             ALL=(ALL)   NOPASSWD: ALL' >> /etc/sudoers.d/cloud-user
 echo 'Defaults:cloud-user    env_keep += SSH_AUTH_SOCK' >> /etc/sudoers.d/cloud-user
 chmod 0440 /etc/sudoers.d/cloud-user
 sed -i 's/^.*requiretty/#Defaults requiretty/' /etc/sudoers
+
+VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
+if [[ $VIRT == "VMware" ]]; then
 
 # Install packages required for cloud-init
 apt-get -y install python3-pip cloud-init
@@ -32,6 +38,6 @@ rm -rf /var/log/cloud-init*
 # Use the default network configuration as the initial cloud-init configuration to ensure that networking is enabled
 mv /etc/netplan/01-netcfg.yaml /etc/netplan/50-cloud-init.yaml
 
-
+fi
 
 

@@ -102,8 +102,8 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "files/centos77/configure-centos-network",
-      "destination": "/tmp/configure-centos-network"
+      "source": "files/centos77/configure-network",
+      "destination": "/tmp/configure-network"
     },
     {
       "type": "file",
@@ -119,8 +119,8 @@
       "type": "shell",
       "inline":
       [
-        "sudo cp /tmp/configure-centos-network /usr/bin/",
-        "sudo chmod a+x /usr/bin/configure-centos-network",
+        "sudo cp /tmp/configure-network /usr/bin/",
+        "sudo chmod a+x /usr/bin/configure-network",
         "sudo cp /tmp/create-swap-file /usr/bin/",
         "sudo chmod a+x /usr/bin/create-swap-file",
         "sudo cp /tmp/resize-root-partition /usr/bin/",

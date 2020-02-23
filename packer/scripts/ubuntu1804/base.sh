@@ -55,8 +55,8 @@ systemctl stop remote-fs.target
 systemctl disable remote-fs.target
 
 echo "Installing custom scripts"
-cp /tmp/configure-ubuntu-network /usr/bin
-chmod a+x /usr/bin/configure-ubuntu-network
+cp /tmp/configure-network /usr/bin
+chmod a+x /usr/bin/configure-network
 cp /tmp/resize-root-partition /usr/bin
 chmod a+x /usr/bin/resize-root-partition
 
@@ -67,7 +67,7 @@ apt-get -y dist-upgrade
 
 VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
 if [[ $VIRT == "Microsoft HyperV" || $VIRT == "Microsoft Hyper-V" ]]; then
-	apt-get -y install linux-azure
+	apt-get -y install linux-tools-$(uname -r) linux-cloud-tools-$(uname -r) linux-cloud-tools-common linux-azure
 fi
 
 
