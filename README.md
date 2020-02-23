@@ -68,6 +68,10 @@ The **devops** project provides the capability to provision the various technolo
 
 4. Download Vagrant for 64-bit Windows from *https://www.vagrantup.com/downloads.html* and install.
 
+5. Launch the Git Bash console as an Administrator.
+
+6. 
+
 
 
 
