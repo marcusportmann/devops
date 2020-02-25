@@ -39,8 +39,10 @@ echo "install tipc /bin/false" > /etc/modprobe.d/tipc.conf
 
 echo "Removing unnecessary packages"
 
-echo "Updating all packages"
+# echo "Updating all packages"
+apt-get -y update
 apt-get -y upgrade
+apt-get -y dist-upgrade
 
 echo "Enabling the ssh-keygen service"
 cp /tmp/ssh-keygen.service /lib/systemd/system
@@ -59,11 +61,6 @@ cp /tmp/configure-network /usr/bin
 chmod a+x /usr/bin/configure-network
 cp /tmp/resize-root-partition /usr/bin
 chmod a+x /usr/bin/resize-root-partition
-
-apt-get -y update
-apt-get -y upgrade
-apt-get -y dist-upgrade
-
 
 VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
 if [[ $VIRT == "Microsoft HyperV" || $VIRT == "Microsoft Hyper-V" ]]; then
