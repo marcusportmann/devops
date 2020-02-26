@@ -286,7 +286,7 @@ hosts:
 - name:                     devops.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_load_balancer,k8s_master,prometheus,grafana
+  ansible_groups:           k8s_master
   cpus:                     3
   memory:                   6144
   hostname:                 devops
