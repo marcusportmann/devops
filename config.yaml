@@ -97,8 +97,7 @@ variables:
   - true  
 - name: topolvm_volume_group
   values:
-  - data  
-
+  - system  
 
 profiles:
 - name: devops
@@ -241,7 +240,6 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-  data_disk:                5120
 
 - name:                     k8s-local-w-02.local
   type:                     ubuntu1804
@@ -256,7 +254,6 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-  data_disk:                5120
 
 - name:                     k8s-local-w-03.local
   type:                     ubuntu1804
@@ -271,7 +268,6 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-  data_disk:                5120    
 
 - name:                     monitor.local
   type:                     ubuntu1804
@@ -300,7 +296,6 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-  data_disk:                15360
 
 # monitored,k8s_load_balancer,k8s_master,prometheus,grafana
 
