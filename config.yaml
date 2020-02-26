@@ -284,7 +284,7 @@ hosts:
   dns_search:               local
 
 - name:                     devops.local
-  type:                     centos77
+  type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_load_balancer,k8s_master,prometheus,grafana
   cpus:                     3

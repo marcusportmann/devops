@@ -3,7 +3,12 @@
 
 - debug:
     msg: Applying the Ubuntu-specific Docker configuration
-
+    
+#- name: Install the pip3 package
+#  apt:
+#    state: present
+#    name: pip3
+    
 - name: Add the Docker GPG apt key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
@@ -14,7 +19,7 @@
     repo: deb https://download.docker.com/linux/ubuntu bionic stable
     state: present
 
-- name: Gather the package facts
+- name: Collect the package facts
   package_facts:
     manager: auto
 
@@ -43,10 +48,6 @@
   - name: Lock the version of the docker-ce and docker-ce-cli packages
     command:
       cmd: apt-mark hold docker-ce docker-ce-cli
-
-  - name: Install Docker module for Python
-    pip:
-      name: docker
 
   - name: Create the /etc/docker directory
     file:
