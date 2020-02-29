@@ -20,10 +20,16 @@
 #
 
 variables:
+# ----------------------------------------------------------------------------------------
+# Etcd Configuration
+# ----------------------------------------------------------------------------------------
 - name: etcd_cluster_name
   values:
   - local
 
+# ----------------------------------------------------------------------------------------
+# Kubernetes Configuration
+# ----------------------------------------------------------------------------------------
 - name: k8s_etcd_topology
   values:
   - stacked
@@ -53,11 +59,32 @@ variables:
 - name: k8s_cni_provider
   values:
   - weave
-
 - name: longhorn_enabled
   values:
   - true
+- name: topolvm_enabled
+  values:
+  - true  
+- name: topolvm_volume_group
+  values:
+  - system
 
+# ----------------------------------------------------------------------------------------
+# Kubernetes Operator Configuration
+# ----------------------------------------------------------------------------------------
+- name: operator_lifecycle_manager_enabled
+  values:
+  - false
+- name: postgres_operator_enabled
+  values:
+  - false  
+- name: prometheus_operator_enabled
+  values:
+  - false
+
+# ----------------------------------------------------------------------------------------
+# Istio Configuration
+# ----------------------------------------------------------------------------------------
 - name: istio_enabled
   values:
   - true
@@ -79,25 +106,14 @@ variables:
 - name: istio_download_package
   values:
   - false
-
-- name: operator_lifecycle_manager_enabled
-  values:
-  - true
-
-- name: postgres_operator_enabled
-  values:
-  - true  
-
+  
+# ----------------------------------------------------------------------------------------
+# External Monitoring Configuration
+# ----------------------------------------------------------------------------------------
 - name: prometheus_data_directory
   values:
   - /var/lib/prometheus
 
-- name: topolvm_enabled
-  values:
-  - true  
-- name: topolvm_volume_group
-  values:
-  - system  
 
 profiles:
 - name: devops

@@ -759,19 +759,15 @@
   
   - name: Check if Postgres Operator is installed
     shell:
-      cmd: kubectl get pod -l name=postgres-operator -n operators 2>&1 | grep postgres-operator | wc -l
+      cmd: kubectl get subscription -n operators 2>&1 | grep postgres-operator | wc -l
     register: postgres_operator_installed_output
     
   - block:
-    - name: Retrieve the Postgres Operator configuration
-      get_url:
-        url: https://operatorhub.io/install/postgres-operator.yaml
+    - name: Generate the Postgres Operator configuration
+      template:
+        src: postgres-operator.yaml.j2
         dest: /tmp/postgres-operator.yaml
-      register: get_postgres_operator_configuration_result
-      until: get_postgres_operator_configuration_result is succeeded
-      retries: 3
-      delay: 10      
-  
+      
     - name: Apply the Postgres Operator configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator.yaml
@@ -779,6 +775,28 @@
     when: postgres_operator_installed_output.stdout == "0"
   
   when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
+  
+- name: Install the Prometheus Operator if it is enabled
+  block:
+  
+  - name: Check if Prometheus Operator is installed
+    shell:
+      cmd: kubectl get subscription -n operators 2>&1 | grep prometheus-operator | wc -l
+    register: prometheus_operator_installed_output
+    
+  - block:  
+    - name: Generate the Prometheus Operator configuration
+      template:
+        src: prometheus-operator.yaml.j2
+        dest: /tmp/prometheus-operator.yaml
+  
+    - name: Apply the Prometheus Operator configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/prometheus-operator.yaml
+    
+    when: prometheus_operator_installed_output.stdout == "0"
+  
+  when: ((prometheus_operator_enabled is defined) and (prometheus_operator_enabled != None) and (prometheus_operator_enabled == true))
    
 - name: Install the TopoLVM CSI plugin
   block:
@@ -905,4 +923,6 @@
 
 
 
-
+# Delete the Postgres operator
+# kubectl delete -f /tmp/postgres-operator.yaml 
+# kubectl delete clusterserviceversion -n operators postgres-operator.v1.3.0
