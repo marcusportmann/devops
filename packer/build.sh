@@ -24,7 +24,7 @@ function build_image {
 
     packer build -only=${operating_system}-virtualbox ${operating_system}.json
 
-	  vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-virtualbox.box
+    vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-virtualbox.box
   fi
 
   if [[ "$provider" == "vmware" ]]; then
@@ -33,19 +33,19 @@ function build_image {
     rm -rf build/ovf/${operating_system}
     rm -rf build/ova/${operating_system}
 
-    vagrant box remove --force --provider vmware --all devops/${operating_system}
+    vagrant box remove --force --provider vmware_desktop --all devops/${operating_system}
 
     packer build -only=${operating_system}-vmware ${operating_system}.json
+    
+    vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-vmware.box
 
-	  vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-vmware.box
+    mkdir -p build/ovf/${operating_system}
 
-	  mkdir -p build/ovf/${operating_system}
+    /Applications/VMware\ Fusion.app/Contents/Library/VMware\ OVF\ Tool/ovftool --acceptAllEulas -n=${operating_system} build/vmware/${operating_system}/${operating_system}.vmx build/ovf/${operating_system}/${operating_system}.ovf
 
-	  /Applications/VMware\ Fusion.app/Contents/Library/VMware\ OVF\ Tool/ovftool --acceptAllEulas -n=${operating_system} build/vmware/${operating_system}/${operating_system}.vmx build/ovf/${operating_system}/${operating_system}.ovf
+	mkdir -p build/ova/${operating_system}
 
-	  mkdir -p build/ova/${operating_system}
-
-	  /Applications/VMware\ Fusion.app/Contents/Library/VMware\ OVF\ Tool/ovftool --acceptAllEulas -n=${operating_system} build/vmware/${operating_system}/${operating_system}.vmx build/ova/${operating_system}/${operating_system}.ova
+	/Applications/VMware\ Fusion.app/Contents/Library/VMware\ OVF\ Tool/ovftool --acceptAllEulas -n=${operating_system} build/vmware/${operating_system}/${operating_system}.vmx build/ova/${operating_system}/${operating_system}.ova
   fi
 
   if [[ "$provider" == "vsphere" ]]; then
@@ -62,7 +62,7 @@ function build_image {
 
     packer build -only=${operating_system}-hyperv ${operating_system}.json
 
-	  vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-hyperv.box
+    vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-hyperv.box
   fi  
 }
 
