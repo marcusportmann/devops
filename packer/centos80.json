@@ -29,7 +29,7 @@
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
-      "ssh_wait_timeout": "{{ user `ssh_wait_timeout` }}",
+      "ssh_timeout": "{{ user `ssh_wait_timeout` }}",
       "vboxmanage": [
         [
           "modifyvm",
@@ -63,7 +63,7 @@
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
-      "ssh_wait_timeout": "{{ user `ssh_wait_timeout` }}",
+      "ssh_timeout": "{{ user `ssh_wait_timeout` }}",
       "vm_name": "centos80",
       "vmdk_name": "centos80",
       "vmx_data": {
