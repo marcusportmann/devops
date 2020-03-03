@@ -63,11 +63,11 @@ The **devops** project provides the capability to provision the various technolo
 1. Enable the Hyper-V Windows feature.
 
 2. Create a new Virtual Switch for Hyper-V named "Vagrant Switch" by launching Windows PowerShell as an administrator and executing the following commands:
-```
-New-VMSwitch –SwitchName "Vagrant Switch" –SwitchType Internal
-New-NetIPAddress –IPAddress 192.168.184.1 -PrefixLength 24 -InterfaceAlias "vEthernet (Vagrant Switch)"
-New-NetNat –Name VagrantSwitchNetwork –InternalIPInterfaceAddressPrefix 192.168.184.0/24
-```
+   ```
+   New-VMSwitch -SwitchName "Vagrant Switch" -SwitchType Internal
+   New-NetIPAddress -IPAddress 192.168.184.1 -PrefixLength 24 -InterfaceAlias "vEthernet (Vagrant Switch)"
+   New-NetNat -Name VagrantSwitchNetwork -InternalIPInterfaceAddressPrefix 192.168.184.0/24
+   ```
 
 3. Download and install Git for 64-bit Windows from *https://git-scm.com/download/win*.
 
@@ -77,29 +77,6 @@ New-NetNat –Name VagrantSwitchNetwork –InternalIPInterfaceAddressPrefix 192.168.
 
 6. Launch the Git Bash console as an Administrator.
 
-6. 
-
-
-
-
-3. Install HashiCorp Vagrant by executing the following command in a Terminal window:
-	```
-	brew cask install vagrant
-	```
-4. Install VMware Fusion Pro.
-5. Download and install the Vagrant VMware Utility for your MacOS from *https://www.vagrantup.com/vmware/downloads.html*.
-6. Install the Vagrant VMware provider plugin by executing the following command in a Terminal window:
-	```
-	vagrant plugin install vagrant-vmware-desktop
-	```
-7. Install the license for the Vagrant VMware provider plugin by executing the following command in a Terminal window:
-	```
-	vagrant plugin license vagrant-vmware-desktop ~/Downloads/license.lic
-	```
-8. Install Ansible by executing the following command in a Terminal window:
-	```
-	brew install ansible
-	```
 
 ### Build OS Images
 

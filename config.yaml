@@ -304,7 +304,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           k8s_master
   cpus:                     3
-  memory:                   6144
+  memory:                   5120
   hostname:                 devops
   fqdn:                     devops.local
   ip:                       192.168.184.50/24

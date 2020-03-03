@@ -15,121 +15,98 @@
     replace: '# \1'
   when: ansible_swaptotal_mb > 0
 
-- name: Add the Kubernets GPG apt key
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-    state: present
-
-- name: Add the Kubernetes repository
-  apt_repository:
-    repo: deb https://apt.kubernetes.io kubernetes-xenial main
-    state: present
-
-- debug:
-    msg: Applying the Ubuntu-specific Kubernetes master configuration
-
-- name: Allow all access to tcp port 2379
-  ufw:
-    rule: allow
-    port: '2379'
-    proto: tcp
-
-- name: Allow all access to tcp port 2380
-  ufw:
-    rule: allow
-    port: '2380'
-    proto: tcp
-
-- name: Allow all access to tcp port 4149 (Default cAdvisor port used to query container metrics)
-  ufw:
-    rule: allow
-    port: '4149'
-    proto: tcp
-
-- name: Allow all access to tcp port 6443 (Kubernetes API)
-  ufw:
-    rule: allow
-    port: '6443'
-    proto: tcp
-
-- name: Allow all access to tcp port 9099 (Health check server for Calico)
-  ufw:
-    rule: allow
-    port: '9099'
-    proto: tcp
-
-- name: Allow all access to tcp port 10251
-  ufw:
-    rule: allow
-    port: '10251'
-    proto: tcp
-
-- name: Allow all access to tcp port 10252
-  ufw:
-    rule: allow
-    port: '10252'
-    proto: tcp
-
-- name: Allow all access to tcp port 10256 (Health check server for Kube Proxy)
-  ufw:
-    rule: allow
-    port: '10256'
-    proto: tcp
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-- name: Allow all access to tcp port 10250 (API which allows full node access)
-  ufw:
-    rule: allow
-    port: '10250'
-    proto: tcp
-
-- name: Allow all access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
-  ufw:
-    rule: allow
-    port: '10255'
-    proto: tcp
-
-- name: Allow all access to tcp ports 30000-32767 (Nodeport)
-  ufw:
-    rule: allow
-    port: 30000:32767
-    proto: tcp
-
-- name: Open TCP and UDP pprts for the Weave CNI provider
-  block:
-  - name: Allow all access to tcp port 6783 for the Weave CNI provider
-    ufw:
-      rule: allow
-      port: '6783'
-      proto: tcp
-
-  - name: Allow all access to udp port 6783 for the Weave CNI provider
-    ufw:
-      rule: allow
-      port: '6783'
-      proto: udp
-
-  - name: Allow all access to udp port 6784 for the Weave CNI provider
-    ufw:
-      rule: allow
-      port: '6784'
-      proto: udp
-
-  when: (k8s_cni_provider == 'weave')
+#- name: Allow all access to tcp port 2379
+#  ufw:
+#    rule: allow
+#    port: '2379'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 2380
+#  ufw:
+#    rule: allow
+#    port: '2380'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 4149 (Default cAdvisor port used to query container metrics)
+#  ufw:
+#    rule: allow
+#    port: '4149'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 6443 (Kubernetes API)
+#  ufw:
+#    rule: allow
+#    port: '6443'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 9099 (Health check server for Calico)
+#  ufw:
+#    rule: allow
+#    port: '9099'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 10251
+#  ufw:
+#    rule: allow
+#    port: '10251'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 10252
+#  ufw:
+#    rule: allow
+#    port: '10252'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 10256 (Health check server for Kube Proxy)
+#  ufw:
+#    rule: allow
+#    port: '10256'
+#    proto: tcp
+#    
+#- name: Allow all access to tcp port 10250 (API which allows full node access)
+#  ufw:
+#    rule: allow
+#    port: '10250'
+#    proto: tcp
+#
+#- name: Allow all access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
+#  ufw:
+#    rule: allow
+#    port: '10255'
+#    proto: tcp
+#
+#- name: Allow all access to tcp ports 30000-32767 (Nodeport)
+#  ufw:
+#    rule: allow
+#    port: 30000:32767
+#    proto: tcp
+#
+#- name: Open TCP and UDP pprts for the Weave CNI provider
+#  block:
+#  - name: Allow all access to tcp port 6783 for the Weave CNI provider
+#    ufw:
+#      rule: allow
+#      port: '6783'
+#      proto: tcp
+#
+#  - name: Allow all access to udp port 6783 for the Weave CNI provider
+#    ufw:
+#      rule: allow
+#      port: '6783'
+#      proto: udp
+#
+#  - name: Allow all access to udp port 6784 for the Weave CNI provider
+#    ufw:
+#      rule: allow
+#      port: '6784'
+#      proto: udp
+#
+#  when: (k8s_cni_provider == 'weave')
     
 - name: Disable the firewall
   ufw:
     state: disabled
-
+    
 - name: Update the Apt cache
   apt: update_cache=yes cache_valid_time=3600
 
@@ -139,95 +116,12 @@
 - name: Install the ebtables package
   apt: name=ebtables state=latest
 
-- name: Collect the system service facts
-  service_facts:
-  register: services_state
-
 - name: Collect the package facts
   package_facts:
     manager: auto
-
-- name: Retrieve the version of the installed kubelet package
-  debug:
-    msg: Found kubelet package version {{ ansible_facts.packages['kubelet'][0].version  }}
-  when: "'kubelet' in ansible_facts.packages"
-
-- name: Install the kubelet package
+    
+- name: Install the iSCSI client if this is a worker or there are no workers only masters
   block:
-  - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
-
-  - name: Unlock the version of the kubelet package
-    command:
-      cmd: apt-mark unhold kubelet
-
-  - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
-    apt:
-      state: present
-      policy_rc_d: 101
-      name:
-       - kubelet={{ k8s_ubuntu_package_version }}
-
-  - name: Lock the version of the kubelet package
-    command:
-      cmd: apt-mark hold kubelet
-
-  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_ubuntu_package_version))
-  
-- name: Retrieve the version of the installed kubectl package
-  debug:
-    msg: Found kubectl package version {{ ansible_facts.packages['kubectl'][0].version  }}
-  when: "'kubectl' in ansible_facts.packages"
-
-- name: Install the kubectl package
-  block:
-  - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
-
-  - name: Unlock the version of the kubectl package
-    command:
-      cmd: apt-mark unhold kubectl
-
-  - name: Install the kubectl package ({{ k8s_ubuntu_package_version }})
-    apt:
-      state: present
-      policy_rc_d: 101
-      name:
-       - kubectl={{ k8s_ubuntu_package_version }}
-
-  - name: Lock the version of the kubectl package
-    command:
-      cmd: apt-mark hold kubectl
-
-  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_ubuntu_package_version))
-
-- name: Install the kubeadm package
-  block:
-  - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
-
-  - name: Unlock the version of the kubeadm package
-    command:
-      cmd: apt-mark unhold kubeadm
-
-  - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
-    apt:
-      state: present
-      policy_rc_d: 101
-      name:
-       - kubeadm={{ k8s_ubuntu_package_version }}
-
-  - name: Lock the version of the kubeadm package
-    command:
-      cmd: apt-mark hold kubeadm
-
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
-
-- name: Install the iSCSI client if Longhorn is enabled and this is a worker or there are no workers only masters
-  block:
-  - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
-
   - name: Install the open-iscsi package
     apt:
       state: present
@@ -241,8 +135,117 @@
       state: started
       enabled: yes
            
-  when: ((("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+  when: (("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker']))
     
+  
+
+
+- name: Retrieve the version of the installed kubernetes-cni package
+  debug:
+    msg: Found kubernetes-cni package version {{ ansible_facts.packages['kubernetes-cni'][0].version  }}
+  when: "'kubernetes-cni' in ansible_facts.packages"
+    
+- name: Install the kubernetes-cni package
+  block:
+  - name: Unlock the version of the kubernetes-cni package
+    command:
+      cmd: apt-mark unhold kubernetes-cni
+    when: ('kubernetes-cni' in ansible_facts.packages)
+
+  - name: Install the kubernetes-cni package ({{ k8s_vmware_tanzu_kubernetes_cni_version }})
+    apt:
+      state: present
+      policy_rc_d: 101
+      deb: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubernetes-cni_{{ k8s_vmware_tanzu_kubernetes_cni_version }}_amd64.deb
+
+  - name: Lock the version of the kubernetes-cni package
+    command:
+      cmd: apt-mark hold kubernetes-cni
+
+  when: (('kubernetes-cni' not in ansible_facts.packages) or (ansible_facts.packages['kubernetes-cni'][0].version != k8s_vmware_tanzu_kubernetes_cni_version))
+    
+    
+    
+    
+    
+    
+
+#- name: Retrieve the version of the installed kubelet package
+#  debug:
+#    msg: Found kubelet package version {{ ansible_facts.packages['kubelet'][0].version  }}
+#  when: "'kubelet' in ansible_facts.packages"
+#
+#- name: Install the kubelet package
+#  block:
+#  - name: Update the Apt cache
+#    apt: update_cache=yes cache_valid_time=3600
+#
+#  - name: Unlock the version of the kubelet package
+#    command:
+#      cmd: apt-mark unhold kubelet
+#
+#  - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      name:
+#       - kubelet={{ k8s_ubuntu_package_version }}
+#
+#  - name: Lock the version of the kubelet package
+#    command:
+#      cmd: apt-mark hold kubelet
+#
+#  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_ubuntu_package_version))
+#  
+#- name: Retrieve the version of the installed kubectl package
+#  debug:
+#    msg: Found kubectl package version {{ ansible_facts.packages['kubectl'][0].version  }}
+#  when: "'kubectl' in ansible_facts.packages"
+#
+#- name: Install the kubectl package
+#  block:
+#  - name: Update the Apt cache
+#    apt: update_cache=yes cache_valid_time=3600
+#
+#  - name: Unlock the version of the kubectl package
+#    command:
+#      cmd: apt-mark unhold kubectl
+#
+#  - name: Install the kubectl package ({{ k8s_ubuntu_package_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      name:
+#       - kubectl={{ k8s_ubuntu_package_version }}
+#
+#  - name: Lock the version of the kubectl package
+#    command:
+#      cmd: apt-mark hold kubectl
+#
+#  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_ubuntu_package_version))
+#
+#- name: Install the kubeadm package
+#  block:
+#  - name: Update the Apt cache
+#    apt: update_cache=yes cache_valid_time=3600
+#
+#  - name: Unlock the version of the kubeadm package
+#    command:
+#      cmd: apt-mark unhold kubeadm
+#
+#  - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      name:
+#       - kubeadm={{ k8s_ubuntu_package_version }}
+#
+#  - name: Lock the version of the kubeadm package
+#    command:
+#      cmd: apt-mark hold kubeadm
+#
+#  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
+#
 
 
 

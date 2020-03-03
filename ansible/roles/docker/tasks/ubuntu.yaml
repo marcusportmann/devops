@@ -3,12 +3,7 @@
 
 - debug:
     msg: Applying the Ubuntu-specific Docker configuration
-    
-#- name: Install the pip3 package
-#  apt:
-#    state: present
-#    name: pip3
-    
+        
 - name: Add the Docker GPG apt key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
