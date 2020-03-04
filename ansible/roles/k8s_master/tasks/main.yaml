@@ -425,20 +425,14 @@
         msg: Install the helm {{ helm_version }} package
 
     - name: Check whether the helm {{ helm_version }} package has been downloaded
-      stat:
-        path: /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz
-      register: helm_downloaded_stat_result
+      become: no
+      local_action: stat path=packages/helm-v{{ helm_version }}-linux-amd64.tar.gz
+      register: helm_package_stat_result  
 
     - name: Download the helm {{ helm_version }} package
-      get_url:
-        url: https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz
-        dest: /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz
-        checksum: '{{ helm_package_hash }}'
-      when: (helm_downloaded_stat_result.stat.exists == False)
-      register: download_helm_package_result
-      until: download_helm_package_result is succeeded
-      retries: 3
-      delay: 10
+      become: no
+      local_action: get_url url='https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz' dest='packages/helm-v{{ helm_version }}-linux-amd64.tar.gz' checksum={{ helm_package_checksum }}
+      when: (helm_package_stat_result.stat.exists == False)
 
     - name: Remove the existing helm binary
       file:
@@ -446,9 +440,12 @@
         state: absent
 
     - name: Extract the helm binary from the helm {{ helm_version }} package
-      command:
-        cmd: tar xzvf /var/cache/ansible/helm-v{{ helm_version }}-linux-amd64.tar.gz -C /usr/bin --strip-components=1 linux-amd64/helm
-        warn: false
+      unarchive:
+        src: packages/helm-v{{ helm_version }}-linux-amd64.tar.gz
+        dest: /usr/bin
+        extra_opts:
+        - --strip-components=1
+        - linux-amd64/helm
         creates: /usr/bin/helm
 
     when: (helm_installed_version != helm_version)
@@ -478,22 +475,16 @@
   - block:
     - debug:
         msg: Install the istioctl {{ istioctl_version }} package
-
+        
     - name: Check whether the istioctl {{ istioctl_version }} package has been downloaded
-      stat:
-        path: /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz
-      register: istioctl_downloaded_stat_result
+      become: no
+      local_action: stat path=packages/istioctl-{{ istioctl_version }}-linux.tar.gz
+      register: istioctl_package_stat_result  
 
     - name: Download the istioctl {{ istioctl_version }} package
-      get_url:
-        url: https://github.com/istio/istio/releases/download/{{ istioctl_version }}/istioctl-{{ istioctl_version }}-linux.tar.gz
-        dest: /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz
-        checksum: '{{ istioctl_package_hash }}'
-      when: (istioctl_downloaded_stat_result.stat.exists == False)
-      register: download_istioctl_package_result
-      until: download_istioctl_package_result is succeeded
-      retries: 3
-      delay: 10      
+      become: no
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ istioctl_version }}/istioctl-{{ istioctl_version }}-linux.tar.gz' dest='packages/istioctl-{{ istioctl_version }}-linux.tar.gz' checksum={{ istioctl_package_checksum }}
+      when: (istioctl_package_stat_result.stat.exists == False)
 
     - name: Remove the existing istioctl binary
       file:
@@ -501,9 +492,9 @@
         state: absent
 
     - name: Extract the istioctl binary from the istioctl {{ istioctl_version }} package
-      command:
-        cmd: tar xzvf /var/cache/ansible/istioctl-{{ istioctl_version }}-linux.tar.gz -C /usr/bin
-        warn: false
+      unarchive:
+        src: packages/istioctl-{{ istioctl_version }}-linux.tar.gz
+        dest: /usr/bin
         creates: /usr/bin/istioctl
 
     when: (istioctl_installed_version != istioctl_version)
@@ -515,29 +506,21 @@
   - name: Download and extract the Istio package if required
     block:
     - name: Check whether the istio {{ istio_version }} package has been downloaded
-      stat:
-        path: /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz
-      register: istio_downloaded_stat_result
+      become: no
+      local_action: stat path=packages/istio-{{ istio_version }}-linux.tar.gz
+      register: istio_package_stat_result  
 
     - name: Download the istio {{ istio_version }} package
-      get_url:
-        url: https://github.com/istio/istio/releases/download/{{ istio_version }}/istio-{{ istio_version }}-linux.tar.gz
-        dest: /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz
-        checksum: '{{ istio_package_hash }}'
-      when: (istio_downloaded_stat_result.stat.exists == False)
-      register: download_istio_package_result
-      until: download_istio_package_result is succeeded
-      retries: 3
-      delay: 10      
+      become: no
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ istio_version }}/istio-{{ istio_version }}-linux.tar.gz' dest='packages/istio-{{ istio_version }}-linux.tar.gz' checksum={{ istio_package_checksum }}
+      when: (istio_package_stat_result.stat.exists == False)
 
     - name: Extract the istio {{ istio_version }} package
-      command:
-        cmd: tar xzvf /var/cache/ansible/istio-{{ istio_version }}-linux.tar.gz -C /tmp
-        warn: false
+      unarchive:
+        src: packages/istio-{{ istio_version }}-linux.tar.gz
+        dest: /tmp
         creates: /tmp/istio-{{ istio_version }}
-
-    when: ((istio_download_package is defined) and (istio_download_package != None) and (istio_download_package == true))
-
+  
   - name: Check if istio-system namespace exists
     shell:
       cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep istio-system | wc -l

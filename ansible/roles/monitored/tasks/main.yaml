@@ -71,22 +71,16 @@
         state: stopped
       when: prometheus_node_exporter_service_stat_result.stat.exists == True
       register: prometheus_node_exporter_service_stopped
-
+      
     - name: Check whether the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package has been downloaded
-      stat:
-        path: /var/cache/ansible/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
-      register: prometheus_node_exporter_downloaded_stat_result
+      become: no
+      local_action: stat path=packages/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
+      register: prometheus_node_exporter_package_stat_result  
 
     - name: Download the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
-      get_url:
-        url: https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
-        dest: /var/cache/ansible/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
-        checksum: '{{ prometheus_node_exporter_package_hash }}'
-      when: (prometheus_node_exporter_downloaded_stat_result.stat.exists == False)
-      register: download_prometheus_node_exporter_package_result
-      until: download_prometheus_node_exporter_package_result is succeeded
-      retries: 3
-      delay: 10      
+      become: no
+      local_action: get_url url='https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' dest='packages/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' checksum={{ prometheus_node_exporter_package_checksum }}
+      when: (prometheus_node_exporter_package_stat_result.stat.exists == False)
 
     - name: Remove the existing prometheus-node-exporter binary
       file:
@@ -94,11 +88,14 @@
         state: absent
 
     - name: Extract the node_exporter binary from the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
-      command:
-        cmd: tar xzvf /var/cache/ansible/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz -C /usr/bin --strip-components=1 node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64/node_exporter
-        warn: false
+      unarchive:
+        src: packages/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
+        dest: /usr/bin
+        extra_opts:
+        - --strip-components=1
+        - node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64/node_exporter
         creates: /usr/bin/node_exporter
-
+    
     - name: Rename the node_exporter binary extracted from the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package to prometheus-node-exporter
       command:
         cmd: mv /usr/bin/node_exporter /usr/bin/prometheus-node-exporter

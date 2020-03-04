@@ -12,8 +12,12 @@
   vars:
     docker_ubuntu_package_version: 5:19.03.6~3-0~ubuntu-bionic
     k8s_vmware_tanzu_kubernetes_grid_version: 1.17.3+vmware.1
+    k8s_vmware_tanzu_kubernetes_grid_checksum: sha256:34b680c64e7ccf8e7502519a4282c4e8e7c596acdf76945b15fa8e18a5525897
     k8s_vmware_tanzu_kubernetes_cni_version: 0.7.5+vmware.6-1
-    k8s_ubuntu_package_version: 1.17.3-00
+    k8s_vmware_tanzu_kubernetes_cri_tools_version: 1.16.1+vmware.3-1
+    k8s_vmware_tanzu_kubernetes_kubeadm_version: 1.17.3+vmware.1-1
+    k8s_vmware_tanzu_kubernetes_kubectl_version: 1.17.3+vmware.1-1
+    k8s_vmware_tanzu_kubernetes_kubelet_version: 1.17.3+vmware.1-1    
     topolvm_lvmd_version: 0.3.0    
   become: yes
   become_user: root
@@ -21,26 +25,25 @@
   - docker
   - k8s_common
 
-#- name: Configure the Kubernetes master hosts
-#  hosts: k8s_master
-#  vars:
-#    helm_version: 3.1.0
-#    helm_package_hash: sha256:f0fd9fe2b0e09dc9ed190239fce892a468cbb0a2a8fffb9fe846f893c8fd09de
-#    istio_version: 1.4.4
-#    istio_package_hash: sha256:105365208e6c5e2c24fbd74c34e6a63e0301d265b8b674387b6a8163c7579c27
-#    istioctl_version: 1.4.4
-#    istioctl_package_hash: sha256:01f5775dea867dde54e16da305378370bb0e7ee5acbfbedd35e1b40aefd2ce14
-#    k8s_ubuntu_package_version: 1.17.3-00
-#    kube_state_metrics_version: 1.9.4
-#    topolvm_version: 0.3.0
-#  become: yes
-#  become_user: root
-#  roles:
-#  - k8s_master
-#
-#- name: Configure the Kubernetes worker hosts
-#  hosts: k8s_worker
-#  become: yes
-#  become_user: root
-#  roles:
-#  - k8s_worker
+- name: Configure the Kubernetes master hosts
+  hosts: k8s_master
+  vars:
+    helm_version: 3.1.1
+    helm_package_checksum: sha256:cdd7ad304e2615c583dde0ffb0cb38fc1336cd7ce8ff3b5f237434dcadb28c98
+    istio_version: 1.4.6
+    istio_package_checksum: sha256:74480f2c73fad95aba923d16fbdda641f5ac55d1476a716d71cd2a350f48ff10
+    istioctl_version: 1.4.6
+    istioctl_package_checksum: sha256:ed92653cd390bc01a49d4bf2475910f8570c4d2ec99e30f3e3499fd3eef43cc2
+    kube_state_metrics_version: 1.9.4
+    topolvm_version: 0.3.0
+  become: yes
+  become_user: root
+  roles:
+  - k8s_master
+
+- name: Configure the Kubernetes worker hosts
+  hosts: k8s_worker
+  become: yes
+  become_user: root
+  roles:
+  - k8s_worker

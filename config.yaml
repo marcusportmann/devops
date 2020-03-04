@@ -103,9 +103,6 @@ variables:
 - name: istio_tracing_enabled
   values:
   - false
-- name: istio_download_package
-  values:
-  - false
   
 # ----------------------------------------------------------------------------------------
 # External Monitoring Configuration

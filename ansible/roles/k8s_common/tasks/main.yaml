@@ -34,29 +34,16 @@
   local_action: stat path=packages/vmware-kubernetes-v1.17.3+vmware.1.tar.gz
   register: vmware_tanzu_kubernetes_package_stat_result  
 
-
 - name: Download the VMware Tanzu Kubernetes Grid package
   become: no
-  local_action: get_url url='https://downloads.heptio.com/vmware-tanzu-kubernetes-grid/523a448aa3e9a0ef93ff892dceefee0a/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version | urlencode }}.tar.gz' dest='packages/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}.tar.gz' checksum=sha256:34b680c64e7ccf8e7502519a4282c4e8e7c596acdf76945b15fa8e18a5525897
+  local_action: get_url url='https://downloads.heptio.com/vmware-tanzu-kubernetes-grid/523a448aa3e9a0ef93ff892dceefee0a/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version | urlencode }}.tar.gz' dest='packages/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}.tar.gz' checksum={{ k8s_vmware_tanzu_kubernetes_grid_checksum }}
   when: (vmware_tanzu_kubernetes_package_stat_result.stat.exists == False)
 
 - name: Extract the VMware Tanzu Kubernetes Grid package on the host
   unarchive:
-    src: packages/vmware-kubernetes-v1.17.3+vmware.1.tar.gz
+    src: packages/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}.tar.gz
     dest: /tmp
     creates: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}
-
-
-#- name: Create the /tmp/vmware-kubernetes directory
-#  file:
-#    path: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}
-#    state: directory
-    
-#- name: Extract the VMware Tanzu Kubernetes Grid package on the host
-#  unarchive:
-#    src: packages/vmware-kubernetes-v1.17.3+vmware.1.tar.gz
-#    dest: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}
-#    extra_opts: [--strip-components=1]
 
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
@@ -93,33 +80,28 @@
   - block:
     - debug:
         msg: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package
-
+        
     - name: Check whether the TopoLVM lvmd {{ topolvm_lvmd_version }} package has been downloaded
-      stat:
-        path: /var/cache/ansible/lvmd-{{ topolvm_lvmd_version }}.tar.gz
-      register: topolvm_lvmd_downloaded_stat_result
-
+      become: no
+      local_action: stat path=packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz
+      register: topolvm_lvmd_package_stat_result  
+    
     - name: Download the TopoLVM lvmd {{ topolvm_lvmd_version }} package
-      get_url:
-        url: https://github.com/cybozu-go/topolvm/releases/download/v{{ topolvm_lvmd_version }}/lvmd-{{ topolvm_lvmd_version }}.tar.gz
-        dest: /var/cache/ansible/lvmd-{{ topolvm_lvmd_version }}.tar.gz
-      when: (topolvm_lvmd_downloaded_stat_result.stat.exists == False)
-      register: download_topo_lvmd_package_result
-      until: download_topo_lvmd_package_result is succeeded
-      retries: 3
-      delay: 10
-
+      become: no
+      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ topolvm_lvmd_version }}/lvmd-{{ topolvm_lvmd_version }}.tar.gz' dest='packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz'
+      when: (topolvm_lvmd_package_stat_result.stat.exists == False)
+    
     - name: Remove the existing TopoLVM lvmd binary
       file:
         path: /usr/bin/lvmd
         state: absent
 
     - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ topolvm_lvmd_version }} package
-      command:
-        cmd: tar xzvf /var/cache/ansible/lvmd-{{ topolvm_lvmd_version }}.tar.gz -C /usr/bin
-        warn: false
+      unarchive:
+        src: packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz
+        dest: /usr/bin
         creates: /usr/bin/lvmd
-
+    
     - template:
         src: topolvm-lvmd.service.j2
         dest: /lib/systemd/system/lvmd.service

@@ -31,19 +31,30 @@
 
 - name: Install the grafana package
   block:
-  - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
+  - name: Check whether the Grafana {{ grafana_package_version }} package has been downloaded
+    become: no
+    local_action: stat path=packages/grafana_{{ grafana_package_version }}_amd64.deb
+    register: grafana_package_stat_result  
 
+  - name: Download the Grafana {{ grafana_package_version }} package
+    become: no
+    local_action: get_url url='https://dl.grafana.com/oss/release/grafana_{{ grafana_package_version }}_amd64.deb' dest='packages/grafana_{{ grafana_package_version }}_amd64.deb' checksum={{ grafana_ubuntu_package_checksum }}
+    when: (grafana_package_stat_result.stat.exists == False)
+  
+  - name: Copy the Grafana {{ grafana_package_version }} package
+    copy:
+      src: packages/grafana_{{ grafana_package_version }}_amd64.deb
+      dest: /tmp/grafana_{{ grafana_package_version }}_amd64.deb
+  
   - name: Unlock the version of the grafana package
     command:
-      cmd: apt-mark unhold grafana
+      cmd: apt-mark unhold grafana  
 
-  - name: Install the grafana package ({{ grafana_ubuntu_package_version }})
+  - name: Install the grafana package ({{ grafana_package_version }})
     apt:
       state: present
       policy_rc_d: 101
-      name:
-       - grafana={{ grafana_ubuntu_package_version }}
+      deb: /tmp/grafana_{{ grafana_package_version }}_amd64.deb
 
   - name: Lock the version of the grafana package
     command:
