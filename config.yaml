@@ -68,7 +68,14 @@ variables:
 - name: topolvm_volume_group
   values:
   - system
-
+  
+# ----------------------------------------------------------------------------------------
+# Kubernetes Extensions Configuration
+# ----------------------------------------------------------------------------------------
+- name: bitnami_labs_sealed_secrets_enabled
+  values:
+  - true
+  
 # ----------------------------------------------------------------------------------------
 # Kubernetes Operator Configuration
 # ----------------------------------------------------------------------------------------
@@ -110,7 +117,6 @@ variables:
 - name: prometheus_data_directory
   values:
   - /var/lib/prometheus
-
 
 profiles:
 - name: devops

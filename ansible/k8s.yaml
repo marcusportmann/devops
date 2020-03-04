@@ -28,6 +28,7 @@
 - name: Configure the Kubernetes master hosts
   hosts: k8s_master
   vars:
+    bitnami_labs_sealed_secrets_version: 0.10.0
     helm_version: 3.1.1
     helm_package_checksum: sha256:cdd7ad304e2615c583dde0ffb0cb38fc1336cd7ce8ff3b5f237434dcadb28c98
     istio_version: 1.4.6

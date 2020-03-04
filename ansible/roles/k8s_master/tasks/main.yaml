@@ -906,6 +906,114 @@
 
 
 
+
+- name: Install the Bitnami Labs Sealed Secrets Extension
+  block:
+  - debug:
+      msg: Check whether the kubeseal {{ helm_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/kubeseal
+    register: kubeseal_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/kubeseal --version |  awk -F ' ' {'print $3'} | cut -c2-
+    register: kubeseal_installed_version_output
+    when: (kubeseal_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      kubeseal_installed_version: '{{ kubeseal_installed_version_output.stdout }}'
+    when: (kubeseal_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      kubeseal_installed_version: ''
+    when: (kubeseal_installed_stat_result.stat.exists == False)
+
+  - name: Install the Bitnami Labs kubeseal package
+    block:
+    - debug:
+        msg: Install the Bitnami Labs kubeseal {{ bitnami_labs_sealed_secrets_version }} package
+
+    - name: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been downloaded
+      become: no
+      local_action: stat path=packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
+      register: helm_package_stat_result  
+
+    - name: Download the kubeseal {{ bitnami_labs_sealed_secrets_version }} package
+      become: no
+      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}'
+      when: (helm_package_stat_result.stat.exists == False)
+
+    - name: Remove the existing kubeseal binary
+      file:
+        path: /usr/bin/kubeseal
+        state: absent
+
+    - name: Copy the kubeseal binary
+      copy:
+        src: packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
+        dest: /usr/bin
+        
+    - name: Rename the kubeseal binary
+      command:
+        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }} /usr/bin/kubeseal
+        creates: /usr/bin/kubeseal
+        
+    - name: Set the permissions for the kubeseal binary
+      file:
+        path: /usr/bin/kubeseal
+        owner: root
+        group: root
+        mode: 0770
+        state: file
+
+    when: (kubeseal_installed_version != bitnami_labs_sealed_secrets_version)
+    
+  - shell:
+      cmd: /usr/bin/kubectl -n kube-system get deployments | grep "sealed-secrets-controller" | wc -l
+    register: bitnami_labs_sealed_secrets_controller_installed_output
+    
+  - set_fact:
+      bitnami_labs_sealed_secrets_controller_installed_version: ''
+    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "0"
+        
+  - shell:
+      cmd: /usr/bin/kubectl -n kube-system describe deployment sealed-secrets-controller | grep "Image:" | sed 's/.*:v//'
+    register: bitnami_labs_sealed_secrets_controller_installed_version_output
+    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
+
+  - set_fact:
+      bitnami_labs_sealed_secrets_controller_installed_version: '{{ bitnami_labs_sealed_secrets_controller_installed_version_output.stdout }}'
+    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
+  
+  - name: Install the Bitnami Labs SealedSecret CRD and server-side controller
+    block:
+    - debug:
+        msg: Install the Bitnami Labs SealedSecret CRD and server-side controller
+        
+    - name: Retrieve the Bitnami Labs SealedSecret CRD and server-side controller configuration
+      get_url:
+        url: https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/controller.yaml
+        dest: /tmp/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+      register: get_bitnami_labs_sealed_secret_controller_result
+      until: get_bitnami_labs_sealed_secret_controller_result is succeeded
+      retries: 3
+      delay: 10      
+    
+    - name: Apply the Bitnami Labs SealedSecret CRD and server-side controller configuration
+      command: 
+        cmd: /usr/bin/kubectl apply -f /tmp/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+
+    when: (bitnami_labs_sealed_secrets_controller_installed_version != bitnami_labs_sealed_secrets_version)
+  
+  when: ((bitnami_labs_sealed_secrets_enabled is defined) and (bitnami_labs_sealed_secrets_enabled != None) and (bitnami_labs_sealed_secrets_enabled == true))
+
+
+
+
+
+
+
 # Delete the Postgres operator
 # kubectl delete -f /tmp/postgres-operator.yaml 
 # kubectl delete clusterserviceversion -n operators postgres-operator.v1.3.0
