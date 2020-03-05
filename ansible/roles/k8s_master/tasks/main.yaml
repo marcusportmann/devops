@@ -12,9 +12,14 @@
 
 - name: Copying the standard keys and certificates for the "{{ k8s_cluster_name }}" Kubernetes cluster
   block:
-  - name: Create the /etc/kubernetes/pki directory
+  - name: Create the /etc/kubernetes/apiserver directory
     file:
-      path: /etc/kubernetes/pki
+      path: /etc/kubernetes/apiserver
+      state: directory
+  
+  - name: Create the /etc/kubernetes/scheduler directory
+    file:
+      path: /etc/kubernetes/scheduler
       state: directory
 
   - name: Create the /etc/kubernetes/pki/etcd directory
@@ -33,7 +38,7 @@
       dest: /etc/kubernetes/pki/ca.crt
 
 - name: Initialize the first master node in the Kubernetes cluster
-  block:
+  block:    
   - name: Check whether the kubelet service has been configured
     stat:
       path: /var/lib/kubelet/config.yaml
@@ -81,30 +86,44 @@
     - set_fact:
         k8s_apiserver_advertise_address: "{{ hostname_i_result.stdout_lines[0] }}"
 
+    - name: Create the Kubernetes API server encryption configuration
+      block:
+      - name: Generate the Kubernetes API server encryption key
+        shell:
+          cmd: head -c 32 /dev/urandom | base64
+        register: generate_kube_apiserver_encryption_key_result
+        
+      - set_fact:
+          kube_apiserver_encryption_key: "{{ generate_kube_apiserver_encryption_key_result.stdout }}"
+        
+      - template:
+          src: k8s-apiserver-encryption.yaml
+          dest: /etc/kubernetes/apiserver/encryption.yaml
+        
+      - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
+        file:
+          path: /etc/kubernetes/apiserver/encryption.yaml
+          owner: root
+          group: root
+          mode: 0600
+          state: file
+        
+    - name: Create the Kubernetes scheduler configuration
+      block:
+      - name: Create the scheduler-config.yaml configuration file under the /etc/kubernetes/scheduler directory
+        template:
+          src: scheduler-config.yaml.j2
+          dest: /etc/kubernetes/scheduler/scheduler-config.yaml
+
+      - name: Create the scheduler-policy.cfg configuration file under the /etc/kubernetes/scheduler directory
+        template:
+          src: scheduler-policy.cfg.j2
+          dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
+              
     - name: Create the Kubernetes cluster configuration
       template:
         src: k8s-config.yaml.j2
-        dest: /tmp/k8s-config.yaml
-
-    - name: Create the TopoLVM scheduler configuration
-      block:
-  
-      - name: Create the /etc/kubernetes/topolvm directory
-        file:
-          path: /etc/kubernetes/topolvm
-          state: directory
-
-      - name: Create the TopoLVM scheduler-config.yaml configuration file under the /etc/kubernetes/topolvm directory
-        template:
-          src: topolvm-scheduler-config.yaml.j2
-          dest: /etc/kubernetes/topolvm/scheduler-config.yaml
-
-      - name: Create the TopoLVM scheduler-policy.cfg configuration file under the /etc/kubernetes/topolvm directory
-        template:
-          src: topolvm-scheduler-policy.cfg.j2
-          dest: /etc/kubernetes/topolvm/scheduler-policy.cfg
-
-      when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+        dest: /tmp/k8s-config.yaml              
 
     - name: Initialize the Kubernetes cluster
       shell:
@@ -117,7 +136,7 @@
           path: /root/.kube
           owner: root
           group: root
-          mode: 0750
+          mode: 0700
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
@@ -127,9 +146,9 @@
       - name: Set the permissions for the /root/.kube/config file
         file:
           path: /root/.kube/config
-          owner: k8s-admin
-          group: k8s-admin
-          mode: 0640
+          owner: root
+          group: root
+          mode: 0600
           state: file
 
     - name: Copy the Kubernetes configuration to the k8s-admin user
@@ -166,7 +185,7 @@
           path: /usr/bin/kubeshell
           owner: root
           group: root
-          mode: 0770
+          mode: 0750
           state: file          
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
@@ -901,11 +920,6 @@
     when: topolvm_system_namespace_exists_output.stdout == "0"        
 
   when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
-
-
-
-
-
 
 - name: Install the Bitnami Labs Sealed Secrets Extension
   block:

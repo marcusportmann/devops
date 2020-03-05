@@ -18,6 +18,13 @@ apiServer:
     apiserver-count: "{{ groups["k8s_master"] | length }}"
     service-account-issuer: "kubernetes.default.svc"
     service-account-signing-key-file: "/etc/kubernetes/pki/sa.key"
+    encryption-provider-config: "/etc/kubernetes/apiserver/encryption.yaml"
+    
+  extraVolumes:
+    - name: "config"
+      hostPath: /etc/kubernetes/apiserver
+      mountPath: /etc/kubernetes/apiserver
+      readOnly: true
 
 
 {% if ((k8s_control_plane_endpoint is defined) and (k8s_control_plane_endpoint != None))  %}
@@ -50,15 +57,12 @@ networking:
 {% endif %}
 
 
-{% if ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))  %}
-
 scheduler:
   extraVolumes:
     - name: "config"
-      hostPath: /etc/kubernetes/topolvm
-      mountPath: /var/lib/scheduler
+      hostPath: /etc/kubernetes/scheduler
+      mountPath: /etc/kubernetes/scheduler
       readOnly: true
   extraArgs:
-    config: /var/lib/scheduler/scheduler-config.yaml
+    config: /etc/kubernetes/scheduler/scheduler-config.yaml
     
-{% endif %}

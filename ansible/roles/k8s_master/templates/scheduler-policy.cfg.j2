@@ -2,7 +2,11 @@
   "kind" : "Policy",
   "apiVersion" : "v1",
   "extenders" :
-    [{
+    [
+    
+{% if ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))  %}    
+    
+    {
 {% if ('k8s_master' in groups) %}
       "urlPrefix": "http://127.0.0.1:9251",
 {% endif %}
@@ -20,5 +24,10 @@
         "name": "topolvm.cybozu.com/capacity",
         "ignoredByScheduler": true
       }]
-    }]
+    }
+    
+{% endif %}
+
+
+    ]
 }
