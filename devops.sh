@@ -11,6 +11,7 @@ function usage {
     echo "  -h           Print this message and exit."
     echo "  -p PROVIDER  One of the following providers: virtualbox, vmware, vsphere, hyperv."
     echo "               If not specified the provider will default to vmware."
+    echo ""
 }
 
 action=""
@@ -69,10 +70,11 @@ case "$subcommand" in
     host=$1; shift
     vagrant --provider=$provider --profile=$profile halt $host --force
     ;;    
-   \? )
-     echo "Invalid Action: -$OPTARG" 1>&2
-     exit 1
-     ;;
+  *)
+    echo "Invalid action: $subcommand\n"
+    usage
+    exit 1
+    ;;
 
 esac
 

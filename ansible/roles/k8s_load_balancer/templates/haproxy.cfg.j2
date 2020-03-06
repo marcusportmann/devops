@@ -36,12 +36,8 @@ defaults
 	errorfile 503 /etc/haproxy/errors/503.http
 	errorfile 504 /etc/haproxy/errors/504.http
 
-
-{%  if inventory_hostname not in groups["k8s_master"] %}
-
 frontend k8s-api
-    bind {{ ansible_default_ipv4.address }}:6443
-    bind 127.0.0.1:6443
+    bind :6443
     mode tcp
     option tcplog
     timeout client 300000
@@ -57,4 +53,3 @@ backend k8s-api
         {% for host in groups["k8s_master"] %}server {{ hostvars[host]['inventory_hostname_short'] }} {{ hostvars[host]['inventory_hostname'] }}:6443 check
         {% endfor %}
 
-{% endif %}

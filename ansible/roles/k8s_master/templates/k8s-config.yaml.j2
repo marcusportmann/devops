@@ -11,8 +11,10 @@ kubernetesVersion: stable-1.17
 
 apiServer:
   certSANs:
-    {% for k8s_api_server_cert_san in k8s_api_server_cert_sans %}- {{ k8s_api_server_cert_san }}
-    {% endfor %}
+  - localhost
+  - 127.0.0.1  
+  {% if ((k8s_control_plane_endpoint is defined) and (k8s_control_plane_endpoint != None))  -%}- {{ k8s_control_plane_endpoint }}
+  {% endif %}
 
   extraArgs:
     apiserver-count: "{{ groups["k8s_master"] | length }}"
@@ -21,10 +23,10 @@ apiServer:
     encryption-provider-config: "/etc/kubernetes/apiserver/encryption.yaml"
     
   extraVolumes:
-    - name: "config"
-      hostPath: /etc/kubernetes/apiserver
-      mountPath: /etc/kubernetes/apiserver
-      readOnly: true
+  - name: "config"
+    hostPath: /etc/kubernetes/apiserver
+    mountPath: /etc/kubernetes/apiserver
+    readOnly: true
 
 
 {% if ((k8s_control_plane_endpoint is defined) and (k8s_control_plane_endpoint != None))  %}
@@ -37,8 +39,8 @@ controlPlaneEndpoint: {{  groups["k8s_master"][0] }}
 etcd:
   external:
     endpoints:
-      {% for host in groups["etcd"] %}- https://{{ hostvars[host]['inventory_hostname'] }}:2379
-      {% endfor %}
+    {% for host in groups["etcd"] %}- https://{{ hostvars[host]['inventory_hostname'] }}:2379
+    {% endfor %}
 
     caFile: /etc/kubernetes/pki/etcd/ca.crt
     certFile: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.crt
@@ -59,10 +61,10 @@ networking:
 
 scheduler:
   extraVolumes:
-    - name: "config"
-      hostPath: /etc/kubernetes/scheduler
-      mountPath: /etc/kubernetes/scheduler
-      readOnly: true
+  - name: "config"
+    hostPath: /etc/kubernetes/scheduler
+    mountPath: /etc/kubernetes/scheduler
+    readOnly: true
   extraArgs:
     config: /etc/kubernetes/scheduler/scheduler-config.yaml
     

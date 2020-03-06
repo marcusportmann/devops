@@ -39,9 +39,9 @@ variables:
 - name: k8s_cluster_domain
   values:
   - local.internal
-#  - name: k8s_control_plane_endpoint
-#    values:
-#      - k8s-local-api.local
+#- name: k8s_control_plane_endpoint
+#  values:
+#  - k8s-local-api.local
 #  - name: k8s_kube_state_metrics_endpoint
 #    values:
 #      - k8s-local-metrics.local
@@ -135,9 +135,17 @@ profiles:
   - k8s-local-w-01.local
   - k8s-local-w-02.local  
   - monitor.local
+  
+- name: k8s_only_masters
+  hosts:
+  - k8s-local-api.local
+  - k8s-local-m-01.local
+  - k8s-local-m-02.local
+  - k8s-local-m-03.local
 
 - name: k8s_full
   hosts:
+  - k8s-local-api.local
   - k8s-local-m-01.local
   - k8s-local-m-02.local
   - k8s-local-m-03.local
@@ -203,11 +211,25 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
+  
+- name:                     k8s-local-api.local
+  type:                     ubuntu1804
+  ansible_playbook:         ansible/devops.yaml
+  ansible_groups:           monitored,k8s_load_balancer
+  cpus:                     1
+  memory:                   512
+  hostname:                 k8s-local-api
+  fqdn:                     k8s-local-api.local
+  ip:                       192.168.184.50/24
+  network:                  192.168.184.0/24
+  gateway:                  192.168.184.2
+  dns_server:               192.168.184.2
+  dns_search:               local  
 
 - name:                     k8s-local-m-01.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_load_balancer,k8s_master
+  ansible_groups:           monitored,k8s_master
   cpus:                     2
   memory:                   2560
   hostname:                 k8s-local-m-01
@@ -221,7 +243,7 @@ hosts:
 - name:                     k8s-local-m-02.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_load_balancer,k8s_master
+  ansible_groups:           monitored,k8s_master
   cpus:                     2
   memory:                   2560
   hostname:                 k8s-local-m-02
@@ -235,7 +257,7 @@ hosts:
 - name:                     k8s-local-m-03.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_load_balancer,k8s_master
+  ansible_groups:           monitored,k8s_master
   cpus:                     2
   memory:                   2560
   hostname:                 k8s-local-m-03
@@ -310,7 +332,7 @@ hosts:
   memory:                   5120
   hostname:                 devops
   fqdn:                     devops.local
-  ip:                       192.168.184.50/24
+  ip:                       192.168.184.60/24
   network:                  192.168.184.0/24
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2

@@ -1,5 +1,13 @@
 # file: roles/k8s_master/tasks/main.yaml
 
+- name: Create the /var/tmp/ansible directory
+  file:
+    path: /var/tmp/ansible
+    owner: root
+    group: root
+    mode: 0700    
+    state: directory
+
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
@@ -10,7 +18,7 @@
   tags:
     - unbound
 
-- name: Copying the standard keys and certificates for the "{{ k8s_cluster_name }}" Kubernetes cluster
+- name: Create the configuration directories for the Kubernetes API server and scheduler
   block:
   - name: Create the /etc/kubernetes/apiserver directory
     file:
@@ -22,11 +30,13 @@
       path: /etc/kubernetes/scheduler
       state: directory
 
+- name: Copying the standard keys and certificates for the "{{ k8s_cluster_name }}" Kubernetes cluster
+  block:
   - name: Create the /etc/kubernetes/pki/etcd directory
     file:
       path: /etc/kubernetes/pki/etcd
       state: directory
-
+  
   - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki directory
     copy:
       src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.key
@@ -38,7 +48,7 @@
       dest: /etc/kubernetes/pki/ca.crt
 
 - name: Initialize the first master node in the Kubernetes cluster
-  block:    
+  block:      
   - name: Check whether the kubelet service has been configured
     stat:
       path: /var/lib/kubelet/config.yaml
@@ -123,11 +133,11 @@
     - name: Create the Kubernetes cluster configuration
       template:
         src: k8s-config.yaml.j2
-        dest: /tmp/k8s-config.yaml              
+        dest: /var/tmp/ansible/k8s-config.yaml              
 
     - name: Initialize the Kubernetes cluster
       shell:
-        cmd: /usr/bin/kubeadm init --config /tmp/k8s-config.yaml
+        cmd: /usr/bin/kubeadm init --config /var/tmp/ansible/k8s-config.yaml
 
     - name: Copy the Kubernetes configuration to the root user
       block:
@@ -197,19 +207,19 @@
       block:
       - template:
           src: prometheus-service-account.yaml.j2
-          dest: /tmp/prometheus-service-account.yaml
+          dest: /var/tmp/ansible/prometheus-service-account.yaml
 
       - shell:
-          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-service-account.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-service-account.yaml
 
     - name: Deploy the kube-state-metrics service if there are no worker nodes
       block:
       - template:
           src: kube-state-metrics.yaml.j2
-          dest: /tmp/kube-state-metrics.yaml
+          dest: /var/tmp/ansible/kube-state-metrics.yaml
 
       - shell:
-          cmd: /usr/bin/kubectl apply -f /tmp/kube-state-metrics.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kube-state-metrics.yaml
 
     when: kubelet_config_stat_result.stat.exists == False
 
@@ -240,12 +250,12 @@
         group: root
         mode: 0770
         state: file
-
+        
+    - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
+      wait_for:
+        timeout: 15
+        
     when: ((etc_cni_stat_result.stat.exists == False) and (k8s_cni_provider == 'weave'))
-
-  - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
-    wait_for:
-      timeout: 15
 
   - name: Wait for Kubernetes node initialization to complete
     command:
@@ -259,9 +269,54 @@
     stat:
       path: /var/lib/kubelet/config.yaml
     register: kubelet_config_stat_result
-
+      
   - name: Initializing the additional master node in the Kubernetes cluster
     block:
+    - name: Fetch the /etc/kubernetes/scheduler/scheduler-config.yaml file from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/scheduler/scheduler-config.yaml
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+    
+    - name: Copy the /etc/kubernetes/scheduler/scheduler-config.yaml to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-config.yaml
+        dest: /etc/kubernetes/scheduler/scheduler-config.yaml
+    
+    - name: Fetch the /etc/kubernetes/scheduler/scheduler-policy.cfg file from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/scheduler/scheduler-policy.cfg
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+    
+    - name: Copy the /etc/kubernetes/scheduler/scheduler-policy.cfg to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-policy.cfg
+        dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
+      
+    - name: Fetch the /etc/kubernetes/apiserver/encryption.yaml file from the first master node in the Kubernetes cluster
+      fetch:
+        src: /etc/kubernetes/apiserver/encryption.yaml
+        dest: fetched_files
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+    
+    - name: Copy the /etc/kubernetes/apiserver/encryption.yaml to the additional master
+      copy:
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/apiserver/encryption.yaml
+        dest: /etc/kubernetes/apiserver/encryption.yaml
+        
+    - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
+      file:
+        path: /etc/kubernetes/apiserver/encryption.yaml
+        owner: root
+        group: root
+        mode: 0600
+        state: file
+          
+    - name: Remove the local copy of the encryption.yaml file
+      become: no
+      local_action: file path=fetched_files/{{ inventory_hostname }}/etc/kubernetes/apiserver/encryption.yaml state=absent     
+    
     - name: Fetch the /etc/kubernetes/pki/sa.key from the first master node in the Kubernetes cluster
       fetch:
         src: /etc/kubernetes/pki/sa.key
@@ -414,7 +469,7 @@
       when: ("k8s_worker" not in groups.keys())
 
     when: kubelet_config_stat_result.stat.exists == False
-
+        
   when: groups['k8s_master'][0] != inventory_hostname
 
 - name: Install Helm
@@ -537,8 +592,8 @@
     - name: Extract the istio {{ istio_version }} package
       unarchive:
         src: packages/istio-{{ istio_version }}-linux.tar.gz
-        dest: /tmp
-        creates: /tmp/istio-{{ istio_version }}
+        dest: /var/tmp/ansible
+        creates: /var/tmp/ansible/istio-{{ istio_version }}
   
   - name: Check if istio-system namespace exists
     shell:
@@ -549,50 +604,50 @@
     block:
     - name: Copying the keys and certificates for the Istio service mesh
       block:
-      - name: Create the /tmp/istio-pki directory
+      - name: Create the /var/tmp/ansible/istio-pki directory
         file:
-          path: /tmp/istio-pki
+          path: /var/tmp/ansible/istio-pki
           state: directory
 
-      - name: Copy the Istio intermediate CA private key to the /tmp/istio-pki directory
+      - name: Copy the Istio intermediate CA private key to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.key
-          dest: /tmp/istio-pki/ca-key.pem
+          dest: /var/tmp/ansible/istio-pki/ca-key.pem
 
-      - name: Copy the Istio intermediate CA certificate to the /tmp/istio-pki directory
+      - name: Copy the Istio intermediate CA certificate to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.crt
-          dest: /tmp/istio-pki/ca-cert.pem
+          dest: /var/tmp/ansible/istio-pki/ca-cert.pem
 
-      - name: Copy the Root CA certificate to the /tmp/istio-pki directory
+      - name: Copy the Root CA certificate to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/ca.crt
-          dest: /tmp/istio-pki/root-cert.pem
+          dest: /var/tmp/ansible/istio-pki/root-cert.pem
 
-      - name: Copy the Istio intermediate CA certificate chain to the /tmp/istio-pki directory
+      - name: Copy the Istio intermediate CA certificate chain to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca-chain.crt
-          dest: /tmp/istio-pki/cert-chain.pem
+          dest: /var/tmp/ansible/istio-pki/cert-chain.pem
 
-      - name: Copy the Istio ingress gateway private key to the /tmp/istio-pki directory
+      - name: Copy the Istio ingress gateway private key to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.key
-          dest: /tmp/istio-pki/ingressgateway-key.pem
+          dest: /var/tmp/ansible/istio-pki/ingressgateway-key.pem
 
-      - name: Copy the Istio ingress gateway certificate to the /tmp/istio-pki directory
+      - name: Copy the Istio ingress gateway certificate to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.crt
-          dest: /tmp/istio-pki/ingressgateway-cert.pem
+          dest: /var/tmp/ansible/istio-pki/ingressgateway-cert.pem
 
-      - name: Copy the Istio telemetry gateway private key to the /tmp/istio-pki directory
+      - name: Copy the Istio telemetry gateway private key to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.key
-          dest: /tmp/istio-pki/telemetry-gateway-key.pem
+          dest: /var/tmp/ansible/istio-pki/telemetry-gateway-key.pem
 
-      - name: Copy the Istio telemetry gateway certificate to the /tmp/istio-pki directory
+      - name: Copy the Istio telemetry gateway certificate to the /var/tmp/ansible/istio-pki directory
         copy:
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.crt
-          dest: /tmp/istio-pki/telemetry-gateway-cert.pem
+          dest: /var/tmp/ansible/istio-pki/telemetry-gateway-cert.pem
 
     - name: Create the istio-system namespace
       command:
@@ -600,44 +655,44 @@
 
     - name: Create the secret in the istio-system namespace for the Istio intermediate CA private key and certificates
       command:
-        cmd: /usr/bin/kubectl create -n istio-system secret generic cacerts  --from-file=/tmp/istio-pki/ca-cert.pem --from-file=/tmp/istio-pki/ca-key.pem --from-file=/tmp/istio-pki/root-cert.pem --from-file=/tmp/istio-pki/cert-chain.pem
+        cmd: /usr/bin/kubectl create -n istio-system secret generic cacerts  --from-file=/var/tmp/ansible/istio-pki/ca-cert.pem --from-file=/var/tmp/ansible/istio-pki/ca-key.pem --from-file=/var/tmp/ansible/istio-pki/root-cert.pem --from-file=/var/tmp/ansible/istio-pki/cert-chain.pem
 
     - name: Create the secret in the istio-system namespace for the Istio ingress gateway private key and certificate
       command:
-        cmd: /usr/bin/kubectl create -n istio-system secret tls istio-ingressgateway-certs --key=/tmp/istio-pki/ingressgateway-key.pem --cert=/tmp/istio-pki/ingressgateway-cert.pem
+        cmd: /usr/bin/kubectl create -n istio-system secret tls istio-ingressgateway-certs --key=/var/tmp/ansible/istio-pki/ingressgateway-key.pem --cert=/var/tmp/ansible/istio-pki/ingressgateway-cert.pem
 
     - name: Create the secret in the istio-system namespace for the Istio ingress gateway CA certificate
       command:
-        cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/tmp/istio-pki/root-cert.pem
+        cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/var/tmp/ansible/istio-pki/root-cert.pem
 
     - name: Create the secret in the istio-system namespace for the Istio telemetry gateway private key and certificate
       command:
-        cmd: /usr/bin/kubectl create -n istio-system secret tls telemetry-gateway-cert --key=/tmp/istio-pki/telemetry-gateway-key.pem --cert=/tmp/istio-pki/telemetry-gateway-cert.pem
+        cmd: /usr/bin/kubectl create -n istio-system secret tls telemetry-gateway-cert --key=/var/tmp/ansible/istio-pki/telemetry-gateway-key.pem --cert=/var/tmp/ansible/istio-pki/telemetry-gateway-cert.pem
 
     - name: Create the secret in the istio-system namespace for the Istio telemetry gateway CA certificate
       command:
-        cmd: /usr/bin/kubectl create -n istio-system secret generic telemetry-gateway-cert-cacert --from-file=/tmp/istio-pki/root-cert.pem
+        cmd: /usr/bin/kubectl create -n istio-system secret generic telemetry-gateway-cert-cacert --from-file=/var/tmp/ansible/istio-pki/root-cert.pem
 
     - name: Initialize the Kiali secret
       block:
       - template:
           src: kiali-secret.yaml.j2
-          dest: /tmp/kiali-secret.yaml
+          dest: /var/tmp/ansible/kiali-secret.yaml
 
       - name: Create the Kiali secret
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/kiali-secret.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kiali-secret.yaml
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
     - name: Create the Istio configuration file
       template:
         src: istio-config.yaml.j2
-        dest: /tmp/istio-config.yaml
+        dest: /var/tmp/ansible/istio-config.yaml
 
     - name: Initialize the Istio service mesh
       shell:
-        cmd: /usr/bin/istioctl manifest apply -f /tmp/istio-config.yaml
+        cmd: /usr/bin/istioctl manifest apply -f /var/tmp/ansible/istio-config.yaml
 
     - name: Wait for the Istio service mesh initialization to complete
       command:
@@ -647,44 +702,44 @@
     - block:
       - template:
           src: jaeger-ingress.yaml.j2
-          dest: /tmp/jaeger-ingress.yaml
+          dest: /var/tmp/ansible/jaeger-ingress.yaml
 
       - name: Enable ingress for Jaeger
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/jaeger-ingress.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/jaeger-ingress.yaml
 
       when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
 
     - block:
       - template:
           src: kiali-ingress.yaml.j2
-          dest: /tmp/kiali-ingress.yaml
+          dest: /var/tmp/ansible/kiali-ingress.yaml
 
       - name: Enable ingress for Kiali
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/kiali-ingress.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kiali-ingress.yaml
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
     - block:
       - template:
           src: grafana-ingress.yaml.j2
-          dest: /tmp/grafana-ingress.yaml
+          dest: /var/tmp/ansible/grafana-ingress.yaml
 
       - name: Enable ingress for Grafana
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/grafana-ingress.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/grafana-ingress.yaml
 
       when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
 
     - block:
       - template:
           src: prometheus-ingress.yaml.j2
-          dest: /tmp/prometheus-ingress.yaml
+          dest: /var/tmp/ansible/prometheus-ingress.yaml
 
       - name: Enable ingress for Prometheus
         command:
-          cmd: /usr/bin/kubectl apply -f /tmp/prometheus-ingress.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-ingress.yaml
 
       when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
 
@@ -703,11 +758,11 @@
   - block:
     - template:
         src: longhorn.yaml.j2
-        dest: /tmp/longhorn.yaml
+        dest: /var/tmp/ansible/longhorn.yaml
 
     - name: Apply the Longhorn configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/longhorn.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/longhorn.yaml
   
     when: longhorn_system_namespace_exists_output.stdout == "0"
 
@@ -725,7 +780,7 @@
     - name: Retrieve the Operator Lifecycle Manager Custom Resource Definitions configuration
       get_url:
         url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
-        dest: /tmp/operator-lifecycle-manager-crds.yaml
+        dest: /var/tmp/ansible/operator-lifecycle-manager-crds.yaml
       register: get_operator_lifecycle_manager_crds_result
       until: get_operator_lifecycle_manager_crds_result is succeeded
       retries: 3
@@ -733,7 +788,7 @@
     
     - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-crds.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/operator-lifecycle-manager-crds.yaml
 
     - name: Sleep for 15 seconds to allow the Operator Lifecycle Manager Custom Resource Definitions configuration to be applied
       wait_for:
@@ -742,7 +797,7 @@
     - name: Retrieve the Operator Lifecycle Manager configuration
       get_url:
         url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/olm.yaml
-        dest: /tmp/operator-lifecycle-manager-olm.yaml
+        dest: /var/tmp/ansible/operator-lifecycle-manager-olm.yaml
       register: get_operator_lifecycle_manager_configuration_result
       until: get_operator_lifecycle_manager_configuration_result is succeeded
       retries: 3
@@ -750,7 +805,7 @@
   
     - name: Apply the Operator Lifecycle Manager configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/operator-lifecycle-manager-olm.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/operator-lifecycle-manager-olm.yaml
         
     when: operator_lifecycle_manager_namespace_exists_output.stdout == "0"        
  
@@ -768,11 +823,11 @@
     - name: Generate the Postgres Operator configuration
       template:
         src: postgres-operator.yaml.j2
-        dest: /tmp/postgres-operator.yaml
+        dest: /var/tmp/ansible/postgres-operator.yaml
       
     - name: Apply the Postgres Operator configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/postgres-operator.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/postgres-operator.yaml
     
     when: postgres_operator_installed_output.stdout == "0"
   
@@ -790,11 +845,11 @@
     - name: Generate the Prometheus Operator configuration
       template:
         src: prometheus-operator.yaml.j2
-        dest: /tmp/prometheus-operator.yaml
+        dest: /var/tmp/ansible/prometheus-operator.yaml
   
     - name: Apply the Prometheus Operator configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/prometheus-operator.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-operator.yaml
     
     when: prometheus_operator_installed_output.stdout == "0"
   
@@ -809,7 +864,6 @@
     register: topolvm_system_namespace_exists_output    
 
   - block:
-  
     - set_fact:
         topolvm_mutatingwebhook_key: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/topolvm-mutatingwebhook.key') | b64encode }}"
         
@@ -822,11 +876,11 @@
     - name: Generate the initial TopoLVM configuration
       template:
         src: topolvm-init.yaml.j2
-        dest: /tmp/topolvm-init.yaml
+        dest: /var/tmp/ansible/topolvm-init.yaml
         
     - name: Apply the initial TopoLVM configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-init.yaml  
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-init.yaml  
         
     - name: Disable the TopoLVM mutating webhook for the kube-system namespace
       command:
@@ -850,72 +904,72 @@
     - name: Generate the TopoLVM Custom Resource Definition configuration
       template:
         src: topolvm-crd.yaml.j2
-        dest: /tmp/topolvm-crd.yaml
+        dest: /var/tmp/ansible/topolvm-crd.yaml
     
     - name: Apply the TopoLVM Custom Resource Definition configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-crd.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-crd.yaml
 
     - name: Generate the TopoLVM Pod Security Policy configuration
       template:
         src: topolvm-psp.yaml.j2
-        dest: /tmp/topolvm-psp.yaml
+        dest: /var/tmp/ansible/topolvm-psp.yaml
 
     - name: Apply the TopoLVM Pod Security Policy configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-psp.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-psp.yaml
 
     - name: Generate the TopoLVM Scheduler daemonset configuration
       template:
         src: topolvm-scheduler-daemonset.yaml.j2
-        dest: /tmp/topolvm-scheduler.yaml
+        dest: /var/tmp/ansible/topolvm-scheduler.yaml
       when: ("k8s_master" in groups.keys())
         
     - name: Generate the TopoLVM Scheduler service configuration
       template:
         src: topolvm-scheduler-service.yaml.j2
-        dest: /tmp/topolvm-scheduler.yaml
+        dest: /var/tmp/ansible/topolvm-scheduler.yaml
       when: ("k8s_master" not in groups.keys())
         
     - name: Apply the TopoLVM Scheduler configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-scheduler.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-scheduler.yaml
 
     - name: Generate the TopoLVM Mutating Webhooks configuration
       template:
         src: topolvm-mutatingwebhooks.yaml.j2
-        dest: /tmp/topolvm-mutatingwebhooks.yaml
+        dest: /var/tmp/ansible/topolvm-mutatingwebhooks.yaml
     
     - name: Apply the TopoLVM Mutating Webhooks configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-mutatingwebhooks.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-mutatingwebhooks.yaml
 
     - name: Generate the TopoLVM Controller configuration
       template:
         src: topolvm-controller.yaml.j2
-        dest: /tmp/topolvm-controller.yaml
+        dest: /var/tmp/ansible/topolvm-controller.yaml
     
     - name: Apply the TopoLVM Controller configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-controller.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-controller.yaml
 
     - name: Generate the TopoLVM Node configuration    
       template:
         src: topolvm-node.yaml.j2
-        dest: /tmp/topolvm-node.yaml
+        dest: /var/tmp/ansible/topolvm-node.yaml
     
     - name: Apply the TopoLVM Node configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-node.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-node.yaml
         
     - name: Generate the TopoLVM Provisioner configuration    
       template:
         src: topolvm-provisioner.yaml.j2
-        dest: /tmp/topolvm-provisioner.yaml
+        dest: /var/tmp/ansible/topolvm-provisioner.yaml
     
     - name: Apply the TopoLVM Provisioner configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/topolvm-provisioner.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-provisioner.yaml
         
     when: topolvm_system_namespace_exists_output.stdout == "0"        
 
@@ -924,7 +978,7 @@
 - name: Install the Bitnami Labs Sealed Secrets Extension
   block:
   - debug:
-      msg: Check whether the kubeseal {{ helm_version }} package has been installed
+      msg: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been installed
 
   - stat:
       path: /usr/bin/kubeseal
@@ -951,12 +1005,12 @@
     - name: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been downloaded
       become: no
       local_action: stat path=packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
-      register: helm_package_stat_result  
+      register: kubeseal_package_stat_result  
 
     - name: Download the kubeseal {{ bitnami_labs_sealed_secrets_version }} package
       become: no
       local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}'
-      when: (helm_package_stat_result.stat.exists == False)
+      when: (kubeseal_package_stat_result.stat.exists == False)
 
     - name: Remove the existing kubeseal binary
       file:
@@ -1008,7 +1062,7 @@
     - name: Retrieve the Bitnami Labs SealedSecret CRD and server-side controller configuration
       get_url:
         url: https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/controller.yaml
-        dest: /tmp/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+        dest: /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
       register: get_bitnami_labs_sealed_secret_controller_result
       until: get_bitnami_labs_sealed_secret_controller_result is succeeded
       retries: 3
@@ -1016,7 +1070,7 @@
     
     - name: Apply the Bitnami Labs SealedSecret CRD and server-side controller configuration
       command: 
-        cmd: /usr/bin/kubectl apply -f /tmp/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
 
     when: (bitnami_labs_sealed_secrets_controller_installed_version != bitnami_labs_sealed_secrets_version)
   
@@ -1029,5 +1083,5 @@
 
 
 # Delete the Postgres operator
-# kubectl delete -f /tmp/postgres-operator.yaml 
+# kubectl delete -f /var/tmp/ansible/postgres-operator.yaml 
 # kubectl delete clusterserviceversion -n operators postgres-operator.v1.3.0

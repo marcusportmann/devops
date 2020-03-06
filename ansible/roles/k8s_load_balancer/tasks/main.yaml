@@ -1,8 +1,16 @@
 # file: roles/k8s_load_balancer/tasks/main.yaml
 
-- name: Create the /var/cache/ansible directory
+- name: Create the /var/tmp/ansible directory
   file:
-    path: /var/cache/ansible
+    path: /var/tmp/ansible
+    owner: root
+    group: root
+    mode: 0700    
+    state: directory
+
+- name: Create the /var/tmp/ansible directory
+  file:
+    path: /var/tmp/ansible
     state: directory
 
 - include_tasks: ubuntu.yaml

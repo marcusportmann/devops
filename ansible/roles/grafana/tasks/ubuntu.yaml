@@ -44,7 +44,7 @@
   - name: Copy the Grafana {{ grafana_package_version }} package
     copy:
       src: packages/grafana_{{ grafana_package_version }}_amd64.deb
-      dest: /tmp/grafana_{{ grafana_package_version }}_amd64.deb
+      dest: /var/tmp/ansible/grafana_{{ grafana_package_version }}_amd64.deb
   
   - name: Unlock the version of the grafana package
     command:
@@ -54,7 +54,7 @@
     apt:
       state: present
       policy_rc_d: 101
-      deb: /tmp/grafana_{{ grafana_package_version }}_amd64.deb
+      deb: /var/tmp/ansible/grafana_{{ grafana_package_version }}_amd64.deb
 
   - name: Lock the version of the grafana package
     command:

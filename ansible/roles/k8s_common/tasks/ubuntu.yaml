@@ -15,17 +15,27 @@
     replace: '# \1'
   when: ansible_swaptotal_mb > 0
 
-#- name: Allow all access to tcp port 2379
-#  ufw:
-#    rule: allow
-#    port: '2379'
-#    proto: tcp
-#
-#- name: Allow all access to tcp port 2380
-#  ufw:
-#    rule: allow
-#    port: '2380'
-#    proto: tcp
+- name: Enable the firewall
+  ufw:
+    state: enabled
+
+- name: Allow all access to tcp port 22 (SSH)
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+
+- name: Allow all access to tcp port 2379
+  ufw:
+    rule: allow
+    port: '2379'
+    proto: tcp
+
+- name: Allow all access to tcp port 2380
+  ufw:
+    rule: allow
+    port: '2380'
+    proto: tcp
 #
 #- name: Allow all access to tcp port 4149 (Default cAdvisor port used to query container metrics)
 #  ufw:
@@ -33,12 +43,12 @@
 #    port: '4149'
 #    proto: tcp
 #
-#- name: Allow all access to tcp port 6443 (Kubernetes API)
-#  ufw:
-#    rule: allow
-#    port: '6443'
-#    proto: tcp
-#
+- name: Allow all access to tcp port 6443 (Kubernetes API)
+  ufw:
+    rule: allow
+    port: '6443'
+    proto: tcp
+
 #- name: Allow all access to tcp port 9099 (Health check server for Calico)
 #  ufw:
 #    rule: allow
@@ -75,38 +85,34 @@
 #    port: '10255'
 #    proto: tcp
 #
-#- name: Allow all access to tcp ports 30000-32767 (Nodeport)
-#  ufw:
-#    rule: allow
-#    port: 30000:32767
-#    proto: tcp
-#
-#- name: Open TCP and UDP pprts for the Weave CNI provider
-#  block:
-#  - name: Allow all access to tcp port 6783 for the Weave CNI provider
-#    ufw:
-#      rule: allow
-#      port: '6783'
-#      proto: tcp
-#
-#  - name: Allow all access to udp port 6783 for the Weave CNI provider
-#    ufw:
-#      rule: allow
-#      port: '6783'
-#      proto: udp
-#
-#  - name: Allow all access to udp port 6784 for the Weave CNI provider
-#    ufw:
-#      rule: allow
-#      port: '6784'
-#      proto: udp
-#
-#  when: (k8s_cni_provider == 'weave')
-    
-- name: Disable the firewall
+- name: Allow all access to tcp ports 30000-32767 (Nodeport)
   ufw:
-    state: disabled
-    
+    rule: allow
+    port: 30000:32767
+    proto: tcp
+
+- name: Open TCP and UDP pprts for the Weave CNI provider
+  block:
+  - name: Allow all access to tcp port 6783 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6783'
+      proto: tcp
+
+  - name: Allow all access to udp port 6783 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6783'
+      proto: udp
+
+  - name: Allow all access to udp port 6784 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6784'
+      proto: udp
+
+  when: (k8s_cni_provider == 'weave')
+        
 - name: Update the Apt cache
   apt: update_cache=yes cache_valid_time=3600
 
@@ -153,7 +159,7 @@
     apt:
       state: present
       policy_rc_d: 101
-      deb: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubernetes-cni_{{ k8s_vmware_tanzu_kubernetes_cni_version }}_amd64.deb
+      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubernetes-cni_{{ k8s_vmware_tanzu_kubernetes_cni_version }}_amd64.deb
 
   - name: Lock the version of the kubernetes-cni package
     command:
@@ -177,7 +183,7 @@
     apt:
       state: present
       policy_rc_d: 101
-      deb: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubelet_{{ k8s_vmware_tanzu_kubernetes_kubelet_version }}_amd64.deb
+      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubelet_{{ k8s_vmware_tanzu_kubernetes_kubelet_version }}_amd64.deb
 
   - name: Lock the version of the kubelet package
     command:
@@ -201,7 +207,7 @@
     apt:
       state: present
       policy_rc_d: 101
-      deb: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubectl_{{ k8s_vmware_tanzu_kubernetes_kubectl_version }}_amd64.deb
+      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubectl_{{ k8s_vmware_tanzu_kubernetes_kubectl_version }}_amd64.deb
 
   - name: Lock the version of the kubectl package
     command:
@@ -225,7 +231,7 @@
     apt:
       state: present
       policy_rc_d: 101
-      deb: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/cri-tools_{{ k8s_vmware_tanzu_kubernetes_cri_tools_version }}_amd64.deb
+      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/cri-tools_{{ k8s_vmware_tanzu_kubernetes_cri_tools_version }}_amd64.deb
 
   - name: Lock the version of the cri-tools package
     command:
@@ -249,7 +255,7 @@
     apt:
       state: present
       policy_rc_d: 101
-      deb: /tmp/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubeadm_{{ k8s_vmware_tanzu_kubernetes_kubeadm_version }}_amd64.deb
+      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubeadm_{{ k8s_vmware_tanzu_kubernetes_kubeadm_version }}_amd64.deb
 
   - name: Lock the version of the kubeadm package
     command:
