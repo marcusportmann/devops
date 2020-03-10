@@ -61,10 +61,10 @@ variables:
   - weave
 - name: longhorn_enabled
   values:
-  - true
+  - false
 - name: topolvm_enabled
   values:
-  - true  
+  - false  
 - name: topolvm_volume_group
   values:
   - system
@@ -81,7 +81,10 @@ variables:
 # ----------------------------------------------------------------------------------------
 - name: operator_lifecycle_manager_enabled
   values:
-  - false
+  - true
+- name: elastic_cloud_eck_operator_enabled
+  values:
+  - true
 - name: postgres_operator_enabled
   values:
   - false  
@@ -95,21 +98,22 @@ variables:
 - name: istio_enabled
   values:
   - true
-- name: istio_profile
-  values:
-  - sds
 - name: istio_grafana_enabled
   values:
-  - false
+  - true
 - name: istio_kiali_enabled
   values:
-  - false
+  - true
 - name: istio_prometheus_enabled
   values:
-  - false
+  - true
+- name: istio_telemetry_enabled
+  values:
+  - true
 - name: istio_tracing_enabled
   values:
-  - false
+  - true
+  
   
 # ----------------------------------------------------------------------------------------
 # External Monitoring Configuration

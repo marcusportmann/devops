@@ -5,17 +5,17 @@ metadata:
   namespace: istio-system
 spec:
   selector:
-    istio: ingressgateway
+    istio: istio-ingressgateway
   servers:
-	- port:
-			number: 15032
-			name: https-jaeger
-			protocol: HTTPS
-		hosts:
-		- "*"
-		tls:
-			mode: SIMPLE
-			credentialName: telemetry-gateway-cert
+  - port:
+      number: 16686
+      name: https-jaeger
+      protocol: HTTPS
+    hosts:
+    - "*"
+    tls:
+      mode: SIMPLE
+      credentialName: istio-ingressgateway-certs
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -24,17 +24,17 @@ metadata:
   namespace: istio-system
 spec:
   hosts:
-	- "*"
+  - "*"
   gateways:
-	- jaeger-gateway
+  - jaeger-gateway
   http:
-	- match:
-		- port: 15032
-		route:
-		- destination:
-				host: jaeger-query
-				port:
-					number: 16686
+  - match:
+    - port: 16686
+    route:
+    - destination:
+        host: jaeger-query
+        port:
+          number: 16686
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule

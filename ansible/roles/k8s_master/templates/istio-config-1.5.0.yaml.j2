@@ -1,0 +1,315 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: minimal
+  namespace: istio-system
+  
+  addonComponents:  
+{% if ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True))  %}  
+    grafana:
+      enabled: true
+{% else %}          
+    grafana:
+      enabled: false      
+{% endif %}    
+
+{% if ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == True))  %}  
+    kiali:
+      enabled: true
+{% else %}          
+    kiali:
+      enabled: false      
+{% endif %}    
+
+{% if ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True))  %}  
+    prometheus:
+      enabled: true
+{% else %}          
+    prometheus:
+      enabled: false
+{% endif %}    
+
+{% if ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True))  %}  
+    tracing:
+      enabled: true
+{% else %}          
+    tracing:
+      enabled: false
+{% endif %}    
+
+
+  components:
+    egressGateways:  
+    - name: istio-engressgateway
+      enabled: true
+      
+#       k8s:
+#         overlays:
+#         - kind: Deployment
+#           name: istio-egressgateway
+#           patches:
+#           - path: spec.template.spec.volumes
+#             value:
+#             - name: istio-token
+#               projected:
+#                 sources:
+#                   - serviceAccountToken:
+#                       audience: istio-ca
+#                       expirationSeconds: 43200
+#                       path: istio-token
+#             - hostPath:
+#                 path: /var/run/sds
+#               name: sdsudspath
+#             - name: istio-certs
+#               secret:
+#                 optional: true
+#                 secretName: istio.default
+#             - name: egressgateway-certs
+#               secret:
+#                 optional: true
+#                 secretName: istio-egressgateway-certs
+#             - name: egressgateway-ca-certs
+#               secret:
+#                 optional: true
+#                 secretName: istio-egressgateway-ca-certs
+#           - path: spec.template.spec.containers.[name:istio-proxy].volumeMounts
+#             value:
+#               - mountPath: /var/run/sds
+#                 name: sdsudspath
+#                 readOnly: true
+#               - mountPath: /var/run/secrets/tokens
+#                 name: istio-token
+#               - mountPath: /etc/certs
+#                 name: istio-certs
+#                 readOnly: true
+#               - mountPath: /etc/istio/egressgateway-certs
+#                 name: egressgateway-certs
+#                 readOnly: true
+#               - mountPath: /etc/istio/egressgateway-ca-certs
+#                 name: egressgateway-ca-certs
+#                 readOnly: true  
+    
+    ingressGateways:
+    - name: istio-ingressgateway
+      enabled: true
+  
+{% if ((istio_telemetry_enabled is defined) and (istio_telemetry_enabled != None) and (istio_telemetry_enabled == True))  %}  
+    telemetry:
+      enabled: true
+{% else %}          
+    telemetry:
+      enabled: false
+{% endif %}    
+
+
+  values:
+    gateways:
+      istio-ingressgateway:
+        labels:
+          app: istio-ingressgateway
+          istio: istio-ingressgateway
+        type: NodePort
+        sds:
+          enabled: true
+        ports:
+        - name: status-port
+          port: 15020
+          targetPort: 15020
+        - name: http2
+          port: 80
+          targetPort: 80
+          nodePort: 30080
+        - name: https
+          port: 443
+          targetPort: 443
+          nodePort: 30443
+
+{% if ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True))  %}
+        - name: https-grafana
+          port: 3000
+          targetPort: 3000
+          nodePort: 32500
+{% endif %}
+{% if ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True))  %}
+        - name: https-jaeger
+          port: 16686
+          targetPort: 16686
+          nodePort: 32510
+{% endif %}
+{% if ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == True))  %}
+        - name: https-kiali
+          port: 20001
+          targetPort: 20001
+          nodePort: 32520
+{% endif %}
+{% if ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True))  %}
+        - name: https-prometheus
+          port: 9090
+          targetPort: 9090
+          nodePort: 32530
+{% endif %}
+        - name: tcp
+          port: 1400
+          targetPort: 1400
+          nodePort: 31400
+        - name: tls
+          port: 1443
+          targetPort: 1443
+          nodePort: 31443
+    global:
+      mtls:
+        enabled: true
+      proxy:
+        accessLogFile: "/dev/stdout"
+        logLevel: "debug"
+        clusterDomain: {{ k8s_cluster_domain }}
+      sds:
+        enabled: true
+    security:
+      selfSigned: true
+    sidecarInjectorWebhook:
+      rewriteAppHTTPProbe: true
+    grafana:
+      security:
+        enabled: false
+    kiali:
+      security:
+        enabled: false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# TODO: The API overlay configuration for the egressGateway is a temporary fix for the defect referenced by https://github.com/istio/istio/issues/20082 and needs to be removed.
+# 
+# apiVersion: install.istio.io/v1alpha2
+# kind: IstioControlPlane
+# 
+# spec:
+# 
+# {% if ((istio_profile is defined) and (istio_profile != None))  %}
+#   profile: {{ istio_profile }}
+# {% else %}
+#   profile: default
+# {% endif %}
+# 
+
+# 
+# {% if ((istio_profile is defined) and (istio_profile != None) and (istio_profile == "demo"))  %}
+# 
+#       egressGateway:
+#         enabled: true
+#         k8s:
+#           overlays:
+#           - kind: Deployment
+#             name: istio-egressgateway
+#             patches:
+#             - path: spec.template.spec.volumes
+#               value:
+#               - name: istio-token
+#                 projected:
+#                   sources:
+#                     - serviceAccountToken:
+#                         audience: istio-ca
+#                         expirationSeconds: 43200
+#                         path: istio-token
+#               - hostPath:
+#                   path: /var/run/sds
+#                 name: sdsudspath
+#               - name: istio-certs
+#                 secret:
+#                   optional: true
+#                   secretName: istio.default
+#               - name: egressgateway-certs
+#                 secret:
+#                   optional: true
+#                   secretName: istio-egressgateway-certs
+#               - name: egressgateway-ca-certs
+#                 secret:
+#                   optional: true
+#                   secretName: istio-egressgateway-ca-certs
+#             - path: spec.template.spec.containers.[name:istio-proxy].volumeMounts
+#               value:
+#                 - mountPath: /var/run/sds
+#                   name: sdsudspath
+#                   readOnly: true
+#                 - mountPath: /var/run/secrets/tokens
+#                   name: istio-token
+#                 - mountPath: /etc/certs
+#                   name: istio-certs
+#                   readOnly: true
+#                 - mountPath: /etc/istio/egressgateway-certs
+#                   name: egressgateway-certs
+#                   readOnly: true
+#                 - mountPath: /etc/istio/egressgateway-ca-certs
+#                   name: egressgateway-ca-certs
+#                   readOnly: true
+# 
+# {% endif %}
+# 
+#   policy:
+#     components:
+#       policy:
+#         k8s:
+#           hpaSpec:
+#             minReplicas: 1
+#           resources:
+#             requests:
+#               cpu: 10m
+#               memory: 40Mi
+# 
+#   security:
+#     components:
+#       citadel:
+#         k8s:
+#           hpaSpec:
+#             minReplicas: 1
+#           resources:
+#             requests:
+#               cpu: 10m
+#               memory: 40Mi
+# 
+#   telemetry:
+#     components:
+#       telemetry:
+#         k8s:
+#           hpaSpec:
+#             minReplicas: 1
+#           resources:
+#             requests:
+#               cpu: 10m
+#               memory: 40Mi
+# 
+#   trafficManagement:
+#     components:
+#       pilot:
+#         k8s:
+#           hpaSpec:
+#             minReplicas: 1
+#           resources:
+#             requests:
+#               cpu: 10m
+#               memory: 40Mi
+
+
+

@@ -11,6 +11,7 @@
   hosts: k8s_master:k8s_worker
   vars:
     docker_ubuntu_package_version: 5:19.03.6~3-0~ubuntu-bionic
+    k8s_version: 1.17
     k8s_vmware_tanzu_kubernetes_grid_version: 1.17.3+vmware.1
     k8s_vmware_tanzu_kubernetes_grid_checksum: sha256:34b680c64e7ccf8e7502519a4282c4e8e7c596acdf76945b15fa8e18a5525897
     k8s_vmware_tanzu_kubernetes_cni_version: 0.7.5+vmware.6-1
@@ -31,10 +32,9 @@
     bitnami_labs_sealed_secrets_version: 0.10.0
     helm_version: 3.1.1
     helm_package_checksum: sha256:cdd7ad304e2615c583dde0ffb0cb38fc1336cd7ce8ff3b5f237434dcadb28c98
-    istio_version: 1.4.6
-    istio_package_checksum: sha256:74480f2c73fad95aba923d16fbdda641f5ac55d1476a716d71cd2a350f48ff10
-    istioctl_version: 1.4.6
-    istioctl_package_checksum: sha256:ed92653cd390bc01a49d4bf2475910f8570c4d2ec99e30f3e3499fd3eef43cc2
+    istio_version: 1.5.0
+    istio_package_checksum: sha256:fba603390074b1b9da9b3bd1492a278740fe725ac8ff07b8ec54fb7d66e03c33
+    istioctl_package_checksum: sha256:e841c8858f7598351caaf6d7e6a67c4a43218f343629c67cf76db5d000c9df72
     kube_state_metrics_version: 1.9.4
     topolvm_version: 0.3.0
   become: yes

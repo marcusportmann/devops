@@ -8,6 +8,14 @@
     mode: 0700    
     state: directory
 
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____ 
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |    
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___ 
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#                                                             
+
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
@@ -17,6 +25,14 @@
   when: ansible_distribution == "CentOS"
   tags:
     - unbound
+
+
+#  _  _____ ____       _    _     _       __  __    _    ____ _____ _____ ____  ____  
+# | |/ ( _ ) ___|     / \  | |   | |     |  \/  |  / \  / ___|_   _| ____|  _ \/ ___| 
+# | ' // _ \___ \    / _ \ | |   | |     | |\/| | / _ \ \___ \ | | |  _| | |_) \___ \ 
+# | . \ (_) |__) |  / ___ \| |___| |___  | |  | |/ ___ \ ___) || | | |___|  _ < ___) |
+# |_|\_\___/____/  /_/   \_\_____|_____| |_|  |_/_/   \_\____/ |_| |_____|_| \_\____/ 
+#                                                                                     
 
 - name: Create the configuration directories for the Kubernetes API server and scheduler
   block:
@@ -46,6 +62,14 @@
     copy:
       src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
       dest: /etc/kubernetes/pki/ca.crt
+
+
+#  _  _____ ____    _____ ___ ____  ____ _____   __  __    _    ____ _____ _____ ____  
+# | |/ ( _ ) ___|  |  ___|_ _|  _ \/ ___|_   _| |  \/  |  / \  / ___|_   _| ____|  _ \ 
+# | ' // _ \___ \  | |_   | || |_) \___ \ | |   | |\/| | / _ \ \___ \ | | |  _| | |_) |
+# | . \ (_) |__) | |  _|  | ||  _ < ___) || |   | |  | |/ ___ \ ___) || | | |___|  _ < 
+# |_|\_\___/____/  |_|   |___|_| \_\____/ |_|   |_|  |_/_/   \_\____/ |_| |_____|_| \_\
+#                                                                                      
 
 - name: Initialize the first master node in the Kubernetes cluster
   block:      
@@ -107,7 +131,7 @@
           kube_apiserver_encryption_key: "{{ generate_kube_apiserver_encryption_key_result.stdout }}"
         
       - template:
-          src: k8s-apiserver-encryption.yaml
+          src: k8s-apiserver-encryption-1.17.yaml.j2
           dest: /etc/kubernetes/apiserver/encryption.yaml
         
       - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
@@ -132,12 +156,12 @@
               
     - name: Create the Kubernetes cluster configuration
       template:
-        src: k8s-config.yaml.j2
-        dest: /var/tmp/ansible/k8s-config.yaml              
+        src: k8s-config-1.17.yaml.j2
+        dest: /var/tmp/ansible/k8s-config-1.17.yaml              
 
     - name: Initialize the Kubernetes cluster
       shell:
-        cmd: /usr/bin/kubeadm init --config /var/tmp/ansible/k8s-config.yaml
+        cmd: /usr/bin/kubeadm init --config /var/tmp/ansible/k8s-config-1.17.yaml
 
     - name: Copy the Kubernetes configuration to the root user
       block:
@@ -215,11 +239,11 @@
     - name: Deploy the kube-state-metrics service if there are no worker nodes
       block:
       - template:
-          src: kube-state-metrics.yaml.j2
-          dest: /var/tmp/ansible/kube-state-metrics.yaml
+          src: kube-state-metrics-{{ kube_state_metrics_version }}.yaml.j2
+          dest: /var/tmp/ansible/kube-state-metrics-{{ kube_state_metrics_version }}.yaml
 
       - shell:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kube-state-metrics.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kube-state-metrics-{{ kube_state_metrics_version }}.yaml
 
     when: kubelet_config_stat_result.stat.exists == False
 
@@ -262,6 +286,14 @@
       cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
 
   when: groups['k8s_master'][0] == inventory_hostname
+
+
+#  _  _____ ____       _    ____  ____ ___ _____ ___ ___  _   _    _    _       __  __    _    ____ _____ _____ ____  
+# | |/ ( _ ) ___|     / \  |  _ \|  _ \_ _|_   _|_ _/ _ \| \ | |  / \  | |     |  \/  |  / \  / ___|_   _| ____|  _ \ 
+# | ' // _ \___ \    / _ \ | | | | | | | |  | |  | | | | |  \| | / _ \ | |     | |\/| | / _ \ \___ \ | | |  _| | |_) |
+# | . \ (_) |__) |  / ___ \| |_| | |_| | |  | |  | | |_| | |\  |/ ___ \| |___  | |  | |/ ___ \ ___) || | | |___|  _ < 
+# |_|\_\___/____/  /_/   \_\____/|____/___| |_| |___\___/|_| \_/_/   \_\_____| |_|  |_/_/   \_\____/ |_| |_____|_| \_\
+#                                                                                                                     
 
 - name: Initialize an additional master node in the Kubernetes cluster
   block:
@@ -472,6 +504,14 @@
         
   when: groups['k8s_master'][0] != inventory_hostname
 
+
+#  _   _ _____ _     __  __ 
+# | | | | ____| |   |  \/  |
+# | |_| |  _| | |   | |\/| |
+# |  _  | |___| |___| |  | |
+# |_| |_|_____|_____|_|  |_|
+#                           
+
 - name: Install Helm
   block:
   - debug:
@@ -524,249 +564,122 @@
 
     when: (helm_installed_version != helm_version)
 
-- name: Install istioctl
+
+#  ____  _____    _    _     _____ ____    ____  _____ ____ ____  _____ _____ ____  
+# / ___|| ____|  / \  | |   | ____|  _ \  / ___|| ____/ ___|  _ \| ____|_   _/ ___| 
+# \___ \|  _|   / _ \ | |   |  _| | | | | \___ \|  _|| |   | |_) |  _|   | | \___ \ 
+#  ___) | |___ / ___ \| |___| |___| |_| |  ___) | |__| |___|  _ <| |___  | |  ___) |
+# |____/|_____/_/   \_\_____|_____|____/  |____/|_____\____|_| \_\_____| |_| |____/ 
+#                                                                                   
+
+- name: Install the Bitnami Labs Sealed Secrets Extension
   block:
   - debug:
-      msg: Check whether the istioctl {{ istioctl_version }} package has been installed
+      msg: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been installed
 
   - stat:
-      path: /usr/bin/istioctl
-    register: istioctl_installed_stat_result
+      path: /usr/bin/kubeseal
+    register: kubeseal_installed_stat_result
 
   - shell:
-      cmd: /usr/bin/istioctl version --remote=false
-    register: istioctl_installed_version_output
-    when: (istioctl_installed_stat_result.stat.exists == True)
+      cmd: /usr/bin/kubeseal --version |  awk -F ' ' {'print $3'} | cut -c2-
+    register: kubeseal_installed_version_output
+    when: (kubeseal_installed_stat_result.stat.exists == True)
 
   - set_fact:
-      istioctl_installed_version: '{{ istioctl_installed_version_output.stdout }}'
-    when: (istioctl_installed_stat_result.stat.exists == True)
+      kubeseal_installed_version: '{{ kubeseal_installed_version_output.stdout }}'
+    when: (kubeseal_installed_stat_result.stat.exists == True)
 
   - set_fact:
-      istioctl_installed_version: ''
-    when: (istioctl_installed_stat_result.stat.exists == False)
+      kubeseal_installed_version: ''
+    when: (kubeseal_installed_stat_result.stat.exists == False)
 
-  - block:
+  - name: Install the Bitnami Labs kubeseal package
+    block:
     - debug:
-        msg: Install the istioctl {{ istioctl_version }} package
-        
-    - name: Check whether the istioctl {{ istioctl_version }} package has been downloaded
-      become: no
-      local_action: stat path=packages/istioctl-{{ istioctl_version }}-linux.tar.gz
-      register: istioctl_package_stat_result  
+        msg: Install the Bitnami Labs kubeseal {{ bitnami_labs_sealed_secrets_version }} package
 
-    - name: Download the istioctl {{ istioctl_version }} package
+    - name: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been downloaded
       become: no
-      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ istioctl_version }}/istioctl-{{ istioctl_version }}-linux.tar.gz' dest='packages/istioctl-{{ istioctl_version }}-linux.tar.gz' checksum={{ istioctl_package_checksum }}
-      when: (istioctl_package_stat_result.stat.exists == False)
+      local_action: stat path=packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
+      register: kubeseal_package_stat_result  
 
-    - name: Remove the existing istioctl binary
+    - name: Download the kubeseal {{ bitnami_labs_sealed_secrets_version }} package
+      become: no
+      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}'
+      when: (kubeseal_package_stat_result.stat.exists == False)
+
+    - name: Remove the existing kubeseal binary
       file:
-        path: /usr/bin/istioctl
+        path: /usr/bin/kubeseal
         state: absent
 
-    - name: Extract the istioctl binary from the istioctl {{ istioctl_version }} package
-      unarchive:
-        src: packages/istioctl-{{ istioctl_version }}-linux.tar.gz
+    - name: Copy the kubeseal binary
+      copy:
+        src: packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
         dest: /usr/bin
-        creates: /usr/bin/istioctl
+        
+    - name: Rename the kubeseal binary
+      command:
+        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }} /usr/bin/kubeseal
+        creates: /usr/bin/kubeseal
+        
+    - name: Set the permissions for the kubeseal binary
+      file:
+        path: /usr/bin/kubeseal
+        owner: root
+        group: root
+        mode: 0770
+        state: file
 
-    when: (istioctl_installed_version != istioctl_version)
+    when: (kubeseal_installed_version != bitnami_labs_sealed_secrets_version)
+    
+  - shell:
+      cmd: /usr/bin/kubectl -n kube-system get deployments | grep "sealed-secrets-controller" | wc -l
+    register: bitnami_labs_sealed_secrets_controller_installed_output
+    
+  - set_fact:
+      bitnami_labs_sealed_secrets_controller_installed_version: ''
+    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "0"
+        
+  - shell:
+      cmd: /usr/bin/kubectl -n kube-system describe deployment sealed-secrets-controller | grep "Image:" | sed 's/.*:v//'
+    register: bitnami_labs_sealed_secrets_controller_installed_version_output
+    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
 
-  when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
-
-- name: Initialize the Istio service mesh
-  block:
-  - name: Download and extract the Istio package if required
-    block:
-    - name: Check whether the istio {{ istio_version }} package has been downloaded
-      become: no
-      local_action: stat path=packages/istio-{{ istio_version }}-linux.tar.gz
-      register: istio_package_stat_result  
-
-    - name: Download the istio {{ istio_version }} package
-      become: no
-      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ istio_version }}/istio-{{ istio_version }}-linux.tar.gz' dest='packages/istio-{{ istio_version }}-linux.tar.gz' checksum={{ istio_package_checksum }}
-      when: (istio_package_stat_result.stat.exists == False)
-
-    - name: Extract the istio {{ istio_version }} package
-      unarchive:
-        src: packages/istio-{{ istio_version }}-linux.tar.gz
-        dest: /var/tmp/ansible
-        creates: /var/tmp/ansible/istio-{{ istio_version }}
+  - set_fact:
+      bitnami_labs_sealed_secrets_controller_installed_version: '{{ bitnami_labs_sealed_secrets_controller_installed_version_output.stdout }}'
+    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
   
-  - name: Check if istio-system namespace exists
-    shell:
-      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep istio-system | wc -l
-    register: istio_system_namespace_exists_output
-
-  - name: Install and configure the Istio service mesh
+  - name: Install the Bitnami Labs SealedSecret CRD and server-side controller
     block:
-    - name: Copying the keys and certificates for the Istio service mesh
-      block:
-      - name: Create the /var/tmp/ansible/istio-pki directory
-        file:
-          path: /var/tmp/ansible/istio-pki
-          state: directory
-
-      - name: Copy the Istio intermediate CA private key to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.key
-          dest: /var/tmp/ansible/istio-pki/ca-key.pem
-
-      - name: Copy the Istio intermediate CA certificate to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.crt
-          dest: /var/tmp/ansible/istio-pki/ca-cert.pem
-
-      - name: Copy the Root CA certificate to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/ca.crt
-          dest: /var/tmp/ansible/istio-pki/root-cert.pem
-
-      - name: Copy the Istio intermediate CA certificate chain to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca-chain.crt
-          dest: /var/tmp/ansible/istio-pki/cert-chain.pem
-
-      - name: Copy the Istio ingress gateway private key to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.key
-          dest: /var/tmp/ansible/istio-pki/ingressgateway-key.pem
-
-      - name: Copy the Istio ingress gateway certificate to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.crt
-          dest: /var/tmp/ansible/istio-pki/ingressgateway-cert.pem
-
-      - name: Copy the Istio telemetry gateway private key to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.key
-          dest: /var/tmp/ansible/istio-pki/telemetry-gateway-key.pem
-
-      - name: Copy the Istio telemetry gateway certificate to the /var/tmp/ansible/istio-pki directory
-        copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-telemetry-gateway.crt
-          dest: /var/tmp/ansible/istio-pki/telemetry-gateway-cert.pem
-
-    - name: Create the istio-system namespace
-      command:
-        cmd: /usr/bin/kubectl create ns istio-system
-
-    - name: Create the secret in the istio-system namespace for the Istio intermediate CA private key and certificates
-      command:
-        cmd: /usr/bin/kubectl create -n istio-system secret generic cacerts  --from-file=/var/tmp/ansible/istio-pki/ca-cert.pem --from-file=/var/tmp/ansible/istio-pki/ca-key.pem --from-file=/var/tmp/ansible/istio-pki/root-cert.pem --from-file=/var/tmp/ansible/istio-pki/cert-chain.pem
-
-    - name: Create the secret in the istio-system namespace for the Istio ingress gateway private key and certificate
-      command:
-        cmd: /usr/bin/kubectl create -n istio-system secret tls istio-ingressgateway-certs --key=/var/tmp/ansible/istio-pki/ingressgateway-key.pem --cert=/var/tmp/ansible/istio-pki/ingressgateway-cert.pem
-
-    - name: Create the secret in the istio-system namespace for the Istio ingress gateway CA certificate
-      command:
-        cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/var/tmp/ansible/istio-pki/root-cert.pem
-
-    - name: Create the secret in the istio-system namespace for the Istio telemetry gateway private key and certificate
-      command:
-        cmd: /usr/bin/kubectl create -n istio-system secret tls telemetry-gateway-cert --key=/var/tmp/ansible/istio-pki/telemetry-gateway-key.pem --cert=/var/tmp/ansible/istio-pki/telemetry-gateway-cert.pem
-
-    - name: Create the secret in the istio-system namespace for the Istio telemetry gateway CA certificate
-      command:
-        cmd: /usr/bin/kubectl create -n istio-system secret generic telemetry-gateway-cert-cacert --from-file=/var/tmp/ansible/istio-pki/root-cert.pem
-
-    - name: Initialize the Kiali secret
-      block:
-      - template:
-          src: kiali-secret.yaml.j2
-          dest: /var/tmp/ansible/kiali-secret.yaml
-
-      - name: Create the Kiali secret
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kiali-secret.yaml
-
-      when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
-
-    - name: Create the Istio configuration file
-      template:
-        src: istio-config.yaml.j2
-        dest: /var/tmp/ansible/istio-config.yaml
-
-    - name: Initialize the Istio service mesh
-      shell:
-        cmd: /usr/bin/istioctl manifest apply -f /var/tmp/ansible/istio-config.yaml
-
-    - name: Wait for the Istio service mesh initialization to complete
-      command:
-        cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
-      when: ("k8s_worker" not in groups.keys())
-
-    - block:
-      - template:
-          src: jaeger-ingress.yaml.j2
-          dest: /var/tmp/ansible/jaeger-ingress.yaml
-
-      - name: Enable ingress for Jaeger
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/jaeger-ingress.yaml
-
-      when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
-
-    - block:
-      - template:
-          src: kiali-ingress.yaml.j2
-          dest: /var/tmp/ansible/kiali-ingress.yaml
-
-      - name: Enable ingress for Kiali
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kiali-ingress.yaml
-
-      when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
-
-    - block:
-      - template:
-          src: grafana-ingress.yaml.j2
-          dest: /var/tmp/ansible/grafana-ingress.yaml
-
-      - name: Enable ingress for Grafana
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/grafana-ingress.yaml
-
-      when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
-
-    - block:
-      - template:
-          src: prometheus-ingress.yaml.j2
-          dest: /var/tmp/ansible/prometheus-ingress.yaml
-
-      - name: Enable ingress for Prometheus
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-ingress.yaml
-
-      when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
-
-    when: istio_system_namespace_exists_output.stdout == "0"
-
-  when: ((groups['k8s_master'][0] == inventory_hostname) and (istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
-
-- name: Install Longhorn if it is enabled
-  block:
-
-  - name: Check if longhorn-system namespace exists
-    shell:
-      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep longhorn-system | wc -l
-    register: longhorn_system_namespace_exists_output
-
-  - block:
-    - template:
-        src: longhorn.yaml.j2
-        dest: /var/tmp/ansible/longhorn.yaml
-
-    - name: Apply the Longhorn configuration to Kubernetes
+    - debug:
+        msg: Install the Bitnami Labs SealedSecret CRD and server-side controller
+        
+    - name: Retrieve the Bitnami Labs SealedSecret CRD and server-side controller configuration
+      get_url:
+        url: https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/controller.yaml
+        dest: /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+      register: get_bitnami_labs_sealed_secret_controller_result
+      until: get_bitnami_labs_sealed_secret_controller_result is succeeded
+      retries: 3
+      delay: 10      
+    
+    - name: Apply the Bitnami Labs SealedSecret CRD and server-side controller configuration
       command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/longhorn.yaml
-  
-    when: longhorn_system_namespace_exists_output.stdout == "0"
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
 
-  when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+    when: (bitnami_labs_sealed_secrets_controller_installed_version != bitnami_labs_sealed_secrets_version)
+  
+  when: ((bitnami_labs_sealed_secrets_enabled is defined) and (bitnami_labs_sealed_secrets_enabled != None) and (bitnami_labs_sealed_secrets_enabled == true))
+
+
+#   ___  ____  _____ ____      _  _____ ___  ____    _     ___ _____ _____ ______   ______ _     _____   __  __    _    _   _    _    ____ _____ ____  
+#  / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \  | |   |_ _|  ___| ____/ ___\ \ / / ___| |   | ____| |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \ 
+# | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) | | |    | || |_  |  _|| |    \ V / |   | |   |  _|   | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |
+# | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ <  | |___ | ||  _| | |__| |___  | || |___| |___| |___  | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ < 
+#  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\ |_____|___|_|   |_____\____| |_| \____|_____|_____| |_|  |_/_/   \_\_| \_/_/   \_\____|_____|_| \_\
+#                                                                                                                                                      
 
 - name: Install the Operator Lifecycle Manager if it is enabled
   block:
@@ -810,7 +723,44 @@
     when: operator_lifecycle_manager_namespace_exists_output.stdout == "0"        
  
   when: ((operator_lifecycle_manager_enabled is defined) and (operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
+
+#
+#  _____ _        _    ____ _____ ___ ____    ____ _     ___  _   _ ____    _____ ____ _  __   ___  ____  _____ ____      _  _____ ___  ____  
+# | ____| |      / \  / ___|_   _|_ _/ ___|  / ___| |   / _ \| | | |  _ \  | ____/ ___| |/ /  / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
+# |  _| | |     / _ \ \___ \ | |  | | |     | |   | |  | | | | | | | | | | |  _|| |   | ' /  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
+# | |___| |___ / ___ \ ___) || |  | | |___  | |___| |__| |_| | |_| | |_| | | |__| |___| . \  | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
+# |_____|_____/_/   \_\____/ |_| |___\____|  \____|_____\___/ \___/|____/  |_____\____|_|\_\  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
+#                                                                                                                                             
+
+- name: Install the Elastic Cloud ECK Operator if it is enabled
+  block:
   
+  - name: Check if Elastic Cloud ECK Operator is installed
+    shell:
+      cmd: kubectl get subscription -n operators 2>&1 | grep elastic-cloud-eck | wc -l
+    register: elastic_cloud_eck_operator_installed_output
+    
+  - block:
+    - name: Generate the Elastic Cloud ECK Operator configuration
+      template:
+        src: elastic-cloud-eck-operator.yaml.j2
+        dest: /var/tmp/ansible/elastic-cloud-eck-operator.yaml
+      
+    - name: Apply the Elastic Cloud ECK Operator configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/elastic-cloud-eck-operator.yaml
+    
+    when: elastic_cloud_eck_operator_installed_output.stdout == "0"
+  
+  when: ((elastic_cloud_eck_operator_enabled is defined) and (elastic_cloud_eck_operator_enabled != None) and (elastic_cloud_eck_operator_enabled == true))
+
+#  ____   ___  ____ _____ ____ ____  _____ ____     ___  ____  _____ ____      _  _____ ___  ____  
+# |  _ \ / _ \/ ___|_   _/ ___|  _ \| ____/ ___|   / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
+# | |_) | | | \___ \ | || |  _| |_) |  _| \___ \  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
+# |  __/| |_| |___) || || |_| |  _ <| |___ ___) | | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
+# |_|    \___/|____/ |_| \____|_| \_\_____|____/   \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
+#                                                                                                  
+
 - name: Install the Postgres Operator if it is enabled
   block:
   
@@ -832,7 +782,15 @@
     when: postgres_operator_installed_output.stdout == "0"
   
   when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
-  
+
+
+#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____     ___  ____  _____ ____      _  _____ ___  ____  
+# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|   / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
+# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
+# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) | | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
+# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/   \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
+#                                                                                                                 
+
 - name: Install the Prometheus Operator if it is enabled
   block:
   
@@ -854,7 +812,15 @@
     when: prometheus_operator_installed_output.stdout == "0"
   
   when: ((prometheus_operator_enabled is defined) and (prometheus_operator_enabled != None) and (prometheus_operator_enabled == true))
-   
+
+
+#  _____ ___  ____   ___  _ __     ____  __ 
+# |_   _/ _ \|  _ \ / _ \| |\ \   / /  \/  |
+#   | || | | | |_) | | | | | \ \ / /| |\/| |
+#   | || |_| |  __/| |_| | |__\ V / | |  | |
+#   |_| \___/|_|    \___/|_____\_/  |_|  |_|
+#                                           
+
 - name: Install the TopoLVM CSI plugin
   block:
   
@@ -975,107 +941,247 @@
 
   when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
 
-- name: Install the Bitnami Labs Sealed Secrets Extension
+
+#  _     ___  _   _  ____ _   _  ___  ____  _   _ 
+# | |   / _ \| \ | |/ ___| | | |/ _ \|  _ \| \ | |
+# | |  | | | |  \| | |  _| |_| | | | | |_) |  \| |
+# | |__| |_| | |\  | |_| |  _  | |_| |  _ <| |\  |
+# |_____\___/|_| \_|\____|_| |_|\___/|_| \_\_| \_|
+#                                                 
+
+- name: Install Longhorn if it is enabled
+  block:
+
+  - name: Check if longhorn-system namespace exists
+    shell:
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep longhorn-system | wc -l
+    register: longhorn_system_namespace_exists_output
+
+  - block:
+    - template:
+        src: longhorn-0.7.yaml.j2
+        dest: /var/tmp/ansible/longhorn-0.7.yaml
+
+    - name: Apply the Longhorn configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/longhorn-0.7.yaml
+  
+    when: longhorn_system_namespace_exists_output.stdout == "0"
+
+  when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+
+
+#  ___ ____ _____ ___ ___  
+# |_ _/ ___|_   _|_ _/ _ \ 
+#  | |\___ \ | |  | | | | |
+#  | | ___) || |  | | |_| |
+# |___|____/ |_| |___\___/ 
+#                          
+
+- name: Install istioctl
   block:
   - debug:
-      msg: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been installed
+      msg: Check whether the istioctl {{ istio_version }} package has been installed
 
   - stat:
-      path: /usr/bin/kubeseal
-    register: kubeseal_installed_stat_result
+      path: /usr/bin/istioctl
+    register: istioctl_installed_stat_result
 
   - shell:
-      cmd: /usr/bin/kubeseal --version |  awk -F ' ' {'print $3'} | cut -c2-
-    register: kubeseal_installed_version_output
-    when: (kubeseal_installed_stat_result.stat.exists == True)
+      cmd: /usr/bin/istioctl version --remote=false
+    register: istioctl_installed_version_output
+    when: (istioctl_installed_stat_result.stat.exists == True)
 
   - set_fact:
-      kubeseal_installed_version: '{{ kubeseal_installed_version_output.stdout }}'
-    when: (kubeseal_installed_stat_result.stat.exists == True)
+      istioctl_installed_version: '{{ istioctl_installed_version_output.stdout }}'
+    when: (istioctl_installed_stat_result.stat.exists == True)
 
   - set_fact:
-      kubeseal_installed_version: ''
-    when: (kubeseal_installed_stat_result.stat.exists == False)
+      istioctl_installed_version: ''
+    when: (istioctl_installed_stat_result.stat.exists == False)
 
-  - name: Install the Bitnami Labs kubeseal package
-    block:
+  - block:
     - debug:
-        msg: Install the Bitnami Labs kubeseal {{ bitnami_labs_sealed_secrets_version }} package
-
-    - name: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been downloaded
+        msg: Install the istioctl {{ istio_version }} package
+        
+    - name: Check whether the istioctl {{ istio_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
-      register: kubeseal_package_stat_result  
+      local_action: stat path=packages/istioctl-{{ istio_version }}-linux.tar.gz
+      register: istioctl_package_stat_result  
 
-    - name: Download the kubeseal {{ bitnami_labs_sealed_secrets_version }} package
+    - name: Download the istioctl {{ istio_version }} package
       become: no
-      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}'
-      when: (kubeseal_package_stat_result.stat.exists == False)
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ istio_version }}/istioctl-{{ istio_version }}-linux.tar.gz' dest='packages/istioctl-{{ istio_version }}-linux.tar.gz' checksum={{ istioctl_package_checksum }}
+      when: (istioctl_package_stat_result.stat.exists == False)
 
-    - name: Remove the existing kubeseal binary
+    - name: Remove the existing istioctl binary
       file:
-        path: /usr/bin/kubeseal
+        path: /usr/bin/istioctl
         state: absent
 
-    - name: Copy the kubeseal binary
-      copy:
-        src: packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
+    - name: Extract the istioctl binary from the istioctl {{ istio_version }} package
+      unarchive:
+        src: packages/istioctl-{{ istio_version }}-linux.tar.gz
         dest: /usr/bin
-        
-    - name: Rename the kubeseal binary
-      command:
-        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }} /usr/bin/kubeseal
-        creates: /usr/bin/kubeseal
-        
-    - name: Set the permissions for the kubeseal binary
-      file:
-        path: /usr/bin/kubeseal
-        owner: root
-        group: root
-        mode: 0770
-        state: file
+        creates: /usr/bin/istioctl
 
-    when: (kubeseal_installed_version != bitnami_labs_sealed_secrets_version)
-    
-  - shell:
-      cmd: /usr/bin/kubectl -n kube-system get deployments | grep "sealed-secrets-controller" | wc -l
-    register: bitnami_labs_sealed_secrets_controller_installed_output
-    
-  - set_fact:
-      bitnami_labs_sealed_secrets_controller_installed_version: ''
-    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "0"
-        
-  - shell:
-      cmd: /usr/bin/kubectl -n kube-system describe deployment sealed-secrets-controller | grep "Image:" | sed 's/.*:v//'
-    register: bitnami_labs_sealed_secrets_controller_installed_version_output
-    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
+    when: (istioctl_installed_version != istio_version)
 
-  - set_fact:
-      bitnami_labs_sealed_secrets_controller_installed_version: '{{ bitnami_labs_sealed_secrets_controller_installed_version_output.stdout }}'
-    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
-  
-  - name: Install the Bitnami Labs SealedSecret CRD and server-side controller
+  when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
+
+- name: Initialize the Istio service mesh
+  block:
+  - name: Download and extract the Istio package if required
     block:
-    - debug:
-        msg: Install the Bitnami Labs SealedSecret CRD and server-side controller
-        
-    - name: Retrieve the Bitnami Labs SealedSecret CRD and server-side controller configuration
-      get_url:
-        url: https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/controller.yaml
-        dest: /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
-      register: get_bitnami_labs_sealed_secret_controller_result
-      until: get_bitnami_labs_sealed_secret_controller_result is succeeded
-      retries: 3
-      delay: 10      
-    
-    - name: Apply the Bitnami Labs SealedSecret CRD and server-side controller configuration
-      command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+    - name: Check whether the istio {{ istio_version }} package has been downloaded
+      become: no
+      local_action: stat path=packages/istio-{{ istio_version }}-linux.tar.gz
+      register: istio_package_stat_result  
 
-    when: (bitnami_labs_sealed_secrets_controller_installed_version != bitnami_labs_sealed_secrets_version)
+    - name: Download the istio {{ istio_version }} package
+      become: no
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ istio_version }}/istio-{{ istio_version }}-linux.tar.gz' dest='packages/istio-{{ istio_version }}-linux.tar.gz' checksum={{ istio_package_checksum }}
+      when: (istio_package_stat_result.stat.exists == False)
+
+    - name: Extract the istio {{ istio_version }} package
+      unarchive:
+        src: packages/istio-{{ istio_version }}-linux.tar.gz
+        dest: /var/tmp/ansible
+        creates: /var/tmp/ansible/istio-{{ istio_version }}
   
-  when: ((bitnami_labs_sealed_secrets_enabled is defined) and (bitnami_labs_sealed_secrets_enabled != None) and (bitnami_labs_sealed_secrets_enabled == true))
+  - name: Check if istio-system namespace exists
+    shell:
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep istio-system | wc -l
+    register: istio_system_namespace_exists_output
 
+  - name: Install and configure the Istio service mesh
+    block:
+    - name: Copying the keys and certificates for the Istio service mesh
+      block:
+      - name: Create the /var/tmp/ansible/istio-pki directory
+        file:
+          path: /var/tmp/ansible/istio-pki
+          state: directory
+
+      - name: Copy the Istio intermediate CA private key to the /var/tmp/ansible/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.key
+          dest: /var/tmp/ansible/istio-pki/ca-key.pem
+
+      - name: Copy the Istio intermediate CA certificate to the /var/tmp/ansible/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.crt
+          dest: /var/tmp/ansible/istio-pki/ca-cert.pem
+
+      - name: Copy the Root CA certificate to the /var/tmp/ansible/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/ca.crt
+          dest: /var/tmp/ansible/istio-pki/root-cert.pem
+
+      - name: Copy the Istio intermediate CA certificate chain to the /var/tmp/ansible/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca-chain.crt
+          dest: /var/tmp/ansible/istio-pki/cert-chain.pem
+
+      - name: Copy the Istio ingress gateway private key to the /var/tmp/ansible/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.key
+          dest: /var/tmp/ansible/istio-pki/ingressgateway-key.pem
+
+      - name: Copy the Istio ingress gateway certificate to the /var/tmp/ansible/istio-pki directory
+        copy:
+          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.crt
+          dest: /var/tmp/ansible/istio-pki/ingressgateway-cert.pem
+    
+    - name: Create the istio-system namespace
+      command:
+        cmd: /usr/bin/kubectl create ns istio-system
+
+    - name: Create the secret in the istio-system namespace for the Istio intermediate CA private key and certificates
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret generic cacerts  --from-file=/var/tmp/ansible/istio-pki/ca-cert.pem --from-file=/var/tmp/ansible/istio-pki/ca-key.pem --from-file=/var/tmp/ansible/istio-pki/root-cert.pem --from-file=/var/tmp/ansible/istio-pki/cert-chain.pem
+
+    - name: Create the secret in the istio-system namespace for the Istio ingress gateway private key and certificate
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret tls istio-ingressgateway-certs --key=/var/tmp/ansible/istio-pki/ingressgateway-key.pem --cert=/var/tmp/ansible/istio-pki/ingressgateway-cert.pem
+
+    - name: Create the secret in the istio-system namespace for the Istio ingress gateway CA certificate
+      command:
+        cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/var/tmp/ansible/istio-pki/root-cert.pem
+
+    - name: Initialize the Kiali secret
+      block:
+      - template:
+          src: istio-kiali-secret-{{ istio_version }}.yaml.j2
+          dest: /var/tmp/ansible/istio-kiali-secret-{{ istio_version }}.yaml
+
+      - name: Create the Kiali secret
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-secret-{{ istio_version }}.yaml
+
+      when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
+
+    - name: Create the Istio configuration file
+      template:
+        src: istio-config-{{ istio_version }}.yaml.j2
+        dest: /var/tmp/ansible/istio-config-{{ istio_version }}.yaml
+
+    - name: Initialize the Istio service mesh
+      shell:
+        cmd: /usr/bin/istioctl manifest apply -f /var/tmp/ansible/istio-config-{{ istio_version }}.yaml
+
+    - name: Wait for the Istio service mesh initialization to complete
+      command:
+        cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
+      when: ("k8s_worker" not in groups.keys())
+
+    - block:
+      - template:
+          src: istio-jaeger-ingress-{{ istio_version }}.yaml.j2
+          dest: /var/tmp/ansible/istio-jaeger-ingress-{{ istio_version }}.yaml
+
+      - name: Enable ingress for Jaeger
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress-{{ istio_version }}.yaml
+
+      when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
+
+    - block:
+      - template:
+          src: istio-kiali-ingress-{{ istio_version }}.yaml.j2
+          dest: /var/tmp/ansible/istio-kiali-ingress-{{ istio_version }}.yaml
+
+      - name: Enable ingress for Kiali
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-ingress-{{ istio_version }}.yaml
+
+      when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
+
+    - block:
+      - template:
+          src: istio-grafana-ingress-{{ istio_version }}.yaml.j2
+          dest: /var/tmp/ansible/istio-grafana-ingress-{{ istio_version }}.yaml
+
+      - name: Enable ingress for Grafana
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress-{{ istio_version }}.yaml
+
+      when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
+
+    - block:
+      - template:
+          src: istio-prometheus-ingress-{{ istio_version }}.yaml.j2
+          dest: /var/tmp/ansible/istio-prometheus-ingress-{{ istio_version }}.yaml
+
+      - name: Enable ingress for Prometheus
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress-{{ istio_version }}.yaml
+
+      when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
+
+    when: istio_system_namespace_exists_output.stdout == "0"
+
+  when: ((groups['k8s_master'][0] == inventory_hostname) and (istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
 
 
 
