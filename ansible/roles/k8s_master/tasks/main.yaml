@@ -131,7 +131,7 @@
           kube_apiserver_encryption_key: "{{ generate_kube_apiserver_encryption_key_result.stdout }}"
         
       - template:
-          src: k8s-apiserver-encryption-1.17.yaml.j2
+          src: k8s-apiserver-encryption.yaml.j2
           dest: /etc/kubernetes/apiserver/encryption.yaml
         
       - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
@@ -149,19 +149,19 @@
           src: scheduler-config.yaml.j2
           dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
-      - name: Create the scheduler-policy.cfg configuration file under the /etc/kubernetes/scheduler directory
+      - name: Create the scheduler-policy-1.17.cfg configuration file under the /etc/kubernetes/scheduler directory
         template:
-          src: scheduler-policy.cfg.j2
-          dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
+          src: scheduler-policy-1.17.cfg.j2
+          dest: /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
               
     - name: Create the Kubernetes cluster configuration
       template:
-        src: k8s-config-1.17.yaml.j2
-        dest: /var/tmp/ansible/k8s-config-1.17.yaml              
+        src: k8s-config.yaml.j2
+        dest: /var/tmp/ansible/k8s-config.yaml              
 
     - name: Initialize the Kubernetes cluster
       shell:
-        cmd: /usr/bin/kubeadm init --config /var/tmp/ansible/k8s-config-1.17.yaml
+        cmd: /usr/bin/kubeadm init --config /var/tmp/ansible/k8s-config.yaml
 
     - name: Copy the Kubernetes configuration to the root user
       block:
@@ -315,16 +315,16 @@
         src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-config.yaml
         dest: /etc/kubernetes/scheduler/scheduler-config.yaml
     
-    - name: Fetch the /etc/kubernetes/scheduler/scheduler-policy.cfg file from the first master node in the Kubernetes cluster
+    - name: Fetch the /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg file from the first master node in the Kubernetes cluster
       fetch:
-        src: /etc/kubernetes/scheduler/scheduler-policy.cfg
+        src: /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
     
-    - name: Copy the /etc/kubernetes/scheduler/scheduler-policy.cfg to the additional master
+    - name: Copy the /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg to the additional master
       copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-policy.cfg
-        dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
+        dest: /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
       
     - name: Fetch the /etc/kubernetes/apiserver/encryption.yaml file from the first master node in the Kubernetes cluster
       fetch:
@@ -1112,23 +1112,23 @@
     - name: Initialize the Kiali secret
       block:
       - template:
-          src: istio-kiali-secret-{{ istio_version }}.yaml.j2
-          dest: /var/tmp/ansible/istio-kiali-secret-{{ istio_version }}.yaml
+          src: istio-kiali-secret.yaml.j2
+          dest: /var/tmp/ansible/istio-kiali-secret.yaml
 
       - name: Create the Kiali secret
         command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-secret-{{ istio_version }}.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-secret.yaml
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
     - name: Create the Istio configuration file
       template:
-        src: istio-config-{{ istio_version }}.yaml.j2
-        dest: /var/tmp/ansible/istio-config-{{ istio_version }}.yaml
+        src: istio-config.yaml.j2
+        dest: /var/tmp/ansible/istio-config.yaml
 
     - name: Initialize the Istio service mesh
       shell:
-        cmd: /usr/bin/istioctl manifest apply -f /var/tmp/ansible/istio-config-{{ istio_version }}.yaml
+        cmd: /usr/bin/istioctl manifest apply -f /var/tmp/ansible/istio-config.yaml
 
     - name: Wait for the Istio service mesh initialization to complete
       command:
@@ -1137,45 +1137,45 @@
 
     - block:
       - template:
-          src: istio-jaeger-ingress-{{ istio_version }}.yaml.j2
-          dest: /var/tmp/ansible/istio-jaeger-ingress-{{ istio_version }}.yaml
+          src: istio-jaeger-ingress.yaml.j2
+          dest: /var/tmp/ansible/istio-jaeger-ingress.yaml
 
       - name: Enable ingress for Jaeger
         command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress-{{ istio_version }}.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
 
       when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
 
     - block:
       - template:
-          src: istio-kiali-ingress-{{ istio_version }}.yaml.j2
-          dest: /var/tmp/ansible/istio-kiali-ingress-{{ istio_version }}.yaml
+          src: istio-kiali-ingress.yaml.j2
+          dest: /var/tmp/ansible/istio-kiali-ingress.yaml
 
       - name: Enable ingress for Kiali
         command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-ingress-{{ istio_version }}.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-ingress.yaml
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
     - block:
       - template:
-          src: istio-grafana-ingress-{{ istio_version }}.yaml.j2
-          dest: /var/tmp/ansible/istio-grafana-ingress-{{ istio_version }}.yaml
+          src: istio-grafana-ingress.yaml.j2
+          dest: /var/tmp/ansible/istio-grafana-ingress.yaml
 
       - name: Enable ingress for Grafana
         command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress-{{ istio_version }}.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
 
       when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
 
     - block:
       - template:
-          src: istio-prometheus-ingress-{{ istio_version }}.yaml.j2
-          dest: /var/tmp/ansible/istio-prometheus-ingress-{{ istio_version }}.yaml
+          src: istio-prometheus-ingress.yaml.j2
+          dest: /var/tmp/ansible/istio-prometheus-ingress.yaml
 
       - name: Enable ingress for Prometheus
         command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress-{{ istio_version }}.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress.yaml
 
       when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
 
