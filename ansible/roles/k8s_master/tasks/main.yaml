@@ -15,7 +15,6 @@
 # | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___ 
 #  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
 #                                                             
-
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
@@ -33,7 +32,6 @@
 # | . \ (_) |__) |  / ___ \| |___| |___  | |  | |/ ___ \ ___) || | | |___|  _ < ___) |
 # |_|\_\___/____/  /_/   \_\_____|_____| |_|  |_/_/   \_\____/ |_| |_____|_| \_\____/ 
 #                                                                                     
-
 - name: Create the configuration directories for the Kubernetes API server and scheduler
   block:
   - name: Create the /etc/kubernetes/apiserver directory
@@ -70,7 +68,6 @@
 # | . \ (_) |__) | |  _|  | ||  _ < ___) || |   | |  | |/ ___ \ ___) || | | |___|  _ < 
 # |_|\_\___/____/  |_|   |___|_| \_\____/ |_|   |_|  |_/_/   \_\____/ |_| |_____|_| \_\
 #                                                                                      
-
 - name: Initialize the first master node in the Kubernetes cluster
   block:      
   - name: Check whether the kubelet service has been configured
@@ -149,10 +146,10 @@
           src: scheduler-config.yaml.j2
           dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
-      - name: Create the scheduler-policy-1.17.cfg configuration file under the /etc/kubernetes/scheduler directory
+      - name: Create the scheduler-policy.cfg configuration file under the /etc/kubernetes/scheduler directory
         template:
-          src: scheduler-policy-1.17.cfg.j2
-          dest: /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
+          src: scheduler-policy.cfg.j2
+          dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
               
     - name: Create the Kubernetes cluster configuration
       template:
@@ -239,11 +236,11 @@
     - name: Deploy the kube-state-metrics service if there are no worker nodes
       block:
       - template:
-          src: kube-state-metrics-{{ kube_state_metrics_version }}.yaml.j2
-          dest: /var/tmp/ansible/kube-state-metrics-{{ kube_state_metrics_version }}.yaml
+          src: kube-state-metrics.yaml.j2
+          dest: /var/tmp/ansible/kube-state-metrics.yaml
 
       - shell:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kube-state-metrics-{{ kube_state_metrics_version }}.yaml
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kube-state-metrics.yaml
 
     when: kubelet_config_stat_result.stat.exists == False
 
@@ -294,7 +291,6 @@
 # | . \ (_) |__) |  / ___ \| |_| | |_| | |  | |  | | |_| | |\  |/ ___ \| |___  | |  | |/ ___ \ ___) || | | |___|  _ < 
 # |_|\_\___/____/  /_/   \_\____/|____/___| |_| |___\___/|_| \_/_/   \_\_____| |_|  |_/_/   \_\____/ |_| |_____|_| \_\
 #                                                                                                                     
-
 - name: Initialize an additional master node in the Kubernetes cluster
   block:
   - name: Check whether the kubelet service has been configured
@@ -315,16 +311,16 @@
         src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-config.yaml
         dest: /etc/kubernetes/scheduler/scheduler-config.yaml
     
-    - name: Fetch the /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg file from the first master node in the Kubernetes cluster
+    - name: Fetch the /etc/kubernetes/scheduler/scheduler-policy.cfg file from the first master node in the Kubernetes cluster
       fetch:
-        src: /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
+        src: /etc/kubernetes/scheduler/scheduler-policy.cfg
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
     
-    - name: Copy the /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg to the additional master
+    - name: Copy the /etc/kubernetes/scheduler/scheduler-policy.cfg to the additional master
       copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
-        dest: /etc/kubernetes/scheduler/scheduler-policy-1.17.cfg
+        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-policy.cfg
+        dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
       
     - name: Fetch the /etc/kubernetes/apiserver/encryption.yaml file from the first master node in the Kubernetes cluster
       fetch:
@@ -511,7 +507,6 @@
 # |  _  | |___| |___| |  | |
 # |_| |_|_____|_____|_|  |_|
 #                           
-
 - name: Install Helm
   block:
   - debug:
@@ -571,7 +566,6 @@
 #  ___) | |___ / ___ \| |___| |___| |_| |  ___) | |__| |___|  _ <| |___  | |  ___) |
 # |____/|_____/_/   \_\_____|_____|____/  |____/|_____\____|_| \_\_____| |_| |____/ 
 #                                                                                   
-
 - name: Install the Bitnami Labs Sealed Secrets Extension
   block:
   - debug:
@@ -680,7 +674,6 @@
 # | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ <  | |___ | ||  _| | |__| |___  | || |___| |___| |___  | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ < 
 #  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\ |_____|___|_|   |_____\____| |_| \____|_____|_____| |_|  |_/_/   \_\_| \_/_/   \_\____|_____|_| \_\
 #                                                                                                                                                      
-
 - name: Install the Operator Lifecycle Manager if it is enabled
   block:
   
@@ -690,48 +683,51 @@
     register: operator_lifecycle_manager_namespace_exists_output
   
   - block:
-    - name: Retrieve the Operator Lifecycle Manager Custom Resource Definitions configuration
-      get_url:
-        url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/crds.yaml
+    - name: Generate the Operator Lifecycle Manager Custom Resource Definitions configuration
+      template:
+        src: operator-lifecycle-manager-crds.yaml.j2
         dest: /var/tmp/ansible/operator-lifecycle-manager-crds.yaml
-      register: get_operator_lifecycle_manager_crds_result
-      until: get_operator_lifecycle_manager_crds_result is succeeded
-      retries: 3
-      delay: 10      
-    
+        
     - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/operator-lifecycle-manager-crds.yaml
 
-    - name: Sleep for 15 seconds to allow the Operator Lifecycle Manager Custom Resource Definitions configuration to be applied
-      wait_for:
-        timeout: 15
-
-    - name: Retrieve the Operator Lifecycle Manager configuration
-      get_url:
-        url: https://raw.githubusercontent.com/operator-framework/operator-lifecycle-manager/release-4.6/deploy/upstream/quickstart/olm.yaml
+    - name: Generate the Operator Lifecycle Manager configuration
+      template:
+        src: operator-lifecycle-manager-olm.yaml.j2
         dest: /var/tmp/ansible/operator-lifecycle-manager-olm.yaml
-      register: get_operator_lifecycle_manager_configuration_result
-      until: get_operator_lifecycle_manager_configuration_result is succeeded
-      retries: 3
-      delay: 10      
   
     - name: Apply the Operator Lifecycle Manager configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/operator-lifecycle-manager-olm.yaml
         
+    - name: Wait for the Operator Lifecycle Manager olm-operator deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n olm rollout status -w deployment/olm-operator
+      register: wait_for_olm_operator_deployment_result
+      until: wait_for_olm_operator_deployment_result is succeeded
+      retries: 60
+      delay: 10      
+
+    - name: Wait for the Operator Lifecycle Manager catalog-operator deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n olm rollout status -w deployment/catalog-operator
+      register: wait_for_catalog_operator_deployment_result
+      until: wait_for_catalog_operator_deployment_result is succeeded
+      retries: 60
+      delay: 10    
+    
     when: operator_lifecycle_manager_namespace_exists_output.stdout == "0"        
  
   when: ((operator_lifecycle_manager_enabled is defined) and (operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
 
-#
+
 #  _____ _        _    ____ _____ ___ ____    ____ _     ___  _   _ ____    _____ ____ _  __   ___  ____  _____ ____      _  _____ ___  ____  
 # | ____| |      / \  / ___|_   _|_ _/ ___|  / ___| |   / _ \| | | |  _ \  | ____/ ___| |/ /  / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
 # |  _| | |     / _ \ \___ \ | |  | | |     | |   | |  | | | | | | | | | | |  _|| |   | ' /  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
 # | |___| |___ / ___ \ ___) || |  | | |___  | |___| |__| |_| | |_| | |_| | | |__| |___| . \  | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
 # |_____|_____/_/   \_\____/ |_| |___\____|  \____|_____\___/ \___/|____/  |_____\____|_|\_\  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
 #                                                                                                                                             
-
 - name: Install the Elastic Cloud ECK Operator if it is enabled
   block:
   
@@ -749,10 +745,19 @@
     - name: Apply the Elastic Cloud ECK Operator configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/elastic-cloud-eck-operator.yaml
-    
+        
+    - name: Wait for the Elastic Cloud ECK Operator deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n operators rollout status -w deployment/elastic-operator
+      register: wait_for_elastic_cloud_eck_operator_deployment_result
+      until: wait_for_elastic_cloud_eck_operator_deployment_result is succeeded
+      retries: 30
+      delay: 10    
+        
     when: elastic_cloud_eck_operator_installed_output.stdout == "0"
   
   when: ((elastic_cloud_eck_operator_enabled is defined) and (elastic_cloud_eck_operator_enabled != None) and (elastic_cloud_eck_operator_enabled == true))
+
 
 #  ____   ___  ____ _____ ____ ____  _____ ____     ___  ____  _____ ____      _  _____ ___  ____  
 # |  _ \ / _ \/ ___|_   _/ ___|  _ \| ____/ ___|   / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
@@ -760,7 +765,6 @@
 # |  __/| |_| |___) || || |_| |  _ <| |___ ___) | | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
 # |_|    \___/|____/ |_| \____|_| \_\_____|____/   \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
 #                                                                                                  
-
 - name: Install the Postgres Operator if it is enabled
   block:
   
@@ -778,6 +782,14 @@
     - name: Apply the Postgres Operator configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/postgres-operator.yaml
+        
+    - name: Wait for the Postgres Operator deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n operators rollout status -w deployment/postgres-operator
+      register: wait_for_postgres_operator_deployment_result
+      until: wait_for_postgres_operator_deployment_result is succeeded
+      retries: 30
+      delay: 10    
     
     when: postgres_operator_installed_output.stdout == "0"
   
@@ -790,7 +802,6 @@
 # |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) | | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
 # |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/   \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
 #                                                                                                                 
-
 - name: Install the Prometheus Operator if it is enabled
   block:
   
@@ -803,15 +814,91 @@
     - name: Generate the Prometheus Operator configuration
       template:
         src: prometheus-operator.yaml.j2
-        dest: /var/tmp/ansible/prometheus-operator.yaml
+        dest: /var/tmp/ansible/prometheus-operator.yaml  
   
     - name: Apply the Prometheus Operator configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-operator.yaml
+        
+    - name: Wait for the Prometheus Operator deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n operators rollout status -w deployment/prometheus-operator
+      register: wait_for_prometheus_operator_deployment_result
+      until: wait_for_prometheus_operator_deployment_result is succeeded
+      retries: 60
+      delay: 10    
     
     when: prometheus_operator_installed_output.stdout == "0"
   
   when: ((prometheus_operator_enabled is defined) and (prometheus_operator_enabled != None) and (prometheus_operator_enabled == true))
+
+
+#  _     ___  _   _  ____ _   _  ___  ____  _   _ 
+# | |   / _ \| \ | |/ ___| | | |/ _ \|  _ \| \ | |
+# | |  | | | |  \| | |  _| |_| | | | | |_) |  \| |
+# | |__| |_| | |\  | |_| |  _  | |_| |  _ <| |\  |
+# |_____\___/|_| \_|\____|_| |_|\___/|_| \_\_| \_|
+#                                                 
+- name: Install Longhorn if it is enabled
+  block:
+
+  - name: Check if longhorn-system namespace exists
+    shell:
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep longhorn-system | wc -l
+    register: longhorn_system_namespace_exists_output
+
+  - block:
+    - template:
+        src: longhorn.yaml.j2
+        dest: /var/tmp/ansible/longhorn.yaml
+
+    - name: Apply the Longhorn configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/longhorn.yaml
+        
+    - name: Wait for the Longhorn compatible-csi-attacher deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/compatible-csi-attacher
+      register: wait_for_longhorn_compatible_csi_attacher_deployment_result
+      until: wait_for_longhorn_compatible_csi_attacher_deployment_result is succeeded
+      retries: 60
+      delay: 10    
+        
+    - name: Wait for the Longhorn csi-attacher deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/csi-attacher
+      register: wait_for_longhorn_csi_attacher_deployment_result
+      until: wait_for_longhorn_csi_attacher_deployment_result is succeeded
+      retries: 60
+      delay: 10    
+        
+    - name: Wait for the Longhorn csi-provisioner deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/csi-provisioner
+      register: wait_for_longhorn_csi_provisioner_deployment_result
+      until: wait_for_longhorn_csi_provisioner_deployment_result is succeeded
+      retries: 60
+      delay: 10    
+
+    - name: Wait for the Longhorn longhorn-driver-deployer deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/longhorn-driver-deployer
+      register: wait_for_longhorn_driver_deployer_deployment_result
+      until: wait_for_longhorn_driver_deployer_deployment_result is succeeded
+      retries: 60
+      delay: 10    
+
+    - name: Wait for the Longhorn longhorn-ui deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/longhorn-ui
+      register: wait_for_longhorn_ui_deployment_result
+      until: wait_for_longhorn_ui_deployment_result is succeeded
+      retries: 60
+      delay: 10
+  
+    when: longhorn_system_namespace_exists_output.stdout == "0"
+
+  when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
 
 
 #  _____ ___  ____   ___  _ __     ____  __ 
@@ -820,7 +907,6 @@
 #   | || |_| |  __/| |_| | |__\ V / | |  | |
 #   |_| \___/|_|    \___/|_____\_/  |_|  |_|
 #                                           
-
 - name: Install the TopoLVM CSI plugin
   block:
   
@@ -846,7 +932,7 @@
         
     - name: Apply the initial TopoLVM configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-init.yaml  
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-init.yaml
         
     - name: Disable the TopoLVM mutating webhook for the kube-system namespace
       command:
@@ -918,7 +1004,15 @@
     - name: Apply the TopoLVM Controller configuration to Kubernetes
       command: 
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-controller.yaml
-
+        
+    - name: Wait for the TopoLVM controller deployment to complete
+      command: 
+        cmd: /usr/bin/kubectl -n topolvm-system rollout status -w deployment/controller
+      register: wait_for_topo_lvm_controller_deployment_result
+      until: wait_for_topo_lvm_controller_deployment_result is succeeded
+      retries: 60
+      delay: 10    
+    
     - name: Generate the TopoLVM Node configuration    
       template:
         src: topolvm-node.yaml.j2
@@ -942,33 +1036,58 @@
   when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
 
 
-#  _     ___  _   _  ____ _   _  ___  ____  _   _ 
-# | |   / _ \| \ | |/ ___| | | |/ _ \|  _ \| \ | |
-# | |  | | | |  \| | |  _| |_| | | | | |_) |  \| |
-# | |__| |_| | |\  | |_| |  _  | |_| |  _ <| |\  |
-# |_____\___/|_| \_|\____|_| |_|\___/|_| \_\_| \_|
-#                                                 
-
-- name: Install Longhorn if it is enabled
+#  _____ _        _    ____ _____ ___ ____ ____  _____    _    ____   ____ _   _ 
+# | ____| |      / \  / ___|_   _|_ _/ ___/ ___|| ____|  / \  |  _ \ / ___| | | |
+# |  _| | |     / _ \ \___ \ | |  | | |   \___ \|  _|   / _ \ | |_) | |   | |_| |
+# | |___| |___ / ___ \ ___) || |  | | |___ ___) | |___ / ___ \|  _ <| |___|  _  |
+# |_____|_____/_/   \_\____/ |_| |___\____|____/|_____/_/   \_\_| \_\\____|_| |_|
+#                                                                                
+- name: Configure Elasticsearch
   block:
-
-  - name: Check if longhorn-system namespace exists
+  - name: Check if elasticsearch-system namespace exists
     shell:
-      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep longhorn-system | wc -l
-    register: longhorn_system_namespace_exists_output
-
-  - block:
-    - template:
-        src: longhorn-0.7.yaml.j2
-        dest: /var/tmp/ansible/longhorn-0.7.yaml
-
-    - name: Apply the Longhorn configuration to Kubernetes
-      command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/longhorn-0.7.yaml
+      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep elasticsearch-system | wc -l
+    register: elasticsearch_system_namespace_exists_output
   
-    when: longhorn_system_namespace_exists_output.stdout == "0"
+  - name: Generate and apply the Elasticsearch and Kibana configuration
+    block:
+    - name: Generate the Elasticsearch configuration    
+      template:
+        src: elasticsearch.yaml.j2
+        dest: /var/tmp/ansible/elasticsearch.yaml
+  
+    - name: Apply the Elasticsearch configuration to Kubernetes
+      command: 
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/elasticsearch.yaml
 
-  when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+    - name: Wait for the Elasticsearch configuration to be applied
+      block:
+      - command: 
+          cmd: /usr/bin/kubectl -n elasticsearch-system get elasticsearch/local
+        register: wait_for_elasticsearch_cluster_configuration_result
+        until: wait_for_elasticsearch_cluster_configuration_result is succeeded
+        retries: 60
+        delay: 10
+      
+      - shell:
+          cmd: /usr/bin/kubectl -n elasticsearch-system get elasticsearch/local | head -2 | tail -1 | awk  {'print $5'}
+        register: elasticsearch_cluster_status_output
+        until: elasticsearch_cluster_status_output.stdout == "Ready"
+        retries: 60
+        delay: 10
+      
+      - name: Generate the Kibana configuration    
+        template:
+          src: kibana.yaml.j2
+          dest: /var/tmp/ansible/kibana.yaml
+        
+      - name: Apply the Kibana configuration to Kubernetes
+        command: 
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kibana.yaml
+      
+    when: elasticsearch_system_namespace_exists_output.stdout == "0"
+        
+  when: ((elasticsearch_cluster_type is defined) and (elasticsearch_cluster_type != None))
 
 
 #  ___ ____ _____ ___ ___  
@@ -977,7 +1096,6 @@
 #  | | ___) || |  | | |_| |
 # |___|____/ |_| |___\___/ 
 #                          
-
 - name: Install istioctl
   block:
   - debug:

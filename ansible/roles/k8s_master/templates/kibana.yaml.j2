@@ -1,0 +1,21 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: {{ k8s_cluster_name }}
+  namespace: elasticsearch-system
+spec:
+  version: 7.6.1
+  count: 1
+  elasticsearchRef:
+    name: {{ k8s_cluster_name }}
+    
+  http:
+    service:
+      spec:
+        type: NodePort
+        ports:
+          - name: https
+            nodePort: 32550
+            port: 5601
+            protocol: TCP
+            targetPort: 5601

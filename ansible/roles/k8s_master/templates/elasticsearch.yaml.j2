@@ -1,0 +1,225 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: elasticsearch-system
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: {{ k8s_cluster_name }}
+  namespace: elasticsearch-system  
+spec:
+  version: 7.6.1
+  
+  http:
+    service:
+      spec:
+        type: NodePort
+        ports:
+          - name: https
+            nodePort: 32540
+            port: 9200
+            protocol: TCP
+            targetPort: 9200
+
+{% if ((elasticsearch_cluster_type is defined) and (elasticsearch_cluster_type != None) and (elasticsearch_cluster_type == 'minimal'))  %}
+
+  nodeSets:
+  - name: master
+    count: 1
+    config:
+      node.master: true
+      node.data: false
+      node.ingest: false
+      node.store.allow_mmap: false
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms320m -Xmx320m
+          resources:
+            requests:
+              memory: 384M
+              cpu: 0.1
+            limits:
+              memory: 640M
+              cpu: 0.5
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 512M
+        storageClassName: default-local-storage
+  - name: data    
+    count: 1
+    config:
+      node.master: false
+      node.data: true
+      node.ingest: false
+      node.store.allow_mmap: false
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms320m -Xmx320m
+          resources:
+            requests:
+              memory: 384M
+              cpu: 0.1
+            limits:
+              memory: 640M
+              cpu: 0.5
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 512M
+        storageClassName: default-local-storage
+  - name: ingest
+    count: 1
+    config:
+      node.master: false
+      node.data: false
+      node.ingest: true
+      node.store.allow_mmap: false
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms320m -Xmx320m
+          resources:
+            requests:
+              memory: 384M
+              cpu: 0.1
+            limits:
+              memory: 640M
+              cpu: 0.5
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 512M
+        storageClassName: default-local-storage              
+
+{% endif %}
+
+{% if ((elasticsearch_cluster_type is defined) and (elasticsearch_cluster_type != None) and (elasticsearch_cluster_type == 'full'))  %}
+
+  nodeSets:
+  - name: master
+    count: 3
+    config:
+      node.master: true
+      node.data: false
+      node.ingest: false
+      cluster.remote.connect: false
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms384m -Xmx384m
+          resources:
+            requests:
+              memory: 384M
+              cpu: 0.1
+            limits:
+              memory: 640M
+              cpu: 0.5      
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: default-remote-storage      
+  - name: data
+    count: 3
+    config:
+      node.master: false
+      node.data: true
+      node.ingest: false
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms384m -Xmx384m
+          resources:
+            requests:
+              memory: 384M
+              cpu: 0.1
+            limits:
+              memory: 640M
+              cpu: 0.5    
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: default-remote-storage
+  - name: ingest
+    count: 3
+    config:
+      node.master: false
+      node.data: false
+      node.ingest: true
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms384m -Xmx384m
+          resources:
+            requests:
+              memory: 384M
+              cpu: 0.1
+            limits:
+              memory: 640M
+              cpu: 0.5      
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: default-remote-storage      
+
+{% endif %}
+
+
+# See: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html
+#      https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-managing-compute-resources.html
+#      https://www.elastic.co/guide/en/cloud-on-k8s/master/k8s-advanced-node-scheduling.html
+

@@ -61,10 +61,10 @@ variables:
   - weave
 - name: longhorn_enabled
   values:
-  - false
+  - true
 - name: topolvm_enabled
   values:
-  - false  
+  - true  
 - name: topolvm_volume_group
   values:
   - system
@@ -87,7 +87,7 @@ variables:
   - true
 - name: postgres_operator_enabled
   values:
-  - false  
+  - true  
 - name: prometheus_operator_enabled
   values:
   - false
@@ -97,7 +97,7 @@ variables:
 # ----------------------------------------------------------------------------------------
 - name: istio_enabled
   values:
-  - true
+  - false
 - name: istio_grafana_enabled
   values:
   - true
@@ -114,13 +114,23 @@ variables:
   values:
   - true
   
-  
 # ----------------------------------------------------------------------------------------
 # External Monitoring Configuration
 # ----------------------------------------------------------------------------------------
 - name: prometheus_data_directory
   values:
   - /var/lib/prometheus
+
+# ----------------------------------------------------------------------------------------
+# Elasticsearch Configuration
+#
+# Where elasticsearch_cluster_type is one of single, minimal or full.
+#
+# ----------------------------------------------------------------------------------------
+- name: elasticsearch_cluster_type
+  values:
+  - minimal
+
 
 profiles:
 - name: devops
