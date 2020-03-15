@@ -61,7 +61,7 @@ variables:
   - weave
 - name: longhorn_enabled
   values:
-  - true
+  - false
 - name: topolvm_enabled
   values:
   - true  
@@ -87,7 +87,7 @@ variables:
   - true
 - name: postgres_operator_enabled
   values:
-  - true  
+  - false  
 - name: prometheus_operator_enabled
   values:
   - false

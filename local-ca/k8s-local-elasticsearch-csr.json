@@ -1,0 +1,18 @@
+{
+  "CN": "k8s-local-elasticsearch",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "k8s-local-elasticsearch"
+    }
+  ],
+  "hosts": [
+    "elasticsearch.local",  
+    "local-es-http",
+    "local-es-http.elasticsearch-system",
+    "local-es-http.elasticsearch-system.svc"
+  ]
+}

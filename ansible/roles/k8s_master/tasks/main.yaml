@@ -917,10 +917,10 @@
 
   - block:
     - set_fact:
-        topolvm_mutatingwebhook_key: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/topolvm-mutatingwebhook.key') | b64encode }}"
+        topolvm_mutatingwebhook_key: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/k8s-' + k8s_cluster_name + '-topolvm-mutatingwebhook.key') | b64encode }}"
         
     - set_fact:
-        topolvm_mutatingwebhook_crt: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/topolvm-mutatingwebhook.crt') | b64encode }}"
+        topolvm_mutatingwebhook_crt: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/k8s-' + k8s_cluster_name + '-topolvm-mutatingwebhook.crt') | b64encode }}"
 
     - set_fact:
         topolvm_mutatingwebhook_ca_bundle: "{{ lookup('file', './files/pki/' + k8s_cluster_name + '/ca-bundle.crt') | b64encode }}"
@@ -1051,6 +1051,43 @@
   
   - name: Generate and apply the Elasticsearch and Kibana configuration
     block:
+    - name: Create the /var/tmp/ansible/elasticsearch-pki directory
+      file:
+        path: /var/tmp/ansible/elasticsearch-pki
+        state: directory
+
+    - name: Copy the Elasticsearch private key to the /var/tmp/ansible/elasticsearch-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-elasticsearch.key
+        dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem
+
+    - name: Copy the Elasticsearch certificate to the /var/tmp/ansible/elasticsearch-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-elasticsearch.crt
+        dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem
+
+    - name: Copy the Kibana private key to the /var/tmp/ansible/elasticsearch-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-kibana.key
+        dest: /var/tmp/ansible/elasticsearch-pki/kibana-key.pem
+
+    - name: Copy the Kibana certificate to the /var/tmp/ansible/elasticsearch-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-kibana.crt
+        dest: /var/tmp/ansible/elasticsearch-pki/kibana-cert.pem
+        
+    - name: Create the elasticsearch-system namespace
+      command:
+        cmd: /usr/bin/kubectl create namespace elasticsearch-system
+    
+    - name: Create the secret in the elasticsearch-system namespace for the Elasticsearch private key and certificates
+      command:
+        cmd: /usr/bin/kubectl create -n elasticsearch-system secret tls elasticsearch-certs --key=/var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem --cert=/var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem
+
+    - name: Create the secret in the elasticsearch-system namespace for the Kibana private key and certificates
+      command:
+        cmd: /usr/bin/kubectl create -n elasticsearch-system secret tls kibana-certs --key=/var/tmp/ansible/elasticsearch-pki/kibana-key.pem --cert=/var/tmp/ansible/elasticsearch-pki/kibana-cert.pem
+    
     - name: Generate the Elasticsearch configuration    
       template:
         src: elasticsearch.yaml.j2
@@ -1074,7 +1111,7 @@
         register: elasticsearch_cluster_status_output
         until: elasticsearch_cluster_status_output.stdout == "Ready"
         retries: 60
-        delay: 10
+        delay: 10      
       
       - name: Generate the Kibana configuration    
         template:
