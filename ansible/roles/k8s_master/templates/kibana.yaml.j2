@@ -1,24 +1,48 @@
 apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
 metadata:
-  name: {{ k8s_cluster_name }}
-  namespace: elasticsearch-system
+  name: monitoring
+  namespace: monitoring-system
 spec:
   version: 7.6.1
   count: 1
   elasticsearchRef:
-    name: {{ k8s_cluster_name }}
-    
+    name: monitoring
+
   http:
     service:
       spec:
         type: NodePort
         ports:
-          - name: https
-            nodePort: 32550
-            port: 5601
-            protocol: TCP
-            targetPort: 5601
+        - name: https
+          nodePort: 32550
+          port: 5601
+          protocol: TCP
+          targetPort: 5601
     tls:
       certificate:
-        secretName: kibana-certs
+        secretName: monitoring-certs
+
+  config:
+    elasticsearch.ssl.certificateAuthorities: /etc/certs/ca.pem
+
+  podTemplate:
+    spec:
+      volumes:
+      - name: monitoring-ca-certs
+        secret:
+          secretName: monitoring-ca-certs
+      containers:
+      - name: kibana
+        volumeMounts:
+        - name: monitoring-ca-certs
+          mountPath: /etc/certs
+          readOnly: true
+        resources:
+          requests:
+            memory: 384M
+            cpu: 0.1        
+          limits:
+            memory: 1Gi
+            cpu: 1
+

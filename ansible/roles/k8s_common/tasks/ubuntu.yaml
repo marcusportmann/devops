@@ -3,6 +3,27 @@
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes common configuration
 
+- name: Install the root CA, Kubernetes intermediate CA and Kubernetes etcd intermediate CA certificates
+  block:
+  - name: Create the /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+    file:
+      path: /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }}
+      state: directory
+  
+  - name: Copy the root CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+    copy:
+      src: pki/{{ k8s_cluster_name }}/ca.crt
+      dest: /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }}/ca.crt
+
+  - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+    copy:
+      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
+      dest: /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
+    
+  - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
+    shell:
+      cmd: /usr/sbin/update-ca-certificates
+
 - name: Disable swap since Kubernetes cannot work with swap enabled (1/2)
   shell: |
     swapoff -a

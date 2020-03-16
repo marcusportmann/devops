@@ -5,4 +5,5 @@ metadata:
 provisioner: topolvm.cybozu.com
 parameters:
   "csi.storage.k8s.io/fstype": "xfs"
+allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer

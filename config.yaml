@@ -85,6 +85,9 @@ variables:
 - name: elastic_cloud_eck_operator_enabled
   values:
   - true
+- name: jaeger_operator_enabled
+  values:
+  - true
 - name: postgres_operator_enabled
   values:
   - false  
@@ -343,7 +346,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           k8s_master
   cpus:                     3
-  memory:                   5120
+  memory:                   6144
   hostname:                 devops
   fqdn:                     devops.local
   ip:                       192.168.184.60/24
@@ -355,8 +358,6 @@ hosts:
 # monitored,k8s_load_balancer,k8s_master,prometheus,grafana
 
 # monitored,k8s_load_balancer,k8s_master,prometheus,grafana
-
-
 
 - name:                     test-ubuntu1804.local
   type:                     ubuntu1804

@@ -19,7 +19,7 @@
     k8s_vmware_tanzu_kubernetes_kubeadm_version: 1.17.3+vmware.1-1
     k8s_vmware_tanzu_kubernetes_kubectl_version: 1.17.3+vmware.1-1
     k8s_vmware_tanzu_kubernetes_kubelet_version: 1.17.3+vmware.1-1    
-    topolvm_lvmd_version: 0.3.0    
+    topolvm_lvmd_version: 0.4.1   
   become: yes
   become_user: root
   roles:
@@ -36,7 +36,7 @@
     istio_package_checksum: sha256:fba603390074b1b9da9b3bd1492a278740fe725ac8ff07b8ec54fb7d66e03c33
     istioctl_package_checksum: sha256:e841c8858f7598351caaf6d7e6a67c4a43218f343629c67cf76db5d000c9df72
     kube_state_metrics_version: 1.9.4
-    topolvm_version: 0.3.0
+    topolvm_version: 0.4.1
   become: yes
   become_user: root
   roles:
