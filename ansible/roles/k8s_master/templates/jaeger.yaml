@@ -1,0 +1,42 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: monitoring
+  namespace: monitoring-system
+spec:
+  strategy: production
+  storage:
+    type: elasticsearch
+    options:
+      es:
+        server-urls: https://monitoring-es-http:9200
+        tls:
+          ca: /etc/certs/ca.pem
+        num-shards: 1
+        num-replicas: 0
+    secretName: monitoring-jaeger-elastic-user
+  volumeMounts:
+  - name: monitoring-ca-certs
+    mountPath: /etc/certs
+    readOnly: true
+  volumes:
+  - name: monitoring-ca-certs
+    secret:
+      secretName: monitoring-ca-certs
+
+
+
+
+
+#  containers:
+#  - name: kibana
+#    volumeMounts:
+#      - name: monitoring-ca-certs
+#        mountPath: /etc/certs
+#        readOnly: true
+#    resources:
+#      limits:
+#        memory: 1Gi
+#        cpu: 0.1  
+   
+  
