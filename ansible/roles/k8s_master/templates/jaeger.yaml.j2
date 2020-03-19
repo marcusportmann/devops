@@ -1,0 +1,84 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: monitoring-jaeger
+  namespace: monitoring-system
+spec:
+  strategy: production
+  query:
+    maxReplicas: 1
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "1"
+        memory: "256Mi"
+  collector:
+    maxReplicas: 1
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"    
+      limits:
+        cpu: "1"
+        memory: "256Mi"
+  storage:
+    type: elasticsearch
+    options:
+      es:
+        server-urls: http://monitoring-es-http.monitoring-system.svc:9200
+        num-shards: 1
+        num-replicas: 0
+    secretName: monitoring-jaeger-elastic-user
+
+
+
+
+
+
+
+#
+#spec:
+#  strategy: production
+#  query:
+#    maxReplicas: 1
+#    resources:
+#      requests:
+#        cpu: "100m"
+#        memory: "128Mi"
+#      limits:
+#        cpu: "1"
+#        memory: "256Mi"
+#  collector:
+#    maxReplicas: 1
+#    resources:
+#      requests:
+#        cpu: "100m"
+#        memory: "128Mi"
+#      limits:
+#        cpu: "1"
+#        memory: "256Mi"
+#  storage:
+#    type: elasticsearch
+#    options:
+#      es:
+#        server-urls: https://monitoring-es-http.monitoring-system.svc:9200
+#        tls:
+#          ca: /etc/certs/ca.pem
+#        num-shards: 1
+#        num-replicas: 0
+#    secretName: monitoring-jaeger-elastic-user
+#  volumeMounts:
+#  - name: monitoring-ca-certs
+#    mountPath: /etc/certs
+#    readOnly: true
+#  volumes:
+#  - name: monitoring-ca-certs
+#    secret:
+#      secretName: monitoring-ca-certs
+#
+#
+
+
+  

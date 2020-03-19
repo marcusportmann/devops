@@ -76,6 +76,14 @@
 #    port: '9099'
 #    proto: tcp
 #
+
+- name: Allow all access to tcp port 9100 (Prometheus Node Exporter)
+  ufw:
+    rule: allow
+    port: '9100'
+    proto: tcp
+
+
 #- name: Allow all access to tcp port 10251
 #  ufw:
 #    rule: allow
@@ -142,6 +150,9 @@
 
 - name: Install the ebtables package
   apt: name=ebtables state=latest
+
+- name: Install the jq package
+  apt: name=jq state=latest
 
 - name: Collect the package facts
   package_facts:

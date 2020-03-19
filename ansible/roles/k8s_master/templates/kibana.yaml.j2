@@ -10,39 +10,47 @@ spec:
     name: monitoring
 
   http:
-    service:
-      spec:
-        type: NodePort
-        ports:
-        - name: https
-          nodePort: 32550
-          port: 5601
-          protocol: TCP
-          targetPort: 5601
-    tls:
-      certificate:
-        secretName: monitoring-certs
+      tls:
+        selfSignedCertificate:
+          disabled: true
 
-  config:
-    elasticsearch.ssl.certificateAuthorities: /etc/certs/ca.pem
+# 
+# NodePort with TLS
+#  
+#   http:
+#     service:
+#       spec:
+#         type: NodePort
+#         ports:
+#         - name: https
+#           nodePort: 32550
+#           port: 5601
+#           protocol: TCP
+#           targetPort: 5601
+#     tls:
+#       certificate:
+#         secretName: monitoring-certs
+# 
+#   config:
+#     elasticsearch.ssl.certificateAuthorities: /etc/certs/ca.pem
 
   podTemplate:
     spec:
-      volumes:
-      - name: monitoring-ca-certs
-        secret:
-          secretName: monitoring-ca-certs
+#       volumes:
+#       - name: monitoring-ca-certs
+#         secret:
+#           secretName: monitoring-ca-certs
       containers:
       - name: kibana
-        volumeMounts:
-        - name: monitoring-ca-certs
-          mountPath: /etc/certs
-          readOnly: true
+#         volumeMounts:
+#         - name: monitoring-ca-certs
+#           mountPath: /etc/certs
+#           readOnly: true
         resources:
           requests:
-            memory: 384M
-            cpu: 0.1        
+            cpu: "100m"
+            memory: "384Mi"
           limits:
-            memory: 1Gi
-            cpu: 1
+            cpu: "1"          
+            memory: "1Gi"
 

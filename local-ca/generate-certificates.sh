@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# xattr -d com.apple.quarantine generate-certificates.sh
 
 # Generate the Root CA private key and certificate
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca
@@ -99,14 +100,6 @@ mv -f k8s-local-istio-ingressgateway-key.pem k8s-local-istio-ingressgateway.key
 mv -f k8s-local-istio-ingressgateway.pem k8s-local-istio-ingressgateway.crt
 cp k8s-local-istio-ingressgateway.key ../ansible/roles/k8s_master/files/pki/local
 cp k8s-local-istio-ingressgateway.crt ../ansible/roles/k8s_master/files/pki/local
-
-
-# Generate the Istio ingress gateway private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-istio-telemetry-gateway-csr.json | cfssljson -bare k8s-local-istio-telemetry-gateway
-mv -f k8s-local-istio-telemetry-gateway-key.pem k8s-local-istio-telemetry-gateway.key
-mv -f k8s-local-istio-telemetry-gateway.pem k8s-local-istio-telemetry-gateway.crt
-cp k8s-local-istio-telemetry-gateway.key ../ansible/roles/k8s_master/files/pki/local
-cp k8s-local-istio-telemetry-gateway.crt ../ansible/roles/k8s_master/files/pki/local
 
 
 # Generate the default ingress gateway private key and certificate

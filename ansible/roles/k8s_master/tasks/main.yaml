@@ -559,6 +559,16 @@
 
     when: (helm_installed_version != helm_version)
 
+  - name: Check if the stable Helm repository has been added
+    shell:
+      cmd: /usr/bin/helm repo list | grep stable | wc -l
+    register: helm_stable_repo_added_output
+
+  - name: Add the stable Helm repository
+    command:
+      cmd: /usr/bin/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+    when: helm_stable_repo_added_output.stdout == "0"        
+
 
 #  ____  _____    _    _     _____ ____    ____  _____ ____ ____  _____ _____ ____  
 # / ___|| ____|  / \  | |   | ____|  _ \  / ___|| ____/ ___|  _ \| ____|_   _/ ___| 
@@ -733,7 +743,7 @@
   
   - name: Check if the Elastic Cloud ECK Operator is installed
     shell:
-      cmd: kubectl get subscription -n operators 2>&1 | grep elastic-cloud-eck | wc -l
+      cmd: /usr/bin/kubectl get subscription -n operators 2>&1 | grep elastic-cloud-eck | wc -l
     register: elastic_cloud_eck_operator_installed_output
     
   - block:
@@ -770,10 +780,10 @@
   
   - name: Check if the Jaeger Operator is installed
     shell:
-      cmd: kubectl get subscription -n operators 2>&1 | grep jaeger | wc -l
+      cmd: /usr/bin/kubectl get subscription -n operators 2>&1 | grep jaeger | wc -l
     register: jaeger_operator_installed_output
     
-  - block:
+  - block:  
     - name: Generate the Jaeger Operator configuration
       template:
         src: jaeger-operator.yaml.j2
@@ -807,7 +817,7 @@
   
   - name: Check if Postgres Operator is installed
     shell:
-      cmd: kubectl get subscription -n operators 2>&1 | grep postgres-operator | wc -l
+      cmd: /usr/bin/kubectl get subscription -n operators 2>&1 | grep postgres-operator | wc -l
     register: postgres_operator_installed_output
     
   - block:
@@ -831,43 +841,6 @@
     when: postgres_operator_installed_output.stdout == "0"
   
   when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
-
-
-#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____     ___  ____  _____ ____      _  _____ ___  ____  
-# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|   / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
-# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
-# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) | | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
-# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/   \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
-#                                                                                                                 
-- name: Install the Prometheus Operator if it is enabled
-  block:
-  
-  - name: Check if the Prometheus Operator is installed
-    shell:
-      cmd: kubectl get subscription -n operators 2>&1 | grep prometheus-operator | wc -l
-    register: prometheus_operator_installed_output
-    
-  - block:  
-    - name: Generate the Prometheus Operator configuration
-      template:
-        src: prometheus-operator.yaml.j2
-        dest: /var/tmp/ansible/prometheus-operator.yaml  
-  
-    - name: Apply the Prometheus Operator configuration to Kubernetes
-      command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-operator.yaml
-        
-    - name: Wait for the Prometheus Operator deployment to complete
-      command: 
-        cmd: /usr/bin/kubectl -n operators rollout status -w deployment/prometheus-operator
-      register: wait_for_prometheus_operator_deployment_result
-      until: wait_for_prometheus_operator_deployment_result is succeeded
-      retries: 60
-      delay: 10    
-    
-    when: prometheus_operator_installed_output.stdout == "0"
-  
-  when: ((prometheus_operator_enabled is defined) and (prometheus_operator_enabled != None) and (prometheus_operator_enabled == true))
 
 
 #  _     ___  _   _  ____ _   _  ___  ____  _   _ 
@@ -974,11 +947,6 @@
     - name: Disable the TopoLVM mutating webhook for the kube-system namespace
       command:
         cmd: /usr/bin/kubectl label --overwrite ns kube-system topolvm.cybozu.com/webhook=ignore
-
-    - name: Disable the TopoLVM mutating webhook for the istio-system namespace
-      command:
-        cmd: /usr/bin/kubectl label --overwrite ns istio-system topolvm.cybozu.com/webhook=ignore
-      when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
 
     - name: Disable the TopoLVM mutating webhook for the longhorn-system namespace
       command:
@@ -1110,64 +1078,173 @@
     - name: Create the secret in the monitoring-system namespace for the monitoring private key and certificates
       shell:
         cmd: /usr/bin/kubectl create -n monitoring-system secret tls monitoring-certs --key=/var/tmp/ansible/monitoring-pki/monitoring-key.pem --cert=/var/tmp/ansible/monitoring-pki/monitoring-cert.pem --dry-run -o yaml | kubectl apply -f -
-  
+    
     - name: Create the secret in the monitoring-system namespace for the monitoring CA certificates
       shell:
         cmd: /usr/bin/kubectl create -n monitoring-system secret generic monitoring-ca-certs --from-file=/var/tmp/ansible/monitoring-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
-    
-  - name: Generate the Elasticsearch configuration    
-    template:
-      src: elasticsearch.yaml.j2
-      dest: /var/tmp/ansible/elasticsearch.yaml
+  
+  - name: Install and configure Elasticsearch if it is enabled
+    block:  
+    - name: Generate the Elasticsearch configuration    
+      template:
+        src: elasticsearch.yaml.j2
+        dest: /var/tmp/ansible/elasticsearch.yaml
 
-  - name: Apply the Elasticsearch configuration to Kubernetes
-    command: 
-      cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/elasticsearch.yaml
-        
-  - name: Wait for the Elasticsearch configuration to be applied
-    block:
-    - name: Retrieve the Elasticsearch configuration status
+    - name: Apply the Elasticsearch configuration to Kubernetes
       command: 
-        cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring
-      register: wait_for_elasticsearch_cluster_configuration_result
-      until: wait_for_elasticsearch_cluster_configuration_result is succeeded
-      retries: 60
-      delay: 10
-    
-    - name: Verify the Elasticsearch configuration status
-      shell:
-        cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring | head -2 | tail -1 | awk  {'print $5'}
-      register: elasticsearch_cluster_status_output
-      until: elasticsearch_cluster_status_output.stdout == "Ready"
-      retries: 60
-      delay: 10      
-    
-  - name: Generate the Kibana configuration    
-    template:
-      src: kibana.yaml.j2
-      dest: /var/tmp/ansible/kibana.yaml
-    
-  - name: Apply the Kibana configuration to Kubernetes
-    command: 
-      cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kibana.yaml
-      
-#  - name: Wait for the Kibana configuration to be applied
-#    block:
-#    - command: 
-#        cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring
-#      register: wait_for_elasticsearch_cluster_configuration_result
-#      until: wait_for_elasticsearch_cluster_configuration_result is succeeded
-#      retries: 60
-#      delay: 10
-#    
-#    - shell:
-#        cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring | head -2 | tail -1 | awk  {'print $5'}
-#      register: elasticsearch_cluster_status_output
-#      until: elasticsearch_cluster_status_output.stdout == "Ready"
-#      retries: 60
-#      delay: 10         
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/elasticsearch.yaml
         
-  when: ((elasticsearch_cluster_type is defined) and (elasticsearch_cluster_type != None))
+    - name: Wait for the Elasticsearch configuration to be applied
+      block:
+      - name: Retrieve the Elasticsearch configuration status
+        command: 
+          cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring
+        register: wait_for_elasticsearch_configuration_result
+        until: wait_for_elasticsearch_configuration_result is succeeded
+        retries: 60
+        delay: 10
+    
+      - name: Verify the Elasticsearch configuration status
+        shell:
+          cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring | head -2 | tail -1 | awk  {'print $2'}
+        register: elasticsearch_health_output
+        until: elasticsearch_health_output.stdout == "green"
+        retries: 60
+        delay: 10
+      
+    - name: Retrieve the Elasticsearch password
+      block:
+      - shell:
+          cmd: /usr/bin/kubectl -n monitoring-system get secret monitoring-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode
+        register: retrieve_elasticsearch_password_output
+    
+      - set_fact:
+          elasticsearch_password: '{{ retrieve_elasticsearch_password_output.stdout }}'
+  
+    - name: Install and configure Kibana if it is enabled
+      block:
+      - name: Generate the Kibana configuration    
+        template:
+          src: kibana.yaml.j2
+          dest: /var/tmp/ansible/kibana.yaml
+    
+      - name: Apply the Kibana configuration to Kubernetes
+        command: 
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kibana.yaml
+      
+      - name: Wait for the Kibana configuration to be applied
+        block:
+        - command: 
+            cmd: /usr/bin/kubectl -n monitoring-system get kibana/monitoring
+          register: wait_for_kibana_configuration_result
+          until: wait_for_kibana_configuration_result is succeeded
+          retries: 60
+          delay: 10
+   
+        - shell:
+            cmd: /usr/bin/kubectl -n monitoring-system get kibana/monitoring | head -2 | tail -1 | awk  {'print $2'}
+          register: kibana_health_output
+          until: kibana_health_output.stdout == "green"
+          retries: 60
+          delay: 10
+      
+      when: ((monitoring_kibana_enabled is defined) and (monitoring_kibana_enabled != None) and (monitoring_kibana_enabled == true))
+
+    - name: Install and configure Jaeger if it is enabled
+      block:
+      - name: Create the secret for the Jaeger Elasticsearch user
+        shell:
+          cmd: "kubectl -n monitoring-system create secret generic monitoring-jaeger-elastic-user --from-literal=ES_PASSWORD={{ elasticsearch_password }} --from-literal=ES_USERNAME=elastic --dry-run -o yaml | kubectl apply -f -"
+        
+      - name: Generate the Jaeger configuration    
+        template:
+          src: jaeger.yaml.j2
+          dest: /var/tmp/ansible/jaeger.yaml
+
+      - name: Apply the Jaeger configuration to Kubernetes
+        command: 
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/jaeger.yaml
+
+      - name: Wait for the Jaeger configuration to be applied
+        block:
+        - command: 
+            cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger
+          register: wait_for_jaeger_configuration_result
+          until: wait_for_jaeger_configuration_result is succeeded
+          retries: 60
+          delay: 10
+   
+        - shell:
+            cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger | head -2 | tail -1 | awk  {'print $2'}
+          register: jaeger_status_output
+          until: jaeger_status_output.stdout == "Running"
+          retries: 60
+          delay: 10 
+      
+      when: ((monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == true))
+  
+    when: ((monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true))
+    
+  - name: Install and configure Prometheus if it is enabled
+    block:
+    - name: Check if Prometheus is installed
+      shell:
+        cmd: /usr/bin/helm -n monitoring-system list --filter "prometheus" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: prometheus_installed__helm_chart_version_output
+    
+    - name: Install Prometheus
+      block:  
+      - name: Generate the Prometheus Helm values
+        template:
+          src: prometheus-values.yaml.j2
+          dest: /var/tmp/ansible/prometheus-values.yaml
+        
+      - name: Install Prometheus using Helm
+        command: 
+          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
+    
+      when: prometheus_installed__helm_chart_version_output.stdout != monitoring_prometheus_helm_chart_version
+      
+  - name: Install and configure Grafana if it is enabled
+    block:
+    - name: Check if Grafana is installed
+      shell:
+        cmd: /usr/bin/helm -n monitoring-system list --filter "grafana" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: grafana_installed_helm_chart_version_output
+    
+    - name: Install Grafana
+      block:  
+      - name: Generate the Grafana Helm values
+        template:
+          src: grafana-values.yaml.j2
+          dest: /var/tmp/ansible/grafana-values.yaml
+        
+      - name: Install Grafana using Helm
+        command: 
+          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+    
+      when: grafana_installed_helm_chart_version_output.stdout != monitoring_grafana_helm_chart_version
+
+    - name: Retrieve the grafana admin username and password
+      block:
+      - shell:
+          cmd: kubectl -n monitoring-system get secret grafana -o=jsonpath='{.data.admin-user}' | base64 --decode
+        register: grafana_admin_username_output
+      
+      - debug:
+          msg: "Grafana Admin Username: {{ grafana_admin_username_output.stdout }}"
+
+      - shell:
+          cmd: kubectl -n monitoring-system get secret grafana -o=jsonpath='{.data.admin-password}' | base64 --decode
+        register: grafana_admin_password_output
+      
+      - debug:
+          msg: "Grafana Admin Password: {{ grafana_admin_password_output.stdout }}"
+        
+        
+    when: ((monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == true))
+  
+  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true))
 
 
 #  ___ ____ _____ ___ ___  
@@ -1295,6 +1372,11 @@
       shell:
         cmd: /usr/bin/kubectl create ns istio-system --dry-run -o yaml | kubectl apply -f -
 
+    - name: Disable the TopoLVM mutating webhook for the istio-system namespace
+      command:
+        cmd: /usr/bin/kubectl label --overwrite ns istio-system topolvm.cybozu.com/webhook=ignore
+      when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+
     - name: Create the secret in the istio-system namespace for the Istio intermediate CA private key and certificates
       shell:
         cmd: /usr/bin/kubectl create -n istio-system secret generic cacerts  --from-file=/var/tmp/ansible/istio-pki/ca-cert.pem --from-file=/var/tmp/ansible/istio-pki/ca-key.pem --from-file=/var/tmp/ansible/istio-pki/root-cert.pem --from-file=/var/tmp/ansible/istio-pki/cert-chain.pem  --dry-run -o yaml | kubectl apply -f -
@@ -1342,7 +1424,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
 
-      when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == true))
+      when: (((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True)))
 
     - block:
       - template:
@@ -1364,7 +1446,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
 
-      when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == true))
+      when: (((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_grafana_enabled is defined) and (monitoring_grafana_enabled != None) and (monitoring_grafana_enabled == True)))
 
     - block:
       - template:
@@ -1375,7 +1457,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress.yaml
 
-      when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == true))
+      when: (((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)))
 
     when: istio_system_namespace_exists_output.stdout == "0"
 

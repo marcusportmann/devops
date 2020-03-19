@@ -32,10 +32,18 @@ spec:
     - port: 16686
     route:
     - destination:
+{% if ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True))  %}
         host: jaeger-query
         port:
           number: 16686
+{% elif ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True))  %}
+        host: monitoring-jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}
+        port:
+          number: 16686
+{% endif %}
+    
 ---
+{% if ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True))  %}
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
@@ -46,4 +54,17 @@ spec:
   trafficPolicy:
     tls:
       mode: DISABLE
+{% elif ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True))  %}
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: jaeger
+  namespace: istio-system
+spec:
+  host: monitoring-jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+{% endif %}
 ---
+

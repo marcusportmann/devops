@@ -29,13 +29,13 @@
 - name: Configure the Kubernetes master hosts
   hosts: k8s_master
   vars:
-    bitnami_labs_sealed_secrets_version: 0.10.0
-    helm_version: 3.1.1
-    helm_package_checksum: sha256:cdd7ad304e2615c583dde0ffb0cb38fc1336cd7ce8ff3b5f237434dcadb28c98
+    bitnami_labs_sealed_secrets_version: 0.11.0
+    helm_version: 3.1.2
+    helm_package_checksum: sha256:e6be589df85076108c33e12e60cfb85dcd82c5d756a6f6ebc8de0ee505c9fd4c
     istio_version: 1.5.0
     istio_package_checksum: sha256:fba603390074b1b9da9b3bd1492a278740fe725ac8ff07b8ec54fb7d66e03c33
     istioctl_package_checksum: sha256:e841c8858f7598351caaf6d7e6a67c4a43218f343629c67cf76db5d000c9df72
-    kube_state_metrics_version: 1.9.4
+    kube_state_metrics_version: 1.9.5
     topolvm_version: 0.4.1
   become: yes
   become_user: root

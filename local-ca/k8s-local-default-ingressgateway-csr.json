@@ -10,6 +10,19 @@
     }
   ],
   "hosts": [
-    "*.local"
+    "devops",
+    "devops.local",
+    "k8s-local-m-01",
+    "k8s-local-m-01.local",
+    "k8s-local-m-02",
+    "k8s-local-m-02.local",
+    "k8s-local-m-03",
+    "k8s-local-m-03.local",
+    "k8s-local-w-01",
+    "k8s-local-w-01.local",
+    "k8s-local-w-02",
+    "k8s-local-w-02.local",
+    "k8s-local-w-03",
+    "k8s-local-w-03.local"
   ]
 }

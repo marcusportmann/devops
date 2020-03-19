@@ -81,26 +81,26 @@ variables:
 # ----------------------------------------------------------------------------------------
 - name: operator_lifecycle_manager_enabled
   values:
-  - true
+  - false
 - name: elastic_cloud_eck_operator_enabled
   values:
-  - true
+  - false
+- name: grafana_operator_enabled
+  values:
+  - false  
 - name: jaeger_operator_enabled
   values:
-  - true
+  - false
 - name: postgres_operator_enabled
   values:
   - false  
-- name: prometheus_operator_enabled
-  values:
-  - false
 
 # ----------------------------------------------------------------------------------------
 # Istio Configuration
 # ----------------------------------------------------------------------------------------
 - name: istio_enabled
   values:
-  - false
+  - true
 - name: istio_grafana_enabled
   values:
   - true
@@ -125,14 +125,44 @@ variables:
   - /var/lib/prometheus
 
 # ----------------------------------------------------------------------------------------
-# Elasticsearch Configuration
+# Monitoring Configuration
 #
 # Where elasticsearch_cluster_type is one of single, minimal or full.
 #
 # ----------------------------------------------------------------------------------------
-- name: elasticsearch_cluster_type
+- name: monitoring_enabled
+  values:
+  - false
+- name: monitoring_elasticsearch_cluster_type
   values:
   - minimal
+- name: monitoring_elasticsearch_enabled
+  values:
+  - false
+- name: monitoring_elastic_storage_class_name
+  values:
+  - default-local-storage  
+- name: monitoring_grafana_enabled
+  values:
+  - true
+- name: monitoring_grafana_helm_chart_version
+  values:
+  - 5.0.7
+- name: monitoring_jaeger_enabled
+  values:
+  - false
+- name: monitoring_kibana_enabled
+  values:
+  - false
+- name: monitoring_prometheus_enabled
+  values:
+  - true
+- name: monitoring_prometheus_helm_chart_version
+  values:
+  - 11.0.2
+- name: monitoring_prometheus_storage_class_name
+  values:
+  - default-local-storage  
 
 
 profiles:
