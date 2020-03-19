@@ -1,0 +1,55 @@
+# See: https://github.com/helm/charts/blob/master/stable/prometheus/values.yaml
+
+
+alertmanager:
+  enabled: true
+
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: 1Gi
+    storageClass: {{ monitoring_prometheus_storage_class_name }}
+
+  service:
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
+    type: ClusterIP
+    servicePort: 9093
+{% else %}  
+    type: NodePort
+    servicePort: 9093
+    nodePort: 32535
+{% endif %}
+    
+    
+pushgateway:
+  enabled: true
+  
+  service:
+    type: ClusterIP  
+    servicePort: 9091
+  
+    
+server:
+  enabled: true
+
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: 1Gi
+    storageClass: {{ monitoring_prometheus_storage_class_name }}
+
+  service:    
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
+    type: ClusterIP
+    servicePort: 9090
+{% else %}  
+    type: NodePort
+    servicePort: 9090    
+    nodePort: 32530
+{% endif %}
+
+

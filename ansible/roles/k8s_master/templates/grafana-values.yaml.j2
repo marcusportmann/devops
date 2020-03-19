@@ -1,0 +1,50 @@
+# See: https://github.com/helm/charts/blob/master/stable/grafana/values.yaml
+
+namespaceOverride: monitoring-system
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      url: http://prometheus-server
+      access: proxy
+      isDefault: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 1
+    memory: 256Mi
+
+service:
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000  
+{% else %}  
+  type: NodePort
+  nodePort: 32500
+  port: 3000
+  targetPort: 3000  
+{% endif %}
+
+sidecar:
+  skipTlsVerify: true
+  dashboards:
+    enabled: true
+    
+  datasources:
+    enabled: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50Mi    
+    limits:
+      cpu: 100m
+      memory: 100Mi
+
