@@ -85,9 +85,6 @@ variables:
 - name: elastic_cloud_eck_operator_enabled
   values:
   - false
-- name: grafana_operator_enabled
-  values:
-  - false  
 - name: jaeger_operator_enabled
   values:
   - false
@@ -100,22 +97,19 @@ variables:
 # ----------------------------------------------------------------------------------------
 - name: istio_enabled
   values:
-  - true
+  - false
 - name: istio_grafana_enabled
   values:
-  - true
+  - false
 - name: istio_kiali_enabled
   values:
   - true
 - name: istio_prometheus_enabled
   values:
-  - true
-- name: istio_telemetry_enabled
-  values:
-  - true
+  - false
 - name: istio_tracing_enabled
   values:
-  - true
+  - false
   
 # ----------------------------------------------------------------------------------------
 # External Monitoring Configuration
@@ -132,7 +126,7 @@ variables:
 # ----------------------------------------------------------------------------------------
 - name: monitoring_enabled
   values:
-  - false
+  - true
 - name: monitoring_elasticsearch_cluster_type
   values:
   - minimal

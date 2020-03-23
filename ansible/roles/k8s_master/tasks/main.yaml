@@ -569,6 +569,16 @@
       cmd: /usr/bin/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
     when: helm_stable_repo_added_output.stdout == "0"        
 
+  - name: Check if the elastic Helm repository has been added
+    shell:
+      cmd: /usr/bin/helm repo list | grep elastic | wc -l
+    register: helm_elastic_repo_added_output
+
+  - name: Add the elastic Helm repository
+    command:
+      cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
+    when: helm_elastic_repo_added_output.stdout == "0"        
+
 
 #  ____  _____    _    _     _____ ____    ____  _____ ____ ____  _____ _____ ____  
 # / ___|| ____|  / \  | |   | ____|  _ \  / ___|| ____/ ___|  _ \| ____|_   _/ ___| 
@@ -1202,9 +1212,18 @@
       - name: Install Prometheus using Helm
         command: 
           cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
-    
+              
       when: prometheus_installed__helm_chart_version_output.stdout != monitoring_prometheus_helm_chart_version
       
+  - name: Generate the Prometheus Server configuration
+    template:
+      src: prometheus-server-config-map.yaml.j2
+      dest: /var/tmp/ansible/prometheus-server-config-map.yaml
+      
+  - name: Apply the Prometheus Server configuration to Kubernetes
+    command: 
+      cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-server-config-map.yaml
+  
   - name: Install and configure Grafana if it is enabled
     block:
     - name: Check if Grafana is installed
@@ -1224,6 +1243,17 @@
           cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
     
       when: grafana_installed_helm_chart_version_output.stdout != monitoring_grafana_helm_chart_version
+
+    - name: Generate and install the Grafana dashboard ConfigMaps
+      block:
+      - name: Generate the Grafana dashboard ConfigMaps
+        template:
+          src: istio-grafana-dashboard-config-maps.yaml.j2
+          dest: /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
+      
+      - name: Install the Grafana dashboard ConfigMaps
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
 
     - name: Retrieve the grafana admin username and password
       block:

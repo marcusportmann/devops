@@ -92,15 +92,6 @@ spec:
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
-  
-{% if ((istio_telemetry_enabled is defined) and (istio_telemetry_enabled != None) and (istio_telemetry_enabled == True))  %}  
-    telemetry:
-      enabled: true
-{% else %}          
-    telemetry:
-      enabled: false
-{% endif %}    
-
 
   values:
     gateways:
@@ -174,7 +165,8 @@ spec:
           
     global:
       mtls:
-        enabled: true
+        auto: true
+        enabled: false
       proxy:
         accessLogFile: "/dev/stdout"
         logLevel: "debug"
@@ -191,13 +183,25 @@ spec:
 {% endif %}        
         
     security:
-      selfSigned: true
+      selfSigned: false
     sidecarInjectorWebhook:
       rewriteAppHTTPProbe: true
     grafana:
       security:
         enabled: false
     kiali:
+      dashboard:        
+{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)) %}        
+        grafanaURL: https://{{ inventory_hostname }}:32500/
+        grafanaInClusterURL: http://grafana.monitoring-system.svc.{{ k8s_cluster_domain }}:3000
+{% endif %}
+        
+        jaegerURL: https://{{ inventory_hostname }}:32510/
+#         jaegerInClusterURL
+        
+{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)) %}
+        prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_cluster_domain }}:9090        
+{% endif %}           
       security:
         enabled: false
 
