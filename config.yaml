@@ -82,9 +82,6 @@ variables:
 - name: operator_lifecycle_manager_enabled
   values:
   - false
-- name: elastic_cloud_eck_operator_enabled
-  values:
-  - false
 - name: jaeger_operator_enabled
   values:
   - false
@@ -127,13 +124,19 @@ variables:
 - name: monitoring_enabled
   values:
   - true
+- name: monitoring_security_enabled
+  values:
+  - true  
 - name: monitoring_elasticsearch_cluster_type
   values:
-  - minimal
+  - standalone
 - name: monitoring_elasticsearch_enabled
   values:
-  - false
-- name: monitoring_elastic_storage_class_name
+  - true
+- name: monitoring_elasticsearch_helm_chart_version
+  values:
+  - 7.6.1
+- name: monitoring_elasticsearch_storage_class_name
   values:
   - default-local-storage  
 - name: monitoring_grafana_enabled
@@ -147,7 +150,10 @@ variables:
   - false
 - name: monitoring_kibana_enabled
   values:
-  - false
+  - true
+- name: monitoring_kibana_helm_chart_version
+  values:
+  - 7.6.1  
 - name: monitoring_prometheus_enabled
   values:
   - true

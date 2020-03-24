@@ -742,80 +742,6 @@
   when: ((operator_lifecycle_manager_enabled is defined) and (operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
 
 
-#  _____ _        _    ____ _____ ___ ____    ____ _     ___  _   _ ____    _____ ____ _  __   ___  ____  _____ ____      _  _____ ___  ____  
-# | ____| |      / \  / ___|_   _|_ _/ ___|  / ___| |   / _ \| | | |  _ \  | ____/ ___| |/ /  / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
-# |  _| | |     / _ \ \___ \ | |  | | |     | |   | |  | | | | | | | | | | |  _|| |   | ' /  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
-# | |___| |___ / ___ \ ___) || |  | | |___  | |___| |__| |_| | |_| | |_| | | |__| |___| . \  | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
-# |_____|_____/_/   \_\____/ |_| |___\____|  \____|_____\___/ \___/|____/  |_____\____|_|\_\  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
-#                                                                                                                                             
-- name: Install the Elastic Cloud ECK Operator if it is enabled
-  block:
-  
-  - name: Check if the Elastic Cloud ECK Operator is installed
-    shell:
-      cmd: /usr/bin/kubectl get subscription -n operators 2>&1 | grep elastic-cloud-eck | wc -l
-    register: elastic_cloud_eck_operator_installed_output
-    
-  - block:
-    - name: Generate the Elastic Cloud ECK Operator configuration
-      template:
-        src: elastic-cloud-eck-operator.yaml.j2
-        dest: /var/tmp/ansible/elastic-cloud-eck-operator.yaml
-      
-    - name: Apply the Elastic Cloud ECK Operator configuration to Kubernetes
-      command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/elastic-cloud-eck-operator.yaml
-        
-    - name: Wait for the Elastic Cloud ECK Operator deployment to complete
-      command: 
-        cmd: /usr/bin/kubectl -n operators rollout status -w deployment/elastic-operator
-      register: wait_for_elastic_cloud_eck_operator_deployment_result
-      until: wait_for_elastic_cloud_eck_operator_deployment_result is succeeded
-      retries: 30
-      delay: 10    
-        
-    when: elastic_cloud_eck_operator_installed_output.stdout == "0"
-  
-  when: ((elastic_cloud_eck_operator_enabled is defined) and (elastic_cloud_eck_operator_enabled != None) and (elastic_cloud_eck_operator_enabled == true))
-
-
-#      _   _    _____ ____ _____ ____     ___  ____  _____ ____      _  _____ ___  ____  
-#     | | / \  | ____/ ___| ____|  _ \   / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
-#  _  | |/ _ \ |  _|| |  _|  _| | |_) | | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
-# | |_| / ___ \| |__| |_| | |___|  _ <  | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ < 
-#  \___/_/   \_\_____\____|_____|_| \_\  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\
-#                                                                                        
-- name: Install the Jaeger Operator if it is enabled
-  block:
-  
-  - name: Check if the Jaeger Operator is installed
-    shell:
-      cmd: /usr/bin/kubectl get subscription -n operators 2>&1 | grep jaeger | wc -l
-    register: jaeger_operator_installed_output
-    
-  - block:  
-    - name: Generate the Jaeger Operator configuration
-      template:
-        src: jaeger-operator.yaml.j2
-        dest: /var/tmp/ansible/jaeger-operator.yaml
-      
-    - name: Apply the Jaeger Operator configuration to Kubernetes
-      command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/jaeger-operator.yaml
-        
-    - name: Wait for the Jaeger Operator deployment to complete
-      command: 
-        cmd: /usr/bin/kubectl -n operators rollout status -w deployment/jaeger-operator
-      register: wait_for_jaeger_operator_deployment_result
-      until: wait_for_jaeger_operator_deployment_result is succeeded
-      retries: 30
-      delay: 10    
-        
-    when: jaeger_operator_installed_output.stdout == "0"
-  
-  when: ((jaeger_operator_enabled is defined) and (jaeger_operator_enabled != None) and (jaeger_operator_enabled == true))
-
-
 #  ____   ___  ____ _____ ____ ____  _____ ____     ___  ____  _____ ____      _  _____ ___  ____  
 # |  _ \ / _ \/ ___|_   _/ ___|  _ \| ____/ ___|   / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \ 
 # | |_) | | | \___ \ | || |  _| |_) |  _| \___ \  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
@@ -1062,219 +988,360 @@
   - name: Create the monitoring-system namespace
     shell:
       cmd: /usr/bin/kubectl create namespace monitoring-system --dry-run -o yaml | kubectl apply -f -
-  
-  - name: Configure the monitoring certificates and secrets
+      
+  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true))
+
+
+#  _____ _        _    ____ _____ ___ ____ ____  _____    _    ____   ____ _   _ 
+# | ____| |      / \  / ___|_   _|_ _/ ___/ ___|| ____|  / \  |  _ \ / ___| | | |
+# |  _| | |     / _ \ \___ \ | |  | | |   \___ \|  _|   / _ \ | |_) | |   | |_| |
+# | |___| |___ / ___ \ ___) || |  | | |___ ___) | |___ / ___ \|  _ <| |___|  _  |
+# |_____|_____/_/   \_\____/ |_| |___\____|____/|_____/_/   \_\_| \_\\____|_| |_|
+#                                                                                
+- name: Install and configure Elasticsearch if it is enabled
+  block:
+  - name: Configure the Elasticsearch certificates and secrets if security is enabled
     block:
-    - name: Create the /var/tmp/ansible/monitoring-pki directory
+    - name: Create the /var/tmp/ansible/elasticsearch-pki directory
       file:
-        path: /var/tmp/ansible/monitoring-pki
+        path: /var/tmp/ansible/elasticsearch-pki
         state: directory
 
-    - name: Copy the root CA certificate to the /var/tmp/ansible/monitoring-pki directory
+    - name: Copy the root CA certificate to the /var/tmp/ansible/elasticsearch-pki directory
       copy:
         src: pki/{{ k8s_cluster_name }}/ca.crt
-        dest: /var/tmp/ansible/monitoring-pki/ca.pem
+        dest: /var/tmp/ansible/elasticsearch-pki/ca.pem
 
-    - name: Copy the monitoring private key to the /var/tmp/ansible/monitoring-pki directory
+    - name: Copy the Elasticsearch private key to the /var/tmp/ansible/elasticsearch-pki directory
       copy:
-        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-monitoring.key
-        dest: /var/tmp/ansible/monitoring-pki/monitoring-key.pem
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-elasticsearch.key
+        dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem
 
-    - name: Copy the monitoring certificate to the /var/tmp/ansible/monitoring-pki directory
+    - name: Copy the Elasticsearch certificate to the /var/tmp/ansible/elasticsearch-pki directory
       copy:
-        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-monitoring.crt
-        dest: /var/tmp/ansible/monitoring-pki/monitoring-cert.pem
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-elasticsearch.crt
+        dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem
     
-    - name: Create the secret in the monitoring-system namespace for the monitoring private key and certificates
+    - name: Create the secret in the monitoring-system namespace for the Elasticsearch private key and certificates
       shell:
-        cmd: /usr/bin/kubectl create -n monitoring-system secret tls monitoring-certs --key=/var/tmp/ansible/monitoring-pki/monitoring-key.pem --cert=/var/tmp/ansible/monitoring-pki/monitoring-cert.pem --dry-run -o yaml | kubectl apply -f -
-    
-    - name: Create the secret in the monitoring-system namespace for the monitoring CA certificates
+        cmd: /usr/bin/kubectl create -n monitoring-system secret generic elasticsearch-certs --from-file=/var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem --from-file=/var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem --from-file=/var/tmp/ansible/elasticsearch-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
+            
+    - name: Check if the Elasticsearch credentials secret exists
       shell:
-        cmd: /usr/bin/kubectl create -n monitoring-system secret generic monitoring-ca-certs --from-file=/var/tmp/ansible/monitoring-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
+        cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep elasticsearch-credentials | wc -l
+      register: elasticsearch_credentials_secret_exists_output
   
-  - name: Install and configure Elasticsearch if it is enabled
-    block:  
-    - name: Generate the Elasticsearch configuration    
-      template:
-        src: elasticsearch.yaml.j2
-        dest: /var/tmp/ansible/elasticsearch.yaml
-
-    - name: Apply the Elasticsearch configuration to Kubernetes
-      command: 
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/elasticsearch.yaml
-        
-    - name: Wait for the Elasticsearch configuration to be applied
-      block:
-      - name: Retrieve the Elasticsearch configuration status
-        command: 
-          cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring
-        register: wait_for_elasticsearch_configuration_result
-        until: wait_for_elasticsearch_configuration_result is succeeded
-        retries: 60
-        delay: 10
+    - name: Create the Elasticsearch credentials secret if it does not exist
+      shell:
+        cmd: /usr/bin/kubectl -n monitoring-system create secret generic elasticsearch-credentials --from-literal=username=elastic --from-literal=password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1` --dry-run -o yaml | kubectl apply -f -
+      when: (elasticsearch_credentials_secret_exists_output.stdout == "0")
     
-      - name: Verify the Elasticsearch configuration status
-        shell:
-          cmd: /usr/bin/kubectl -n monitoring-system get elasticsearch/monitoring | head -2 | tail -1 | awk  {'print $2'}
-        register: elasticsearch_health_output
-        until: elasticsearch_health_output.stdout == "green"
-        retries: 60
-        delay: 10
-      
     - name: Retrieve the Elasticsearch password
       block:
       - shell:
-          cmd: /usr/bin/kubectl -n monitoring-system get secret monitoring-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode
-        register: retrieve_elasticsearch_password_output
-    
+          cmd: /usr/bin/kubectl -n monitoring-system get secret elasticsearch-credentials -o=jsonpath='{.data.password}' | base64 --decode
+        register: retrieve_elasticsearch_credentials_password_output
+  
       - set_fact:
-          elasticsearch_password: '{{ retrieve_elasticsearch_password_output.stdout }}'
-  
-    - name: Install and configure Kibana if it is enabled
-      block:
-      - name: Generate the Kibana configuration    
-        template:
-          src: kibana.yaml.j2
-          dest: /var/tmp/ansible/kibana.yaml
+          elasticsearch_credentials_password: '{{ retrieve_elasticsearch_credentials_password_output.stdout }}'
     
-      - name: Apply the Kibana configuration to Kubernetes
-        command: 
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kibana.yaml
-      
-      - name: Wait for the Kibana configuration to be applied
-        block:
-        - command: 
-            cmd: /usr/bin/kubectl -n monitoring-system get kibana/monitoring
-          register: wait_for_kibana_configuration_result
-          until: wait_for_kibana_configuration_result is succeeded
-          retries: 60
-          delay: 10
-   
-        - shell:
-            cmd: /usr/bin/kubectl -n monitoring-system get kibana/monitoring | head -2 | tail -1 | awk  {'print $2'}
-          register: kibana_health_output
-          until: kibana_health_output.stdout == "green"
-          retries: 60
-          delay: 10
-      
-      when: ((monitoring_kibana_enabled is defined) and (monitoring_kibana_enabled != None) and (monitoring_kibana_enabled == true))
-
-    - name: Install and configure Jaeger if it is enabled
-      block:
-      - name: Create the secret for the Jaeger Elasticsearch user
-        shell:
-          cmd: "kubectl -n monitoring-system create secret generic monitoring-jaeger-elastic-user --from-literal=ES_PASSWORD={{ elasticsearch_password }} --from-literal=ES_USERNAME=elastic --dry-run -o yaml | kubectl apply -f -"
-        
-      - name: Generate the Jaeger configuration    
-        template:
-          src: jaeger.yaml.j2
-          dest: /var/tmp/ansible/jaeger.yaml
-
-      - name: Apply the Jaeger configuration to Kubernetes
-        command: 
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/jaeger.yaml
-
-      - name: Wait for the Jaeger configuration to be applied
-        block:
-        - command: 
-            cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger
-          register: wait_for_jaeger_configuration_result
-          until: wait_for_jaeger_configuration_result is succeeded
-          retries: 60
-          delay: 10
-   
-        - shell:
-            cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger | head -2 | tail -1 | awk  {'print $2'}
-          register: jaeger_status_output
-          until: jaeger_status_output.stdout == "Running"
-          retries: 60
-          delay: 10 
-      
-      when: ((monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == true))
+      - debug:
+          msg: "Elasticsearch Password: {{ elasticsearch_credentials_password }}"
+          
+    when: ((monitoring_security_enabled is defined) and (monitoring_security_enabled != None) and (monitoring_security_enabled == True))
   
-    when: ((monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true))
-    
-  - name: Install and configure Prometheus if it is enabled
+  - name: Install a single node Elasticsearch cluster using Helm
     block:
-    - name: Check if Prometheus is installed
+    - name: Check if Elasticsearch is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter "prometheus" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
-      register: prometheus_installed__helm_chart_version_output
-    
-    - name: Install Prometheus
+        cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: elasticsearch_installed_helm_chart_version_output
+  
+    - name: Install Elasticsearch
       block:  
-      - name: Generate the Prometheus Helm values
+      - name: Generate the Elasticsearch Helm values
         template:
-          src: prometheus-values.yaml.j2
-          dest: /var/tmp/ansible/prometheus-values.yaml
-        
-      - name: Install Prometheus using Helm
+          src: elasticsearch-standalone-values.yaml.j2
+          dest: /var/tmp/ansible/elasticsearch-standalone-values.yaml
+
+      - name: Install Elasticsearch using Helm
         command: 
-          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
-              
-      when: prometheus_installed__helm_chart_version_output.stdout != monitoring_prometheus_helm_chart_version
+          cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml        
+      when: elasticsearch_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
+    when: (monitoring_elasticsearch_cluster_type == "standalone")
+
+  - name: Install a multi node Elasticsearch cluster using Helm
+    block:
+    - name: Check if the Elasticsearch master nodes are installed
+      shell:
+        cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch-master" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: elasticsearch_master_installed_helm_chart_version_output
+  
+    - name: Install the Elasticsearch master nodes
+      block:  
+      - name: Generate the master nodes Elasticsearch Helm values
+        template:
+          src: elasticsearch-master-values.yaml.j2
+          dest: /var/tmp/ansible/elasticsearch-master-values.yaml
+
+      - name: Install the Elasticsearch master nodes using Helm
+        command: 
+          cmd: /usr/bin/helm upgrade elasticsearch-master elastic/elasticsearch --install --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-master-values.yaml        
+      when: elasticsearch_master_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
       
+    - name: Check if the Elasticsearch ingest nodes are installed
+      shell:
+        cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch-ingest" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: elasticsearch_ingest_installed_helm_chart_version_output
+  
+    - name: Install the Elasticsearch ingest nodes
+      block:  
+      - name: Generate the ingest nodes Elasticsearch Helm values
+        template:
+          src: elasticsearch-ingest-values.yaml.j2
+          dest: /var/tmp/ansible/elasticsearch-ingest-values.yaml
+
+      - name: Install the Elasticsearch ingest nodes using Helm
+        command: 
+          cmd: /usr/bin/helm upgrade elasticsearch-ingest elastic/elasticsearch --install --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-ingest-values.yaml        
+      when: elasticsearch_ingest_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
+      
+    - name: Check if the Elasticsearch data nodes are installed
+      shell:
+        cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch-data" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: elasticsearch_data_installed_helm_chart_version_output
+  
+    - name: Install the Elasticsearch data nodes
+      block:  
+      - name: Generate the data nodes Elasticsearch Helm values
+        template:
+          src: elasticsearch-data-values.yaml.j2
+          dest: /var/tmp/ansible/elasticsearch-data-values.yaml
+
+      - name: Install the Elasticsearch data nodes using Helm
+        command: 
+          cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml        
+      when: elasticsearch_data_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
+      
+    when: ((monitoring_elasticsearch_cluster_type == "minimal") or (monitoring_elasticsearch_cluster_type == "full"))
+    
+  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true) and (monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true))
+
+
+#  _  _____ ____    _    _   _    _    
+# | |/ /_ _| __ )  / \  | \ | |  / \   
+# | ' / | ||  _ \ / _ \ |  \| | / _ \  
+# | . \ | || |_) / ___ \| |\  |/ ___ \ 
+# |_|\_\___|____/_/   \_\_| \_/_/   \_\
+#                                      
+- name: Install and configure Kibana if it is enabled
+  block:
+  - name: Configure the Kibana certificates and secrets if security is enabled
+    block:
+    - name: Create the /var/tmp/ansible/kibana-pki directory
+      file:
+        path: /var/tmp/ansible/kibana-pki
+        state: directory
+
+    - name: Copy the root CA certificate to the /var/tmp/ansible/kibana-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/ca.crt
+        dest: /var/tmp/ansible/kibana-pki/ca.pem
+
+    - name: Copy the Kibana private key to the /var/tmp/ansible/kibana-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-kibana.key
+        dest: /var/tmp/ansible/kibana-pki/kibana-key.pem
+
+    - name: Copy the Kibana certificate to the /var/tmp/ansible/kibana-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-kibana.crt
+        dest: /var/tmp/ansible/kibana-pki/kibana-cert.pem
+    
+    - name: Create the secret in the monitoring-system namespace for the Kibana private key and certificates
+      shell:
+        cmd: /usr/bin/kubectl create -n monitoring-system secret generic kibana-certs --from-file=/var/tmp/ansible/kibana-pki/kibana-key.pem --from-file=/var/tmp/ansible/kibana-pki/kibana-cert.pem --from-file=/var/tmp/ansible/kibana-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
+    
+    - name: Check if the Kibana Elasticsearch credentials secret exists
+      shell:
+        cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep kibana-elasticsearch-credentials | wc -l
+      register: kibana_elasticsearch_credentials_secret_exists_output
+  
+    - name: Create the Kibana Elasticsearch credentials secret if it does not exist
+      shell:
+        cmd: /usr/bin/kubectl -n monitoring-system create secret generic kibana-elasticsearch-credentials --from-literal=username=elastic --from-literal=password={{ elasticsearch_credentials_password }} --dry-run -o yaml | kubectl apply -f -
+      when: (kibana_elasticsearch_credentials_secret_exists_output.stdout == "0")
+              
+    when: ((monitoring_security_enabled is defined) and (monitoring_security_enabled != None) and (monitoring_security_enabled == True))
+  
+  - name: Check if Kibana is installed
+    shell:
+      cmd: /usr/bin/helm -n monitoring-system list --filter "kibana" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+    register: kibana_installed__helm_chart_version_output
+  
+  - name: Install Kibana
+    block:  
+    - name: Generate the Kibana Helm values
+      template:
+        src: kibana-values.yaml.j2
+        dest: /var/tmp/ansible/kibana-values.yaml
+      
+    - name: Install Kibana using Helm
+      command: 
+        cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --version={{ monitoring_kibana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
+            
+    when: kibana_installed__helm_chart_version_output.stdout != monitoring_kibana_helm_chart_version
+  
+  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true) and (monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true) and (monitoring_kibana_enabled is defined) and (monitoring_kibana_enabled != None) and (monitoring_kibana_enabled == true))
+
+
+#      _   _    _____ ____ _____ ____  
+#     | | / \  | ____/ ___| ____|  _ \ 
+#  _  | |/ _ \ |  _|| |  _|  _| | |_) |
+# | |_| / ___ \| |__| |_| | |___|  _ < 
+#  \___/_/   \_\_____\____|_____|_| \_\
+#                                      
+- name: Install and configure Jaeger if it is enabled
+  block:
+  - name: Create the secret for the Jaeger Elasticsearch user
+    shell:
+      cmd: "/usr/bin/kubectl -n monitoring-system create secret generic monitoring-jaeger-elastic-user --from-literal=ES_PASSWORD={{ elasticsearch_credentials_password }} --from-literal=ES_USERNAME=elastic --dry-run -o yaml | kubectl apply -f -"
+    
+  - name: Generate the Jaeger configuration    
+    template:
+      src: jaeger.yaml.j2
+      dest: /var/tmp/ansible/jaeger.yaml
+
+  - name: Apply the Jaeger configuration to Kubernetes
+    command: 
+      cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/jaeger.yaml
+
+  - name: Wait for the Jaeger configuration to be applied
+    block:
+    - command: 
+        cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger
+      register: wait_for_jaeger_configuration_result
+      until: wait_for_jaeger_configuration_result is succeeded
+      retries: 60
+      delay: 10
+
+    - shell:
+        cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger | head -2 | tail -1 | awk  {'print $2'}
+      register: jaeger_status_output
+      until: jaeger_status_output.stdout == "Running"
+      retries: 60
+      delay: 10 
+  
+  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true) and (monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == true))
+
+
+#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____  
+# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___| 
+# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \ 
+# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) |
+# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/ 
+#                                                               
+- name: Install and configure Prometheus if it is enabled
+  block:
+  - name: Check if Prometheus is installed
+    shell:
+      cmd: /usr/bin/helm -n monitoring-system list --filter "prometheus" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+    register: prometheus_installed__helm_chart_version_output
+  
+  - name: Install Prometheus
+    block:  
+    - name: Generate the Prometheus Helm values
+      template:
+        src: prometheus-values.yaml.j2
+        dest: /var/tmp/ansible/prometheus-values.yaml
+      
+    - name: Install Prometheus using Helm
+      command: 
+        cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
+            
+    when: prometheus_installed__helm_chart_version_output.stdout != monitoring_prometheus_helm_chart_version
+    
   - name: Generate the Prometheus Server configuration
     template:
       src: prometheus-server-config-map.yaml.j2
       dest: /var/tmp/ansible/prometheus-server-config-map.yaml
-      
+    
   - name: Apply the Prometheus Server configuration to Kubernetes
     command: 
       cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-server-config-map.yaml
-  
-  - name: Install and configure Grafana if it is enabled
+        
+  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == true))
+
+
+#   ____ ____      _    _____ _    _   _    _    
+#  / ___|  _ \    / \  |  ___/ \  | \ | |  / \   
+# | |  _| |_) |  / _ \ | |_ / _ \ |  \| | / _ \  
+# | |_| |  _ <  / ___ \|  _/ ___ \| |\  |/ ___ \ 
+#  \____|_| \_\/_/   \_\_|/_/   \_\_| \_/_/   \_\
+#                                                
+- name: Install and configure Grafana if it is enabled
+  block:
+  - name: Configure the Grafana certificates and secrets
     block:
-    - name: Check if Grafana is installed
-      shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter "grafana" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
-      register: grafana_installed_helm_chart_version_output
-    
-    - name: Install Grafana
-      block:  
-      - name: Generate the Grafana Helm values
-        template:
-          src: grafana-values.yaml.j2
-          dest: /var/tmp/ansible/grafana-values.yaml
-        
-      - name: Install Grafana using Helm
-        command: 
-          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
-    
-      when: grafana_installed_helm_chart_version_output.stdout != monitoring_grafana_helm_chart_version
-
-    - name: Generate and install the Grafana dashboard ConfigMaps
-      block:
-      - name: Generate the Grafana dashboard ConfigMaps
-        template:
-          src: istio-grafana-dashboard-config-maps.yaml.j2
-          dest: /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
-      
-      - name: Install the Grafana dashboard ConfigMaps
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
-
-    - name: Retrieve the grafana admin username and password
-      block:
-      - shell:
-          cmd: kubectl -n monitoring-system get secret grafana -o=jsonpath='{.data.admin-user}' | base64 --decode
-        register: grafana_admin_username_output
-      
-      - debug:
-          msg: "Grafana Admin Username: {{ grafana_admin_username_output.stdout }}"
-
-      - shell:
-          cmd: kubectl -n monitoring-system get secret grafana -o=jsonpath='{.data.admin-password}' | base64 --decode
-        register: grafana_admin_password_output
-      
-      - debug:
-          msg: "Grafana Admin Password: {{ grafana_admin_password_output.stdout }}"
-        
-        
-    when: ((monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == true))
+      - name: Check if the Grafana admin credentials secret exists
+        shell:
+          cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep grafana-admin-credentials | wc -l
+        register: grafana_admin_credentials_secret_exists_output
   
-  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true))
+      - name: Create the Grafana admin credentials secret if it does not exist
+        shell:
+          cmd: /usr/bin/kubectl -n monitoring-system create secret generic grafana-admin-credentials --from-literal=username=admin --from-literal=password=admin --dry-run -o yaml | kubectl apply -f -
+        when: (grafana_admin_credentials_secret_exists_output.stdout == "0")
+  
+  - name: Check if Grafana is installed
+    shell:
+      cmd: /usr/bin/helm -n monitoring-system list --filter "grafana" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+    register: grafana_installed_helm_chart_version_output
+  
+  - name: Install Grafana
+    block:  
+    - name: Generate the Grafana Helm values
+      template:
+        src: grafana-values.yaml.j2
+        dest: /var/tmp/ansible/grafana-values.yaml
+      
+    - name: Install Grafana using Helm
+      command: 
+        cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+  
+    when: grafana_installed_helm_chart_version_output.stdout != monitoring_grafana_helm_chart_version
+
+  - name: Generate and install the Grafana Istio dashboard ConfigMaps
+    block:
+    - name: Generate the Grafana Istio dashboard ConfigMaps
+      template:
+        src: istio-grafana-dashboard-config-maps.yaml.j2
+        dest: /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
+    
+    - name: Install the Grafana Istio dashboard ConfigMaps
+      command:
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
+
+    when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
+
+  - name: Retrieve the grafana admin username and password
+    block:
+    - shell:
+        cmd: kubectl -n monitoring-system get secret grafana-admin-credentials -o=jsonpath='{.data.username}' | base64 --decode
+      register: grafana_admin_username_output
+    
+    - debug:
+        msg: "Grafana Admin Username: {{ grafana_admin_username_output.stdout }}"
+
+    - shell:
+        cmd: kubectl -n monitoring-system get secret grafana-admin-credentials -o=jsonpath='{.data.password}' | base64 --decode
+      register: grafana_admin_password_output
+    
+    - debug:
+        msg: "Grafana Admin Password: {{ grafana_admin_password_output.stdout }}"
+      
+      
+  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true) and (monitoring_grafana_enabled is defined) and (monitoring_grafana_enabled != None) and (monitoring_grafana_enabled == true))
 
 
 #  ___ ____ _____ ___ ___  

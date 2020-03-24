@@ -118,13 +118,19 @@ cp k8s-local-topolvm-mutatingwebhook.key ../ansible/roles/k8s_master/files/pki/l
 cp k8s-local-topolvm-mutatingwebhook.crt ../ansible/roles/k8s_master/files/pki/local
 
 
-# Generate the Monitoring private key and certificate for Elasticsearch and Kibana
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-monitoring-csr.json | cfssljson -bare k8s-local-monitoring
-mv -f k8s-local-monitoring-key.pem k8s-local-monitoring.key
-mv -f k8s-local-monitoring.pem k8s-local-monitoring.crt
-cp k8s-local-monitoring.key ../ansible/roles/k8s_master/files/pki/local
-cp k8s-local-monitoring.crt ../ansible/roles/k8s_master/files/pki/local
+# Generate the Elasticsearch private key and certificate
+cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-elasticsearch-csr.json | cfssljson -bare k8s-local-elasticsearch
+mv -f k8s-local-elasticsearch-key.pem k8s-local-elasticsearch.key
+mv -f k8s-local-elasticsearch.pem k8s-local-elasticsearch.crt
+cp k8s-local-elasticsearch.key ../ansible/roles/k8s_master/files/pki/local
+cp k8s-local-elasticsearch.crt ../ansible/roles/k8s_master/files/pki/local
 
 
+# Generate the Kibana private key and certificate
+cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-kibana-csr.json | cfssljson -bare k8s-local-kibana
+mv -f k8s-local-kibana-key.pem k8s-local-kibana.key
+mv -f k8s-local-kibana.pem k8s-local-kibana.crt
+cp k8s-local-kibana.key ../ansible/roles/k8s_master/files/pki/local
+cp k8s-local-kibana.crt ../ansible/roles/k8s_master/files/pki/local
 
 
