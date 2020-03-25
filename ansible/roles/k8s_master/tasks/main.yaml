@@ -681,7 +681,7 @@
     
     - name: Update the tolerations for the Bitnami Labs SealedSecret server-side controller
       shell: 
-        cmd: sed -i 's/serviceAccountName: sealed-secrets-controller/serviceAccountName: sealed-secrets-controller\n      tolerations:\n      - effect: NoSchedule\n        operator: Exists/g' /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+        cmd: "sed -i 's/serviceAccountName: sealed-secrets-controller/serviceAccountName: sealed-secrets-controller\n      tolerations:\n      - effect: NoSchedule\n        operator: Exists/g' /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml"
     
     - name: Apply the Bitnami Labs SealedSecret CRD and server-side controller configuration
       command: 
