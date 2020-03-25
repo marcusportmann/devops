@@ -952,7 +952,8 @@
       register: wait_for_topo_lvm_controller_deployment_result
       until: wait_for_topo_lvm_controller_deployment_result is succeeded
       retries: 60
-      delay: 10    
+      delay: 10
+      when: ("k8s_worker" not in groups.keys()) 
     
     - name: Generate the TopoLVM Node configuration    
       template:
