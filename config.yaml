@@ -181,7 +181,6 @@ profiles:
   - k8s-local-m-01.local
   - k8s-local-w-01.local
   - k8s-local-w-02.local  
-  - monitor.local
   
 - name: k8s_only_masters
   hosts:
@@ -278,7 +277,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_master
   cpus:                     2
-  memory:                   2560
+  memory:                   3072
   hostname:                 k8s-local-m-01
   fqdn:                     k8s-local-m-01.local
   ip:                       192.168.184.51/24
@@ -292,7 +291,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_master
   cpus:                     2
-  memory:                   2560
+  memory:                   3072
   hostname:                 k8s-local-m-02
   fqdn:                     k8s-local-m-02.local
   ip:                       192.168.184.52/24
@@ -306,7 +305,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_master
   cpus:                     2
-  memory:                   2560
+  memory:                   3072
   hostname:                 k8s-local-m-03
   fqdn:                     k8s-local-m-03.local
   ip:                       192.168.184.53/24
@@ -320,7 +319,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_worker
   cpus:                     2
-  memory:                   2048
+  memory:                   5120
   hostname:                 k8s-local-w-01
   fqdn:                     k8s-local-w-01.local
   ip:                       192.168.184.54/24
@@ -334,7 +333,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_worker
   cpus:                     2
-  memory:                   2048
+  memory:                   5120
   hostname:                 k8s-local-w-02
   fqdn:                     k8s-local-w-02.local
   ip:                       192.168.184.55/24
@@ -348,7 +347,7 @@ hosts:
   ansible_playbook:         ansible/devops.yaml
   ansible_groups:           monitored,k8s_worker
   cpus:                     2
-  memory:                   2048
+  memory:                   5120
   hostname:                 k8s-local-w-03
   fqdn:                     k8s-local-w-03.local
   ip:                       192.168.184.56/24
