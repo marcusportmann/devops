@@ -443,6 +443,24 @@
 
     when: topolvm_system_namespace_exists_output.stdout == "0"
 
+  - name: Confirm that the TopoLVM controller is available
+    block:
+    - name: Retrieve the IP address of the TopoLVM controller service
+      shell:
+        cmd: /usr/bin/kubectl -n topolvm-system get svc | tail -n +2 | awk  {'print $3'}
+      register: topolvm_controller_service_ip_output
+
+    - name: Connect to the TopoLVM controller service
+      command:
+        cmd: curl --insecure https://{{ topolvm_controller_service_ip_output.stdout }}
+      register: wait_for_topo_lvm_controller_service_result
+      until: (wait_for_topo_lvm_controller_service_result is succeeded)
+      retries: 180
+      delay: 10
+
+    - debug:
+        msg: 'Successfully connected to TopoLVM controller service'
+
   when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
 
 
@@ -672,34 +690,61 @@
 #
 - name: Install and configure Jaeger if it is enabled
   block:
-  - name: Create the secret for the Jaeger Elasticsearch user
-    shell:
-      cmd: "/usr/bin/kubectl -n monitoring-system create secret generic monitoring-jaeger-elastic-user --from-literal=ES_PASSWORD={{ elasticsearch_credentials_password }} --from-literal=ES_USERNAME=elastic --dry-run -o yaml | kubectl apply -f -"
-
-  - name: Generate the Jaeger configuration
-    template:
-      src: jaeger.yaml.j2
-      dest: /var/tmp/ansible/jaeger.yaml
-
-  - name: Apply the Jaeger configuration to Kubernetes
-    command:
-      cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/jaeger.yaml
-
-  - name: Wait for the Jaeger configuration to be applied
+  - name: Configure the Jaeger certificates and secrets if security is enabled
     block:
-    - command:
-        cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger
-      register: wait_for_jaeger_configuration_result
-      until: wait_for_jaeger_configuration_result is succeeded
-      retries: 180
-      delay: 10
+    - name: Create the /var/tmp/ansible/jaeger-pki directory
+      file:
+        path: /var/tmp/ansible/jaeger-pki
+        state: directory
 
-    - shell:
-        cmd: /usr/bin/kubectl -n monitoring-system get jaeger/monitoring-jaeger | head -2 | tail -1 | awk  {'print $2'}
-      register: jaeger_status_output
-      until: jaeger_status_output.stdout == "Running"
-      retries: 180
-      delay: 10
+    - name: Copy the root CA certificate to the /var/tmp/ansible/jaeger-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/ca.crt
+        dest: /var/tmp/ansible/jaeger-pki/ca.pem
+
+    - name: Copy the Jaeger private key to the /var/tmp/ansible/jaeger-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-jaeger.key
+        dest: /var/tmp/ansible/jaeger-pki/jaeger-key.pem
+
+    - name: Copy the Jaeger certificate to the /var/tmp/ansible/jaeger-pki directory
+      copy:
+        src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-jaeger.crt
+        dest: /var/tmp/ansible/jaeger-pki/jaeger-cert.pem
+
+    - name: Create the secret in the monitoring-system namespace for the Jaeger private key and certificates
+      shell:
+        cmd: /usr/bin/kubectl create -n monitoring-system secret generic jaeger-certs --from-file=/var/tmp/ansible/jaeger-pki/jaeger-key.pem --from-file=/var/tmp/ansible/jaeger-pki/jaeger-cert.pem --from-file=/var/tmp/ansible/jaeger-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
+
+    - name: Check if the Jaeger Elasticsearch credentials secret exists
+      shell:
+        cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep jaeger-elasticsearch-credentials | wc -l
+      register: jaeger_elasticsearch_credentials_secret_exists_output
+
+    - name: Create the Jaeger Elasticsearch credentials secret if it does not exist
+      shell:
+        cmd: /usr/bin/kubectl -n monitoring-system create secret generic jaeger-elasticsearch-credentials --from-literal=username=elastic --from-literal=password={{ elasticsearch_credentials_password }} --dry-run -o yaml | kubectl apply -f -
+      when: (jaeger_elasticsearch_credentials_secret_exists_output.stdout == "0")
+
+    when: ((monitoring_security_enabled is defined) and (monitoring_security_enabled != None) and (monitoring_security_enabled == True))
+
+  - name: Check if Jaeger is installed
+    shell:
+      cmd: /usr/bin/helm -n monitoring-system list --filter "jaeger" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+    register: jaeger_installed__helm_chart_version_output
+
+  - name: Install Jaeger
+    block:
+    - name: Generate the Jaeger Helm values
+      template:
+        src: jaeger-values.yaml.j2
+        dest: /var/tmp/ansible/jaeger-values.yaml
+
+    - name: Install Jaeger using Helm
+      command:
+        cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --version={{ monitoring_jaeger_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
+
+    when: jaeger_installed__helm_chart_version_output.stdout != monitoring_jaeger_helm_chart_version
 
   when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true) and (monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == true))
 

@@ -39,9 +39,9 @@ variables:
 - name: k8s_cluster_domain
   values:
   - local.internal
-- name: k8s_control_plane_endpoint
-  values:
-  - k8s-local-api.local
+#- name: k8s_control_plane_endpoint
+#  values:
+#  - k8s-local-api.local
 #  - name: k8s_kube_state_metrics_endpoint
 #    values:
 #      - k8s-local-metrics.local
@@ -61,7 +61,7 @@ variables:
   - weave
 - name: longhorn_enabled
   values:
-  - true
+  - false
 - name: topolvm_enabled
   values:
   - true
@@ -94,7 +94,7 @@ variables:
 # ----------------------------------------------------------------------------------------
 - name: istio_enabled
   values:
-  - true
+  - false
 - name: istio_grafana_enabled
   values:
   - false
@@ -147,7 +147,10 @@ variables:
   - 5.0.7
 - name: monitoring_jaeger_enabled
   values:
-  - false
+  - true
+- name: monitoring_jaeger_helm_chart_version
+  values:
+  - 0.25.0
 - name: monitoring_kibana_enabled
   values:
   - true

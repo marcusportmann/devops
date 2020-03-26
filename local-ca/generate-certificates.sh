@@ -136,3 +136,9 @@ cp k8s-local-kibana.key ../ansible/roles/k8s_components/files/pki/local
 cp k8s-local-kibana.crt ../ansible/roles/k8s_components/files/pki/local
 
 
+# Generate the Jaeger private key and certificate
+cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-jaeger-csr.json | cfssljson -bare k8s-local-jaeger
+mv -f k8s-local-jaeger-key.pem k8s-local-jaeger.key
+mv -f k8s-local-jaeger.pem k8s-local-jaeger.crt
+cp k8s-local-jaeger.key ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-jaeger.crt ../ansible/roles/k8s_components/files/pki/local

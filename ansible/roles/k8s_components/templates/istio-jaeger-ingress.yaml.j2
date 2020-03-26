@@ -37,7 +37,7 @@ spec:
         port:
           number: 16686
 {% elif ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True))  %}
-        host: monitoring-jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}
+        host: jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}
         port:
           number: 16686
 {% endif %}

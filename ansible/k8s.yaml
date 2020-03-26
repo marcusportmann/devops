@@ -42,7 +42,6 @@
   roles:
   - k8s_worker
 
-
 - name: Apply the configuration for the components deployed on the Kubernetes cluster
   hosts: k8s_master:k8s_worker
   vars:

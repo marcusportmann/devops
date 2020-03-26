@@ -7,13 +7,23 @@ provisionDataStore:
 storage:
   type: elasticsearch
   elasticsearch:
-    host: <HOST>
+    host: elasticsearch-master
     port: 9200
     scheme: http
-    existingSecret
+    existingSecret: jaeger-elasticsearch-credentials
     
-    user: <USER>
-    password: <PASSWORD>
+query:
+  service:
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true)) %}
+    type: ClusterIP
+    port: 16686
+    targetPort: 16686
+{% else %}
+    type: NodePort
+    port: 16686
+    targetPort: 16686
+    nodePort: 32510
+{% endif %}
     
 # collector:
 #   autoscaling:
