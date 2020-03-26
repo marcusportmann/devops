@@ -11,6 +11,8 @@
   hosts: k8s_master:k8s_worker
   vars:
     docker_ubuntu_package_version: 5:19.03.6~3-0~ubuntu-bionic
+    helm_version: 3.1.2
+    helm_package_checksum: sha256:e6be589df85076108c33e12e60cfb85dcd82c5d756a6f6ebc8de0ee505c9fd4c
     k8s_version: 1.17
     k8s_vmware_tanzu_kubernetes_grid_version: 1.17.3+vmware.1
     k8s_vmware_tanzu_kubernetes_grid_checksum: sha256:34b680c64e7ccf8e7502519a4282c4e8e7c596acdf76945b15fa8e18a5525897
@@ -18,8 +20,8 @@
     k8s_vmware_tanzu_kubernetes_cri_tools_version: 1.16.1+vmware.3-1
     k8s_vmware_tanzu_kubernetes_kubeadm_version: 1.17.3+vmware.1-1
     k8s_vmware_tanzu_kubernetes_kubectl_version: 1.17.3+vmware.1-1
-    k8s_vmware_tanzu_kubernetes_kubelet_version: 1.17.3+vmware.1-1    
-    topolvm_lvmd_version: 0.4.1   
+    k8s_vmware_tanzu_kubernetes_kubelet_version: 1.17.3+vmware.1-1
+    topolvm_lvmd_version: 0.4.1
   become: yes
   become_user: root
   roles:
@@ -28,15 +30,6 @@
 
 - name: Configure the Kubernetes master hosts
   hosts: k8s_master
-  vars:
-    bitnami_labs_sealed_secrets_version: 0.11.0
-    helm_version: 3.1.2
-    helm_package_checksum: sha256:e6be589df85076108c33e12e60cfb85dcd82c5d756a6f6ebc8de0ee505c9fd4c
-    istio_version: 1.5.0
-    istio_package_checksum: sha256:fba603390074b1b9da9b3bd1492a278740fe725ac8ff07b8ec54fb7d66e03c33
-    istioctl_package_checksum: sha256:e841c8858f7598351caaf6d7e6a67c4a43218f343629c67cf76db5d000c9df72
-    kube_state_metrics_version: 1.9.5
-    topolvm_version: 0.4.1
   become: yes
   become_user: root
   roles:
@@ -48,3 +41,19 @@
   become_user: root
   roles:
   - k8s_worker
+
+
+- name: Apply the configuration for the components deployed on the Kubernetes cluster
+  hosts: k8s_master:k8s_worker
+  vars:
+    bitnami_labs_sealed_secrets_version: 0.11.0
+    istio_version: 1.5.1
+    istio_package_checksum: sha256:cbaf9c76a75e2585bd3444e96bf64c29b31165981a4dc4a24faf7a34d9f9de01
+    istioctl_package_checksum: sha256:9c988aa588c3bd04c4af791876ae4ce57902b7ea0d3be9c3ecd8f23a35e6ea59
+    topolvm_version: 0.4.1
+  become: yes
+  become_user: root
+  roles:
+  - { role: "k8s_components", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
+
+

@@ -5,9 +5,16 @@
     path: /var/tmp/ansible
     owner: root
     group: root
-    mode: 0700    
+    mode: 0700
     state: directory
 
+
+#  _  _____ ____    _   _ ____  _____ ____  ____       _    _   _ ____     ____ ____   ___  _   _ ____  ____
+# | |/ ( _ ) ___|  | | | / ___|| ____|  _ \/ ___|     / \  | \ | |  _ \   / ___|  _ \ / _ \| | | |  _ \/ ___|
+# | ' // _ \___ \  | | | \___ \|  _| | |_) \___ \    / _ \ |  \| | | | | | |  _| |_) | | | | | | | |_) \___ \
+# | . \ (_) |__) | | |_| |___) | |___|  _ < ___) |  / ___ \| |\  | |_| | | |_| |  _ <| |_| | |_| |  __/ ___) |
+# |_|\_\___/____/   \___/|____/|_____|_| \_\____/  /_/   \_\_| \_|____/   \____|_| \_\\___/ \___/|_|   |____/
+#
 - name: Add the k8s-admin group
   group:
     name: k8s-admin
@@ -32,22 +39,43 @@
     line: '%k8s-admin ALL=(ALL) NOPASSWD: ALL'
     validate: 'visudo -cf %s'
 
+
+#  ____   _____        ___   _ _     ___    _    ____    _  _____ ____    ____   _    ____ _  __    _    ____ _____
+# |  _ \ / _ \ \      / / \ | | |   / _ \  / \  |  _ \  | |/ ( _ ) ___|  |  _ \ / \  / ___| |/ /   / \  / ___| ____|
+# | | | | | | \ \ /\ / /|  \| | |  | | | |/ _ \ | | | | | ' // _ \___ \  | |_) / _ \| |   | ' /   / _ \| |  _|  _|
+# | |_| | |_| |\ V  V / | |\  | |__| |_| / ___ \| |_| | | . \ (_) |__) | |  __/ ___ \ |___| . \  / ___ \ |_| | |___
+# |____/ \___/  \_/\_/  |_| \_|_____\___/_/   \_\____/  |_|\_\___/____/  |_| /_/   \_\____|_|\_\/_/   \_\____|_____|
+#
 - name: Check if the VMware Tanzu Kubernetes Grid package has been downloaded
   become: no
   local_action: stat path=packages/vmware-kubernetes-v1.17.3+vmware.1.tar.gz
-  register: vmware_tanzu_kubernetes_package_stat_result  
+  register: vmware_tanzu_kubernetes_package_stat_result
 
 - name: Download the VMware Tanzu Kubernetes Grid package
   become: no
   local_action: get_url url='https://downloads.heptio.com/vmware-tanzu-kubernetes-grid/523a448aa3e9a0ef93ff892dceefee0a/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version | urlencode }}.tar.gz' dest='packages/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}.tar.gz' checksum={{ k8s_vmware_tanzu_kubernetes_grid_checksum }}
   when: (vmware_tanzu_kubernetes_package_stat_result.stat.exists == False)
 
+
+#  _______  _______ ____      _    ____ _____   _  _____ ____    ____   _    ____ _  __    _    ____ _____
+# | ____\ \/ /_   _|  _ \    / \  / ___|_   _| | |/ ( _ ) ___|  |  _ \ / \  / ___| |/ /   / \  / ___| ____|
+# |  _|  \  /  | | | |_) |  / _ \| |     | |   | ' // _ \___ \  | |_) / _ \| |   | ' /   / _ \| |  _|  _|
+# | |___ /  \  | | |  _ <  / ___ \ |___  | |   | . \ (_) |__) | |  __/ ___ \ |___| . \  / ___ \ |_| | |___
+# |_____/_/\_\ |_| |_| \_\/_/   \_\____| |_|   |_|\_\___/____/  |_| /_/   \_\____|_|\_\/_/   \_\____|_____|
+#
 - name: Extract the VMware Tanzu Kubernetes Grid package on the host
   unarchive:
     src: packages/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}.tar.gz
     dest: /var/tmp/ansible
     creates: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}
 
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
@@ -58,6 +86,13 @@
   tags:
   - unbound
 
+
+#  _____ ___  ____   ___  _ __     ____  __   _ __     ____  __ ____
+# |_   _/ _ \|  _ \ / _ \| |\ \   / /  \/  | | |\ \   / /  \/  |  _ \
+#   | || | | | |_) | | | | | \ \ / /| |\/| | | | \ \ / /| |\/| | | | |
+#   | || |_| |  __/| |_| | |__\ V / | |  | | | |__\ V / | |  | | |_| |
+#   |_| \___/|_|    \___/|_____\_/  |_|  |_| |_____\_/  |_|  |_|____/
+#
 - name: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
   block:
   - debug:
@@ -68,7 +103,7 @@
     register: topolvm_lvmd_installed_stat_result
 
   - shell:
-      cmd: /usr/bin/lvmd --version | awk  {'print $3'} 
+      cmd: /usr/bin/lvmd --version | awk  {'print $3'}
     register: topolvm_lvmd_installed_version_output
     when: (topolvm_lvmd_installed_stat_result.stat.exists == True)
 
@@ -83,17 +118,17 @@
   - block:
     - debug:
         msg: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package
-        
+
     - name: Check whether the TopoLVM lvmd {{ topolvm_lvmd_version }} package has been downloaded
       become: no
       local_action: stat path=packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz
-      register: topolvm_lvmd_package_stat_result  
-    
+      register: topolvm_lvmd_package_stat_result
+
     - name: Download the TopoLVM lvmd {{ topolvm_lvmd_version }} package
       become: no
       local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ topolvm_lvmd_version }}/lvmd-{{ topolvm_lvmd_version }}.tar.gz' dest='packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz'
       when: (topolvm_lvmd_package_stat_result.stat.exists == False)
-    
+
     - name: Remove the existing TopoLVM lvmd binary
       file:
         path: /usr/bin/lvmd
@@ -104,18 +139,79 @@
         src: packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz
         dest: /usr/bin
         creates: /usr/bin/lvmd
-    
+
     - template:
         src: topolvm-lvmd.service.j2
         dest: /lib/systemd/system/lvmd.service
-        
+
     - name: Restart the lvmd systemd service
       systemd:
         name: lvmd.service
         state: restarted
         enabled: yes
         daemon_reload: yes
-    
+
     when: (topolvm_lvmd_installed_version != topolvm_lvmd_version)
-    
+
   when: ((("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+
+
+#  _   _ _____ _     __  __
+# | | | | ____| |   |  \/  |
+# | |_| |  _| | |   | |\/| |
+# |  _  | |___| |___| |  | |
+# |_| |_|_____|_____|_|  |_|
+#
+- name: Install Helm
+  block:
+  - debug:
+      msg: Check whether the helm {{ helm_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/helm
+    register: helm_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/helm version --short | head -1 | awk -F '+' {'print $1'} | cut -c2-
+    register: helm_installed_version_output
+    when: (helm_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      helm_installed_version: '{{ helm_installed_version_output.stdout }}'
+    when: (helm_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      helm_installed_version: ''
+    when: (helm_installed_stat_result.stat.exists == False)
+
+  - block:
+    - debug:
+        msg: Install the helm {{ helm_version }} package
+
+    - name: Check whether the helm {{ helm_version }} package has been downloaded
+      become: no
+      local_action: stat path=packages/helm-v{{ helm_version }}-linux-amd64.tar.gz
+      register: helm_package_stat_result
+
+    - name: Download the helm {{ helm_version }} package
+      become: no
+      local_action: get_url url='https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz' dest='packages/helm-v{{ helm_version }}-linux-amd64.tar.gz' checksum={{ helm_package_checksum }}
+      when: (helm_package_stat_result.stat.exists == False)
+
+    - name: Remove the existing helm binary
+      file:
+        path: /usr/bin/helm
+        state: absent
+
+    - name: Extract the helm binary from the helm {{ helm_version }} package
+      unarchive:
+        src: packages/helm-v{{ helm_version }}-linux-amd64.tar.gz
+        dest: /usr/bin
+        extra_opts:
+        - --strip-components=1
+        - linux-amd64/helm
+        creates: /usr/bin/helm
+
+    when: (helm_installed_version != helm_version)
+
+

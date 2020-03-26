@@ -400,8 +400,8 @@ spec:
           - --manager-url
           - http://longhorn-backend:9500/v1
           # manually set root directory for csi
-          #- --kubelet-root-dir
-          #- /var/lib/rancher/k3s/agent/kubelet          
+          - --kubelet-root-dir
+          - /var/lib/kubelet        
 {% if ('k8s_worker' not in groups) %}          
           # Manually specify number of CSI attacher replicas
           - --csi-attacher-replica-count

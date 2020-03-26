@@ -22,14 +22,12 @@ alertmanager:
     nodePort: 32535
 {% endif %}
     
-    
 pushgateway:
   enabled: true
   
   service:
     type: ClusterIP  
     servicePort: 9091
-  
     
 server:
   enabled: true

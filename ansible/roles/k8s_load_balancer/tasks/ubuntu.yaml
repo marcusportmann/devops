@@ -11,5 +11,10 @@
   apt: name=haproxy state=latest
 
 - name: Configure the haproxy
-  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg    
+  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
 
+- name: Restart the haproxy service
+  systemd:
+    name: haproxy.service
+    state: restarted
+    enabled: yes

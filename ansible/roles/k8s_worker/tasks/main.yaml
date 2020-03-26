@@ -5,9 +5,16 @@
     path: /var/tmp/ansible
     owner: root
     group: root
-    mode: 0700    
+    mode: 0700
     state: directory
 
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
@@ -18,28 +25,104 @@
   tags:
     - unbound
 
-- name: Check whether the kubelet service has been configured
-  stat:
-    path: /var/lib/kubelet/config.yaml
-  register: kubelet_config_stat_result
 
-- name: Check whether a CNI provider has been configured
-  stat:
-    path: /etc/cni
-  register: etc_cni_stat_result
-
-- name: Initializing the additional worker node in the Kubernetes cluster
+#  _  _____ ____   __        _____  ____  _  _______ ____
+# | |/ ( _ ) ___|  \ \      / / _ \|  _ \| |/ / ____|  _ \
+# | ' // _ \___ \   \ \ /\ / / | | | |_) | ' /|  _| | |_) |
+# | . \ (_) |__) |   \ V  V /| |_| |  _ <| . \| |___|  _ <
+# |_|\_\___/____/     \_/\_/  \___/|_| \_\_|\_\_____|_| \_\
+#
+- name: Initialize an additional worker node in the Kubernetes cluster
   block:
-  - command:
-      cmd: /usr/bin/kubeadm token create --print-join-command
-    register: kubeadm_join_command_result
+  - name: Check whether the kubelet service has been configured
+    stat:
+      path: /var/lib/kubelet/config.yaml
+    register: kubelet_config_stat_result
+
+  - name: Initializing the additional worker node in the Kubernetes cluster
+    block:
+    - name: Retrieve the Kubernetes join command from the first master
+      command:
+        cmd: /usr/bin/kubeadm token create --print-join-command
+      register: kubeadm_join_command_result
+      delegate_to: "{{ groups['k8s_master'][0] }}"
+
+    - name: Save the Kubernetes join command
+      set_fact:
+        kubeadm_join_command: "{{ kubeadm_join_command_result.stdout_lines[0] }}"
+
+    - name: Execute the command to Join the additional worker to the Kubernetes cluster
+      command:
+        cmd: "{{ kubeadm_join_command }}"
+
+    when: kubelet_config_stat_result.stat.exists == False
+
+  - name: Wait for Kubernetes node initialization to complete
+    command:
+      cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
     delegate_to: "{{ groups['k8s_master'][0] }}"
 
-  - set_fact:
-      kubeadm_join_command: "{{ kubeadm_join_command_result.stdout_lines[0] }}"
 
-  - command:
-      cmd: "{{ kubeadm_join_command }}"
+#  _  _____ ____     ____ ___  _   _ _____ ___ ____
+# | |/ ( _ ) ___|   / ___/ _ \| \ | |  ___|_ _/ ___|
+# | ' // _ \___ \  | |  | | | |  \| | |_   | | |  _
+# | . \ (_) |__) | | |__| |_| | |\  |  _|  | | |_| |
+# |_|\_\___/____/   \____\___/|_| \_|_|   |___\____|
+#
+- name: Fetch the Kubernetes configuration file /etc/kubernetes/admin.conf from the first master
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: fetched_files
+  delegate_to: "{{ groups['k8s_master'][0] }}"
 
-  when: kubelet_config_stat_result.stat.exists == False
+- name: Copy the Kubernetes configuration to the root user
+  block:
+  - name: Create the /root/.kube directory
+    file:
+      path: /root/.kube
+      owner: root
+      group: root
+      mode: 0700
+      state: directory
+
+  - name: Create the /root/.kube/config file
+    copy:
+      src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf
+      dest: /root/.kube/config
+
+  - name: Set the permissions for the /root/.kube/config file
+    file:
+      path: /root/.kube/config
+      owner: root
+      group: root
+      mode: 0600
+      state: file
+
+- name: Copy the Kubernetes configuration to the k8s-admin user
+  block:
+  - name: Create the /home/k8s-admin/.kube directory
+    file:
+      path: /home/k8s-admin/.kube
+      owner: k8s-admin
+      group: k8s-admin
+      mode: 0750
+      state: directory
+
+  - name: Create the /home/k8s-admin/.kube/config file
+    copy:
+      src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf
+      dest: /home/k8s-admin/.kube/config
+
+  - name: Set the permissions for the /home/k8s-admin/.kube/config file
+    file:
+      path: /home/k8s-admin/.kube/config
+      owner: k8s-admin
+      group: k8s-admin
+      mode: 0640
+      state: file
+
+- name: Remove the local copy of the Kubernetes configuration file
+  become: no
+  local_action: file path=fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf state=absent
+
 

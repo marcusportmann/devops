@@ -1,0 +1,61 @@
+# See: https://github.com/jaegertracing/helm-charts/tree/master/charts/jaeger
+
+provisionDataStore:
+  cassandra: false
+  elasticsearch: false
+  
+storage:
+  type: elasticsearch
+  elasticsearch:
+    host: <HOST>
+    port: 9200
+    scheme: http
+    existingSecret
+    
+    user: <USER>
+    password: <PASSWORD>
+    
+# collector:
+#   autoscaling:
+#     enabled: false
+#     minReplicas: 1
+#     maxReplicas: 2
+#     targetCPUUtilizationPercentage: 80
+
+# esIndexCleaner:
+#   enabled: false
+#   numberOfDays: 7
+#   schedule: "55 23 * * *"
+#   successfulJobsHistoryLimit: 5
+#   failedJobsHistoryLimit: 5
+    
+# query:
+#   cmdlineParams:
+#     es.tls.ca: "/tls/es.pem"
+#   extraConfigmapMounts:
+#     - name: jaeger-tls
+#       mountPath: /tls
+#       subPath: ""
+#       configMap: jaeger-tls
+#       readOnly: true
+# collector:
+#   cmdlineParams:
+#     es.tls.ca: "/tls/es.pem"
+#   extraConfigmapMounts:
+#     - name: jaeger-tls
+#       mountPath: /tls
+#       subPath: ""
+#       configMap: jaeger-tls
+#       readOnly: true
+# spark:
+#   enabled: true
+#   cmdlineParams:
+#     java.opts: "-Djavax.net.ssl.trustStore=/tls/trust.store -Djavax.net.ssl.trustStorePassword=changeit"
+#   extraConfigmapMounts:
+#     - name: jaeger-tls
+#       mountPath: /tls
+#       subPath: ""
+#       configMap: jaeger-tls
+#       readOnly: true
+
+

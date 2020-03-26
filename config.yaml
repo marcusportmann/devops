@@ -39,9 +39,9 @@ variables:
 - name: k8s_cluster_domain
   values:
   - local.internal
-#- name: k8s_control_plane_endpoint
-#  values:
-#  - k8s-local-api.local
+- name: k8s_control_plane_endpoint
+  values:
+  - k8s-local-api.local
 #  - name: k8s_kube_state_metrics_endpoint
 #    values:
 #      - k8s-local-metrics.local
@@ -55,27 +55,27 @@ variables:
   - 10.254.0.0/16
 - name: k8s_pod_subnet
   values:
-  - 10.255.0.0/16  
+  - 10.255.0.0/16
 - name: k8s_cni_provider
   values:
   - weave
 - name: longhorn_enabled
   values:
-  - false
+  - true
 - name: topolvm_enabled
   values:
-  - true  
+  - true
 - name: topolvm_volume_group
   values:
   - system
-  
+
 # ----------------------------------------------------------------------------------------
 # Kubernetes Extensions Configuration
 # ----------------------------------------------------------------------------------------
 - name: bitnami_labs_sealed_secrets_enabled
   values:
   - true
-  
+
 # ----------------------------------------------------------------------------------------
 # Kubernetes Operator Configuration
 # ----------------------------------------------------------------------------------------
@@ -87,14 +87,14 @@ variables:
   - false
 - name: postgres_operator_enabled
   values:
-  - false  
+  - false
 
 # ----------------------------------------------------------------------------------------
 # Istio Configuration
 # ----------------------------------------------------------------------------------------
 - name: istio_enabled
   values:
-  - false
+  - true
 - name: istio_grafana_enabled
   values:
   - false
@@ -107,7 +107,7 @@ variables:
 - name: istio_tracing_enabled
   values:
   - false
-  
+
 # ----------------------------------------------------------------------------------------
 # External Monitoring Configuration
 # ----------------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ variables:
   - true
 - name: monitoring_security_enabled
   values:
-  - true  
+  - true
 - name: monitoring_elasticsearch_cluster_type
   values:
   - standalone
@@ -138,7 +138,7 @@ variables:
   - 7.6.1
 - name: monitoring_elasticsearch_storage_class_name
   values:
-  - default-local-storage  
+  - default-local-storage
 - name: monitoring_grafana_enabled
   values:
   - true
@@ -153,7 +153,7 @@ variables:
   - true
 - name: monitoring_kibana_helm_chart_version
   values:
-  - 7.6.1  
+  - 7.6.1
 - name: monitoring_prometheus_enabled
   values:
   - true
@@ -162,7 +162,7 @@ variables:
   - 11.0.2
 - name: monitoring_prometheus_storage_class_name
   values:
-  - default-local-storage  
+  - default-local-storage
 
 
 profiles:
@@ -180,8 +180,7 @@ profiles:
   hosts:
   - k8s-local-m-01.local
   - k8s-local-w-01.local
-  - k8s-local-w-02.local  
-  
+
 - name: k8s_only_masters
   hosts:
   - k8s-local-api.local
@@ -198,7 +197,7 @@ profiles:
   - k8s-local-w-01.local
   - k8s-local-w-02.local
   - k8s-local-w-03.local
-  
+
 - name: test-ubuntu1804
   hosts:
   - test-ubuntu1804.local
@@ -257,11 +256,25 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-  
+
+- name:                     devops.local
+  type:                     ubuntu1804
+  ansible_playbook:         ansible/devops.yaml
+  ansible_groups:           k8s_master,k8s_components
+  cpus:                     3
+  memory:                   6144
+  hostname:                 devops
+  fqdn:                     devops.local
+  ip:                       192.168.184.60/24
+  network:                  192.168.184.0/24
+  gateway:                  192.168.184.2
+  dns_server:               192.168.184.2
+  dns_search:               local
+
 - name:                     k8s-local-api.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_load_balancer
+  ansible_groups:           k8s_load_balancer
   cpus:                     1
   memory:                   512
   hostname:                 k8s-local-api
@@ -270,14 +283,14 @@ hosts:
   network:                  192.168.184.0/24
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
-  dns_search:               local  
+  dns_search:               local
 
 - name:                     k8s-local-m-01.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_master
+  ansible_groups:           k8s_master,k8s_components
   cpus:                     2
-  memory:                   3072
+  memory:                   1536
   hostname:                 k8s-local-m-01
   fqdn:                     k8s-local-m-01.local
   ip:                       192.168.184.51/24
@@ -289,9 +302,9 @@ hosts:
 - name:                     k8s-local-m-02.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_master
+  ansible_groups:           k8s_master,k8s_components
   cpus:                     2
-  memory:                   3072
+  memory:                   1536
   hostname:                 k8s-local-m-02
   fqdn:                     k8s-local-m-02.local
   ip:                       192.168.184.52/24
@@ -303,9 +316,9 @@ hosts:
 - name:                     k8s-local-m-03.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_master
+  ansible_groups:           k8s_master,k8s_components
   cpus:                     2
-  memory:                   3072
+  memory:                   1536
   hostname:                 k8s-local-m-03
   fqdn:                     k8s-local-m-03.local
   ip:                       192.168.184.53/24
@@ -317,9 +330,9 @@ hosts:
 - name:                     k8s-local-w-01.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_worker
+  ansible_groups:           k8s_worker,k8s_components
   cpus:                     2
-  memory:                   5120
+  memory:                   3072
   hostname:                 k8s-local-w-01
   fqdn:                     k8s-local-w-01.local
   ip:                       192.168.184.54/24
@@ -331,9 +344,9 @@ hosts:
 - name:                     k8s-local-w-02.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_worker
+  ansible_groups:           k8s_worker,k8s_components
   cpus:                     2
-  memory:                   5120
+  memory:                   3072
   hostname:                 k8s-local-w-02
   fqdn:                     k8s-local-w-02.local
   ip:                       192.168.184.55/24
@@ -345,9 +358,9 @@ hosts:
 - name:                     k8s-local-w-03.local
   type:                     ubuntu1804
   ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           monitored,k8s_worker
+  ansible_groups:           k8s_worker,k8s_components
   cpus:                     2
-  memory:                   5120
+  memory:                   3072
   hostname:                 k8s-local-w-03
   fqdn:                     k8s-local-w-03.local
   ip:                       192.168.184.56/24
@@ -369,24 +382,6 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-
-- name:                     devops.local
-  type:                     ubuntu1804
-  ansible_playbook:         ansible/devops.yaml
-  ansible_groups:           k8s_master
-  cpus:                     3
-  memory:                   6144
-  hostname:                 devops
-  fqdn:                     devops.local
-  ip:                       192.168.184.60/24
-  network:                  192.168.184.0/24
-  gateway:                  192.168.184.2
-  dns_server:               192.168.184.2
-  dns_search:               local
-
-# monitored,k8s_load_balancer,k8s_master,prometheus,grafana
-
-# monitored,k8s_load_balancer,k8s_master,prometheus,grafana
 
 - name:                     test-ubuntu1804.local
   type:                     ubuntu1804
@@ -416,7 +411,7 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-  data_disk:                16107  
+  data_disk:                16107
 
 - name:                     test-centos80.local
   type:                     centos80
@@ -431,7 +426,7 @@ hosts:
   gateway:                  192.168.184.2
   dns_server:               192.168.184.2
   dns_search:               local
-  data_disk:                16107  
-  
+  data_disk:                16107
+
 
 

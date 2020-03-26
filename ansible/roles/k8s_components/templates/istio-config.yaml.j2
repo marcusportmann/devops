@@ -200,7 +200,7 @@ spec:
 #         jaegerInClusterURL
         
 {% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)) %}
-        prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_cluster_domain }}:9090        
+        # prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_cluster_domain }}:9090        
 {% endif %}           
       security:
         enabled: false
