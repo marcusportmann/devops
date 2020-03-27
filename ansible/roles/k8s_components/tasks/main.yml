@@ -451,8 +451,9 @@
       register: topolvm_controller_service_ip_output
 
     - name: Connect to the TopoLVM controller service
-      command:
+      shell:
         cmd: curl --insecure https://{{ topolvm_controller_service_ip_output.stdout }}
+        warn: no
       register: wait_for_topo_lvm_controller_service_result
       until: (wait_for_topo_lvm_controller_service_result is succeeded)
       retries: 180
@@ -824,6 +825,17 @@
         cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
 
     when: grafana_installed_helm_chart_version_output.stdout != monitoring_grafana_helm_chart_version
+
+  - name: Generate and install the Grafana dashboard ConfigMaps
+    block:
+    - name: Generate the Grafana dashboard ConfigMaps
+      template:
+        src: grafana-dashboard-config-maps.yaml.j2
+        dest: /var/tmp/ansible/grafana-dashboard-config-maps.yaml
+
+    - name: Install the Grafana dashboard ConfigMaps
+      command:
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/grafana-dashboard-config-maps.yaml
 
   - name: Generate and install the Grafana Istio dashboard ConfigMaps
     block:

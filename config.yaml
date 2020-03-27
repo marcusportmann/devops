@@ -94,7 +94,7 @@ variables:
 # ----------------------------------------------------------------------------------------
 - name: istio_enabled
   values:
-  - false
+  - true
 - name: istio_grafana_enabled
   values:
   - false

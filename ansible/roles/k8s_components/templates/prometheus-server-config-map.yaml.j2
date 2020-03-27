@@ -153,8 +153,8 @@ data:
         - __meta_kubernetes_pod_node_name
         target_label: kubernetes_node
       scrape_interval: 5m
-      scrape_timeout: 30s        
-    
+      scrape_timeout: 30s 
+
     - job_name: prometheus-pushgateway
       honor_labels: true
       kubernetes_sd_configs:
@@ -398,6 +398,108 @@ data:
 
 
 
+
+
+
+
+
+
+
+#
+# NOTE: Below is an example of how a dedicated static scrape can be used to replace a discovered endpoint scrape
+# 
+
+
+
+# 
+# 
+#     - job_name: 'prometheus-kube-state-metrics'
+#       static_configs:
+#         - targets:
+#           - prometheus-kube-state-metrics:8080
+#       metric_relabel_configs:
+#       - action: keep
+#         regex: true
+#         source_labels:
+#         - __meta_kubernetes_service_annotation_prometheus_io_scrape
+#       - action: replace
+#         regex: (https?)
+#         source_labels:
+#         - __meta_kubernetes_service_annotation_prometheus_io_scheme
+#         target_label: __scheme__
+#       - action: replace
+#         regex: (.+)
+#         source_labels:
+#         - __meta_kubernetes_service_annotation_prometheus_io_path
+#         target_label: __metrics_path__
+#       - action: replace
+#         regex: ([^:]+)(?::\d+)?;(\d+)
+#         replacement: $1:$2
+#         source_labels:
+#         - __address__
+#         - __meta_kubernetes_service_annotation_prometheus_io_port
+#         target_label: __address__
+#       - action: labelmap
+#         regex: __meta_kubernetes_service_label_(.+)
+#       - action: replace
+#         source_labels:
+#         - __meta_kubernetes_namespace
+#         target_label: kubernetes_namespace
+#       - action: replace
+#         source_labels:
+#         - __meta_kubernetes_service_name
+#         target_label: kubernetes_name
+#       - action: replace
+#         source_labels:
+#         - __meta_kubernetes_pod_node_name
+#         target_label: kubernetes_node
+# 
+#     - job_name: kubernetes-service-endpoints
+#       kubernetes_sd_configs:
+#       - role: endpoints
+#       relabel_configs:
+#       - source_labels: [ __meta_kubernetes_namespace,__meta_kubernetes_service_name ]
+#         regex: 'monitoring-system;prometheus-kube-state-metrics'
+#         action: drop
+#       - action: keep
+#         regex: true
+#         source_labels:
+#         - __meta_kubernetes_service_annotation_prometheus_io_scrape
+#       - action: replace
+#         regex: (https?)
+#         source_labels:
+#         - __meta_kubernetes_service_annotation_prometheus_io_scheme
+#         target_label: __scheme__
+#       - action: replace
+#         regex: (.+)
+#         source_labels:
+#         - __meta_kubernetes_service_annotation_prometheus_io_path
+#         target_label: __metrics_path__
+#       - action: replace
+#         regex: ([^:]+)(?::\d+)?;(\d+)
+#         replacement: $1:$2
+#         source_labels:
+#         - __address__
+#         - __meta_kubernetes_service_annotation_prometheus_io_port
+#         target_label: __address__
+#       - action: labelmap
+#         regex: __meta_kubernetes_service_label_(.+)
+#       - action: replace
+#         source_labels:
+#         - __meta_kubernetes_namespace
+#         target_label: kubernetes_namespace
+#       - action: replace
+#         source_labels:
+#         - __meta_kubernetes_service_name
+#         target_label: kubernetes_name
+#       - action: replace
+#         source_labels:
+#         - __meta_kubernetes_pod_node_name
+#         target_label: kubernetes_node
+#         
+#         
+#         
+#         
 
 
 
