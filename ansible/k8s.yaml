@@ -45,7 +45,6 @@
 - name: Apply the configuration for the components deployed on the Kubernetes cluster
   hosts: k8s_master:k8s_worker
   vars:
-    bitnami_labs_sealed_secrets_version: 0.11.0
     istio_version: 1.5.1
     istio_package_checksum: sha256:cbaf9c76a75e2585bd3444e96bf64c29b31165981a4dc4a24faf7a34d9f9de01
     istioctl_package_checksum: sha256:9c988aa588c3bd04c4af791876ae4ce57902b7ea0d3be9c3ecd8f23a35e6ea59

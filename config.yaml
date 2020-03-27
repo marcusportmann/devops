@@ -75,6 +75,13 @@ variables:
 - name: bitnami_labs_sealed_secrets_enabled
   values:
   - true
+- name: bitnami_labs_sealed_secrets_helm_chart_version
+  values:
+  - 1.8.0
+- name: bitnami_labs_sealed_secrets_kubeseal_version
+  values:
+  - 0.10.0
+
 
 # ----------------------------------------------------------------------------------------
 # Kubernetes Operator Configuration
@@ -150,7 +157,7 @@ variables:
   - true
 - name: monitoring_jaeger_helm_chart_version
   values:
-  - 0.25.0
+  - 0.26.1
 - name: monitoring_kibana_enabled
   values:
   - true

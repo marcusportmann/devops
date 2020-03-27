@@ -48,7 +48,7 @@
 - name: Install the Bitnami Labs Sealed Secrets Extension
   block:
   - debug:
-      msg: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been installed
+      msg: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package has been installed
 
   - stat:
       path: /usr/bin/kubeseal
@@ -70,16 +70,16 @@
   - name: Install the Bitnami Labs kubeseal package
     block:
     - debug:
-        msg: Install the Bitnami Labs kubeseal {{ bitnami_labs_sealed_secrets_version }} package
+        msg: Install the Bitnami Labs kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package
 
-    - name: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_version }} package has been downloaded
+    - name: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
+      local_action: stat path=packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }}
       register: kubeseal_package_stat_result
 
-    - name: Download the kubeseal {{ bitnami_labs_sealed_secrets_version }} package
+    - name: Download the kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package
       become: no
-      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}'
+      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }}'
       when: (kubeseal_package_stat_result.stat.exists == False)
 
     - name: Remove the existing kubeseal binary
@@ -89,12 +89,12 @@
 
     - name: Copy the kubeseal binary
       copy:
-        src: packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }}
+        src: packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }}
         dest: /usr/bin
 
     - name: Rename the kubeseal binary
       command:
-        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_version }} /usr/bin/kubeseal
+        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }} /usr/bin/kubeseal
         creates: /usr/bin/kubeseal
 
     - name: Set the permissions for the kubeseal binary
@@ -105,53 +105,25 @@
         mode: 0770
         state: file
 
-    when: (kubeseal_installed_version != bitnami_labs_sealed_secrets_version)
+    when: (kubeseal_installed_version != bitnami_labs_sealed_secrets_kubeseal_version)
 
-  - shell:
-      cmd: /usr/bin/kubectl -n kube-system get deployments | grep "sealed-secrets-controller" | wc -l
-    register: bitnami_labs_sealed_secrets_controller_installed_output
+  - name: Check if Bitnami Labs Sealed Secrets is installed
+    shell:
+      cmd: /usr/bin/helm -n monitoring-system list --filter "sealed-secrets" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+    register: sealed_secrets_installed__helm_chart_version_output
 
-  - set_fact:
-      bitnami_labs_sealed_secrets_controller_installed_version: ''
-    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "0"
-
-  - shell:
-      cmd: /usr/bin/kubectl -n kube-system describe deployment sealed-secrets-controller | grep "Image:" | sed 's/.*:v//'
-    register: bitnami_labs_sealed_secrets_controller_installed_version_output
-    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
-
-  - set_fact:
-      bitnami_labs_sealed_secrets_controller_installed_version: '{{ bitnami_labs_sealed_secrets_controller_installed_version_output.stdout }}'
-    when: bitnami_labs_sealed_secrets_controller_installed_output.stdout == "1"
-
-  - name: Install the Bitnami Labs SealedSecret CRD and server-side controller
+  - name: Install Bitnami Labs Sealed Secrets
     block:
-    - debug:
-        msg: Install the Bitnami Labs SealedSecret CRD and server-side controller
+    - name: Generate the Bitnami Labs Sealed Secrets Helm values
+      template:
+        src: sealed-secrets-values.yaml.j2
+        dest: /var/tmp/ansible/sealed-secrets-values.yaml
 
-    - name: Retrieve the Bitnami Labs SealedSecret CRD and server-side controller configuration
-      get_url:
-        url: https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_version }}/controller.yaml
-        dest: /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
-      register: get_bitnami_labs_sealed_secret_controller_result
-      until: get_bitnami_labs_sealed_secret_controller_result is succeeded
-      retries: 3
-      delay: 10
-
-    - name: Update the tolerations for the Bitnami Labs SealedSecret server-side controller
-      blockinfile:
-        dest: /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
-        block: |2
-                tolerations:
-                - effect: NoSchedule
-                  operator: Exists
-        insertafter: "      serviceAccountName: sealed-secrets-controller"
-
-    - name: Apply the Bitnami Labs SealedSecret CRD and server-side controller configuration
+    - name: Install Bitnami Labs Sealed Secrets using Helm
       command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/bitnami-labs-sealed-secret-controller-{{ bitnami_labs_sealed_secrets_version }}.yaml
+        cmd: /usr/bin/helm upgrade sealed-secrets stable/sealed-secrets --install --version={{ bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
 
-    when: (bitnami_labs_sealed_secrets_controller_installed_version != bitnami_labs_sealed_secrets_version)
+    when: sealed_secrets_installed__helm_chart_version_output.stdout != bitnami_labs_sealed_secrets_helm_chart_version
 
   when: ((bitnami_labs_sealed_secrets_enabled is defined) and (bitnami_labs_sealed_secrets_enabled != None) and (bitnami_labs_sealed_secrets_enabled == true))
 
