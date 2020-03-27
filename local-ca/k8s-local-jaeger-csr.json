@@ -1,0 +1,17 @@
+{
+  "CN": "k8s-local-jaeger",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "k8s-local-jaeger"
+    }
+  ],
+  "hosts": [
+    "jaeger",
+    "jaeger.monitoring-system",
+    "jaeger.monitoring-system.svc"
+  ]
+}
