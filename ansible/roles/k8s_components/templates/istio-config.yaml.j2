@@ -190,18 +190,21 @@ spec:
       security:
         enabled: false
     kiali:
-      dashboard:        
-{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)) %}        
-        grafanaURL: https://{{ inventory_hostname }}:32500/
+{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)) %}
+      prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_cluster_domain }}:9090        
+{% endif %}           
+    
+      dashboard:      
+{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_grafana_enabled is defined) and (monitoring_grafana_enabled != None) and (monitoring_grafana_enabled == True)) %}        
+        grafanaURL: https://{{ groups['k8s_master'][0] }}:32500/
         grafanaInClusterURL: http://grafana.monitoring-system.svc.{{ k8s_cluster_domain }}:3000
 {% endif %}
+
+{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True)) %}        
+        jaegerURL: https://{{ groups['k8s_master'][0] }}:32510/
+        jaegerInClusterURL: http://jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}:16686
+{% endif %}
         
-        jaegerURL: https://{{ inventory_hostname }}:32510/
-#         jaegerInClusterURL
-        
-{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)) %}
-        # prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_cluster_domain }}:9090        
-{% endif %}           
       security:
         enabled: false
 

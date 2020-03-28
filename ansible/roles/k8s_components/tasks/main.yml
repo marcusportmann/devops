@@ -1009,45 +1009,66 @@
         cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
       when: ("k8s_worker" not in groups.keys())
 
-    - block:
-      - template:
+    - name: Enable ingress for Jaeger
+      block:
+      - name: Generate the Jaeger ingress configuration
+        template:
           src: istio-jaeger-ingress.yaml.j2
           dest: /var/tmp/ansible/istio-jaeger-ingress.yaml
 
-      - name: Enable ingress for Jaeger
+      - name: Apply the Jaeger ingress configuration
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
 
       when: (((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True)))
 
-    - block:
-      - template:
+    - name: Enable ingress for Kiali
+      block:
+      - name: Generate the Kiali ingress configuration
+        template:
           src: istio-kiali-ingress.yaml.j2
           dest: /var/tmp/ansible/istio-kiali-ingress.yaml
 
-      - name: Enable ingress for Kiali
+      - name: Apply the Kiali ingress configuration
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-ingress.yaml
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
-    - block:
-      - template:
+    - name: Enable ingress for Kibana
+      block:
+      - name: Generate the Kibana ingress configuration
+        template:
+          src: istio-kibana-ingress.yaml.j2
+          dest: /var/tmp/ansible/istio-kibana-ingress.yaml
+
+      - name: Apply the Kibana ingress configuration
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kibana-ingress.yaml
+
+      when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_kibana_enabled is defined) and (monitoring_kibana_enabled != None) and (monitoring_kibana_enabled == True))
+
+    - name: Enable ingress for Grafana
+      block:
+      - name: Generate the Grafana ingress configuration
+        template:
           src: istio-grafana-ingress.yaml.j2
           dest: /var/tmp/ansible/istio-grafana-ingress.yaml
 
-      - name: Enable ingress for Grafana
+      - name: Apply the Grafana ingress configuration
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
 
       when: (((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_grafana_enabled is defined) and (monitoring_grafana_enabled != None) and (monitoring_grafana_enabled == True)))
 
-    - block:
-      - template:
+    - name: Enable ingress for Prometheus
+      block:
+      - name: Generate the Prometheus ingress configuration
+        template:
           src: istio-prometheus-ingress.yaml.j2
           dest: /var/tmp/ansible/istio-prometheus-ingress.yaml
 
-      - name: Enable ingress for Prometheus
+      - name: Apply the Prometheus ingress configuration
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress.yaml
 

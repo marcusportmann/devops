@@ -40,8 +40,7 @@ spec:
         host: jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}
         port:
           number: 16686
-{% endif %}
-    
+{% endif %} 
 ---
 {% if ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True))  %}
 apiVersion: networking.istio.io/v1alpha3
