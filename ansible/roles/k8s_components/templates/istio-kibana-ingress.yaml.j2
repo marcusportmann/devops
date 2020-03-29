@@ -29,7 +29,7 @@ spec:
   - kibana-gateway
   http:
   - match:
-    - port: 20001
+    - port: 5601
     route:
     - destination:
         host: kibana.monitoring-system.svc.{{ k8s_cluster_domain }}
