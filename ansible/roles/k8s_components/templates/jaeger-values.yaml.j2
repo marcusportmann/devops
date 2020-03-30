@@ -24,6 +24,15 @@ query:
     targetPort: 16686
     nodePort: 32510
 {% endif %}
+
+collector:
+{% if ((monitoring_elasticsearch_cluster_type == "standalone") or (monitoring_elasticsearch_cluster_type == "minimal")) %}
+  cmdlineParams: 
+    es.num-replicas: "0"
+    es.num-shards: "1"
+    es-archive.num-replicas: "0"
+    es-archive.num-shards: "1"
+{% endif %}
     
 # collector:
 #   autoscaling:
