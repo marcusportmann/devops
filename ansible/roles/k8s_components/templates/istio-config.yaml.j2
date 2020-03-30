@@ -178,7 +178,7 @@ spec:
 
       tracer:
         zipkin:
-          address: monitoring-jaeger-collector.monitoring.system.svc:9411 
+          address: jaeger-collector.monitoring-system.svc.{{ k8s_cluster_domain }}:9411 
 
 {% endif %}        
         

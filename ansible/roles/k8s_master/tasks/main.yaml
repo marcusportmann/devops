@@ -505,6 +505,13 @@
 
   when: groups['k8s_master'][0] != inventory_hostname
 
+- name: Ensure the kubelet service is enabled and started
+  systemd:
+    name: kubelet.service
+    enabled: yes
+    state: started
+
+
 
 # Delete the Postgres operator
 # kubectl delete -f /var/tmp/ansible/postgres-operator.yaml

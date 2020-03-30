@@ -26,6 +26,11 @@ query:
 {% endif %}
 
 collector:
+  service:
+    zipkin:
+      port: 9411
+
+
 {% if ((monitoring_elasticsearch_cluster_type == "standalone") or (monitoring_elasticsearch_cluster_type == "minimal")) %}
   cmdlineParams: 
     es.num-replicas: "0"
