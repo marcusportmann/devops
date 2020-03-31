@@ -9,8 +9,8 @@ alertmanager:
     accessModes:
       - ReadWriteOnce
     mountPath: /data
-    size: 1Gi
-    storageClass: {{ monitoring_prometheus_storage_class_name }}
+    size: {{ monitoring_prometheus_alert_manager_persistent_volume_size }}
+    storageClass: {{ monitoring_prometheus_persistent_volume_storage_class_name }}
 
   service:
 {% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
@@ -37,8 +37,8 @@ server:
     accessModes:
       - ReadWriteOnce
     mountPath: /data
-    size: 1Gi
-    storageClass: {{ monitoring_prometheus_storage_class_name }}
+    size: {{ monitoring_prometheus_server_persistent_volume_size }}
+    storageClass: {{ monitoring_prometheus_persistent_volume_storage_class_name }}
 
   service:    
 {% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}

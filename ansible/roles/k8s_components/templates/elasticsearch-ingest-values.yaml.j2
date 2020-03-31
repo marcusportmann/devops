@@ -73,13 +73,6 @@ sidecarResources:
   
 antiAffinity: "hard"
 {% endif %}
-
-volumeClaimTemplate:
-  accessModes: [ "ReadWriteOnce" ]
-  storageClassName: {{ monitoring_elasticsearch_storage_class_name}}
-  resources:
-    requests:
-      storage: 1Gi
       
 {% if ((monitoring_security_enabled is defined) and (monitoring_security_enabled != None) and (monitoring_security_enabled == True))  %}
 

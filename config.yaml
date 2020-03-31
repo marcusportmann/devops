@@ -143,7 +143,10 @@ variables:
 - name: monitoring_elasticsearch_helm_chart_version
   values:
   - 7.6.1
-- name: monitoring_elasticsearch_storage_class_name
+- name: monitoring_elasticsearch_persistent_volume_size
+  values:
+  - 3Gi
+- name: monitoring_elasticsearch_persistent_volume_storage_class_name
   values:
   - default-local-storage
 - name: monitoring_grafana_enabled
@@ -170,10 +173,15 @@ variables:
 - name: monitoring_prometheus_helm_chart_version
   values:
   - 11.0.2
-- name: monitoring_prometheus_storage_class_name
+- name: monitoring_prometheus_persistent_volume_storage_class_name
   values:
   - default-local-storage
-
+- name: monitoring_prometheus_alert_manager_persistent_volume_size
+  values:
+  - 1Gi
+- name: monitoring_prometheus_server_persistent_volume_size
+  values:
+  - 3Gi
 
 profiles:
 - name: devops
