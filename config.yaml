@@ -238,7 +238,7 @@ hosts:
     ip:               192.168.0.41/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             1
     memory:           512
     fqdn:             etcd-local-01.local
@@ -267,7 +267,7 @@ hosts:
     ip:               192.168.0.42/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             1
     memory:           512
     fqdn:             etcd-local-02.local
@@ -297,7 +297,7 @@ hosts:
     ip:               192.168.0.43/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             1
     memory:           512
     fqdn:             etcd-local-03.local
@@ -327,7 +327,7 @@ hosts:
     ip:               192.168.0.60/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             4
     memory:           6144
     fqdn:             devops.local
@@ -357,7 +357,7 @@ hosts:
     ip:               192.168.0.50/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             1
     memory:           512
     fqdn:             k8s-local-api.local
@@ -387,7 +387,7 @@ hosts:
     ip:               192.168.0.51/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           2048
     fqdn:             k8s-local-m-01.local
@@ -417,7 +417,7 @@ hosts:
     ip:               192.168.0.52/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           2048
     fqdn:             k8s-local-m-02.local
@@ -447,7 +447,7 @@ hosts:
     ip:               192.168.0.53/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           2048
     fqdn:             k8s-local-m-03.local
@@ -477,7 +477,7 @@ hosts:
     ip:               192.168.0.54/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           5120
     fqdn:             k8s-local-w-01.local
@@ -507,7 +507,7 @@ hosts:
     ip:               192.168.0.55/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           5120
     fqdn:             k8s-local-w-02.local
@@ -537,7 +537,7 @@ hosts:
     ip:               192.168.0.56/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           5120
     fqdn:             k8s-local-w-03.local
@@ -567,7 +567,7 @@ hosts:
     ip:               192.168.0.30/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             1
     memory:           1024
     fqdn:             monitor.local
@@ -598,7 +598,7 @@ hosts:
     ip:               192.168.0.49/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
@@ -631,7 +631,7 @@ hosts:
     ip:               192.168.0.48/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
@@ -664,7 +664,7 @@ hosts:
     ip:               192.168.100.47/24
     gateway:          192.168.100.2
     dns_server:       192.168.100.2
-  vagrant:
+  virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096

@@ -55,22 +55,22 @@ case "$subcommand" in
   up)
     profile=$1; shift
     host=$1; shift
-    vagrant --provider=$provider --profile=$profile up --no-parallel --no-provision $host
+    VAGRANT_DEFAULT_PROVIDER=$provider vagrant --provider=$provider --profile=$profile up --no-parallel --no-provision $host
     ;;
   provision)
     profile=$1; shift
     host=$1; shift
-    vagrant --provider=$provider --profile=$profile provision $host
+    VAGRANT_DEFAULT_PROVIDER=$provider vagrant --provider=$provider --profile=$profile provision $host
     ;;
   destroy)
     profile=$1; shift
     host=$1; shift
-    vagrant --provider=$provider --profile=$profile destroy $host --force
+    VAGRANT_DEFAULT_PROVIDER=$provider vagrant --provider=$provider --profile=$profile destroy $host --force
     ;;
   halt)
     profile=$1; shift
     host=$1; shift
-    vagrant --provider=$provider --profile=$profile halt $host --force
+    VAGRANT_DEFAULT_PROVIDER=$provider vagrant --provider=$provider --profile=$profile halt $host --force
     ;;    
   *)
     echo "Invalid action: $subcommand\n"

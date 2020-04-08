@@ -5,7 +5,7 @@ chmod 600 /home/cloud-user/.ssh/authorized_keys
 chown -R cloud-user:cloud-user /home/cloud-user/.ssh
 
 # Set the password for the cloud user
-echo "cloud" | passwd --stdin cloud-user
+echo "cloud-user:cloud" | chpasswd
 
 # Enable sudo for the cloud-user user
 echo 'cloud-user             ALL=(ALL)   NOPASSWD: ALL' >> /etc/sudoers.d/cloud-user

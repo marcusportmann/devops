@@ -8,8 +8,8 @@ echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4
 chmod 600 /home/vagrant/.ssh/authorized_keys
 chown -R vagrant:vagrant /home/vagrant/.ssh
 
-# Set the password for the cloud user
-echo "vagrant" | passwd --stdin vagrant
+# Set the password for the vagrant user
+echo "vagrant:vagrant" | chpasswd
 
 # Enable sudo for the vagrant user
 echo 'vagrant             ALL=(ALL)   NOPASSWD: ALL' >> /etc/sudoers.d/vagrant

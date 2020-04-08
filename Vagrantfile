@@ -103,7 +103,6 @@ end
 
 $profile_name = ''
 $provider = ''
-$private_key_path = "%s/packer/keys/vagrant" % Dir.pwd 
 
 Vagrant.require_version '>= 2.2.0'
 
@@ -178,12 +177,6 @@ if !$profile
   raise "Failed to find the profile %s in the config.yaml file" % $profile_name
 else
   puts "Executing with profile: %s" % $profile_name
-end
-
-if File.exist?($private_key_path)
-  puts "Using the private key: %s" % $private_key_path
-else
-  raise "Failed to find the private key (%s)" % $private_key_path
 end
 
 # ------------------------------------------------------------------------------------
@@ -309,7 +302,7 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
 
       host = $hosts["%s" % machine.name]
 
-      if host['data_disk']
+      if host[$provider]['data_disk']
 
         disk_file = vm_folder + '/data-disk002.vmdk'
 
