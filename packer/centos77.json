@@ -140,6 +140,7 @@
         "scripts/centos77/base.sh",
         "scripts/centos77/cloud-init.sh",
         "scripts/centos77/vmtools.sh",
+        "scripts/centos77/vagrant.sh",
         "scripts/centos77/cleanup.sh",
         "scripts/centos77/zerodisk.sh"
       ]

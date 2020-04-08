@@ -185,6 +185,7 @@
         "scripts/ubuntu1804/base.sh",
         "scripts/ubuntu1804/cloud-init.sh",
         "scripts/ubuntu1804/vmtools.sh",
+        "scripts/ubuntu1804/vagrant.sh",
         "scripts/ubuntu1804/cleanup.sh",
         "scripts/ubuntu1804/zerodisk.sh"
       ]

@@ -52,7 +52,19 @@ The **devops** project provides the capability to provision the various technolo
 	```
 	vagrant plugin license vagrant-vmware-desktop ~/Downloads/license.lic
 	```
-8. Install Ansible by executing the following command in a Terminal window:
+8. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
+  ```
+  https://code.vmware.com/web/tool/4.3.0/ovf
+  ```	
+9. Create a link to the ovftool binary in /usr/local/bin.
+  ```
+  ln -s /Applications/VMware\ OVF\ Tool/ovftool /usr/local/bin/ovftool
+  ```
+10. OPTIONAL: If required install the Vagrant VMware ESXi plugin.
+  ```
+  vagrant plugin install vagrant-vmware-esxi
+  ```
+11. Install Ansible by executing the following command in a Terminal window:
 	```
 	brew install ansible
 	```
@@ -129,18 +141,21 @@ The following users and groups are provisioned by the various Ansible scripts:
 
 ### Users
 
+* cloud-user (300)
 * etcd (301)
 * prometheus (302)
 * grafana (303)
 * k8s-admin (310)
-
+* vagrant (1000)
 
 ### Groups
 
+* cloud-user (300)
 * etcd (301)
 * prometheus (302)
 * grafana (303)
 * k8s-admin (310)
+* vagrant (1000)
 
 
 ## Troubleshooting

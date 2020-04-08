@@ -13,7 +13,7 @@ apiServer:
   certSANs:
   - localhost
   - 127.0.0.1  
-  {% if ((k8s_control_plane_endpoint is defined) and (k8s_control_plane_endpoint != None))  -%}- {{ k8s_control_plane_endpoint }}
+  {% if (((groups["k8s_master"] | length) > 1) and (k8s_control_plane_endpoint is defined) and (k8s_control_plane_endpoint != None))  -%}- {{ k8s_control_plane_endpoint }}
   {% endif %}
 
   extraArgs:
@@ -29,7 +29,7 @@ apiServer:
     readOnly: true
 
 
-{% if ((k8s_control_plane_endpoint is defined) and (k8s_control_plane_endpoint != None))  %}
+{% if (((groups["k8s_master"] | length) > 1) and (k8s_control_plane_endpoint is defined) and (k8s_control_plane_endpoint != None))  %}
 controlPlaneEndpoint: {{ k8s_control_plane_endpoint }}
 {% else %}
 controlPlaneEndpoint: {{  groups["k8s_master"][0] }}

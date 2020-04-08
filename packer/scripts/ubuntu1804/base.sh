@@ -67,6 +67,13 @@ if [[ $VIRT == "Microsoft HyperV" || $VIRT == "Microsoft Hyper-V" ]]; then
 	apt-get -y install linux-tools-$(uname -r) linux-cloud-tools-$(uname -r) linux-cloud-tools-common linux-azure
 fi
 
+echo "Disabling GSSAPI for SSH"
+sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
+
+echo "Disabling DNS for SSH"
+echo "UseDNS no" >> /etc/ssh/sshd_config
+
+
 
 
 

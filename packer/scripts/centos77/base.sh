@@ -73,6 +73,12 @@ echo "Stopping and disabling the remote-fs.target"
 systemctl stop remote-fs.target
 systemctl disable remote-fs.target
 
+echo "Disabling GSSAPI for SSH"
+sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
+
+echo "Disabling DNS for SSH"
+echo "UseDNS no" >> /etc/ssh/sshd_config
+
 echo "Creating the new initial ramdisk image"
 dracut --no-hostonly --force
 

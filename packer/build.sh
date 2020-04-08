@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# xattr -d com.apple.quarantine build.sh
+
 programname=$0
 
 function usage {

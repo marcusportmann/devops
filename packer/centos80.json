@@ -140,6 +140,7 @@
         "scripts/centos80/base.sh",
         "scripts/centos80/cloud-init.sh",
         "scripts/centos80/vmtools.sh",
+        "scripts/centos80/vagrant.sh",
         "scripts/centos80/cleanup.sh",
         "scripts/centos80/zerodisk.sh"
       ]
