@@ -108,7 +108,7 @@ Vagrant.require_version '>= 2.2.0'
 
 VAGRANTFILE_API_VERSION = '2'
 VAGRANT_DEFAULT_PROVIDER = 'virtualbox'
-VAGRANT_VALID_PROVIDERS = ['esxi', 'hyperv', 'virtualbox', 'vmware_desktop']
+VAGRANT_VALID_PROVIDERS = ['hyperv', 'vmware_desktop', 'vmware_esxi', 'virtualbox']
 
 if not ENV['VAGRANT_PROVIDER'].nil?
   $provider = ENV['VAGRANT_PROVIDER']
@@ -356,7 +356,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           raise "No domain specified for host (%s)" % host[$provider]['fqdn']
         end                    
 
-        config.vm.define host_hostname do |host_config|
+        config.vm.define host_name do |host_config|
 					# NOTE: These boxes must have been added to Vagrant before executing this project.
 					if host['type'] == 'centos77'
 						host_config.vm.box = 'devops/centos77'
@@ -446,7 +446,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           raise "No domain specified for host (%s)" % host[$provider]['fqdn']
         end                    
         
-        config.vm.define host_hostname do |host_config|
+        config.vm.define host_name do |host_config|
           # Create the data disk if required and associate it with the VM
           if host[$provider]['data_disk']
             host_config.trigger.before :up do |trigger|
@@ -463,7 +463,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                   raise 'The location of the vmware-vdiskmanager application has not been set.'
                 end
 
-                vm_folder = ".vagrant/machines/#{ host_hostname }/vmware_desktop"
+                vm_folder = ".vagrant/machines/#{ host_name }/vmware_desktop"
             
                 if !File.exists?(vm_folder)
                   FileUtils.mkdir_p vm_folder
@@ -557,7 +557,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           raise "No domain specified for host (%s)" % host[$provider]['fqdn']
         end                    
 
-        config.vm.define host_hostname do |host_config|
+        config.vm.define host_name do |host_config|
 					# NOTE: These boxes must have been added to Vagrant before executing this project.
 					if host['type'] == 'centos77'
 						host_config.vm.box = 'devops/centos77'
@@ -619,7 +619,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # ------------------------------------------------------------------------------------
   # ESXi Configuration
   # ------------------------------------------------------------------------------------
-  if $provider == 'esxi'
+  if $provider == 'vmware_esxi'
 
     puts "Using the vmware_esxi Vagrant provider..."
 
@@ -641,7 +641,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           raise "No domain specified for host (%s)" % host[$provider]['fqdn']
         end                    
 
-        config.vm.define host_hostname do |host_config|
+        config.vm.define host_name do |host_config|
 					# NOTE: These boxes must have been added to Vagrant before executing this project.
 					if host['type'] == 'centos77'
 						host_config.vm.box = 'devops/centos77'
@@ -679,7 +679,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             end
 
             #  OPTIONAL.  Guest VM name to use.
-            vmware_esxi.guest_name = host_hostname
+            vmware_esxi.guest_name = host_name
             
             #  OPTIONAL.  When automatically naming VMs, use this prefix.
             #vmware_esxi.guest_name_prefix = 'V-'
