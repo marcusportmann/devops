@@ -11,7 +11,7 @@ function usage {
     echo ""
     echo "Options:"
     echo "  -h           Print this message and exit."
-    echo "  -p PROVIDER  One of the following providers: virtualbox, vmware, vsphere, hyperv, esxi."
+    echo "  -p PROVIDER  One of the following providers: virtualbox, vmware_desktop, vsphere, hyperv, esxi."
     echo "               If not specified the provider will default to vmware."
     echo ""
 }
@@ -33,7 +33,7 @@ while getopts ":h:p:" opt; do
             exit 0
             ;;
         p)
-            if [[ ${OPTARG} =~ ^virtualbox|vmware|vsphere|hyperv|esxi$ ]]
+            if [[ ${OPTARG} =~ ^virtualbox|vmware_desktop|vsphere|hyperv|esxi$ ]]
             then
                 provider=${OPTARG}
             else

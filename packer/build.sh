@@ -8,7 +8,7 @@ function usage {
     echo "Usage: $programname -p provider -o operating_system"
     echo "Options:"
     echo "  -h                   Print this message and exit."
-    echo "  -p PROVIDER          One of the following providers: virtualbox, vmware, vsphere, hyperv."
+    echo "  -p PROVIDER          One of the following Vagrant providers: virtualbox, vmware_desktop, vsphere, hyperv."
     echo "  -o OPERATING_SYSTEM  One of the following operating systems: centos77, centos80, ubuntu1804."
 }
 
@@ -16,7 +16,7 @@ function build_image {
   local provider=$1
   local operating_system=$2
 
-  echo "Building $operating_system using provider $provider..."
+  echo "Building $operating_system for Vagrant provider $provider..."
 
   if [[ "$provider" == "virtualbox" ]]; then
     rm -rf build/boxes/${operating_system}-virtualbox.box
@@ -29,7 +29,7 @@ function build_image {
     vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-virtualbox.box
   fi
 
-  if [[ "$provider" == "vmware" ]]; then
+  if [[ "$provider" == "vmware_desktop" ]]; then
     rm -rf build/boxes/${operating_system}-vmware.box
     rm -rf build/vmware/${operating_system}
     rm -rf build/ovf/${operating_system}
@@ -41,13 +41,9 @@ function build_image {
     
     vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-vmware.box
 
-    mkdir -p build/ovf/${operating_system}
+  	mkdir -p build/ova/${operating_system}
 
-    /Applications/VMware\ Fusion.app/Contents/Library/VMware\ OVF\ Tool/ovftool --acceptAllEulas -n=${operating_system} build/vmware/${operating_system}/${operating_system}.vmx build/ovf/${operating_system}/${operating_system}.ovf
-
-	mkdir -p build/ova/${operating_system}
-
-	/Applications/VMware\ Fusion.app/Contents/Library/VMware\ OVF\ Tool/ovftool --acceptAllEulas -n=${operating_system} build/vmware/${operating_system}/${operating_system}.vmx build/ova/${operating_system}/${operating_system}.ova
+	  /Applications/VMware\ Fusion.app/Contents/Library/VMware\ OVF\ Tool/ovftool --acceptAllEulas -n=${operating_system} build/vmware/${operating_system}/${operating_system}.vmx build/ova/${operating_system}/${operating_system}.ova
   fi
 
   if [[ "$provider" == "vsphere" ]]; then
@@ -81,7 +77,7 @@ case "${option}" in
         exit 1
         ;;
     p)
-        if [[ ${OPTARG} =~ ^virtualbox|vmware|vsphere|hyperv$ ]]
+        if [[ ${OPTARG} =~ ^virtualbox|vmware_desktop|vsphere|hyperv$ ]]
         then
             provider=${OPTARG}
         else

@@ -108,7 +108,7 @@ Vagrant.require_version '>= 2.2.0'
 
 VAGRANTFILE_API_VERSION = '2'
 VAGRANT_DEFAULT_PROVIDER = 'virtualbox'
-VAGRANT_VALID_PROVIDERS = ['esxi', 'hyperv', 'virtualbox', 'vmware']
+VAGRANT_VALID_PROVIDERS = ['esxi', 'hyperv', 'virtualbox', 'vmware_desktop']
 
 if not ENV['VAGRANT_PROVIDER'].nil?
   $provider = ENV['VAGRANT_PROVIDER']
@@ -419,9 +419,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   # ------------------------------------------------------------------------------------
-  # VMware Configuration
+  # VMware Desktop Configuration
   # ------------------------------------------------------------------------------------
-  if $provider == 'vmware'
+  if $provider == 'vmware_desktop'
 
     puts "Using the vmware_desktop Vagrant provider..."
 
