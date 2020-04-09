@@ -53,7 +53,7 @@ variables:
   - weave
 - name: longhorn_enabled
   values:
-  - true
+  - false
 - name: topolvm_enabled
   values:
   - true
@@ -223,6 +223,12 @@ profiles:
 
 - name: test-centos80
   hosts:
+  - test-centos80.local
+
+- name: test-all
+  hosts:
+  - test-ubuntu1804.local
+  - test-centos77.local
   - test-centos80.local
 
 hosts:

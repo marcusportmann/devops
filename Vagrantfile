@@ -36,8 +36,8 @@ def generate_hosts_file(provider, profile, hosts)
 
       if ((!host[provider]['fqdn'].nil?) && (!host[provider]['fqdn'].empty?) && (!host[provider]['domain'].nil?) && (!host[provider]['domain'].empty?) && (!host[provider]['ip'].nil?) && (!host[provider]['ip'].empty?))
 
-				host_fqdn = host[provider]['fqdn']
-				host_domain = host[provider]['domain']
+        host_fqdn = host[provider]['fqdn']
+        host_domain = host[provider]['domain']
         host_ip = host[provider]['ip']
         host_hostname = host_fqdn.slice(0..(host_fqdn.index(".%s" % host_domain)-1))
 
@@ -119,7 +119,7 @@ ARGV.each_with_index do |argument, index|
     $provider = argument.split('=')[1]
     
     if !VAGRANT_VALID_PROVIDERS.include?($provider)
-			raise "The vagrant provider specified by the command-line argument --provider (%s) is not valid" % $provider
+      raise "The vagrant provider specified by the command-line argument --provider (%s) is not valid" % $provider
     end
 
     if not ENV['VAGRANT_PROVIDER'].nil?
@@ -344,74 +344,73 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         host = $hosts[host_name]
         
-				# Determine the hostname for the host
-				host_hostname = host[$provider]['fqdn']
-				if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-					if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-						host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-					else
-						raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-					end
-				else
-					raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-				end                    
-
-        config.vm.define host_name do |host_vm|
-          host_vm.vm.provider :virtualbox do |virtualbox, override|
-
-            # NOTE: These boxes must have been added to Vagrant before executing this project.
-            if host['type'] == 'centos77'
-              override.vm.box = 'devops/centos77'
-            end
-            if host['type'] == 'centos80'
-              override.vm.box = 'devops/centos80'
-            end          
-            if host['type'] == 'ubuntu1804'
-              override.vm.box = 'devops/ubuntu1804'
-            end
-
-            override.vm.synced_folder '.', '/vagrant', disabled: true
-
-            # Set the hostname for the VM
-            override.vm.hostname = host_hostname
-            
-            # Determine the IP, network and netmask for the VM
-            ip, network, netmask = cidr_to_ip_network_netmask(host[$provider]['ip'])
-
-            # Configure the network for the VM
-            override.vm.network 'private_network', ip: ip, netmask: netmask
-
-            virtualbox.customize ['modifyvm', :id, '--memory', host[$provider]['memory'], '--cpus', host[$provider]['cpus'], '--cableconnected1', 'on', '--cableconnected2', 'on']
-
-            # Ensure that the /etc/rc.local file exists
-            override.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
-
-            # Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
-            if host[$provider]['private_networks']
-              host[$provider]['private_networks'].split(/\s*,\s*/).each do |private_network|
-                static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host[$provider]['ip']]
-                              
-                override.vm.provision 'shell', inline: static_route_command
-                override.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
-              end
-            end
-
-            # Initialize the LVM configuration for the data disk if required
-            if host[$provider]['data_disk']
-              override.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-            end
-
-            # Write out the /etc/hosts file
-            override.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
-
-            override.vm.provision 'ansible' do |ansible|
-              ansible.playbook = host['ansible_playbook']
-              ansible.groups = $ansible_groups
-              ansible.extra_vars = $ansible_vars
-              # ansible.verbose = "vvv"
-            end
-
+        # Determine the hostname for the host
+        host_hostname = host[$provider]['fqdn']
+        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
+          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
+            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
+          else
+            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
           end
+        else
+          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
+        end                    
+
+        config.vm.define host_hostname do |host_config|
+					# NOTE: These boxes must have been added to Vagrant before executing this project.
+					if host['type'] == 'centos77'
+						host_config.vm.box = 'devops/centos77'
+					end
+					if host['type'] == 'centos80'
+						host_config.vm.box = 'devops/centos80'
+					end          
+					if host['type'] == 'ubuntu1804'
+						host_config.vm.box = 'devops/ubuntu1804'
+					end
+					
+          host_config.vm.synced_folder '.', '/vagrant', disabled: true
+        
+					# Set the hostname for the VM
+					host_config.vm.hostname = host_hostname
+					
+					# Determine the IP, network and netmask for the VM
+					ip, network, netmask = cidr_to_ip_network_netmask(host[$provider]['ip'])
+
+					# Configure the network for the VM
+					host_config.vm.network 'private_network', ip: ip, netmask: netmask
+					
+          host_config.vm.provider :virtualbox do |virtualbox|
+            virtualbox.customize ['modifyvm', :id, '--memory', host[$provider]['memory'], '--cpus', host[$provider]['cpus'], '--cableconnected1', 'on', '--cableconnected2', 'on']
+          end
+          
+					# Ensure that the /etc/rc.local file exists
+					host_config.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
+
+					# Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
+					if host[$provider]['private_networks']
+						host[$provider]['private_networks'].split(/\s*,\s*/).each do |private_network|
+							static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host[$provider]['ip']]
+														
+							host_config.vm.provision 'shell', inline: static_route_command
+							host_config.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
+						end
+					end
+
+					# Initialize the LVM configuration for the data disk if required
+					if host[$provider]['data_disk']
+						host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+					end
+
+					# Write out the /etc/hosts file
+					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+
+					host_config.vm.provision 'ansible' do |ansible|
+						ansible.playbook = host['ansible_playbook']
+						ansible.groups = $ansible_groups
+						ansible.extra_vars = $ansible_vars
+						# ansible.verbose = "vvv"
+					end
+          
         end
 
       end
@@ -435,63 +434,72 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         host = $hosts[host_name]
         
-				# Determine the hostname for the host
-				host_hostname = nil
-				if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-					if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-						host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-					else
-						raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-					end
-				else
-					raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-				end                    
+        # Determine the hostname for the host
+        host_hostname = nil
+        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
+          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
+            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
+          else
+            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
+          end
+        else
+          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
+        end                    
         
-        config.vm.define host_name do |host_vm|
-          host_vm.vm.provider :vmware_desktop do |vmware_desktop, override|
+        config.vm.define host_hostname do |host_config|
+          # Create the data disk if required and associate it with the VM
+          if host[$provider]['data_disk']
+            host_config.trigger.before :up do |trigger|
+              trigger.ruby do |env,machine|              
+                vdiskmanager = ""
 
-            # NOTE: These boxes must have been added to Vagrant before executing this project.
-            if host['type'] == 'centos77'
-              override.vm.box = 'devops/centos77'
-            end
-            if host['type'] == 'centos80'
-              override.vm.box = 'devops/centos80'
-            end          
-            if host['type'] == 'ubuntu1804'
-              override.vm.box = 'devops/ubuntu1804'
-            end
+                if Vagrant::Util::Platform.darwin?
+                  vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
+                elsif Vagrant::Util::Platform.windows?
+                  raise 'The location of the vmware-vdiskmanager application has not been set.'
+                elsif Vagrant::Util::Platform.linux?
+                  raise 'The location of the vmware-vdiskmanager application has not been set.'
+                else
+                  raise 'The location of the vmware-vdiskmanager application has not been set.'
+                end
 
-            # Create the data disk if required and associate it with the VM
-            if host[$provider]['data_disk']
-
-              vdiskmanager = ""
-
-              if Vagrant::Util::Platform.darwin?
-                vdiskmanager = '/Applications/VMware\ Fusion.app/Contents/Library/vmware-vdiskmanager'
-              elsif Vagrant::Util::Platform.windows?
-                raise 'The location of the vmware-vdiskmanager application has not been set.'
-              elsif Vagrant::Util::Platform.linux?
-                raise 'The location of the vmware-vdiskmanager application has not been set.'
-              else
-                raise 'The location of the vmware-vdiskmanager application has not been set.'
-              end
-
-              vm_folder = ".vagrant/machines/#{ host_name }/vmware_desktop"
-
-              if File.exists?(vm_folder)
+                vm_folder = ".vagrant/machines/#{ host_hostname }/vmware_desktop"
+            
+                if !File.exists?(vm_folder)
+                  FileUtils.mkdir_p vm_folder
+                end
+            
                 disk_file = vm_folder + '/data-disk002.vmdk'
 
                 unless File.exists?( disk_file )
-                     `#{vdiskmanager} -c -s #{ host[$provider]['data_disk'] }MB -a lsilogic -t 0 #{disk_file}`
+                  puts "Creating the VM data disk: %s" % disk_file    
+                  puts "Using the command: #{vdiskmanager} -c -s #{ host[$provider]['data_disk'] }MB -a lsilogic -t 0 #{disk_file}"
+                  `#{vdiskmanager} -c -s #{ host[$provider]['data_disk'] }MB -a lsilogic -t 0 #{disk_file}`
                 end
-
-                vmware_desktop.vmx['scsi0:1.filename'] = '../data-disk002.vmdk'
-                vmware_desktop.vmx['scsi0:1.present']  = 'TRUE'
-                vmware_desktop.vmx['scsi0:1.redo']     = ''
               end
             end
-
-            override.vm.synced_folder '.', '/vagrant', disabled: true
+          end
+          
+					# NOTE: These boxes must have been added to Vagrant before executing this project.
+					if host['type'] == 'centos77'
+						host_config.vm.box = 'devops/centos77'
+					end
+					if host['type'] == 'centos80'
+						host_config.vm.box = 'devops/centos80'
+					end          
+					if host['type'] == 'ubuntu1804'
+						host_config.vm.box = 'devops/ubuntu1804'
+					end
+					
+					host_config.vm.synced_folder '.', '/vagrant', disabled: true
+        
+          host_config.vm.provider :vmware_desktop do |vmware_desktop|
+            # Create the data disk if required and associate it with the VM
+            if host[$provider]['data_disk']
+              vmware_desktop.vmx['scsi0:1.filename'] = '../data-disk002.vmdk'
+              vmware_desktop.vmx['scsi0:1.present']  = 'TRUE'
+              vmware_desktop.vmx['scsi0:1.redo']     = ''
+            end
 
             # Perform the VMware Fusion specific initialisation
             vmware_desktop.gui = true
@@ -502,23 +510,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             vmware_desktop.vmx['ethernet0.vnet'] = 'vmnet8'
             vmware_desktop.vmx['guestinfo.metadata.encoding'] = 'base64'
             vmware_desktop.vmx['guestinfo.metadata'] = Base64.encode64(generate_guest_info_meta_data(host_hostname, host[$provider]['fqdn'], host[$provider]['ip'], host[$provider]['gateway'], host[$provider]['dns_server'], host[$provider]['domain'])).gsub(/\n/, '')
-
-            # Initialize the LVM configuration for the data disk if required
-            if host[$provider]['data_disk']
-              override.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-            end
-
-            # Write out the /etc/hosts file
-            override.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
-
-            override.vm.provision 'ansible' do |ansible|
-              ansible.playbook = host['ansible_playbook']
-              ansible.groups = $ansible_groups
-              ansible.extra_vars = $ansible_vars
-              # ansible.verbose = "vvv"
-            end
-
           end
+          
+					# Initialize the LVM configuration for the data disk if required
+					if host[$provider]['data_disk']
+						host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+					end
+
+					# Write out the /etc/hosts file
+					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+
+					host_config.vm.provision 'ansible' do |ansible|
+						ansible.playbook = host['ansible_playbook']
+						ansible.groups = $ansible_groups
+						ansible.extra_vars = $ansible_vars
+						# ansible.verbose = "vvv"
+					end
+          
         end
       end
     end
@@ -537,77 +545,73 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         host = $hosts[host_name]
 
-				# Determine the hostname for the host
-				host_hostname = nil
-				if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-					if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-						host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-					else
-						raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-					end
-				else
-					raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-				end                    
+        # Determine the hostname for the host
+        host_hostname = nil
+        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
+          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
+            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
+          else
+            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
+          end
+        else
+          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
+        end                    
 
-        config.vm.define host_name do |host_vm|
+        config.vm.define host_hostname do |host_config|
+					# NOTE: These boxes must have been added to Vagrant before executing this project.
+					if host['type'] == 'centos77'
+						host_config.vm.box = 'devops/centos77'
+					end
+					if host['type'] == 'centos80'
+						host_config.vm.box = 'devops/centos80'
+					end          
+					if host['type'] == 'ubuntu1804'
+						host_config.vm.box = 'devops/ubuntu1804'
+					end
+
+					host_config.vm.synced_folder '.', '/vagrant', disabled: true
+											
+					host_config.vm.network 'private_network', bridge: 'Vagrant Switch'                
                 
-          host_vm.trigger.after :up do |trigger|
+          host_config.trigger.after :up do |trigger|
             trigger.info = 'Configuring the VM network...'
             trigger.run_remote = {inline: "/usr/bin/configure-network --interface eth0 --ip #{host[$provider]['ip']} --hostname #{host_hostname} --gateway #{host[$provider]['gateway']} --dnsservers #{host[$provider]['dns_server']} --dnssearch #{host[$provider]['domain']}"}
           end
        
-          host_vm.vm.provider :hyperv do |hyperv, override|
-
-            # NOTE: These boxes must have been added to Vagrant before executing this project.
-            if host['type'] == 'centos77'
-              override.vm.box = 'devops/centos77'
-            end
-            if host['type'] == 'centos80'
-              override.vm.box = 'devops/centos80'
-            end          
-            if host['type'] == 'ubuntu1804'
-              override.vm.box = 'devops/ubuntu1804'
-            end
-
-            override.vm.synced_folder '.', '/vagrant', disabled: true
-                        
-            override.vm.network 'private_network', bridge: 'Vagrant Switch'
-            
+          host_config.vm.provider :hyperv do |hyperv|
             hyperv.cpus = host[$provider]['cpus']
             hyperv.memory = host[$provider]['memory']
             hyperv.maxmemory = host[$provider]['memory']
             hyperv.vmname = hostname
-
-            # Ensure that the /etc/rc.local file exists
-            #override.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
-
-            # Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
-            #if host['private_networks']
-            # host['private_networks'].split(/\s*,\s*/).each do |private_network|
-            #   static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host['ip']]
-            #                 
-            #   override.vm.provision 'shell', inline: static_route_command
-            #   override.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
-            # end
-            #end
-
-            # Initialize the LVM configuration for the data disk if required
-            #if host['data_disk']
-            #  override.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-            #end
-
-            # Write out the /etc/hosts file
-            override.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
-
-            override.vm.provision 'ansible' do |ansible|
-              ansible.playbook = host['ansible_playbook']
-              ansible.groups = $ansible_groups
-              ansible.extra_vars = $ansible_vars
-            end
-
           end
-        end
+          
+					# Ensure that the /etc/rc.local file exists
+					#host_config.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
 
+					# Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
+					#if host['private_networks']
+					# host['private_networks'].split(/\s*,\s*/).each do |private_network|
+					#   static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host['ip']]
+					#                 
+					#   host_config.vm.provision 'shell', inline: static_route_command
+					#   host_config.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
+					# end
+					#end
+
+					# Initialize the LVM configuration for the data disk if required
+					#if host['data_disk']
+					#  host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+					#end
+
+					# Write out the /etc/hosts file
+					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+
+					host_config.vm.provision 'ansible' do |ansible|
+						ansible.playbook = host['ansible_playbook']
+						ansible.groups = $ansible_groups
+						ansible.extra_vars = $ansible_vars
+					end
+        end
       end
     end
   end 
@@ -625,21 +629,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         host = $hosts[host_name]
 
-				# Determine the hostname for the host
-				host_hostname = nil
-				if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-					if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-						host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-					else
-						raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-					end
-				else
-					raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-				end                    
+        # Determine the hostname for the host
+        host_hostname = nil
+        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
+          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
+            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
+          else
+            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
+          end
+        else
+          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
+        end                    
 
-        config.vm.define host_name do |host_vm|
-          host_vm.vm.provider :vmware_esxi do |vmware_esxi, override|
-          
+        config.vm.define host_hostname do |host_config|
+					# NOTE: These boxes must have been added to Vagrant before executing this project.
+					if host['type'] == 'centos77'
+						host_config.vm.box = 'devops/centos77'
+					end
+					if host['type'] == 'centos80'
+						host_config.vm.box = 'devops/centos80'
+					end          
+					if host['type'] == 'ubuntu1804'
+						host_config.vm.box = 'devops/ubuntu1804'
+					end
+                
+          host_config.vm.provider :vmware_esxi do |vmware_esxi|
             vmware_esxi.esxi_hostname = 'esxi'
             vmware_esxi.esxi_username = 'root'
             vmware_esxi.esxi_password = 'Password1'
@@ -648,16 +662,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             #     Vagrant will NOT create a Resource pool it for you.
             #vmware_esxi.esxi_resource_pool = '/Vagrant'
 
-            # NOTE: These boxes must have been added to Vagrant before executing this project.
-            if host['type'] == 'centos77'
-              override.vm.box = 'devops/centos77'
-            end
-            if host['type'] == 'centos80'
-              override.vm.box = 'devops/centos80'
-            end          
-            if host['type'] == 'ubuntu1804'
-              override.vm.box = 'devops/ubuntu1804'
-            end
             
             #  Optional. Specify a VM to clone instead of uploading a box.
             #    Vagrant can use any stopped VM as the source 'box'.   The VM must be
@@ -674,13 +678,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
               vmware_esxi.guest_storage = [ data_disk_size ]
             end
 
-						#  OPTIONAL.  Guest VM name to use.
-						vmware_esxi.guest_name = host_name
-						
-						#  OPTIONAL.  When automatically naming VMs, use this prefix.
-						#vmware_esxi.guest_name_prefix = 'V-'
-						
-						#  OPTIONAL.  Set the guest username login.  The default is 'vagrant'.
+            #  OPTIONAL.  Guest VM name to use.
+            vmware_esxi.guest_name = host_hostname
+            
+            #  OPTIONAL.  When automatically naming VMs, use this prefix.
+            #vmware_esxi.guest_name_prefix = 'V-'
+            
+            #  OPTIONAL.  Set the guest username login.  The default is 'vagrant'.
             vmware_esxi.guest_username = 'cloud-user'
             
             vmware_esxi.guest_numvcpus = host[$provider]['cpus']
@@ -689,27 +693,26 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             vmware_esxi.guest_disk_type = 'thin'
             
             #  RISKY. guest_guestos
-				    #    https://github.com/josenk/vagrant-vmware-esxi/ESXi_guest_guestos_types.md
-				    #vmware_esxi.guest_guestos = 'centos-64'
+            #    https://github.com/josenk/vagrant-vmware-esxi/ESXi_guest_guestos_types.md
+            #vmware_esxi.guest_guestos = 'centos-64'
     
             vmware_esxi.guest_custom_vmx_settings = [['guestinfo.metadata.encoding','base64'], ['guestinfo.metadata', Base64.encode64(generate_guest_info_meta_data(host_hostname, host[$provider]['fqdn'], host[$provider]['ip'], host[$provider]['gateway'], host[$provider]['dns_server'], host[$provider]['domain'])).gsub(/\n/, '')]]
-
-            # Initialize the LVM configuration for the data disk if required
-            if host[$provider]['data_disk']
-              override.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-            end
-
-            # Write out the /etc/hosts file
-            override.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
-
-            override.vm.provision 'ansible' do |ansible|
-              ansible.playbook = host['ansible_playbook']
-              ansible.groups = $ansible_groups
-              ansible.extra_vars = $ansible_vars
-              # ansible.verbose = "vvv"
-            end
-
           end
+          
+					# Initialize the LVM configuration for the data disk if required
+					if host[$provider]['data_disk']
+						host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+					end
+
+					# Write out the /etc/hosts file
+					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+
+					host_config.vm.provision 'ansible' do |ansible|
+						ansible.playbook = host['ansible_playbook']
+						ansible.groups = $ansible_groups
+						ansible.extra_vars = $ansible_vars
+						# ansible.verbose = "vvv"
+					end
         end
       end
     end
