@@ -53,13 +53,13 @@ variables:
   - weave
 - name: longhorn_enabled
   values:
-  - false
+  - true
 - name: topolvm_enabled
   values:
   - true
 - name: topolvm_volume_group
   values:
-  - system
+  - data
 
 # ----------------------------------------------------------------------------------------
 # Kubernetes Extensions Configuration
@@ -137,10 +137,10 @@ variables:
   - 7.6.1
 - name: monitoring_elasticsearch_persistent_volume_size
   values:
-  - 3Gi
+  - 20Gi
 - name: monitoring_elasticsearch_persistent_volume_storage_class_name
   values:
-  - default-local-storage
+  - default-remote-storage
 - name: monitoring_grafana_enabled
   values:
   - true
@@ -167,13 +167,13 @@ variables:
   - 11.0.2
 - name: monitoring_prometheus_persistent_volume_storage_class_name
   values:
-  - default-local-storage
+  - default-remote-storage
 - name: monitoring_prometheus_alert_manager_persistent_volume_size
   values:
-  - 1Gi
+  - 5Gi
 - name: monitoring_prometheus_server_persistent_volume_size
   values:
-  - 3Gi
+  - 15Gi
 
 profiles:
 - name: devops

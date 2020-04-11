@@ -40,9 +40,9 @@ echo "install tipc /bin/false" > /etc/modprobe.d/tipc.conf
 echo "Removing unnecessary packages"
 
 # echo "Updating all packages"
-apt-get -y update
-apt-get -y upgrade
-apt-get -y dist-upgrade
+#apt-get -y update
+#apt-get -y upgrade
+#apt-get -y dist-upgrade
 
 echo "Enabling the ssh-keygen service"
 cp /tmp/ssh-keygen.service /lib/systemd/system

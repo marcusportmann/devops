@@ -78,7 +78,7 @@ WantedBy=multi-user.target" > /etc/systemd/system/fsresize.service
 }
 
 # Hardcode the options passed to the script.
-p=/dev/sda1
+p=/dev/sda2
 l=/dev/system/root
 f=1
 
