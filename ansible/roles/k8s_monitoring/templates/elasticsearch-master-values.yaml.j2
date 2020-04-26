@@ -1,0 +1,121 @@
+clusterName: "elasticsearch"
+
+nodeGroup: "master"
+
+roles:
+  master: "true"
+  ingest: "false"
+  data: "false"
+
+cluster.remote.connect: false
+
+{% if (monitoring_elasticsearch_cluster_type == 'minimal')  %}
+replicas: 1
+minimumMasterNodes: 1
+esJavaOpts: "-Xmx320m -Xms320m"
+
+service:
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true)) %}
+  type: ClusterIP
+{% else %}
+  type: NodePort
+  nodePort: 32505
+{% endif %}
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "384Mi"
+  limits:
+    cpu: "1"
+    memory: "640Mi"
+
+initResources:
+  requests:
+    cpu: "25m"
+    memory: "64Mi"
+  limits:
+    cpu: "1"
+    memory: "196Mi"
+
+sidecarResources:
+  requests:
+    cpu: "25m"
+    memory: "64Mi"
+  limits:
+    cpu: "25m"
+    memory: "128Mi"
+
+antiAffinity: "soft"
+{% endif %}
+
+{% if (monitoring_elasticsearch_cluster_type == 'full')  %}
+replicas: 3
+minimumMasterNodes: 2
+
+esJavaOpts: "-Xmx320m -Xms320m"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "384Mi"
+  limits:
+    cpu: "1"
+    memory: "640Mi"
+
+initResources:
+  requests:
+    cpu: "25m"
+    memory: "64Mi"
+  limits:
+    cpu: "1"
+    memory: "196Mi"
+
+sidecarResources:
+  requests:
+    cpu: "25m"
+    memory: "64Mi"
+  limits:
+    cpu: "25m"
+    memory: "128Mi"
+
+antiAffinity: "hard"
+{% endif %}
+
+{% if ((monitoring_security_enabled is defined) and (monitoring_security_enabled != None) and (monitoring_security_enabled == True))  %}
+
+esConfig:
+  elasticsearch.yml: |
+    xpack.security.enabled: true
+    xpack.security.transport.ssl.enabled: true
+    xpack.security.transport.ssl.verification_mode: certificate
+    xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/elasticsearch-key.pem
+    xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/elasticsearch-cert.pem
+    xpack.security.transport.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.pem
+    xpack.security.http.ssl.enabled: false
+#     xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/elasticsearch-key.pem
+#     xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/elasticsearch-cert.pem
+#     xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca.pem
+
+extraEnvs:
+- name: ELASTIC_USERNAME
+  valueFrom:
+    secretKeyRef:
+      name: elasticsearch-credentials
+      key: username
+- name: ELASTIC_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: elasticsearch-credentials
+      key: password
+
+secretMounts:
+- name: elasticsearch-certs
+  secretName: elasticsearch-certs
+  path: /usr/share/elasticsearch/config/certs
+
+{% endif %}
+
+
+
+

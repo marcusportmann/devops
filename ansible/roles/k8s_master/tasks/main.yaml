@@ -233,15 +233,6 @@
       - shell:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-service-account.yaml
 
-#    - name: Deploy the kube-state-metrics service if there are no worker nodes
-#      block:
-#      - template:
-#          src: kube-state-metrics.yaml.j2
-#          dest: /var/tmp/ansible/kube-state-metrics.yaml
-#
-#      - shell:
-#          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/kube-state-metrics.yaml
-
     when: kubelet_config_stat_result.stat.exists == False
 
   - name: Check whether a CNI provider has been configured
@@ -282,7 +273,7 @@
     command:
       cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
 
-  when: groups['k8s_master'][0] == inventory_hostname
+  when: (groups['k8s_master'][0] == inventory_hostname)
 
 
 #  _  _____ ____       _    ____  ____ ___ _____ ___ ___  _   _    _    _       __  __    _    ____ _____ _____ ____
@@ -503,7 +494,7 @@
 
     when: kubelet_config_stat_result.stat.exists == False
 
-  when: groups['k8s_master'][0] != inventory_hostname
+  when: (groups['k8s_master'][0] != inventory_hostname)
 
 - name: Ensure the kubelet service is enabled and started
   systemd:
@@ -512,7 +503,137 @@
     state: started
 
 
+#  _   _ _____ _     __  __   ____  _____ ____   ___  ____
+# | | | | ____| |   |  \/  | |  _ \| ____|  _ \ / _ \/ ___|
+# | |_| |  _| | |   | |\/| | | |_) |  _| | |_) | | | \___ \
+# |  _  | |___| |___| |  | | |  _ <| |___|  __/| |_| |___) |
+# |_| |_|_____|_____|_|  |_| |_| \_\_____|_|    \___/|____/
+#
+- name: Configure the Helm repos
+  block:
+  - name: Check if the stable Helm repository has been added
+    shell:
+      cmd: /usr/bin/helm repo list | grep stable | wc -l
+    register: helm_stable_repo_added_output
 
-# Delete the Postgres operator
-# kubectl delete -f /var/tmp/ansible/postgres-operator.yaml
-# kubectl delete clusterserviceversion -n operators postgres-operator.v1.3.0
+  - name: Add the stable Helm repository
+    command:
+      cmd: /usr/bin/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+    when: helm_stable_repo_added_output.stdout == "0"
+
+  - name: Configure the monitoring Helm repos
+    block:
+    - name: Check if the elastic Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep elastic | wc -l
+      register: helm_elastic_repo_added_output
+
+    - name: Add the elastic Helm repository
+      command:
+        cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
+      when: helm_elastic_repo_added_output.stdout == "0"
+
+    - name: Check if the jaegertracing Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep jaegertracing | wc -l
+      register: helm_jaegertracing_repo_added_output
+
+    - name: Add the jaegertracing Helm repository
+      command:
+        cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+      when: helm_jaegertracing_repo_added_output.stdout == "0"
+
+    when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true))
+
+  when: (groups['k8s_master'][0] == inventory_hostname)
+
+
+#  ____  _____    _    _     _____ ____    ____  _____ ____ ____  _____ _____ ____
+# / ___|| ____|  / \  | |   | ____|  _ \  / ___|| ____/ ___|  _ \| ____|_   _/ ___|
+# \___ \|  _|   / _ \ | |   |  _| | | | | \___ \|  _|| |   | |_) |  _|   | | \___ \
+#  ___) | |___ / ___ \| |___| |___| |_| |  ___) | |__| |___|  _ <| |___  | |  ___) |
+# |____/|_____/_/   \_\_____|_____|____/  |____/|_____\____|_| \_\_____| |_| |____/
+#
+- name: Install the Bitnami Labs Sealed Secrets Extension
+  block:
+  - debug:
+      msg: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/kubeseal
+    register: kubeseal_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/kubeseal --version |  awk -F ' ' {'print $3'} | cut -c2-
+    register: kubeseal_installed_version_output
+    when: (kubeseal_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      kubeseal_installed_version: '{{ kubeseal_installed_version_output.stdout }}'
+    when: (kubeseal_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      kubeseal_installed_version: ''
+    when: (kubeseal_installed_stat_result.stat.exists == False)
+
+  - name: Install the Bitnami Labs kubeseal package
+    block:
+    - debug:
+        msg: Install the Bitnami Labs kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package
+
+    - name: Check whether the kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package has been downloaded
+      become: no
+      local_action: stat path=packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }}
+      register: kubeseal_package_stat_result
+
+    - name: Download the kubeseal {{ bitnami_labs_sealed_secrets_kubeseal_version }} package
+      become: no
+      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }}'
+      when: (kubeseal_package_stat_result.stat.exists == False)
+
+    - name: Remove the existing kubeseal binary
+      file:
+        path: /usr/bin/kubeseal
+        state: absent
+
+    - name: Copy the kubeseal binary
+      copy:
+        src: packages/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }}
+        dest: /usr/bin
+
+    - name: Rename the kubeseal binary
+      command:
+        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ bitnami_labs_sealed_secrets_kubeseal_version }} /usr/bin/kubeseal
+        creates: /usr/bin/kubeseal
+
+    - name: Set the permissions for the kubeseal binary
+      file:
+        path: /usr/bin/kubeseal
+        owner: root
+        group: root
+        mode: 0770
+        state: file
+
+    when: (kubeseal_installed_version != bitnami_labs_sealed_secrets_kubeseal_version)
+
+  - name: Check if Bitnami Labs Sealed Secrets is installed
+    shell:
+      cmd: /usr/bin/helm -n monitoring-system list --filter "sealed-secrets" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+    register: sealed_secrets_installed__helm_chart_version_output
+
+  - name: Install Bitnami Labs Sealed Secrets
+    block:
+    - name: Generate the Bitnami Labs Sealed Secrets Helm values
+      template:
+        src: sealed-secrets-values.yaml.j2
+        dest: /var/tmp/ansible/sealed-secrets-values.yaml
+
+    - name: Install Bitnami Labs Sealed Secrets using Helm
+      command:
+        cmd: /usr/bin/helm upgrade sealed-secrets stable/sealed-secrets --install --force --version={{ bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
+
+    when: sealed_secrets_installed__helm_chart_version_output.stdout != bitnami_labs_sealed_secrets_helm_chart_version
+
+  when: ((groups['k8s_master'][0] == inventory_hostname) and (bitnami_labs_sealed_secrets_enabled is defined) and (bitnami_labs_sealed_secrets_enabled != None) and (bitnami_labs_sealed_secrets_enabled == true))
+
+

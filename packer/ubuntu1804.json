@@ -7,11 +7,12 @@
     "ssh_username": "cloud-user",
     "ssh_password": "cloud",
     "ssh_port": "22",
-    "ssh_wait_timeout": "10000s",
+    "ssh_timeout": "10000s",
     "build_directory": "build"
   },
   "builders": [
     {
+      "name": "ubuntu1804-virtualbox",
       "type": "virtualbox-iso",
       "boot_command": [
         "<esc><wait>",
@@ -35,7 +36,7 @@
         "<enter><wait>"
       ],
       "boot_wait": "5s",
-      "disk_size": "42950",
+      "disk_size": "51200",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "guest_additions_sha256": "c5e46533a6ff8df177ed5c9098624f6cec46ca392bab16de2017195580088670",
       "guest_os_type": "Ubuntu_64",
@@ -44,13 +45,12 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "name": "ubuntu1804-virtualbox",
       "output_directory": "{{ user `build_directory` }}/virtualbox/ubuntu1804/",
       "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_port": "{{ user `ssh_port` }}",
-      "ssh_timeout": "{{ user `ssh_wait_timeout` }}",
+      "ssh_timeout": "{{ user `ssh_timeout` }}",
       "vm_name": "ubuntu1804",
       "vboxmanage": [
         [
@@ -68,6 +68,7 @@
       ]
     },
     {
+      "name": "ubuntu1804-vmware",
       "type": "vmware-iso",
       "boot_command": [
         "<esc><wait>",
@@ -86,13 +87,12 @@
         " locale=en_US<wait>",
         " netcfg/get_domain=localdomain netcfg/get_hostname=localhost<wait>",
         " grub-installer/bootdev=/dev/sda<wait>",
-        " noapic<wait>",
         " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu1804.cfg<wait>",
         " -- <wait>",
         "<enter><wait>"
       ],
       "boot_wait": "5s",
-      "disk_size": "42950",
+      "disk_size": "51200",
       "disk_type_id": "0",
       "guest_os_type": "ubuntu-64",
       "headless": "{{ user `headless` }}",
@@ -100,13 +100,12 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "name": "ubuntu1804-vmware",
       "output_directory": "{{ user `build_directory` }}/vmware/ubuntu1804/",
       "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_port": "{{ user `ssh_port` }}",
-      "ssh_timeout": "{{ user `ssh_wait_timeout` }}",
+      "ssh_timeout": "{{ user `ssh_timeout` }}",
       "vm_name": "ubuntu1804",
       "vmdk_name": "ubuntu1804",
       "vmx_data": {
@@ -118,6 +117,7 @@
       }
     },
     {
+      "name": "ubuntu1804-hyperv",
       "type": "hyperv-iso",
       "boot_command": [
         "<esc><wait10><esc><esc><enter><wait>",
@@ -131,16 +131,15 @@
         "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
         "keyboard-configuration/variant=USA console-setup/ask_detect=false <enter>",
         "initrd /install/initrd.gz<enter>",
-        "boot<enter>"             	
+        "boot<enter>"
       ],
       "boot_wait": "5s",
-      "disk_size": "42950",
+      "disk_size": "51200",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "name": "ubuntu1804-hyperv",
       "output_directory": "{{ user `build_directory` }}/hyperv/ubuntu1804/",
       "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
       "ssh_username": "{{ user `ssh_username` }}",

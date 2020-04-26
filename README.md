@@ -2,7 +2,9 @@
 
 ## Overview
 
-The **devops** project provides the capability to provision the various technologies that make up the DevOps platform in an automated manner using Packer, Vagrant and Ansible. Support is provided for the Virtualbox, VMware and Hyper-V virtualisation platforms.
+The **devops** project provides the capability to provision the various technologies that
+make up the DevOps platform in an automated manner using Packer, Vagrant and Ansible.
+Support is provided for the Virtualbox, VMware and Hyper-V virtualisation platforms.
 
 ## Setup
 
@@ -25,6 +27,28 @@ The **devops** project provides the capability to provision the various technolo
 5. Install Ansible by executing the following command in a Terminal window:
 	```
 	brew install ansible
+	```
+6. Install Apache Maven by executing the following command in a Terminal window:
+	```
+	brew install maven
+	```
+7. Install jenv by executing the following commands in a Terminal window:
+	```
+	brew install jenv
+	```
+8. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
+  ```
+  export PATH="$HOME/.jenv/bin:$PATH"
+  eval "$(jenv init -)"
+  ```
+9. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
+  ```
+  jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
+  jenv global 11.0
+  ```
+10. Install the maven plugin for jenv by executing the following command in a Terminal window:
+	```
+	jenv enable-plugin maven
 	```
 
 
@@ -55,7 +79,7 @@ The **devops** project provides the capability to provision the various technolo
 8. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
   ```
   https://code.vmware.com/web/tool/4.3.0/ovf
-  ```	
+  ```
 9. Create a link to the ovftool binary in /usr/local/bin.
   ```
   ln -s /Applications/VMware\ OVF\ Tool/ovftool /usr/local/bin/ovftool
@@ -67,6 +91,28 @@ The **devops** project provides the capability to provision the various technolo
 11. Install Ansible by executing the following command in a Terminal window:
 	```
 	brew install ansible
+	```
+12. Install Apache Maven by executing the following command in a Terminal window:
+	```
+	brew install maven
+	```
+13. Install jenv by executing the following commands in a Terminal window:
+	```
+	brew install jenv
+	```
+14. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
+  ```
+  export PATH="$HOME/.jenv/bin:$PATH"
+  eval "$(jenv init -)"
+  ```
+15. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
+  ```
+  jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
+  jenv global 11.0
+  ```
+16. Install the maven plugin for jenv by executing the following command in a Terminal window:
+	```
+	jenv enable-plugin maven
 	```
 
 
@@ -99,7 +145,7 @@ Packer does not replace configuration management like Chef or Puppet. In fact, w
 images, Packer is able to use tools like Chef or Puppet to install software onto the image."
 -- Wikipedia
 
-This project supports the creation of VirtualBox Vagrant boxes, VMware Vagrant boxes, VMware OVF templates and VMware OVA templates for the following operating systems:
+This project supports the creation of VirtualBox Vagrant boxes, VMware Vagrant boxes, and VMware OVA templates for the following operating systems:
 
 - CentOS 7.7 (centos77)
 - CentOS 8.0 (centos80)
@@ -109,7 +155,7 @@ Build the required templates by executing the *build-os-image.sh* script, under 
 ```
 ./build-os-image.sh -p PROVIDER -o OPERATING_SYSTEM
 
-e.g. ./build.sh -p vmware -o ubuntu1804
+e.g. ./build.sh -p vmware_desktop -o ubuntu1804
 ```
 
 
@@ -118,7 +164,7 @@ e.g. ./build.sh -p vmware -o ubuntu1804
 The config.yml file defines all the hosts that make up the DevOps platform and the
 Ansible configuration that should be applied to these hosts. The **profiles** section
 at the top of the **config.yml** file defines collections of hosts that should be
-provisioned as a related unit. This allows a portion of the DevOps platform to be
+provisioned together as a set. This allows a portion of the DevOps platform to be
 deployed using commands similar to the following:
 
 ```
@@ -126,14 +172,83 @@ devops.sh -p <PROVIDER> <ACTION> <PROFILE>
 
 e.g.
 
-devops.sh -p vmware up etcd
+devops.sh -p vmware_desktop up etcd
 
-devops.sh -p vmware provision etcd
+devops.sh -p vmware_desktop provision etcd
 
-devops.sh -p vmware destroy etcd
+devops.sh -p vmware_desktop destroy etcd
 ```
 
 You can connect to a server using SSH with the username **cloud-user** and the password **cloud**. This user is able to **su** to the **root** user.
+
+
+## Ports
+
+The following ports are used by the components that form part of the DevOps stack:
+
+<table>
+  <tr>
+    <th>Port</th>
+    <th>Service</th>
+    <th>Protocol</th>
+  </tr>
+  <tr>
+    <td>30080</td>
+    <td>Istio Ingress Gateway (HTTP)</td>
+    <td>HTTP</td>
+  </tr>
+  <tr>
+    <td>30443</td>
+    <td>Istio Ingress Gateway (HTTPS)</td>
+    <td>HTTPS</td>
+  </tr>
+  <tr>
+    <td>32500</td>
+    <td>Grafana</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32501</td>
+    <td>Jaeger</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32502</td>
+    <td>Kiali</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32503</td>
+    <td>Prometheus</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32504</td>
+    <td>Alert Manager</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32505</td>
+    <td>Elasticsearch</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32506</td>
+    <td>Kibana</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32520</td>
+    <td>Longhorn UI</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+  <tr>
+    <td>32521</td>
+    <td>Postgres Operator UI</td>
+    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+  </tr>
+</table>
+
 
 ## Users and Groups
 
@@ -166,14 +281,14 @@ The following users and groups are provisioned by the various Ansible scripts:
 
 2. Extract the vmware-vdiskmanager utility archive and place the vmware-vdiskmanger on the path.
 
-3. Navigate to the directory containing the VMDK file for the virtual disk, e.g. 
+3. Navigate to the directory containing the VMDK file for the virtual disk, e.g.
    ~/VirtualBox VMs/devops_devopslocal_1581670889760_49077, and execute the following command:
-   
+
    vmware-vdiskmanager -x <size> <virtual disk file>
-   
-   e.g. 
-   
-   vmware-vdiskmanager -x 35GB ubuntu1804-disk001.vmdk 
-  
-   
+
+   e.g.
+
+   vmware-vdiskmanager -x 35GB ubuntu1804-disk001.vmdk
+
+
 

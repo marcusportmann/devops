@@ -1,0 +1,59 @@
+fullnameOverride: kibana
+
+elasticsearchHosts: http://elasticsearch-master:9200
+
+replicas: 1
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "384Mi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+
+service:
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true)) %}
+  type: ClusterIP
+  port: 5601
+  targetPort: 5601
+{% else %}
+  type: NodePort
+  port: 5601
+  targetPort: 5601
+  nodePort: 32506
+{% endif %}
+
+{% if ((monitoring_security_enabled is defined) and (monitoring_security_enabled != None) and (monitoring_security_enabled == True))  %}
+
+# kibanaConfig:
+#   kibana.yml: |
+#     server.ssl:
+#       enabled: true
+#       key: /usr/share/kibana/config/certs/elastic-certificate.pem
+#       certificate: /usr/share/kibana/config/certs/elastic-certificate.pem
+#     xpack.security.encryptionKey: ${KIBANA_ENCRYPTION_KEY}
+#     elasticsearch.ssl:
+#       certificateAuthorities: /usr/share/kibana/config/certs/elastic-certificate.pem
+#       verificationMode: certificate
+#
+# protocol: https
+
+extraEnvs:
+- name: ELASTICSEARCH_USERNAME
+  valueFrom:
+    secretKeyRef:
+      name: kibana-elasticsearch-credentials
+      key: username
+- name: ELASTICSEARCH_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: kibana-elasticsearch-credentials
+      key: password
+
+secretMounts:
+- name: kibana-certs
+  secretName: kibana-certs
+  path: /usr/share/kibana/config/certs
+
+{% endif %}

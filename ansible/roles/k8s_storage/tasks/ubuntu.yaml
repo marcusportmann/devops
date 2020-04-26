@@ -1,0 +1,21 @@
+# file: roles/k8s_storage/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kubernetes storage configuration
+
+- name: Install the iSCSI client if this is a worker or there are no workers only masters
+  block:
+  - name: Install the open-iscsi package
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - open-iscsi
+
+  - name: Start the iscsid service
+    systemd:
+      name: iscsid.service
+      state: started
+      enabled: yes
+
+  when: (("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker']))

@@ -30,6 +30,15 @@ variables:
 # ----------------------------------------------------------------------------------------
 # Kubernetes Configuration
 # ----------------------------------------------------------------------------------------
+- name: docker_ubuntu_package_version
+  values:
+  - 5:19.03.6~3-0~ubuntu-bionic
+- name: helm_version
+  values:
+  - 3.1.2
+- name: helm_package_checksum
+  values:
+  - sha256:e6be589df85076108c33e12e60cfb85dcd82c5d756a6f6ebc8de0ee505c9fd4c
 - name: k8s_etcd_topology
   values:
   - stacked
@@ -51,15 +60,49 @@ variables:
 - name: k8s_cni_provider
   values:
   - weave
+- name: k8s_version
+  values:
+  - 1.17
+- name: k8s_vmware_tanzu_kubernetes_grid_version
+  values:
+  - 1.17.3+vmware.1
+- name: k8s_vmware_tanzu_kubernetes_grid_checksum
+  values:
+  - sha256:34b680c64e7ccf8e7502519a4282c4e8e7c596acdf76945b15fa8e18a5525897
+- name: k8s_vmware_tanzu_kubernetes_cni_version
+  values:
+  - 0.7.5+vmware.6-1
+- name: k8s_vmware_tanzu_kubernetes_cri_tools_version
+  values:
+  - 1.16.1+vmware.3-1
+- name: k8s_vmware_tanzu_kubernetes_kubeadm_version
+  values:
+  - 1.17.3+vmware.1-1
+- name: k8s_vmware_tanzu_kubernetes_kubectl_version
+  values:
+  - 1.17.3+vmware.1-1
+- name: k8s_vmware_tanzu_kubernetes_kubelet_version
+  values:
+  - 1.17.3+vmware.1-1
+
+# ----------------------------------------------------------------------------------------
+# Kubernetes Storage Configuration
+# ----------------------------------------------------------------------------------------
 - name: longhorn_enabled
   values:
   - true
 - name: topolvm_enabled
   values:
   - true
+- name: topolvm_version
+  values:
+  - 0.4.1
+- name: topolvm_lvmd_version
+  values:
+  - 0.4.1
 - name: topolvm_volume_group
   values:
-  - data
+  - system
 
 # ----------------------------------------------------------------------------------------
 # Kubernetes Extensions Configuration
@@ -74,19 +117,24 @@ variables:
   values:
   - 0.10.0
 
-
 # ----------------------------------------------------------------------------------------
 # Kubernetes Operator Configuration
 # ----------------------------------------------------------------------------------------
 - name: operator_lifecycle_manager_enabled
   values:
   - false
-- name: jaeger_operator_enabled
-  values:
-  - false
 - name: postgres_operator_enabled
   values:
   - false
+- name: postgres_operator_helm_chart_version
+  values:
+  - 1.4.0
+- name: postgres_operator_ui_enabled
+  values:
+  - false
+- name: postgres_operator_ui_helm_chart_version
+  values:
+  - 1.4.0
 
 # ----------------------------------------------------------------------------------------
 # Istio Configuration
@@ -100,12 +148,21 @@ variables:
 - name: istio_kiali_enabled
   values:
   - true
+- name: istio_package_checksum
+  values:
+  - sha256:0e32ac8af40b9edcb49a31b8f45df4f3a825a47fd2aa1ac114e93def73dc3c17
 - name: istio_prometheus_enabled
   values:
   - false
 - name: istio_tracing_enabled
   values:
   - false
+- name: istio_version
+  values:
+  - 1.5.2
+- name: istioctl_package_checksum
+  values:
+  - sha256:756956f182bdd15c92b218fd9de4b3f75486a13535d13288fae9024181afd71a
 
 # ----------------------------------------------------------------------------------------
 # External Monitoring Configuration
@@ -123,9 +180,6 @@ variables:
 - name: monitoring_enabled
   values:
   - true
-- name: monitoring_security_enabled
-  values:
-  - true
 - name: monitoring_elasticsearch_cluster_type
   values:
   - standalone
@@ -134,46 +188,46 @@ variables:
   - true
 - name: monitoring_elasticsearch_helm_chart_version
   values:
-  - 7.6.1
+  - 7.6.2
 - name: monitoring_elasticsearch_persistent_volume_size
   values:
-  - 20Gi
+  - 10Gi
 - name: monitoring_elasticsearch_persistent_volume_storage_class_name
   values:
-  - default-remote-storage
+  - default-local-storage
 - name: monitoring_grafana_enabled
   values:
   - true
 - name: monitoring_grafana_helm_chart_version
   values:
-  - 5.0.7
+  - 5.0.13
 - name: monitoring_jaeger_enabled
   values:
   - true
 - name: monitoring_jaeger_helm_chart_version
   values:
-  - 0.26.1
+  - 0.27.1
 - name: monitoring_kibana_enabled
   values:
   - true
 - name: monitoring_kibana_helm_chart_version
   values:
-  - 7.6.1
+  - 7.6.2
 - name: monitoring_prometheus_enabled
   values:
   - true
 - name: monitoring_prometheus_helm_chart_version
   values:
-  - 11.0.2
+  - 11.1.2
 - name: monitoring_prometheus_persistent_volume_storage_class_name
   values:
-  - default-remote-storage
+  - default-local-storage
 - name: monitoring_prometheus_alert_manager_persistent_volume_size
   values:
-  - 5Gi
+  - 2Gi
 - name: monitoring_prometheus_server_persistent_volume_size
   values:
-  - 15Gi
+  - 10Gi
 
 profiles:
 - name: devops
@@ -232,6 +286,36 @@ profiles:
   - test-centos80.local
 
 hosts:
+- name:               devops.local
+  domain:             local
+  type:               ubuntu1804
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     k8s_master,k8s_components
+  virtualbox:
+    cpus:             4
+    memory:           6144
+    fqdn:             devops.local
+    domain:           local
+    ip:               192.168.100.60/24
+    gateway:          192.168.100.2
+    dns_server:       192.168.100.2
+  vmware_desktop:
+    cpus:             4
+    memory:           6144
+    fqdn:             devops.local
+    domain:           local
+    ip:               192.168.100.60/24
+    gateway:          192.168.100.2
+    dns_server:       192.168.100.2
+  vmware_esxi:
+    cpus:             4
+    memory:           6144
+    fqdn:             devops.local
+    domain:           local
+    ip:               192.168.0.60/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
 - name:               etcd-local-01.local
   type:               ubuntu1804
   ansible_playbook:   ansible/devops.yaml
@@ -317,36 +401,6 @@ hosts:
     fqdn:             etcd-local-03.local
     domain:           local
     ip:               192.168.0.43/24
-    gateway:          192.168.0.1
-    dns_server:       192.168.0.1
-
-- name:               devops.local
-  domain:             local
-  type:               ubuntu1804
-  ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     k8s_master,k8s_components
-  virtualbox:
-    cpus:             4
-    memory:           6144
-    fqdn:             devops.local
-    domain:           local
-    ip:               192.168.100.60/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
-  vmware_desktop:
-    cpus:             4
-    memory:           6144
-    fqdn:             devops.local
-    domain:           local
-    ip:               192.168.100.60/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
-  vmware_esxi:
-    cpus:             4
-    memory:           6144
-    fqdn:             devops.local
-    domain:           local
-    ip:               192.168.0.60/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 

@@ -1,0 +1,72 @@
+# See: https://github.com/helm/charts/blob/master/stable/prometheus/values.yaml
+
+
+alertmanager:
+  enabled: true
+
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: {{ monitoring_prometheus_alert_manager_persistent_volume_size }}
+    storageClass: {{ monitoring_prometheus_persistent_volume_storage_class_name }}
+
+  service:
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
+    type: ClusterIP
+    servicePort: 9093
+{% else %}
+    type: NodePort
+    servicePort: 9093
+    nodePort: 32504
+{% endif %}
+
+pushgateway:
+  enabled: true
+
+  service:
+    type: ClusterIP
+    servicePort: 9091
+
+server:
+  enabled: true
+
+  retention: "12h"
+
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: {{ monitoring_prometheus_server_persistent_volume_size }}
+    storageClass: {{ monitoring_prometheus_persistent_volume_storage_class_name }}
+
+  service:
+{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
+    type: ClusterIP
+    servicePort: 9090
+{% else %}
+    type: NodePort
+    servicePort: 9090
+    nodePort: 32503
+{% endif %}
+
+
+# alertmanager:
+#   enabled: false
+# alertmanagerFiles:
+#   alertmanager.yml: ""
+# kubeStateMetrics:
+#   enabled: false
+# nodeExporter:
+#   enabled: false
+# pushgateway:
+#   enabled: false
+# server:
+#   extraArgs:
+#     storage.local.retention: 720h
+# serverFiles:
+#   alerts: ""
+#   prometheus.yml: ""
+#   rules: ""

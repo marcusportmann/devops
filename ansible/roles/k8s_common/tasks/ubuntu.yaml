@@ -151,23 +151,6 @@
   package_facts:
     manager: auto
 
-- name: Install the iSCSI client if this is a worker or there are no workers only masters
-  block:
-  - name: Install the open-iscsi package
-    apt:
-      state: present
-      policy_rc_d: 101
-      name:
-       - open-iscsi
-
-  - name: Start the iscsid service
-    systemd:
-      name: iscsid.service
-      state: started
-      enabled: yes
-
-  when: (("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker']))
-
 - name: Retrieve the version of the installed kubernetes-cni package
   debug:
     msg: Found kubernetes-cni package version {{ ansible_facts.packages['kubernetes-cni'][0].version  }}

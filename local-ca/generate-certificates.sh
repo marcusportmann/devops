@@ -2,19 +2,27 @@
 
 # xattr -d com.apple.quarantine generate-certificates.sh
 
+mkdir -p ../ansible/roles/etcd/files/pki/local
+mkdir -p ../ansible/roles/k8s_common/files/pki/local
+mkdir -p ../ansible/roles/k8s_istio/files/pki/local
+mkdir -p ../ansible/roles/k8s_master/files/pki/local
+mkdir -p ../ansible/roles/k8s_monitoring/files/pki/local
+mkdir -p ../ansible/roles/k8s_operators/files/pki/local
+mkdir -p ../ansible/roles/k8s_storage/files/pki/local
+
 # Generate the Root CA private key and certificate
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 mv -f ca.pem ca.crt
 mv -f ca-key.pem ca.key
 cp ca.crt ../ansible/roles/etcd/files/pki/local
-cp ca.crt ../ansible/roles/etcd/files/pki/ca-bundle.crt
 cp ca.crt ../ansible/roles/k8s_common/files/pki/local/ca.crt
-cp ca.crt ../ansible/roles/k8s_components/files/pki/local/ca.crt
-cp ca.crt ../ansible/roles/k8s_components/files/pki/local/ca-bundle.crt
+cp ca.crt ../ansible/roles/k8s_istio/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_master/files/pki/local/ca.crt
-cp ca.crt ../ansible/roles/k8s_master/files/pki/local/ca-bundle.crt
 cp ca.crt ../ansible/roles/k8s_master/files/pki/local/etcd-ca.crt
-
+cp ca.crt ../ansible/roles/k8s_monitoring/files/pki/local/ca.crt
+cp ca.crt ../ansible/roles/k8s_operators/files/pki/local/ca.crt
+cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca.crt
+cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca-bundle.crt
 
 # Generate the Kubernetes intermediate CA private key and certificate
 cfssl gencert -initca k8s-local-ca-csr.json | cfssljson -bare k8s-local-ca
@@ -91,54 +99,54 @@ mv -f k8s-local-istio-ca-key.pem k8s-local-istio-ca.key
 mv -f k8s-local-istio-ca.pem k8s-local-istio-ca.crt
 cat k8s-local-istio-ca.crt > k8s-local-istio-ca-chain.crt
 cat ca.crt >> k8s-local-istio-ca-chain.crt
-cp k8s-local-istio-ca.key ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-istio-ca.crt ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-istio-ca-chain.crt ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-istio-ca.key ../ansible/roles/k8s_istio/files/pki/local
+cp k8s-local-istio-ca.crt ../ansible/roles/k8s_istio/files/pki/local
+cp k8s-local-istio-ca-chain.crt ../ansible/roles/k8s_istio/files/pki/local
 
 
 # Generate the Istio ingress gateway private key and certificate
 cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-istio-ingressgateway-csr.json | cfssljson -bare k8s-local-istio-ingressgateway
 mv -f k8s-local-istio-ingressgateway-key.pem k8s-local-istio-ingressgateway.key
 mv -f k8s-local-istio-ingressgateway.pem k8s-local-istio-ingressgateway.crt
-cp k8s-local-istio-ingressgateway.key ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-istio-ingressgateway.crt ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-istio-ingressgateway.key ../ansible/roles/k8s_istio/files/pki/local
+cp k8s-local-istio-ingressgateway.crt ../ansible/roles/k8s_istio/files/pki/local
 
 
 # Generate the default ingress gateway private key and certificate
 cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-default-ingressgateway-csr.json | cfssljson -bare k8s-local-default-ingressgateway
 mv -f k8s-local-default-ingressgateway-key.pem k8s-local-default-ingressgateway.key
 mv -f k8s-local-default-ingressgateway.pem k8s-local-default-ingressgateway.crt
-cp k8s-local-default-ingressgateway.key ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-default-ingressgateway.crt ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-default-ingressgateway.key ../ansible/roles/k8s_istio/files/pki/local
+cp k8s-local-default-ingressgateway.crt ../ansible/roles/k8s_istio/files/pki/local
 
 
 # Generate the TopoLVM mutating webhook private key and certificate
 cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-topolvm-mutatingwebhook-csr.json | cfssljson -bare k8s-local-topolvm-mutatingwebhook
 mv -f k8s-local-topolvm-mutatingwebhook-key.pem k8s-local-topolvm-mutatingwebhook.key
 mv -f k8s-local-topolvm-mutatingwebhook.pem k8s-local-topolvm-mutatingwebhook.crt
-cp k8s-local-topolvm-mutatingwebhook.key ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-topolvm-mutatingwebhook.crt ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-topolvm-mutatingwebhook.key ../ansible/roles/k8s_storage/files/pki/local
+cp k8s-local-topolvm-mutatingwebhook.crt ../ansible/roles/k8s_storage/files/pki/local
 
 
 # Generate the Elasticsearch private key and certificate
 cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-elasticsearch-csr.json | cfssljson -bare k8s-local-elasticsearch
 mv -f k8s-local-elasticsearch-key.pem k8s-local-elasticsearch.key
 mv -f k8s-local-elasticsearch.pem k8s-local-elasticsearch.crt
-cp k8s-local-elasticsearch.key ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-elasticsearch.crt ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-elasticsearch.key ../ansible/roles/k8s_monitoring/files/pki/local
+cp k8s-local-elasticsearch.crt ../ansible/roles/k8s_monitoring/files/pki/local
 
 
 # Generate the Kibana private key and certificate
 cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-kibana-csr.json | cfssljson -bare k8s-local-kibana
 mv -f k8s-local-kibana-key.pem k8s-local-kibana.key
 mv -f k8s-local-kibana.pem k8s-local-kibana.crt
-cp k8s-local-kibana.key ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-kibana.crt ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-kibana.key ../ansible/roles/k8s_monitoring/files/pki/local
+cp k8s-local-kibana.crt ../ansible/roles/k8s_monitoring/files/pki/local
 
 
 # Generate the Jaeger private key and certificate
 cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-jaeger-csr.json | cfssljson -bare k8s-local-jaeger
 mv -f k8s-local-jaeger-key.pem k8s-local-jaeger.key
 mv -f k8s-local-jaeger.pem k8s-local-jaeger.crt
-cp k8s-local-jaeger.key ../ansible/roles/k8s_components/files/pki/local
-cp k8s-local-jaeger.crt ../ansible/roles/k8s_components/files/pki/local
+cp k8s-local-jaeger.key ../ansible/roles/k8s_monitoring/files/pki/local
+cp k8s-local-jaeger.crt ../ansible/roles/k8s_monitoring/files/pki/local

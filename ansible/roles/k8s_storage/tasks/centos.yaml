@@ -1,0 +1,5 @@
+# file: roles/k8s_storage/tasks/centos.yaml
+
+- debug:
+    msg: Applying the CentOS-specific Kubernetes storage configuration
+
