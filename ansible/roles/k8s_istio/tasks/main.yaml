@@ -187,7 +187,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
 
-      when: (((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True)))
+      when: ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True))
 
     - name: Enable ingress for Kiali
       block:
@@ -202,19 +202,6 @@
 
       when: ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == true))
 
-    - name: Enable ingress for Kibana
-      block:
-      - name: Generate the Kibana ingress configuration
-        template:
-          src: istio-kibana-ingress.yaml.j2
-          dest: /var/tmp/ansible/istio-kibana-ingress.yaml
-
-      - name: Apply the Kibana ingress configuration
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kibana-ingress.yaml
-
-      when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_kibana_enabled is defined) and (monitoring_kibana_enabled != None) and (monitoring_kibana_enabled == True))
-
     - name: Enable ingress for Grafana
       block:
       - name: Generate the Grafana ingress configuration
@@ -226,7 +213,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
 
-      when: (((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_grafana_enabled is defined) and (monitoring_grafana_enabled != None) and (monitoring_grafana_enabled == True)))
+      when: ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True))
 
     - name: Enable ingress for Prometheus
       block:
@@ -239,7 +226,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress.yaml
 
-      when: (((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True)))
+      when: ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True))
 
     - name: Enable the Prometheus service reference in the istio-system namespace
       block:

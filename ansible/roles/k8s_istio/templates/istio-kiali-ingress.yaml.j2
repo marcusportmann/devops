@@ -32,17 +32,10 @@ spec:
     - port: 20001
     route:
     - destination:
-{% if ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == True))  %}
         host: kiali
         port:
           number: 20001
-{% elif ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_kiali_enabled is defined) and (monitoring_kiali_enabled != None) and (monitoring_kiali_enabled == True))  %}
-        host: kiali.monitoring-system.svc.{{ k8s_cluster_domain }}
-        port:
-          number: 20001
-{% endif %}
 ---
-{% if ((istio_kiali_enabled is defined) and (istio_kiali_enabled != None) and (istio_kiali_enabled == True))  %}
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
@@ -53,17 +46,5 @@ spec:
   trafficPolicy:
     tls:
       mode: DISABLE
-{% elif ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_kiali_enabled is defined) and (monitoring_kiali_enabled != None) and (monitoring_kiali_enabled == True))  %}
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: kiali
-  namespace: istio-system
-spec:
-  host: kiali.monitoring-system.svc.{{ k8s_cluster_domain }}
-  trafficPolicy:
-    tls:
-      mode: DISABLE
-{% endif %}
 ---
 

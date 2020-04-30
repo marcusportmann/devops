@@ -40,36 +40,6 @@
     validate: 'visudo -cf %s'
 
 
-#  ____   _____        ___   _ _     ___    _    ____    _  _____ ____    ____   _    ____ _  __    _    ____ _____
-# |  _ \ / _ \ \      / / \ | | |   / _ \  / \  |  _ \  | |/ ( _ ) ___|  |  _ \ / \  / ___| |/ /   / \  / ___| ____|
-# | | | | | | \ \ /\ / /|  \| | |  | | | |/ _ \ | | | | | ' // _ \___ \  | |_) / _ \| |   | ' /   / _ \| |  _|  _|
-# | |_| | |_| |\ V  V / | |\  | |__| |_| / ___ \| |_| | | . \ (_) |__) | |  __/ ___ \ |___| . \  / ___ \ |_| | |___
-# |____/ \___/  \_/\_/  |_| \_|_____\___/_/   \_\____/  |_|\_\___/____/  |_| /_/   \_\____|_|\_\/_/   \_\____|_____|
-#
-- name: Check if the VMware Tanzu Kubernetes Grid package has been downloaded
-  become: no
-  local_action: stat path=packages/vmware-kubernetes-v1.17.3+vmware.1.tar.gz
-  register: vmware_tanzu_kubernetes_package_stat_result
-
-- name: Download the VMware Tanzu Kubernetes Grid package
-  become: no
-  local_action: get_url url='https://downloads.heptio.com/vmware-tanzu-kubernetes-grid/523a448aa3e9a0ef93ff892dceefee0a/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version | urlencode }}.tar.gz' dest='packages/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}.tar.gz' checksum={{ k8s_vmware_tanzu_kubernetes_grid_checksum }}
-  when: (vmware_tanzu_kubernetes_package_stat_result.stat.exists == False)
-
-
-#  _______  _______ ____      _    ____ _____   _  _____ ____    ____   _    ____ _  __    _    ____ _____
-# | ____\ \/ /_   _|  _ \    / \  / ___|_   _| | |/ ( _ ) ___|  |  _ \ / \  / ___| |/ /   / \  / ___| ____|
-# |  _|  \  /  | | | |_) |  / _ \| |     | |   | ' // _ \___ \  | |_) / _ \| |   | ' /   / _ \| |  _|  _|
-# | |___ /  \  | | |  _ <  / ___ \ |___  | |   | . \ (_) |__) | |  __/ ___ \ |___| . \  / ___ \ |_| | |___
-# |_____/_/\_\ |_| |_| \_\/_/   \_\____| |_|   |_|\_\___/____/  |_| /_/   \_\____|_|\_\/_/   \_\____|_____|
-#
-- name: Extract the VMware Tanzu Kubernetes Grid package on the host
-  unarchive:
-    src: packages/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}.tar.gz
-    dest: /var/tmp/ansible
-    creates: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}
-
-
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |

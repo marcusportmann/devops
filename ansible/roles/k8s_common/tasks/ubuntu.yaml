@@ -36,6 +36,16 @@
     replace: '# \1'
   when: ansible_swaptotal_mb > 0
 
+- name: Add the Kubernets GPG apt key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add the Kubernetes repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io kubernetes-xenial main
+    state: present
+
 - name: Enable the firewall
   ufw:
     state: enabled
@@ -147,33 +157,13 @@
 - name: Install the jq package
   apt: name=jq state=latest
 
+- name: Collect the system service facts
+  service_facts:
+  register: services_state
+
 - name: Collect the package facts
   package_facts:
     manager: auto
-
-- name: Retrieve the version of the installed kubernetes-cni package
-  debug:
-    msg: Found kubernetes-cni package version {{ ansible_facts.packages['kubernetes-cni'][0].version  }}
-  when: "'kubernetes-cni' in ansible_facts.packages"
-
-- name: Install the kubernetes-cni package
-  block:
-  - name: Unlock the version of the kubernetes-cni package
-    command:
-      cmd: apt-mark unhold kubernetes-cni
-    when: ('kubernetes-cni' in ansible_facts.packages)
-
-  - name: Install the kubernetes-cni package ({{ k8s_vmware_tanzu_kubernetes_cni_version }})
-    apt:
-      state: present
-      policy_rc_d: 101
-      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubernetes-cni_{{ k8s_vmware_tanzu_kubernetes_cni_version }}_amd64.deb
-
-  - name: Lock the version of the kubernetes-cni package
-    command:
-      cmd: apt-mark hold kubernetes-cni
-
-  when: (('kubernetes-cni' not in ansible_facts.packages) or (ansible_facts.packages['kubernetes-cni'][0].version != k8s_vmware_tanzu_kubernetes_cni_version))
 
 - name: Retrieve the version of the installed kubelet package
   debug:
@@ -182,22 +172,25 @@
 
 - name: Install the kubelet package
   block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
+
   - name: Unlock the version of the kubelet package
     command:
       cmd: apt-mark unhold kubelet
-    when: ('kubelet' in ansible_facts.packages)
 
-  - name: Install the kubelet package ({{ k8s_vmware_tanzu_kubernetes_kubelet_version }})
+  - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
-      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubelet_{{ k8s_vmware_tanzu_kubernetes_kubelet_version }}_amd64.deb
+      name:
+       - kubelet={{ k8s_ubuntu_package_version }}
 
   - name: Lock the version of the kubelet package
     command:
       cmd: apt-mark hold kubelet
 
-  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_vmware_tanzu_kubernetes_kubelet_version))
+  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_ubuntu_package_version))
 
 - name: Retrieve the version of the installed kubectl package
   debug:
@@ -206,69 +199,169 @@
 
 - name: Install the kubectl package
   block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
+
   - name: Unlock the version of the kubectl package
     command:
       cmd: apt-mark unhold kubectl
-    when: ('kubectl' in ansible_facts.packages)
 
-  - name: Install the kubectl package ({{ k8s_vmware_tanzu_kubernetes_kubectl_version }})
+  - name: Install the kubectl package ({{ k8s_ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
-      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubectl_{{ k8s_vmware_tanzu_kubernetes_kubectl_version }}_amd64.deb
+      name:
+       - kubectl={{ k8s_ubuntu_package_version }}
 
   - name: Lock the version of the kubectl package
     command:
       cmd: apt-mark hold kubectl
 
-  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_vmware_tanzu_kubernetes_kubectl_version))
-
-- name: Retrieve the version of the installed cri-tools package
-  debug:
-    msg: Found cri-tools package version {{ ansible_facts.packages['cri-tools'][0].version  }}
-  when: "'cri-tools' in ansible_facts.packages"
-
-- name: Install the cri-tools package
-  block:
-  - name: Unlock the version of the cri-tools package
-    command:
-      cmd: apt-mark unhold cri-tools
-    when: ('cri-tools' in ansible_facts.packages)
-
-  - name: Install the cri-tools package ({{ k8s_vmware_tanzu_kubernetes_cri_tools_version }})
-    apt:
-      state: present
-      policy_rc_d: 101
-      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/cri-tools_{{ k8s_vmware_tanzu_kubernetes_cri_tools_version }}_amd64.deb
-
-  - name: Lock the version of the cri-tools package
-    command:
-      cmd: apt-mark hold cri-tools
-
-  when: (('cri-tools' not in ansible_facts.packages) or (ansible_facts.packages['cri-tools'][0].version != k8s_vmware_tanzu_kubernetes_cri_tools_version))
-
-- name: Retrieve the version of the installed kubeadm package
-  debug:
-    msg: Found kubeadm package version {{ ansible_facts.packages['kubeadm'][0].version  }}
-  when: "'kubeadm' in ansible_facts.packages"
+  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_ubuntu_package_version))
 
 - name: Install the kubeadm package
   block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
+
   - name: Unlock the version of the kubeadm package
     command:
       cmd: apt-mark unhold kubeadm
-    when: ('kubeadm' in ansible_facts.packages)
 
-  - name: Install the kubeadm package ({{ k8s_vmware_tanzu_kubernetes_kubeadm_version }})
+  - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
-      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubeadm_{{ k8s_vmware_tanzu_kubernetes_kubeadm_version }}_amd64.deb
+      name:
+       - kubeadm={{ k8s_ubuntu_package_version }}
 
   - name: Lock the version of the kubeadm package
     command:
       cmd: apt-mark hold kubeadm
 
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_vmware_tanzu_kubernetes_kubeadm_version))
+  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
 
+
+
+
+#- name: Retrieve the version of the installed kubernetes-cni package
+#  debug:
+#    msg: Found kubernetes-cni package version {{ ansible_facts.packages['kubernetes-cni'][0].version  }}
+#  when: "'kubernetes-cni' in ansible_facts.packages"
+#
+#- name: Install the kubernetes-cni package
+#  block:
+#  - name: Unlock the version of the kubernetes-cni package
+#    command:
+#      cmd: apt-mark unhold kubernetes-cni
+#    when: ('kubernetes-cni' in ansible_facts.packages)
+#
+#  - name: Install the kubernetes-cni package ({{ k8s_vmware_tanzu_kubernetes_cni_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubernetes-cni_{{ k8s_vmware_tanzu_kubernetes_cni_version }}_amd64.deb
+#
+#  - name: Lock the version of the kubernetes-cni package
+#    command:
+#      cmd: apt-mark hold kubernetes-cni
+#
+#  when: (('kubernetes-cni' not in ansible_facts.packages) or (ansible_facts.packages['kubernetes-cni'][0].version != k8s_vmware_tanzu_kubernetes_cni_version))
+#
+#- name: Retrieve the version of the installed kubelet package
+#  debug:
+#    msg: Found kubelet package version {{ ansible_facts.packages['kubelet'][0].version  }}
+#  when: "'kubelet' in ansible_facts.packages"
+#
+#- name: Install the kubelet package
+#  block:
+#  - name: Unlock the version of the kubelet package
+#    command:
+#      cmd: apt-mark unhold kubelet
+#    when: ('kubelet' in ansible_facts.packages)
+#
+#  - name: Install the kubelet package ({{ k8s_vmware_tanzu_kubernetes_kubelet_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubelet_{{ k8s_vmware_tanzu_kubernetes_kubelet_version }}_amd64.deb
+#
+#  - name: Lock the version of the kubelet package
+#    command:
+#      cmd: apt-mark hold kubelet
+#
+#  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_vmware_tanzu_kubernetes_kubelet_version))
+#
+#- name: Retrieve the version of the installed kubectl package
+#  debug:
+#    msg: Found kubectl package version {{ ansible_facts.packages['kubectl'][0].version  }}
+#  when: "'kubectl' in ansible_facts.packages"
+#
+#- name: Install the kubectl package
+#  block:
+#  - name: Unlock the version of the kubectl package
+#    command:
+#      cmd: apt-mark unhold kubectl
+#    when: ('kubectl' in ansible_facts.packages)
+#
+#  - name: Install the kubectl package ({{ k8s_vmware_tanzu_kubernetes_kubectl_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubectl_{{ k8s_vmware_tanzu_kubernetes_kubectl_version }}_amd64.deb
+#
+#  - name: Lock the version of the kubectl package
+#    command:
+#      cmd: apt-mark hold kubectl
+#
+#  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_vmware_tanzu_kubernetes_kubectl_version))
+#
+#- name: Retrieve the version of the installed cri-tools package
+#  debug:
+#    msg: Found cri-tools package version {{ ansible_facts.packages['cri-tools'][0].version  }}
+#  when: "'cri-tools' in ansible_facts.packages"
+#
+#- name: Install the cri-tools package
+#  block:
+#  - name: Unlock the version of the cri-tools package
+#    command:
+#      cmd: apt-mark unhold cri-tools
+#    when: ('cri-tools' in ansible_facts.packages)
+#
+#  - name: Install the cri-tools package ({{ k8s_vmware_tanzu_kubernetes_cri_tools_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/cri-tools_{{ k8s_vmware_tanzu_kubernetes_cri_tools_version }}_amd64.deb
+#
+#  - name: Lock the version of the cri-tools package
+#    command:
+#      cmd: apt-mark hold cri-tools
+#
+#  when: (('cri-tools' not in ansible_facts.packages) or (ansible_facts.packages['cri-tools'][0].version != k8s_vmware_tanzu_kubernetes_cri_tools_version))
+#
+#- name: Retrieve the version of the installed kubeadm package
+#  debug:
+#    msg: Found kubeadm package version {{ ansible_facts.packages['kubeadm'][0].version  }}
+#  when: "'kubeadm' in ansible_facts.packages"
+#
+#- name: Install the kubeadm package
+#  block:
+#  - name: Unlock the version of the kubeadm package
+#    command:
+#      cmd: apt-mark unhold kubeadm
+#    when: ('kubeadm' in ansible_facts.packages)
+#
+#  - name: Install the kubeadm package ({{ k8s_vmware_tanzu_kubernetes_kubeadm_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      deb: /var/tmp/ansible/vmware-kubernetes-v{{ k8s_vmware_tanzu_kubernetes_grid_version }}/debs/kubeadm_{{ k8s_vmware_tanzu_kubernetes_kubeadm_version }}_amd64.deb
+#
+#  - name: Lock the version of the kubeadm package
+#    command:
+#      cmd: apt-mark hold kubeadm
+#
+#  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_vmware_tanzu_kubernetes_kubeadm_version))
+#
 

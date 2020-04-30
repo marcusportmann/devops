@@ -14,12 +14,8 @@ minimumMasterNodes: 1
 esJavaOpts: "-Xmx512m -Xms512m"
 
 service:
-{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true)) %}
-  type: ClusterIP
-{% else %}
   type: NodePort
   nodePort: 32505
-{% endif %}
 
 resources:
   requests:

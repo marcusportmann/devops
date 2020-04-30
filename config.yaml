@@ -60,30 +60,12 @@ variables:
 - name: k8s_cni_provider
   values:
   - weave
+- name: k8s_ubuntu_package_version
+  values:
+  - 1.17.5-00
 - name: k8s_version
   values:
   - 1.17
-- name: k8s_vmware_tanzu_kubernetes_grid_version
-  values:
-  - 1.17.3+vmware.1
-- name: k8s_vmware_tanzu_kubernetes_grid_checksum
-  values:
-  - sha256:34b680c64e7ccf8e7502519a4282c4e8e7c596acdf76945b15fa8e18a5525897
-- name: k8s_vmware_tanzu_kubernetes_cni_version
-  values:
-  - 0.7.5+vmware.6-1
-- name: k8s_vmware_tanzu_kubernetes_cri_tools_version
-  values:
-  - 1.16.1+vmware.3-1
-- name: k8s_vmware_tanzu_kubernetes_kubeadm_version
-  values:
-  - 1.17.3+vmware.1-1
-- name: k8s_vmware_tanzu_kubernetes_kubectl_version
-  values:
-  - 1.17.3+vmware.1-1
-- name: k8s_vmware_tanzu_kubernetes_kubelet_version
-  values:
-  - 1.17.3+vmware.1-1
 
 # ----------------------------------------------------------------------------------------
 # Kubernetes Storage Configuration
@@ -125,13 +107,13 @@ variables:
   - false
 - name: postgres_operator_enabled
   values:
-  - false
+  - true
 - name: postgres_operator_helm_chart_version
   values:
   - 1.4.0
 - name: postgres_operator_ui_enabled
   values:
-  - false
+  - true
 - name: postgres_operator_ui_helm_chart_version
   values:
   - 1.4.0

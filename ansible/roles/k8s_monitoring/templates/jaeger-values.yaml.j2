@@ -14,16 +14,10 @@ storage:
 
 query:
   service:
-{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true)) %}
-    type: ClusterIP
-    port: 16686
-    targetPort: 16686
-{% else %}
     type: NodePort
     port: 16686
     targetPort: 16686
     nodePort: 32501
-{% endif %}
 
 collector:
   service:

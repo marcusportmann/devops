@@ -13,14 +13,9 @@ alertmanager:
     storageClass: {{ monitoring_prometheus_persistent_volume_storage_class_name }}
 
   service:
-{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
-    type: ClusterIP
-    servicePort: 9093
-{% else %}
     type: NodePort
     servicePort: 9093
     nodePort: 32504
-{% endif %}
 
 pushgateway:
   enabled: true
@@ -43,14 +38,9 @@ server:
     storageClass: {{ monitoring_prometheus_persistent_volume_storage_class_name }}
 
   service:
-{% if ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == True))  %}
-    type: ClusterIP
-    servicePort: 9090
-{% else %}
     type: NodePort
     servicePort: 9090
     nodePort: 32503
-{% endif %}
 
 
 # alertmanager:

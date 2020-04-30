@@ -37,7 +37,6 @@ spec:
       enabled: false
 {% endif %}
 
-
   components:
     egressGateways:
     - name: istio-engressgateway
@@ -115,14 +114,13 @@ spec:
           targetPort: 443
           nodePort: 30443
 
-
-{% if (((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_grafana_enabled is defined) and (monitoring_grafana_enabled != None) and (monitoring_grafana_enabled == True))) %}
+{% if ((istio_grafana_enabled is defined) and (istio_grafana_enabled != None) and (istio_grafana_enabled == True)) %}
         - name: https-grafana
           port: 3000
           targetPort: 3000
           nodePort: 32500
 {% endif %}
-{% if (((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == True))) %}
+{% if ((istio_tracing_enabled is defined) and (istio_tracing_enabled != None) and (istio_tracing_enabled == True)) %}
         - name: https-jaeger
           port: 16686
           targetPort: 16686
@@ -135,7 +133,7 @@ spec:
           nodePort: 32502
 {% endif %}
 
-{% if (((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True)) or ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True) and (monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == True))) %}
+{% if ((istio_prometheus_enabled is defined) and (istio_prometheus_enabled != None) and (istio_prometheus_enabled == True)) %}
         - name: https-prometheus
           port: 9090
           targetPort: 9090
@@ -146,31 +144,6 @@ spec:
           nodePort: 32504
 {% endif %}
 
-{% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True))  %}
-        - name: https-elasticsearch
-          port: 9200
-          targetPort: 9200
-          nodePort: 32505
-        - name: https-kibana
-          port: 5601
-          targetPort: 5601
-          nodePort: 32505
-{% endif %}
-
-{% if ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == True))  %}
-        - name: https-longhorn-ui
-          port: 8000
-          targetPort: 8000
-          nodePort: 32520
-{% endif %}
-
-{% if ((postgres_operator_ui_enabled is defined) and (postgres_operator_ui_enabled != None) and (postgres_operator_ui_enabled == True))  %}
-        - name: https-postgres-operator-ui
-          port: 8080
-          targetPort: 8080
-          nodePort: 32521
-{% endif %}
-
         - name: tcp
           port: 1400
           targetPort: 1400
@@ -179,7 +152,6 @@ spec:
           port: 1443
           targetPort: 1443
           nodePort: 31443
-
 
     global:
       trustDomain: {{ k8s_cluster_domain }}
@@ -194,11 +166,9 @@ spec:
         enabled: true
 
 {% if ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == True))  %}
-
       tracer:
         zipkin:
           address: jaeger-collector.monitoring-system.svc.{{ k8s_cluster_domain }}:9411
-
 {% endif %}
 
     security:
@@ -226,7 +196,4 @@ spec:
 
       security:
         enabled: false
-
-
-
 
