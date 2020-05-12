@@ -3,3 +3,267 @@
 - debug:
     msg: Applying the CentOS-specific Kubernetes common configuration
 
+- name: Install the root CA, Kubernetes intermediate CA and Kubernetes etcd intermediate CA certificates
+  block:
+  - name: Copy the root CA certificate for the Kubernetes cluster to the /etc/pki/ca-trust/source/anchors directory
+    copy:
+      src: pki/{{ k8s_cluster_name }}/ca.crt
+      dest: /etc/pki/ca-trust/source/anchors/ca.crt
+
+  - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+    copy:
+      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
+      dest: /etc/pki/ca-trust/source/anchors/k8s-{{ k8s_cluster_name }}-ca.crt
+
+  - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
+    shell:
+      cmd: /bin/update-ca-trust
+
+- name: Disable swap since Kubernetes cannot work with swap enabled (1/2)
+  shell: |
+    swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Disable swap in /etc/fstab since Kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
+  when: ansible_swaptotal_mb > 0
+
+- name: Allow all access to tcp port 22 (SSH)
+  firewalld:
+    port: 22/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 2379
+  firewalld:
+    port: 2379/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 2380
+  firewalld:
+    port: 2380/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 4149
+  firewalld:
+    port: 4149/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 6443 (Kubernetes API)
+  firewalld:
+    port: 6443/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 4149 (Default cAdvisor port used to query container metrics)
+  firewalld:
+    port: 4149/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 9099 (Health check server for Calico)
+  firewalld:
+    port: 9099/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 9100 (Prometheus Node Exporter)
+  firewalld:
+    port: 9100/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 10256 (Health check server for Kube Proxy)
+  firewalld:
+    port: 10256/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 10257 (Kube Controller Manager Port)
+  firewalld:
+    port: 10257/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 10250 (API which allows full node access)
+  firewalld:
+    port: 10250/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
+  firewalld:
+    port: 10255/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp ports 30000-32767 (Nodeport)
+  firewalld:
+    port: 30000-32767/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Open TCP and UDP pprts for the Weave CNI provider
+  block:
+  - name: Allow all access to tcp port 6783 for the Weave CNI provider
+    firewalld:
+      port: 6783/tcp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  - name: Allow all access to udp port 6783 for the Weave CNI provider
+    firewalld:
+      port: 6783/udp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  - name: Allow all access to udp port 6784 for the Weave CNI provider
+    firewalld:
+      port: 6784/udp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  when: (k8s_cni_provider == 'weave')
+
+- name: Install the arptables package
+  yum: 
+    name: arptables
+    state: latest
+
+- name: Install the ebtables package
+  yum: 
+    name: ebtables
+    state: latest
+
+- name: Install the jq package
+  yum: 
+    name: jq
+    state: latest
+
+- name: Collect the system service facts
+  service_facts:
+  register: services_state
+
+- name: Add the Kubernetes YUM repo
+  yum_repository:
+    name: Kubernetes
+    description: Kubernetes YUM repo
+    file: Kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgcheck: yes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: Install the kubelet package
+  yum: 
+    name: kubelet
+    state: latest
+
+- name: Install the kubectl package
+  yum: 
+    name: kubectl
+    state: latest
+
+- name: Install the kubeadm package
+  yum: 
+    name: kubeadm
+    state: latest
+
+
+#
+#- name: Retrieve the version of the installed kubelet package
+#  debug:
+#    msg: Found kubelet package version {{ ansible_facts.packages['kubelet'][0].version  }}
+#  when: "'kubelet' in ansible_facts.packages"
+#
+#- name: Install the kubelet package
+#  block:
+#  - name: Update the Apt cache
+#    apt: update_cache=yes cache_valid_time=3600
+#
+#  - name: Unlock the version of the kubelet package
+#    command:
+#      cmd: apt-mark unhold kubelet
+#
+#  - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      name:
+#       - kubelet={{ k8s_ubuntu_package_version }}
+#
+#  - name: Lock the version of the kubelet package
+#    command:
+#      cmd: apt-mark hold kubelet
+#
+#  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_ubuntu_package_version))
+#
+#- name: Retrieve the version of the installed kubectl package
+#  debug:
+#    msg: Found kubectl package version {{ ansible_facts.packages['kubectl'][0].version  }}
+#  when: "'kubectl' in ansible_facts.packages"
+#
+#- name: Install the kubectl package
+#  block:
+#  - name: Update the Apt cache
+#    apt: update_cache=yes cache_valid_time=3600
+#
+#  - name: Unlock the version of the kubectl package
+#    command:
+#      cmd: apt-mark unhold kubectl
+#
+#  - name: Install the kubectl package ({{ k8s_ubuntu_package_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      name:
+#       - kubectl={{ k8s_ubuntu_package_version }}
+#
+#  - name: Lock the version of the kubectl package
+#    command:
+#      cmd: apt-mark hold kubectl
+#
+#  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_ubuntu_package_version))
+#
+#- name: Install the kubeadm package
+#  block:
+#  - name: Update the Apt cache
+#    apt: update_cache=yes cache_valid_time=3600
+#
+#  - name: Unlock the version of the kubeadm package
+#    command:
+#      cmd: apt-mark unhold kubeadm
+#
+#  - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
+#    apt:
+#      state: present
+#      policy_rc_d: 101
+#      name:
+#       - kubeadm={{ k8s_ubuntu_package_version }}
+#
+#  - name: Lock the version of the kubeadm package
+#    command:
+#      cmd: apt-mark hold kubeadm
+#
+#  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))

@@ -1,9 +1,9 @@
 {
   "variables": {
     "headless": "false",
-    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/7.7.1908/isos/x86_64/CentOS-7-x86_64-Minimal-1908.iso",
+    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/7.8.2003/isos/x86_64/CentOS-7-x86_64-Minimal-2003.iso",
     "iso_checksum_type": "sha256",
-    "iso_checksum": "9a2c47d97b9975452f7d582264e9fc16d108ed8252ac6816239a3b58cef5c53d",
+    "iso_checksum": "659691c28a0e672558b003d223f83938f254b39875ee7559d1a4a14c79173193",
     "ssh_username": "root",
     "ssh_password": "root",
     "ssh_timeout": "1200s",
@@ -11,10 +11,10 @@
   },
   "builders": [
     {
-      "name": "centos77-virtualbox",
+      "name": "centos7-virtualbox",
       "type": "virtualbox-iso",
       "boot_command": [
-        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos77.cfg<enter><wait>"
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.cfg<enter><wait>"
       ],
       "disk_size": "51200",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
@@ -25,7 +25,7 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "output_directory": "{{ user `build_directory` }}/virtualbox/centos77/",
+      "output_directory": "{{ user `build_directory` }}/virtualbox/centos7/",
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
@@ -46,10 +46,10 @@
       ]
     },
     {
-      "name": "centos77-vmware",
+      "name": "centos7-vmware",
       "type": "vmware-iso",
       "boot_command": [
-        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos77.cfg<enter><wait>"
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.cfg<enter><wait>"
       ],
       "disk_size": "51200",
       "disk_type_id": "0",
@@ -59,13 +59,13 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "output_directory": "{{ user `build_directory` }}/vmware/centos77/",
+      "output_directory": "{{ user `build_directory` }}/vmware/centos7/",
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
-      "vm_name": "centos77",
-      "vmdk_name": "centos77",
+      "vm_name": "centos7",
+      "vmdk_name": "centos7",
       "vmx_data": {
         "memsize": "1024",
         "numvcpus": "1",
@@ -74,10 +74,10 @@
       }
     },
     {
-      "name": "centos77-hyperv",
+      "name": "centos7-hyperv",
       "type": "hyperv-iso",
       "boot_command": [
-        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos77.cfg<enter><wait>"
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.cfg<enter><wait>"
       ],
       "disk_size": "51200",
       "headless": "{{ user `headless` }}",
@@ -85,12 +85,12 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "output_directory": "{{ user `build_directory` }}/hyperv/centos77/",
+      "output_directory": "{{ user `build_directory` }}/hyperv/centos7/",
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "4h",
-      "vm_name": "centos77",
+      "vm_name": "centos7",
       "memory": "1024",
       "disk_block_size": "1",
       "cpus": "1",
@@ -102,17 +102,17 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "files/centos77/configure-network",
+      "source": "files/centos7/configure-network",
       "destination": "/tmp/configure-network"
     },
     {
       "type": "file",
-      "source": "files/centos77/create-swap-file",
+      "source": "files/centos7/create-swap-file",
       "destination": "/tmp/create-swap-file"
     },
     {
       "type": "file",
-      "source": "files/centos77/resize-root-partition",
+      "source": "files/centos7/resize-root-partition",
       "destination": "/tmp/resize-root-partition"
     },
     {
@@ -132,17 +132,17 @@
       "execute_command": "{{.Vars}} sh {{.Path}}",
       "expect_disconnect": true,
       "only": [
-        "centos77-vmware",
-        "centos77-virtualbox",
-        "centos77-hyperv"
+        "centos7-vmware",
+        "centos7-virtualbox",
+        "centos7-hyperv"
       ],
       "scripts": [
-        "scripts/centos77/base.sh",
-        "scripts/centos77/cloud-init.sh",
-        "scripts/centos77/vmtools.sh",
-        "scripts/centos77/vagrant.sh",
-        "scripts/centos77/cleanup.sh",
-        "scripts/centos77/zerodisk.sh"
+        "scripts/centos7/base.sh",
+        "scripts/centos7/cloud-init.sh",
+        "scripts/centos7/vmtools.sh",
+        "scripts/centos7/vagrant.sh",
+        "scripts/centos7/cleanup.sh",
+        "scripts/centos7/zerodisk.sh"
       ]
     }
   ],
@@ -154,7 +154,7 @@
     [{
     "type": "vagrant",
     "keep_input_artifact": true,
-    "output": "{{ user `build_directory` }}/boxes/centos77-{{.Provider}}.box"
+    "output": "{{ user `build_directory` }}/boxes/centos7-{{.Provider}}.box"
     }]
   ]
 }

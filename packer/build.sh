@@ -9,7 +9,7 @@ function usage {
     echo "Options:"
     echo "  -h                   Print this message and exit."
     echo "  -p PROVIDER          One of the following Vagrant providers: virtualbox, vmware_desktop, vsphere, hyperv."
-    echo "  -o OPERATING_SYSTEM  One of the following operating systems: centos77, centos80, ubuntu1804."
+    echo "  -o OPERATING_SYSTEM  One of the following operating systems: centos7, centos8, ubuntu1804, ubuntu2004."
 }
 
 function build_image {
@@ -86,7 +86,7 @@ case "${option}" in
         fi
         ;;
     o)
-        if [[ ${OPTARG} =~ ^centos77|centos80|ubuntu1804$ ]]
+        if [[ ${OPTARG} =~ ^centos7|centos8|ubuntu1804|ubuntu2004$ ]]
         then
             operating_system=${OPTARG}
         else

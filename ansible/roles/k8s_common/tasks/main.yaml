@@ -27,7 +27,7 @@
     comment: Kubernetes Administrator
     uid: 310
     group: k8s-admin
-    groups: docker
+    groups: k8s-admin
     shell: /bin/bash
     state: present
 

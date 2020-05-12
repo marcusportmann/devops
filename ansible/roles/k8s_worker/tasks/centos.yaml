@@ -1,5 +1,0 @@
-# file: roles/k8s_worker/tasks/centos.yaml
-
-- debug:
-    msg: Applying the CentOS-specific Kubernetes worker configuration
-

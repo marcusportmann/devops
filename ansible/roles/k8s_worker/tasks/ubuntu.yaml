@@ -1,6 +1,0 @@
----
-# file: roles/k8s_worker/tasks/ubuntu.yaml
-
-- debug:
-    msg: Applying the Ubuntu-specific Kubernetes worker configuration
-

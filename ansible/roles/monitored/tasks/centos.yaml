@@ -3,3 +3,11 @@
 - debug:
     msg: Applying the CentOS-specific monitored configuration
 
+- name: Allow all access to tcp port 9100
+  firewalld:
+    port: 9100/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+    
+    

@@ -1,36 +1,23 @@
 # This playbook configures a monitoring server.
 
-
 - name: Configure a monitored host
   hosts: monitored
-  vars:
-    prometheus_node_exporter_version: 1.0.0-rc.0
-    prometheus_node_exporter_package_checksum: sha256:f175cffc4b96114e336288c9ea54b54abe793ae6fcbec771c81733ebc2d7be7c
   become: yes
   become_user: root
-
   roles:
   - monitored
 
 - name: Configure a Prometheus host
   hosts: prometheus
-  vars:
-    prometheus_version: 2.16.0
-    prometheus_package_checksum: sha256:c04e631d18e186b66a51cac3062157298e037ffae784f35ccaaf29e496d65d3f
   become: yes
   become_user: root
-
   roles:
   - prometheus
 
 - name: Configure a Grafana host
   hosts: grafana
-  vars:
-    grafana_package_version: 6.6.2
-    grafana_ubuntu_package_checksum: sha256:2d49b3daf25a0641522e90d9d23e4ac373bae282abb53d42aa82a86201f5df93
   become: yes
   become_user: root
-
   roles:
   - grafana
 

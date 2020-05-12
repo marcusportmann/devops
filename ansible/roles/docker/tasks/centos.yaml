@@ -3,3 +3,33 @@
 - debug:
     msg: Applying the CentOS-specific Docker configuration
 
+#- name: Install the podman package
+#  yum: 
+#    name: podman
+#    state: latest
+#
+#- name: Install the podman-docker package
+#  yum: 
+#    name: podman-docker
+#    state: latest
+#
+#- name: Create the /etc/containers/nodocker file
+#  file:
+#    path: /etc/containers/nodocker
+#    state: touch
+#    owner: root
+#    group: root
+
+- name: Add the Docker CE YUM repo
+  yum_repository:
+    name: DockerCE
+    description: Docker CE YUM repo
+    file: DockerCE
+    baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/centos/gpg
+
+- name: Install the podman-docker package
+  yum: 
+    name: docker-ce
+    state: latest

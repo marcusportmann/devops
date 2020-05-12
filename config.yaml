@@ -30,6 +30,9 @@ variables:
 # ----------------------------------------------------------------------------------------
 # Kubernetes Configuration
 # ----------------------------------------------------------------------------------------
+- name: docker_centos_package_version
+  values:
+  - 3:19.03.8-3.el7
 - name: docker_ubuntu_package_version
   values:
   - 5:19.03.6~3-0~ubuntu-bionic
@@ -110,13 +113,13 @@ variables:
   - true
 - name: postgres_operator_helm_chart_version
   values:
-  - 1.4.0
+  - 1.5.0
 - name: postgres_operator_ui_enabled
   values:
   - true
 - name: postgres_operator_ui_helm_chart_version
   values:
-  - 1.4.0
+  - 1.5.0
 
 # ----------------------------------------------------------------------------------------
 # Istio Configuration
@@ -154,7 +157,7 @@ variables:
   - /var/lib/prometheus
 
 # ----------------------------------------------------------------------------------------
-# Monitoring Configuration
+# Monitoring Configuration (Kubernetes-based)
 #
 # Where elasticsearch_cluster_type is one of single, minimal or full.
 #
@@ -188,7 +191,7 @@ variables:
   - true
 - name: monitoring_jaeger_helm_chart_version
   values:
-  - 0.27.1
+  - 0.28.0
 - name: monitoring_kibana_enabled
   values:
   - true
@@ -210,6 +213,34 @@ variables:
 - name: monitoring_prometheus_server_persistent_volume_size
   values:
   - 10Gi
+
+# ----------------------------------------------------------------------------------------
+# Monitoring Configuration (External)
+# ----------------------------------------------------------------------------------------
+- name: grafana_centos_package_version
+  values:
+  - 6.7.3
+- name: grafana_centos_package_checksum
+  values:
+  - sha256:fbe7eff6b5a6786c9affd5917fce53e24f16c395178352768b96935a62499211
+- name: grafana_ubuntu_package_version
+  values:
+  - 6.7.3
+- name: grafana_ubuntu_package_checksum
+  values:
+  - sha256:1ffa1329cb0f574f0f60c3f57116b2a3d68b3db0a39eca9099956e9a349dc8e6
+- name: prometheus_node_exporter_version
+  values:
+  - 1.0.0-rc.0
+- name: prometheus_node_exporter_package_checksum
+  values:
+  - sha256:f175cffc4b96114e336288c9ea54b54abe793ae6fcbec771c81733ebc2d7be7c
+- name: prometheus_version
+  values:
+  - 2.18.1
+- name: prometheus_package_checksum
+  values:
+  - sha256:5fcc35b78bd0a1b84afae6de94248a4bea3cdb4daf0d54a37b5491cb86b014d7
 
 profiles:
 - name: devops
@@ -245,9 +276,13 @@ profiles:
   - k8s-local-w-02.local
   - k8s-local-w-03.local
 
-- name: test-ubuntu1804
+- name: test-all
   hosts:
+  - test-centos77.local
+  - test-centos80.local
+  - test-centos81.local  
   - test-ubuntu1804.local
+  - test-ubuntu2004.local  
 
 - name: test-centos77
   hosts:
@@ -261,34 +296,41 @@ profiles:
   hosts:
   - test-centos80.local
 
-- name: test-all
+- name: test-centos81
+  hosts:
+  - test-centos81.local
+  
+- name: test-ubuntu1804
   hosts:
   - test-ubuntu1804.local
-  - test-centos77.local
-  - test-centos80.local
+  
+- name: test-ubuntu2004
+  hosts:
+  - test-ubuntu2004.local
+
 
 hosts:
 - name:               devops.local
   domain:             local
-  type:               ubuntu1804
+  type:               ubuntu2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     k8s_master,k8s_components
+  ansible_groups:     k8s_master
   virtualbox:
     cpus:             4
     memory:           6144
     fqdn:             devops.local
     domain:           local
-    ip:               192.168.100.60/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.60/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             4
     memory:           6144
     fqdn:             devops.local
     domain:           local
-    ip:               192.168.100.60/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.60/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             4
     memory:           6144
@@ -307,17 +349,17 @@ hosts:
     memory:           512
     fqdn:             etcd-local-01.local
     domain:           local
-    ip:               192.168.100.41/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.41/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             etcd-local-01.local
     domain:           local
-    ip:               192.168.100.41/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.41/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             1
     memory:           512
@@ -336,17 +378,17 @@ hosts:
     memory:           512
     fqdn:             etcd-local-02.local
     domain:           local
-    ip:               192.168.100.42/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.42/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             etcd-local-02.local
     domain:           local
-    ip:               192.168.100.42/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.42/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             1
     memory:           512
@@ -366,17 +408,17 @@ hosts:
     memory:           512
     fqdn:             etcd-local-03.local
     domain:           local
-    ip:               192.168.100.43/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.43/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             etcd-local-03.local
     domain:           local
-    ip:               192.168.100.43/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.43/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             1
     memory:           512
@@ -396,17 +438,17 @@ hosts:
     memory:           512
     fqdn:             k8s-local-api.local
     domain:           local
-    ip:               192.168.100.50/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.50/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             k8s-local-api.local
     domain:           local
-    ip:               192.168.100.50/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.50/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -426,17 +468,17 @@ hosts:
     memory:           2048
     fqdn:             k8s-local-m-01.local
     domain:           local
-    ip:               192.168.100.51/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.51/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           2048
     fqdn:             k8s-local-m-01.local
     domain:           local
-    ip:               192.168.100.51/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.51/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           2048
@@ -456,17 +498,17 @@ hosts:
     memory:           2048
     fqdn:             k8s-local-m-02.local
     domain:           local
-    ip:               192.168.100.52/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.52/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           2048
     fqdn:             k8s-local-m-02.local
     domain:           local
-    ip:               192.168.100.52/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.52/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           2048
@@ -486,17 +528,17 @@ hosts:
     memory:           2048
     fqdn:             k8s-local-m-03.local
     domain:           local
-    ip:               192.168.100.53/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.53/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           2048
     fqdn:             k8s-local-m-03.local
     domain:           local
-    ip:               192.168.100.53/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.53/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           2048
@@ -516,17 +558,17 @@ hosts:
     memory:           5120
     fqdn:             k8s-local-w-01.local
     domain:           local
-    ip:               192.168.100.54/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.54/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           5120
     fqdn:             k8s-local-w-01.local
     domain:           local
-    ip:               192.168.100.54/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.54/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           5120
@@ -547,17 +589,17 @@ hosts:
     memory:           5120
     fqdn:             k8s-local-w-02.local
     domain:           local
-    ip:               192.168.100.55/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.55/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           5120
     fqdn:             k8s-local-w-02.local
     domain:           local
-    ip:               192.168.100.55/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.55/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           5120
@@ -578,17 +620,17 @@ hosts:
     memory:           5120
     fqdn:             k8s-local-w-03.local
     domain:           local
-    ip:               192.168.100.56/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.56/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           5120
     fqdn:             k8s-local-w-03.local
     domain:           local
-    ip:               192.168.100.56/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.56/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           5120
@@ -609,56 +651,23 @@ hosts:
     memory:           1024
     fqdn:             monitor.local
     domain:           local
-    ip:               192.168.100.30/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.30/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             1
     memory:           1024
     fqdn:             monitor.local
     domain:           local
-    ip:               192.168.100.30/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.30/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             1
     memory:           1024
     fqdn:             monitor.local
     domain:           local
     ip:               192.168.0.30/24
-    gateway:          192.168.0.1
-    dns_server:       192.168.0.1
-
-- name:               test-ubuntu1804.local
-  domain:             local
-  type:               ubuntu1804
-  ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored
-  virtualbox:
-    cpus:             2
-    memory:           1024
-    data_disk:        4096
-    fqdn:             test-ubuntu1804.local
-    domain:           local
-    ip:               192.168.100.49/24
-    gateway:          192.168.100.1
-    dns_server:       192.168.100.1
-  vmware_desktop:
-    cpus:             2
-    memory:           1024
-    data_disk:        4096
-    fqdn:             test-ubuntu1804.local
-    domain:           local
-    ip:               192.168.100.49/24
-    gateway:          192.168.100.1
-    dns_server:       192.168.100.1
-  vmware_esxi:
-    cpus:             2
-    memory:           1024
-    data_disk:        4096
-    fqdn:             test-ubuntu1804.local
-    domain:           local
-    ip:               192.168.0.49/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
@@ -673,18 +682,18 @@ hosts:
     data_disk:        4096
     fqdn:             test-centos77.local
     domain:           local
-    ip:               192.168.100.48/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.48/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos77.local
     domain:           local
-    ip:               192.168.100.48/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.48/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -706,28 +715,124 @@ hosts:
     data_disk:        4096
     fqdn:             test-centos80.local
     domain:           local
-    ip:               192.168.100.47/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.47/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos80.local
     domain:           local
-    ip:               192.168.100.47/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.47/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos80.local
     domain:           local
-    ip:               192.168.100.47/24
-    gateway:          192.168.100.2
-    dns_server:       192.168.100.2
+    ip:               192.168.184.47/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
 
+- name:               test-centos81.local
+  domain:             local
+  type:               centos81
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     monitored
+  virtualbox:
+    cpus:             2
+    memory:           4096
+    data_disk:        4096
+    fqdn:             test-centos81.local
+    domain:           local
+    ip:               192.168.184.46/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-centos81.local
+    domain:           local
+    ip:               192.168.184.46/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-centos81.local
+    domain:           local
+    ip:               192.168.184.46/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
 
-
+- name:               test-ubuntu1804.local
+  domain:             local
+  type:               ubuntu1804
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     monitored
+  virtualbox:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu1804.local
+    domain:           local
+    ip:               192.168.184.49/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
+  vmware_desktop:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu1804.local
+    domain:           local
+    ip:               192.168.184.49/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
+  vmware_esxi:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu1804.local
+    domain:           local
+    ip:               192.168.0.49/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+    
+- name:               test-ubuntu2004.local
+  domain:             local
+  type:               ubuntu2004
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     monitored,prometheus,grafana
+  virtualbox:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu2004.local
+    domain:           local
+    ip:               192.168.184.45/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
+  vmware_desktop:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu2004.local
+    domain:           local
+    ip:               192.168.184.45/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
+  vmware_esxi:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu2004.local
+    domain:           local
+    ip:               192.168.0.45/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1    
 

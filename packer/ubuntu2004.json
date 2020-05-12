@@ -1,0 +1,204 @@
+{
+  "variables": {
+    "headless": "false",
+    "iso_url": "http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/20.04/release/ubuntu-20.04-legacy-server-amd64.iso",
+    "iso_checksum_type": "sha256",
+    "iso_checksum": "36f15879bd9dfd061cd588620a164a82972663fdd148cce1f70d57d314c21b73",
+    "ssh_username": "cloud-user",
+    "ssh_password": "cloud",
+    "ssh_port": "22",
+    "ssh_timeout": "10000s",
+    "build_directory": "build"
+  },
+  "builders": [
+    {
+      "name": "ubuntu2004-virtualbox",
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz<wait>",
+        " auto<wait>",
+        " biosdevname=0 net.ifnames=0<wait>",
+        " console-setup/ask_detect=false console-setup/layoutcode=us console-setup/modelcode=pc105<wait>",
+        " debconf/frontend=noninteractive<wait>",
+        " debian-installer=en_US<wait>",
+        " fb=false<wait>",
+        " initrd=/install/initrd.gz<wait>",
+        " kbd-chooser/method=us<wait>",
+        " keyboard-configuration/layout=USA keyboard-configuration/variant=USA<wait>",
+        " locale=en_US<wait>",
+        " netcfg/get_domain=localdomain netcfg/get_hostname=localhost<wait>",
+        " grub-installer/bootdev=/dev/sda<wait>",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu2004.cfg<wait>",
+        " -- <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "5s",
+      "disk_size": "51200",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_additions_sha256": "c5e46533a6ff8df177ed5c9098624f6cec46ca392bab16de2017195580088670",
+      "guest_os_type": "Ubuntu_64",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "http",
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "output_directory": "{{ user `build_directory` }}/virtualbox/ubuntu2004/",
+      "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_port": "{{ user `ssh_port` }}",
+      "ssh_timeout": "{{ user `ssh_timeout` }}",
+      "vm_name": "ubuntu2004",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "1024"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "1"
+        ]
+      ]
+    },
+    {
+      "name": "ubuntu2004-vmware",
+      "type": "vmware-iso",
+      "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz<wait>",
+        " auto<wait>",
+        " biosdevname=0 net.ifnames=0<wait>",
+        " console-setup/ask_detect=false console-setup/layoutcode=us console-setup/modelcode=pc105<wait>",
+        " debconf/frontend=noninteractive<wait>",
+        " debian-installer=en_US<wait>",
+        " fb=false<wait>",
+        " initrd=/install/initrd.gz<wait>",
+        " kbd-chooser/method=us<wait>",
+        " keyboard-configuration/layout=USA keyboard-configuration/variant=USA<wait>",
+        " locale=en_US<wait>",
+        " netcfg/get_domain=localdomain netcfg/get_hostname=localhost<wait>",
+        " grub-installer/bootdev=/dev/sda<wait>",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu2004.cfg<wait>",
+        " -- <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "5s",
+      "disk_size": "51200",
+      "disk_type_id": "0",
+      "guest_os_type": "ubuntu-64",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "http",
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "output_directory": "{{ user `build_directory` }}/vmware/ubuntu2004/",
+      "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_port": "{{ user `ssh_port` }}",
+      "ssh_timeout": "{{ user `ssh_timeout` }}",
+      "vm_name": "ubuntu2004",
+      "vmdk_name": "ubuntu2004",
+      "vmx_data": {
+        "memsize": "1024",
+        "numvcpus": "1",
+        "ethernet0.connectiontype": "nat",
+        "ethernet0.virtualDev": "vmxnet3",
+        "rtc.diffFromUTC": "0"
+      }
+    },
+    {
+      "name": "ubuntu2004-hyperv",
+      "type": "hyperv-iso",
+      "boot_command": [
+        "<esc><wait10><esc><esc><enter><wait>",
+        "set gfxpayload=1024x768<enter>",
+        "linux /install/vmlinuz ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu2004.cfg ",
+        "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+        "fb=false debconf/frontend=noninteractive ",
+        "netcfg/get_domain=localdomain netcfg/get_hostname=localhost ",
+        "grub-installer/bootdev=/dev/sda ",
+        "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+        "keyboard-configuration/variant=USA console-setup/ask_detect=false <enter>",
+        "initrd /install/initrd.gz<enter>",
+        "boot<enter>"
+      ],
+      "boot_wait": "5s",
+      "disk_size": "51200",
+      "headless": "{{ user `headless` }}",
+      "http_directory": "http",
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum` }}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "output_directory": "{{ user `build_directory` }}/hyperv/ubuntu2004/",
+      "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_port": "{{ user `ssh_port` }}",
+      "ssh_timeout" : "4h",
+      "vm_name": "ubuntu2004",
+      "memory": "1024",
+      "disk_block_size": "1",
+      "cpus": "1",
+      "generation": 2,
+      "keep_registered": "false",
+      "switch_name": "Default Switch"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "files/ubuntu2004/configure-network",
+      "destination": "/tmp/configure-network"
+    },
+    {
+      "type": "file",
+      "source": "files/ubuntu2004/resize-root-partition",
+      "destination": "/tmp/resize-root-partition"
+    },
+    {
+      "type": "file",
+      "source": "files/ubuntu2004/ssh-keygen.service",
+      "destination": "/tmp/ssh-keygen.service"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'cloud' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "expect_disconnect": true,
+      "only": [
+        "ubuntu2004-vmware",
+        "ubuntu2004-virtualbox",
+        "ubuntu2004-hyperv"
+      ],
+      "scripts": [
+        "scripts/ubuntu2004/base.sh",
+        "scripts/ubuntu2004/cloud-init.sh",
+        "scripts/ubuntu2004/vmtools.sh",
+        "scripts/ubuntu2004/vagrant.sh",
+        "scripts/ubuntu2004/cleanup.sh",
+        "scripts/ubuntu2004/zerodisk.sh"
+      ]
+    }
+  ],
+ "push": {
+    "name": "{{user `atlas_username`}}/{{user `atlas_name`}}",
+    "vcs": true
+  },
+  "post-processors": [
+    [{
+    "type": "vagrant",
+    "keep_input_artifact": true,
+    "output": "{{ user `build_directory` }}/boxes/ubuntu2004-{{.Provider}}.box"
+    }]
+  ]
+}

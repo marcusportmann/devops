@@ -1,9 +1,9 @@
 {
   "variables": {
     "headless": "false",
-    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-dvd1.iso",
+    "iso_url": "http://ftp.is.co.za/mirror/centos/8.1.1911/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso",
     "iso_checksum_type": "sha256",
-    "iso_checksum": "ea17ef71e0df3f6bf1d4bf1fc25bec1a76d1f211c115d39618fe688be34503e8",
+    "iso_checksum": "3ee3f4ea1538e026fff763e2b284a6f20b259d91d1ad5688f5783a67d279423b",
     "ssh_username": "root",
     "ssh_password": "root",
     "ssh_timeout": "1200s",
@@ -11,10 +11,10 @@
   },
   "builders": [
     {
-      "name": "centos80-virtualbox",
+      "name": "centos8-virtualbox",
       "type": "virtualbox-iso",
       "boot_command": [
-        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos80.cfg<enter><wait>"
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8.cfg<enter><wait>"
       ],
       "disk_size": "51200",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
@@ -25,7 +25,7 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "output_directory": "{{ user `build_directory` }}/virtualbox/centos80/",
+      "output_directory": "{{ user `build_directory` }}/virtualbox/centos8/",
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
@@ -46,10 +46,10 @@
       ]
     },
     {
-      "name": "centos80-vmware",
+      "name": "centos8-vmware",
       "type": "vmware-iso",
       "boot_command": [
-        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos80.cfg<enter><wait>"
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8.cfg<enter><wait>"
       ],
       "disk_size": "51200",
       "disk_type_id": "0",
@@ -59,13 +59,13 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "output_directory": "{{ user `build_directory` }}/vmware/centos80/",
+      "output_directory": "{{ user `build_directory` }}/vmware/centos8/",
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
-      "vm_name": "centos80",
-      "vmdk_name": "centos80",
+      "vm_name": "centos8",
+      "vmdk_name": "centos8",
       "vmx_data": {
         "memsize": "1024",
         "numvcpus": "1",
@@ -74,10 +74,10 @@
       }
     },
     {
-      "name": "centos80-hyperv",
+      "name": "centos8-hyperv",
       "type": "hyperv-iso",
       "boot_command": [
-        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos80.cfg<enter><wait>"
+        "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8.cfg<enter><wait>"
       ],
       "disk_size": "51200",
       "headless": "{{ user `headless` }}",
@@ -85,12 +85,12 @@
       "iso_url": "{{ user `iso_url` }}",
       "iso_checksum": "{{ user `iso_checksum` }}",
       "iso_checksum_type": "{{ user `iso_checksum_type` }}",
-      "output_directory": "{{ user `build_directory` }}/hyperv/centos80/",
+      "output_directory": "{{ user `build_directory` }}/hyperv/centos8/",
       "shutdown_command": "/sbin/halt -p",
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "4h",
-      "vm_name": "centos80",
+      "vm_name": "centos8",
       "memory": "1024",
       "disk_block_size": "1",
       "cpus": "1",
@@ -102,17 +102,17 @@
   "provisioners": [
     {
       "type": "file",
-      "source": "files/centos80/configure-network",
+      "source": "files/centos8/configure-network",
       "destination": "/tmp/configure-network"
     },
     {
       "type": "file",
-      "source": "files/centos80/create-swap-file",
+      "source": "files/centos8/create-swap-file",
       "destination": "/tmp/create-swap-file"
     },
     {
       "type": "file",
-      "source": "files/centos80/resize-root-partition",
+      "source": "files/centos8/resize-root-partition",
       "destination": "/tmp/resize-root-partition"
     },
     {
@@ -132,17 +132,17 @@
       "execute_command": "{{.Vars}} sh {{.Path}}",
       "expect_disconnect": true,
       "only": [
-        "centos80-vmware",
-        "centos80-virtualbox",
-        "centos80-hyperv"
+        "centos8-vmware",
+        "centos8-virtualbox",
+        "centos8-hyperv"
       ],
       "scripts": [
-        "scripts/centos80/base.sh",
-        "scripts/centos80/cloud-init.sh",
-        "scripts/centos80/vmtools.sh",
-        "scripts/centos80/vagrant.sh",
-        "scripts/centos80/cleanup.sh",
-        "scripts/centos80/zerodisk.sh"
+        "scripts/centos8/base.sh",
+        "scripts/centos8/cloud-init.sh",
+        "scripts/centos8/vmtools.sh",
+        "scripts/centos8/vagrant.sh",
+        "scripts/centos8/cleanup.sh",
+        "scripts/centos8/zerodisk.sh"
       ]
     }
   ],
@@ -154,7 +154,7 @@
     [{
     "type": "vagrant",
     "keep_input_artifact": true,
-    "output": "{{ user `build_directory` }}/boxes/centos80-{{.Provider}}.box"
+    "output": "{{ user `build_directory` }}/boxes/centos8-{{.Provider}}.box"
     }]
   ]
 }

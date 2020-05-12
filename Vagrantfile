@@ -357,59 +357,62 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end                    
 
         config.vm.define host_name do |host_config|
-					# NOTE: These boxes must have been added to Vagrant before executing this project.
-					if host['type'] == 'centos77'
-						host_config.vm.box = 'devops/centos77'
-					end
-					if host['type'] == 'centos80'
-						host_config.vm.box = 'devops/centos80'
-					end          
-					if host['type'] == 'ubuntu1804'
-						host_config.vm.box = 'devops/ubuntu1804'
-					end
-					
+          # NOTE: These boxes must have been added to Vagrant before executing this project.
+          if host['type'] == 'centos7'
+            host_config.vm.box = 'devops/centos7'
+          end
+          if host['type'] == 'centos8'
+            host_config.vm.box = 'devops/centos8'
+          end          
+          if host['type'] == 'ubuntu1804'
+            host_config.vm.box = 'devops/ubuntu1804'
+          end
+          if host['type'] == 'ubuntu2004'
+            host_config.vm.box = 'devops/ubuntu2004'
+          end
+          
           host_config.vm.synced_folder '.', '/vagrant', disabled: true
         
-					# Set the hostname for the VM
-					host_config.vm.hostname = host_hostname
-					
-					# Determine the IP, network and netmask for the VM
-					ip, network, netmask = cidr_to_ip_network_netmask(host[$provider]['ip'])
+          # Set the hostname for the VM
+          host_config.vm.hostname = host_hostname
+          
+          # Determine the IP, network and netmask for the VM
+          ip, network, netmask = cidr_to_ip_network_netmask(host[$provider]['ip'])
 
-					# Configure the network for the VM
-					host_config.vm.network 'private_network', ip: ip, netmask: netmask
-					
+          # Configure the network for the VM
+          host_config.vm.network 'private_network', ip: ip, netmask: netmask
+          
           host_config.vm.provider :virtualbox do |virtualbox|
             virtualbox.customize ['modifyvm', :id, '--memory', host[$provider]['memory'], '--cpus', host[$provider]['cpus'], '--cableconnected1', 'on', '--cableconnected2', 'on']
           end
           
-					# Ensure that the /etc/rc.local file exists
-					host_config.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
+          # Ensure that the /etc/rc.local file exists
+          host_config.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
 
-					# Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
-					if host[$provider]['private_networks']
-						host[$provider]['private_networks'].split(/\s*,\s*/).each do |private_network|
-							static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host[$provider]['ip']]
-														
-							host_config.vm.provision 'shell', inline: static_route_command
-							host_config.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
-						end
-					end
+          # Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
+          if host[$provider]['private_networks']
+            host[$provider]['private_networks'].split(/\s*,\s*/).each do |private_network|
+              static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host[$provider]['ip']]
+                            
+              host_config.vm.provision 'shell', inline: static_route_command
+              host_config.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
+            end
+          end
 
-					# Initialize the LVM configuration for the data disk if required
-					if host[$provider]['data_disk']
-						host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-					end
+          # Initialize the LVM configuration for the data disk if required
+          if host[$provider]['data_disk']
+            host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+          end
 
-					# Write out the /etc/hosts file
-					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+          # Write out the /etc/hosts file
+          host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
 
-					host_config.vm.provision 'ansible' do |ansible|
-						ansible.playbook = host['ansible_playbook']
-						ansible.groups = $ansible_groups
-						ansible.extra_vars = $ansible_vars
-						# ansible.verbose = "vvv"
-					end
+          host_config.vm.provision 'ansible' do |ansible|
+            ansible.playbook = host['ansible_playbook']
+            ansible.groups = $ansible_groups
+            ansible.extra_vars = $ansible_vars
+            # ansible.verbose = "vvv"
+          end
           
         end
 
@@ -480,18 +483,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             end
           end
           
-					# NOTE: These boxes must have been added to Vagrant before executing this project.
-					if host['type'] == 'centos77'
-						host_config.vm.box = 'devops/centos77'
-					end
-					if host['type'] == 'centos80'
-						host_config.vm.box = 'devops/centos80'
-					end          
-					if host['type'] == 'ubuntu1804'
-						host_config.vm.box = 'devops/ubuntu1804'
-					end
-					
-					host_config.vm.synced_folder '.', '/vagrant', disabled: true
+          # NOTE: These boxes must have been added to Vagrant before executing this project.
+          if host['type'] == 'centos7'
+            host_config.vm.box = 'devops/centos7'
+          end
+          if host['type'] == 'centos8'
+            host_config.vm.box = 'devops/centos8'
+          end          
+          if host['type'] == 'ubuntu1804'
+            host_config.vm.box = 'devops/ubuntu1804'
+          end
+          if host['type'] == 'ubuntu2004'
+            host_config.vm.box = 'devops/ubuntu2004'
+          end
+          
+          host_config.vm.synced_folder '.', '/vagrant', disabled: true
         
           host_config.vm.provider :vmware_desktop do |vmware_desktop|
             # Create the data disk if required and associate it with the VM
@@ -512,20 +518,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             vmware_desktop.vmx['guestinfo.metadata'] = Base64.encode64(generate_guest_info_meta_data(host_hostname, host[$provider]['fqdn'], host[$provider]['ip'], host[$provider]['gateway'], host[$provider]['dns_server'], host[$provider]['domain'])).gsub(/\n/, '')
           end
           
-					# Initialize the LVM configuration for the data disk if required
-					if host[$provider]['data_disk']
-						host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-					end
+          # Initialize the LVM configuration for the data disk if required
+          if host[$provider]['data_disk']
+            host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+          end
 
-					# Write out the /etc/hosts file
-					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+          # Write out the /etc/hosts file
+          host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
 
-					host_config.vm.provision 'ansible' do |ansible|
-						ansible.playbook = host['ansible_playbook']
-						ansible.groups = $ansible_groups
-						ansible.extra_vars = $ansible_vars
-						# ansible.verbose = "vvv"
-					end
+          host_config.vm.provision 'ansible' do |ansible|
+            ansible.playbook = host['ansible_playbook']
+            ansible.groups = $ansible_groups
+            ansible.extra_vars = $ansible_vars
+            # ansible.verbose = "vvv"
+          end
           
         end
       end
@@ -558,20 +564,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end                    
 
         config.vm.define host_name do |host_config|
-					# NOTE: These boxes must have been added to Vagrant before executing this project.
-					if host['type'] == 'centos77'
-						host_config.vm.box = 'devops/centos77'
-					end
-					if host['type'] == 'centos80'
-						host_config.vm.box = 'devops/centos80'
-					end          
-					if host['type'] == 'ubuntu1804'
-						host_config.vm.box = 'devops/ubuntu1804'
-					end
+          # NOTE: These boxes must have been added to Vagrant before executing this project.
+          if host['type'] == 'centos7'
+            host_config.vm.box = 'devops/centos7'
+          end
+          if host['type'] == 'centos8'
+            host_config.vm.box = 'devops/centos8'
+          end                   
+          if host['type'] == 'ubuntu1804'
+            host_config.vm.box = 'devops/ubuntu1804'
+          end
+          if host['type'] == 'ubuntu2004'
+            host_config.vm.box = 'devops/ubuntu2004'
+          end
 
-					host_config.vm.synced_folder '.', '/vagrant', disabled: true
-											
-					host_config.vm.network 'private_network', bridge: 'Vagrant Switch'                
+          host_config.vm.synced_folder '.', '/vagrant', disabled: true
+                      
+          host_config.vm.network 'private_network', bridge: 'Vagrant Switch'                
                 
           host_config.trigger.after :up do |trigger|
             trigger.info = 'Configuring the VM network...'
@@ -585,32 +594,32 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             hyperv.vmname = hostname
           end
           
-					# Ensure that the /etc/rc.local file exists
-					#host_config.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
+          # Ensure that the /etc/rc.local file exists
+          #host_config.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
 
-					# Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
-					#if host['private_networks']
-					# host['private_networks'].split(/\s*,\s*/).each do |private_network|
-					#   static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host['ip']]
-					#                 
-					#   host_config.vm.provision 'shell', inline: static_route_command
-					#   host_config.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
-					# end
-					#end
+          # Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
+          #if host['private_networks']
+          # host['private_networks'].split(/\s*,\s*/).each do |private_network|
+          #   static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host['ip']]
+          #                 
+          #   host_config.vm.provision 'shell', inline: static_route_command
+          #   host_config.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"                
+          # end
+          #end
 
-					# Initialize the LVM configuration for the data disk if required
-					#if host['data_disk']
-					#  host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-					#end
+          # Initialize the LVM configuration for the data disk if required
+          #if host['data_disk']
+          #  host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+          #end
 
-					# Write out the /etc/hosts file
-					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+          # Write out the /etc/hosts file
+          host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
 
-					host_config.vm.provision 'ansible' do |ansible|
-						ansible.playbook = host['ansible_playbook']
-						ansible.groups = $ansible_groups
-						ansible.extra_vars = $ansible_vars
-					end
+          host_config.vm.provision 'ansible' do |ansible|
+            ansible.playbook = host['ansible_playbook']
+            ansible.groups = $ansible_groups
+            ansible.extra_vars = $ansible_vars
+          end
         end
       end
     end
@@ -642,16 +651,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end                    
 
         config.vm.define host_name do |host_config|
-					# NOTE: These boxes must have been added to Vagrant before executing this project.
-					if host['type'] == 'centos77'
-						host_config.vm.box = 'devops/centos77'
-					end
-					if host['type'] == 'centos80'
-						host_config.vm.box = 'devops/centos80'
-					end          
-					if host['type'] == 'ubuntu1804'
-						host_config.vm.box = 'devops/ubuntu1804'
-					end
+          # NOTE: These boxes must have been added to Vagrant before executing this project.
+          if host['type'] == 'centos7'
+            host_config.vm.box = 'devops/centos7'
+          end
+          if host['type'] == 'centos8'
+            host_config.vm.box = 'devops/centos8'
+          end          
+          if host['type'] == 'ubuntu1804'
+            host_config.vm.box = 'devops/ubuntu1804'
+          end
+          if host['type'] == 'ubuntu2004'
+            host_config.vm.box = 'devops/ubuntu2004'
+          end
                 
           host_config.vm.provider :vmware_esxi do |vmware_esxi|
             vmware_esxi.esxi_hostname = 'esxi'
@@ -699,20 +711,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             vmware_esxi.guest_custom_vmx_settings = [['guestinfo.metadata.encoding','base64'], ['guestinfo.metadata', Base64.encode64(generate_guest_info_meta_data(host_hostname, host[$provider]['fqdn'], host[$provider]['ip'], host[$provider]['gateway'], host[$provider]['dns_server'], host[$provider]['domain'])).gsub(/\n/, '')]]
           end
           
-					# Initialize the LVM configuration for the data disk if required
-					if host[$provider]['data_disk']
-						host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
-					end
+          # Initialize the LVM configuration for the data disk if required
+          if host[$provider]['data_disk']
+            host_config.vm.provision 'shell', inline: "data_vg_check=`vgdisplay | grep 'VG Name' | grep 'data' | wc -l`; if [ $data_vg_check == '0' ]; then parted -s /dev/sdb mklabel msdos && parted -s /dev/sdb unit mib mkpart primary 1 100% && parted -s /dev/sdb set 1 lvm on && pvcreate /dev/sdb1 && vgcreate data /dev/sdb1; fi"
+          end
 
-					# Write out the /etc/hosts file
-					host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
+          # Write out the /etc/hosts file
+          host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
 
-					host_config.vm.provision 'ansible' do |ansible|
-						ansible.playbook = host['ansible_playbook']
-						ansible.groups = $ansible_groups
-						ansible.extra_vars = $ansible_vars
-						# ansible.verbose = "vvv"
-					end
+          host_config.vm.provision 'ansible' do |ansible|
+            ansible.playbook = host['ansible_playbook']
+            ansible.groups = $ansible_groups
+            ansible.extra_vars = $ansible_vars
+            # ansible.verbose = "vvv"
+          end
         end
       end
     end
