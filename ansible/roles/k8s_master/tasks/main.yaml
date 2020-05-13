@@ -203,8 +203,8 @@
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
-      command:
-        cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
+      shell:
+        cmd: /usr/bin/kubectl taint node `hostname` node-role.kubernetes.io/master:NoSchedule-
       when: ("k8s_worker" not in groups.keys())
 
     - name: Create the Prometheus service account

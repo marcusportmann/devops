@@ -432,11 +432,14 @@ spec:
           #- name: CSI_RESIZER_IMAGE
           #  value: PREFIX/csi-resizer:v0.3.0
           # Manually specify number of CSI attacher replicas
-          #- name: CSI_ATTACHER_REPLICA_COUNT
-          #  value: "3"
+          - name: CSI_ATTACHER_REPLICA_COUNT
+            value: "1"
           # Manually specify number of CSI provisioner replicas
-          #- name: CSI_PROVISIONER_REPLICA_COUNT
-          #  value: "3"
+          - name: CSI_PROVISIONER_REPLICA_COUNT
+            value: "1"
+          # Manually specify number of CSI resizer replicas
+          - name: CSI_RESIZER_REPLICA_COUNT
+            value: "1"
       #imagePullSecrets:
       #- name:
       serviceAccountName: longhorn-service-account
@@ -448,7 +451,7 @@ metadata:
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 parameters:
-  numberOfReplicas: "3"
+  numberOfReplicas: "1"
   staleReplicaTimeout: "2880"
   fromBackup: ""
 #  diskSelector: "ssd,fast"

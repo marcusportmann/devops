@@ -36,34 +36,34 @@
   roles:
   - k8s_worker
 
-#- name: Apply the configuration for the storage components to the Kubernetes cluster
-#  hosts: k8s_master:k8s_worker
-#  become: yes
-#  become_user: root
-#  roles:
-#  - k8s_storage
-#
-#- name: Apply the configuration for the operator components to the Kubernetes cluster
-#  hosts: k8s_master:k8s_worker
-#  become: yes
-#  become_user: root
-#  roles:
-#  - { role: "k8s_operators", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
-#
-#- name: Apply the configuration for the monitoring components to the Kubernetes cluster
-#  hosts: k8s_master:k8s_worker
-#  become: yes
-#  become_user: root
-#  roles:
-#  - { role: "k8s_monitoring", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
-#
+- name: Apply the configuration for the storage components to the Kubernetes cluster
+  hosts: k8s_master:k8s_worker
+  become: yes
+  become_user: root
+  roles:
+  - k8s_storage
+
+- name: Apply the configuration for the operator components to the Kubernetes cluster
+  hosts: k8s_master:k8s_worker
+  become: yes
+  become_user: root
+  roles:
+  - { role: "k8s_operators", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
+
+- name: Apply the configuration for the monitoring components to the Kubernetes cluster
+  hosts: k8s_master:k8s_worker
+  become: yes
+  become_user: root
+  roles:
+  - { role: "k8s_monitoring", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
+
 #- name: Apply the configuration for the Istio components to the Kubernetes cluster
-#  hosts: k8s_master:k8s_worker
-#  become: yes
-#  become_user: root
-#  roles:
-#  - { role: "k8s_istio", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
-#
+# hosts: k8s_master:k8s_worker
+# become: yes
+# become_user: root
+# roles:
+# - { role: "k8s_istio", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
+
 
 
 

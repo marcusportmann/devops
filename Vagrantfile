@@ -9,6 +9,7 @@ require 'ipaddr'
 def generate_guest_info_meta_data(hostname, fqdn, ip, gateway, dns_server, dns_search)
 ubuntu_boot_cloud_config = """
 instance-id: #{fqdn}
+hostname: #{hostname}
 local-hostname: #{hostname}
 network:
   version: 2
@@ -60,6 +61,27 @@ def generate_hosts_file(provider, profile, hosts)
   end
   
   hosts_file
+end
+
+def get_hostname_for_host(provider, host)
+
+  if (host[provider]['fqdn'].nil? || host[provider]['fqdn'].empty?)
+  	raise "No fqdn specified for host (%s)" % host['name']
+  end
+
+	if host['type'].start_with?('ubuntu')
+		if (!host[provider]['domain'].nil? && !host[provider]['domain'].empty?) 
+			if host[provider]['fqdn'].include? (".%s" % host[provider]['domain'])
+				return host[provider]['fqdn'].slice(0..(host[provider]['fqdn'].index(".%s" % host[provider]['domain'])-1))
+			else
+				raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[provider]['domain'], host['name']]
+			end
+		else
+			raise "No domain specified for host (%s)" % host['name']
+		end                 
+	else
+    return host[provider]['fqdn']
+  end
 end
 
 def cidr_to_ip_network_netmask(cidr)
@@ -345,17 +367,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         host = $hosts[host_name]
         
         # Determine the hostname for the host
-        host_hostname = host[$provider]['fqdn']
-        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-          else
-            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-          end
-        else
-          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-        end                    
-
+        host_hostname = get_hostname_for_host($provider, host)
+        
         config.vm.define host_name do |host_config|
           # NOTE: These boxes must have been added to Vagrant before executing this project.
           if host['type'] == 'centos7'
@@ -438,18 +451,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         host = $hosts[host_name]
         
         # Determine the hostname for the host
-        host_hostname = nil
-        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-          else
-            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-          end
-        else
-          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-        end                    
+        host_hostname = get_hostname_for_host($provider, host)
         
         config.vm.define host_name do |host_config|
+                
           # Create the data disk if required and associate it with the VM
           if host[$provider]['data_disk']
             host_config.trigger.before :up do |trigger|
@@ -482,7 +487,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
               end
             end
           end
-          
+                    
           # NOTE: These boxes must have been added to Vagrant before executing this project.
           if host['type'] == 'centos7'
             host_config.vm.box = 'devops/centos7'
@@ -498,6 +503,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
           
           host_config.vm.synced_folder '.', '/vagrant', disabled: true
+          
+          # Set the hostname for the VM
+          # host_config.vm.hostname = host_hostname          
         
           host_config.vm.provider :vmware_desktop do |vmware_desktop|
             # Create the data disk if required and associate it with the VM
@@ -552,17 +560,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         host = $hosts[host_name]
 
         # Determine the hostname for the host
-        host_hostname = nil
-        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-          else
-            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-          end
-        else
-          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-        end                    
-
+        host_hostname = get_hostname_for_host($provider, host)
+         
         config.vm.define host_name do |host_config|
           # NOTE: These boxes must have been added to Vagrant before executing this project.
           if host['type'] == 'centos7'
@@ -639,18 +638,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         host = $hosts[host_name]
 
         # Determine the hostname for the host
-        host_hostname = nil
-        if (!host[$provider]['domain'].nil? && !host[$provider]['domain'].empty?) 
-          if host[$provider]['fqdn'].include? (".%s" % host[$provider]['domain'])
-            host_hostname = host[$provider]['fqdn'].slice(0..(host[$provider]['fqdn'].index(".%s" % host[$provider]['domain'])-1))
-          else
-            raise "The domain (%s) could not be found in the fqdn for the host (%s)" % [host[$provider]['domain'], host[$provider]['fqdn']]
-          end
-        else
-          raise "No domain specified for host (%s)" % host[$provider]['fqdn']
-        end                    
-
-        config.vm.define host_name do |host_config|
+        host_hostname = get_hostname_for_host($provider, host)
+        
+        config.vm.define host_name do |host_config|      
+        
           # NOTE: These boxes must have been added to Vagrant before executing this project.
           if host['type'] == 'centos7'
             host_config.vm.box = 'devops/centos7'

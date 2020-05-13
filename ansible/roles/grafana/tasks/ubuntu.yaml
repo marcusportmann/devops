@@ -21,35 +21,35 @@
 
 - name: Retrieve the version of the installed grafana package
   debug:
-    msg: Found grafana package version {{ ansible_facts.packages['grafana'][0].version  }}
+    msg: Found the installed grafana package ({{ ansible_facts.packages['grafana'][0].version }})
   when: "'grafana' in ansible_facts.packages"
 
 - name: Install the grafana package
   block:
-  - name: Check whether the Grafana {{ grafana_ubuntu_package_version }} package has been downloaded
+  - name: Check whether the {{ grafana_ubuntu_package }} package has been downloaded
     become: no
-    local_action: stat path=packages/grafana_{{ grafana_ubuntu_package_version }}_amd64.deb
+    local_action: stat path=packages/{{ grafana_ubuntu_package }}
     register: grafana_package_stat_result  
 
-  - name: Download the Grafana {{ grafana_ubuntu_package_version }} package
+  - name: Download the {{ grafana_ubuntu_package }} package
     become: no
-    local_action: get_url url='https://dl.grafana.com/oss/release/grafana_{{ grafana_ubuntu_package_version }}_amd64.deb' dest='packages/grafana_{{ grafana_ubuntu_package_version }}_amd64.deb' checksum={{ grafana_ubuntu_package_checksum }}
+    local_action: get_url url='https://dl.grafana.com/oss/release/{{ grafana_ubuntu_package }}' dest='packages/{{ grafana_ubuntu_package }}' checksum={{ grafana_ubuntu_package_checksum }}
     when: (grafana_package_stat_result.stat.exists == False)
   
-  - name: Copy the Grafana {{ grafana_ubuntu_package_version }} package
+  - name: Copy the {{ grafana_ubuntu_package }} package
     copy:
-      src: packages/grafana_{{ grafana_ubuntu_package_version }}_amd64.deb
-      dest: /var/tmp/ansible/grafana_{{ grafana_ubuntu_package_version }}_amd64.deb
+      src: packages/{{ grafana_ubuntu_package }}
+      dest: /var/tmp/ansible/{{ grafana_ubuntu_package }}
   
   - name: Unlock the version of the grafana package
     command:
       cmd: apt-mark unhold grafana  
 
-  - name: Install the grafana package ({{ grafana_ubuntu_package_version }})
+  - name: Install the {{ grafana_ubuntu_package }} package
     apt:
       state: present
       policy_rc_d: 101
-      deb: /var/tmp/ansible/grafana_{{ grafana_ubuntu_package_version }}_amd64.deb
+      deb: /var/tmp/ansible/{{ grafana_ubuntu_package }}
 
   - name: Lock the version of the grafana package
     command:

@@ -20,8 +20,13 @@
 
 - name: Retrieve the version of the installed docker-ce package
   debug:
-    msg: Found docker-ce package version {{ ansible_facts.packages['docker-ce'][0].version  }}
+    msg: Found the installed docker-ce package ({{ ansible_facts.packages['docker-ce'][0].version }})
   when: "'docker-ce' in ansible_facts.packages"
+
+- name: Retrieve the version of the installed docker-ce-cli package
+  debug:
+    msg: Found the installed docker-ce-cli package ({{ ansible_facts.packages['docker-ce-cli'][0].version }})
+  when: "'docker-ce-cli' in ansible_facts.packages"
 
 - name: Install the docker-ce and docker-ce-cli packages
   block:
@@ -32,13 +37,13 @@
     command:
       cmd: apt-mark unhold docker-ce docker-ce-cli
 
-  - name: Install the docker-ce and docker-ce-cli packages ({{ docker_ubuntu_package_version }})
+  - name: Install the docker-ce and docker-ce-cli packages ({{ docker_ce_ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
       name:
-       - docker-ce={{ docker_ubuntu_package_version }}
-       - docker-ce-cli={{ docker_ubuntu_package_version }}
+       - docker-ce={{ docker_ce_ubuntu_package_version }}
+       - docker-ce-cli={{ docker_ce_ubuntu_package_version }}
 
   - name: Lock the version of the docker-ce and docker-ce-cli packages
     command:
@@ -61,6 +66,6 @@
       enabled: yes
       daemon_reload: yes
 
-  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ubuntu_package_version))
+  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_ubuntu_package_version))
 
 

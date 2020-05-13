@@ -3,6 +3,12 @@
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes storage configuration
 
+- name: Allow all access to tcp port 3260 (iSCSI)
+  ufw:
+    rule: allow
+    port: '3260'
+    proto: tcp
+
 - name: Install the iSCSI client if this is a worker or there are no workers only masters
   block:
   - name: Install the open-iscsi package

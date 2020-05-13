@@ -134,4 +134,5 @@
         cmd: /usr/bin/helm -n operators upgrade --install --force postgres-operator-ui /var/tmp/ansible/postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}-values.yaml
     when: postgres_operator_ui_installed_helm_chart_version_output.stdout != postgres_operator_ui_helm_chart_version
 
-  when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
+  when: ((postgres_operator_ui_enabled is defined) and (postgres_operator_ui_enabled != None) and (postgres_operator_ui_enabled == true))
+

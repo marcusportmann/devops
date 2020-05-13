@@ -21,7 +21,7 @@
 
 - name: Retrieve the version of the installed etcd package
   debug:
-    msg: Found etcd package version {{ ansible_facts.packages['etcd'][0].version  }}
+    msg: Found the installed etcd package ({{ ansible_facts.packages['etcd'][0].version }})
   when: "'etcd' in ansible_facts.packages"
 
 - name: Install the etcd package

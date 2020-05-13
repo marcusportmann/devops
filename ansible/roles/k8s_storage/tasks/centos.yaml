@@ -3,3 +3,24 @@
 - debug:
     msg: Applying the CentOS-specific Kubernetes storage configuration
 
+- name: Allow all access to tcp port 3260 (iSCSI)
+  firewalld:
+    port: 3260/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Install the iSCSI client if this is a worker or there are no workers only masters
+  block:
+  - name: Install the open-iscsi package
+    yum:
+      name: iscsi-initiator-utils
+      state: latest
+
+  - name: Start the iscsid service
+    systemd:
+      name: iscsid.service
+      state: started
+      enabled: yes
+
+  when: (("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker']))

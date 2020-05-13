@@ -10,4 +10,10 @@ fi
 
 if [[ $PACKER_BUILDER_TYPE =~ vmware ]]; then
 apt-get -y install open-vm-tools
+
+cat <<EOT >> /etc/vmware-tools/tools.conf
+[guestinfo]
+primary-nics=eth*
+EOT
+
 fi
