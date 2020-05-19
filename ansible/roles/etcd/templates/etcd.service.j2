@@ -18,14 +18,13 @@ EnvironmentFile=-/etc/default/%p
 Type=notify
 User=etcd
 PermissionsStartOnly=true
-#ExecStart=/bin/sh -c "GOMAXPROCS=$(nproc) /usr/bin/etcd $DAEMON_ARGS"
 ExecStart=/usr/bin/etcd $DAEMON_ARGS \
   --cert-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}.crt \
   --key-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}.key \
   --peer-cert-file=/etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt \
   --peer-key-file=/etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.key \
-  --trusted-ca-file=/etc/etcd/pki/ca.crt \
-  --peer-trusted-ca-file=/etc/etcd/pki/ca.crt \
+  --trusted-ca-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}-ca.crt \
+  --peer-trusted-ca-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}-ca.crt \
   --peer-client-cert-auth \
   --client-cert-auth \
   --initial-advertise-peer-urls https://{{ inventory_hostname }}:2380 \

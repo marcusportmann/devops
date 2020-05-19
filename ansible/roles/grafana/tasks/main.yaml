@@ -51,6 +51,12 @@
     src: dashboards/node-exporter-full_rev16.json.j2
     dest: /var/lib/grafana/dashboards/node-exporter-full_rev16.json
 
+- name: Copy the kubernetes.json dashboard file
+  template:
+    src: dashboards/kubernetes.json.j2
+    dest: /var/lib/grafana/dashboards/kubernetes.json
+  when: ('k8s_master' in groups)
+  
 - name: Restart the Grafana systemd service
   systemd:
     name: grafana-server.service

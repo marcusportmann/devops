@@ -10,6 +10,7 @@ mkdir -p ../ansible/roles/k8s_monitoring/files/pki/local
 mkdir -p ../ansible/roles/k8s_operators/files/pki/local
 mkdir -p ../ansible/roles/k8s_storage/files/pki/local
 
+
 # Generate the Root CA private key and certificate
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 mv -f ca.pem ca.crt
@@ -23,6 +24,16 @@ cp ca.crt ../ansible/roles/k8s_monitoring/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_operators/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca-bundle.crt
+
+
+# Generate the etcd intermediate CA private key and certificate
+cfssl gencert -initca etcd-local-ca-csr.json | cfssljson -bare etcd-local-ca
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile intermediate_ca etcd-local-ca.csr | cfssljson -bare etcd-local-ca
+mv -f etcd-local-ca-key.pem etcd-local-ca.key
+mv -f etcd-local-ca.pem etcd-local-ca.crt
+cp etcd-local-ca.crt ../ansible/roles/etcd/files/pki/local
+cp etcd-local-ca.key ../ansible/roles/etcd/files/pki/local
+
 
 # Generate the Kubernetes intermediate CA private key and certificate
 cfssl gencert -initca k8s-local-ca-csr.json | cfssljson -bare k8s-local-ca
@@ -45,7 +56,7 @@ cp k8s-local-etcd-ca.crt ../ansible/roles/k8s_master/files/pki/local
 
 
 # Generate the etcd cluster private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server etcd-local-csr.json | cfssljson -bare etcd-local
+cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-csr.json | cfssljson -bare etcd-local
 mv -f etcd-local-key.pem etcd-local.key
 mv -f etcd-local.pem etcd-local.crt
 cp etcd-local.key ../ansible/roles/etcd/files/pki/local
@@ -53,23 +64,31 @@ cp etcd-local.crt ../ansible/roles/etcd/files/pki/local
 
 
 # Generate the etcd cluster peer private keys and certificates
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server etcd-local-01-etcd-peer-csr.json | cfssljson -bare etcd-local-01-etcd-peer
+cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-01-etcd-peer-csr.json | cfssljson -bare etcd-local-01-etcd-peer
 mv -f etcd-local-01-etcd-peer-key.pem etcd-local-01-etcd-peer.key
 mv -f etcd-local-01-etcd-peer.pem etcd-local-01-etcd-peer.crt
 cp etcd-local-01-etcd-peer.key ../ansible/roles/etcd/files/pki/local
 cp etcd-local-01-etcd-peer.crt ../ansible/roles/etcd/files/pki/local
 
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server etcd-local-02-etcd-peer-csr.json | cfssljson -bare etcd-local-02-etcd-peer
+cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-02-etcd-peer-csr.json | cfssljson -bare etcd-local-02-etcd-peer
 mv -f etcd-local-02-etcd-peer-key.pem etcd-local-02-etcd-peer.key
 mv -f etcd-local-02-etcd-peer.pem etcd-local-02-etcd-peer.crt
 cp etcd-local-02-etcd-peer.key ../ansible/roles/etcd/files/pki/local
 cp etcd-local-02-etcd-peer.crt ../ansible/roles/etcd/files/pki/local
 
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server etcd-local-03-etcd-peer-csr.json | cfssljson -bare etcd-local-03-etcd-peer
+cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-03-etcd-peer-csr.json | cfssljson -bare etcd-local-03-etcd-peer
 mv -f etcd-local-03-etcd-peer-key.pem etcd-local-03-etcd-peer.key
 mv -f etcd-local-03-etcd-peer.pem etcd-local-03-etcd-peer.crt
 cp etcd-local-03-etcd-peer.key ../ansible/roles/etcd/files/pki/local
 cp etcd-local-03-etcd-peer.crt ../ansible/roles/etcd/files/pki/local
+
+
+# Generate the etcd client key and certificate
+cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client etcd-local-client-csr.json | cfssljson -bare etcd-local-client
+mv -f etcd-local-client-key.pem etcd-local-client.key
+mv -f etcd-local-client.pem etcd-local-client.crt
+cp etcd-local-client.key ../ansible/roles/etcd/files/pki/local
+cp etcd-local-client.crt ../ansible/roles/etcd/files/pki/local
 
 
 # Generate the Kubernetes etcd client private keys and certificates for connecting a Kubernetes cluster to an external etcd cluster

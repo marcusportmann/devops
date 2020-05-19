@@ -26,13 +26,19 @@ variables:
 - name: etcd_cluster_name
   values:
   - local
+- name: etcd_package_checksum
+  values:
+  - sha256:a3a332a68fe8dedf20149c1a4b8746fe8061b72d75d3a5850b17e04de9ed7942
+- name: etcd_version
+  values:
+  - 3.4.8
 
 # ----------------------------------------------------------------------------------------
 # Kubernetes Configuration
 # ----------------------------------------------------------------------------------------
 - name: containerd_centos_package
   values:
-  - containerd.io-1.2.13-3.1.el7.x86_64.rpm 
+  - containerd.io-1.2.13-3.1.el7.x86_64.rpm
 - name: containerd_centos_package_version
   values:
   - 1.2.13
@@ -44,7 +50,7 @@ variables:
   - 19.03.8
 - name: docker_ce_cli_centos_package
   values:
-  - docker-ce-cli-19.03.8-3.el7.x86_64.rpm 
+  - docker-ce-cli-19.03.8-3.el7.x86_64.rpm
 - name: docker_ce_cli_centos_package_version
   values:
   - 19.03.8
@@ -80,10 +86,10 @@ variables:
   - weave
 - name: k8s_centos_package_version
   values:
-  - 1.17.5
+  - 1.18.0
 - name: k8s_ubuntu_package_version
   values:
-  - 1.17.5-00
+  - 1.18.2-00
 
 # ----------------------------------------------------------------------------------------
 # Kubernetes Storage Configuration
@@ -150,7 +156,7 @@ variables:
   - true
 - name: istio_package_checksum
   values:
-  - sha256:0e32ac8af40b9edcb49a31b8f45df4f3a825a47fd2aa1ac114e93def73dc3c17
+  - sha256:03e9a1a20cac4f80f21e119ce26e7342d953686d651feeedaae521a722ad42ca
 - name: istio_prometheus_enabled
   values:
   - false
@@ -159,10 +165,10 @@ variables:
   - false
 - name: istio_version
   values:
-  - 1.5.2
+  - 1.5.4
 - name: istioctl_package_checksum
   values:
-  - sha256:756956f182bdd15c92b218fd9de4b3f75486a13535d13288fae9024181afd71a
+  - sha256:c9062ae88337ca08cd17d83084f7de3814da9911554c32c248f06b1f08e83660
 
 # ----------------------------------------------------------------------------------------
 # External Monitoring Configuration
@@ -246,7 +252,7 @@ variables:
   - grafana_6.7.3_amd64.deb
 - name: grafana_ubuntu_package_checksum
   values:
-  - sha256:1ffa1329cb0f574f0f60c3f57116b2a3d68b3db0a39eca9099956e9a349dc8e6  
+  - sha256:1ffa1329cb0f574f0f60c3f57116b2a3d68b3db0a39eca9099956e9a349dc8e6
 - name: grafana_ubuntu_package_version
   values:
   - 6.7.3
@@ -268,7 +274,11 @@ profiles:
   hosts:
   - devops.local
 
-- name: etcd-cluster
+- name: etcd-minimal
+  hosts:
+  - etcd-local-01.local
+
+- name: etcd-full
   hosts:
   - etcd-local-01.local
   - etcd-local-02.local
@@ -301,9 +311,9 @@ profiles:
   hosts:
   - test-centos7.local
   - test-centos8.local
-  - test-centos81.local  
+  - test-centos81.local
   - test-ubuntu1804.local
-  - test-ubuntu2004.local  
+  - test-ubuntu2004.local
 
 - name: test-centos7
   hosts:
@@ -320,11 +330,11 @@ profiles:
 - name: test-centos81
   hosts:
   - test-centos81.local
-  
+
 - name: test-ubuntu1804
   hosts:
   - test-ubuntu1804.local
-  
+
 - name: test-ubuntu2004
   hosts:
   - test-ubuntu2004.local
@@ -335,10 +345,10 @@ hosts:
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     k8s_master
+  ansible_groups:     monitored,prometheus,grafana,k8s_master
   virtualbox:
     cpus:             4
-    memory:           6144
+    memory:           7168
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.60/24
@@ -362,7 +372,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-local-01.local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -391,7 +401,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-local-02.local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -420,8 +430,8 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-local-03.local
-  domain:             local
-  type:               ubuntu1804
+  domain:             centos7
+  type:               ubuntu2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -451,7 +461,7 @@ hosts:
 
 - name:               k8s-local-api.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_load_balancer
   virtualbox:
@@ -481,7 +491,7 @@ hosts:
 
 - name:               k8s-local-m-01.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
@@ -511,7 +521,7 @@ hosts:
 
 - name:               k8s-local-m-02.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
@@ -541,7 +551,7 @@ hosts:
 
 - name:               k8s-local-m-03.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
@@ -571,7 +581,7 @@ hosts:
 
 - name:               k8s-local-w-01.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -602,7 +612,7 @@ hosts:
 
 - name:               k8s-local-w-02.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -633,7 +643,7 @@ hosts:
 
 - name:               k8s-local-w-03.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -664,7 +674,7 @@ hosts:
 
 - name:               monitor.local
   domain:             local
-  type:               ubuntu1804
+  type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,prometheus,grafana
   virtualbox:
@@ -790,7 +800,7 @@ hosts:
     ip:               192.168.0.45/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-    
+
 - name:               test-ubuntu2004.local
   domain:             local
   type:               ubuntu2004
@@ -822,5 +832,5 @@ hosts:
     domain:           local
     ip:               192.168.0.44/24
     gateway:          192.168.0.1
-    dns_server:       192.168.0.1    
+    dns_server:       192.168.0.1
 

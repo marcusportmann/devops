@@ -8,7 +8,7 @@ replicaCount: 1
 image:
   registry: registry.opensource.zalan.do
   repository: acid/postgres-operator-ui
-  tag: v1.5.0
+  tag: v1.5.0-dirty
   pullPolicy: "IfNotPresent"
 
 rbac:
@@ -37,13 +37,15 @@ envs:
   # UI and operator API. Insert the service name of the operator API here!
   operatorApiUrl: "http://postgres-operator:8080"
   operatorClusterNameLabel: "cluster-name"
-  resourcesVisible: false
-  targetNamespace: "operators"
+  resourcesVisible: "False"
+  targetNamespace: "default"
 
 # configure UI service
 service:
-  type: NodePort
-  port: 8080
+  type: "NodePort"
+  port: "8081"
+  # If the type of the service is NodePort a port can be specified using the nodePort field
+  # If the nodePort field is not specified, or if it has no value, then a random port is used
   nodePort: 32521
 
 # configure UI ingress. If needed: "enabled: true"

@@ -4,7 +4,8 @@
 
 The **devops** project provides the capability to provision the various technologies that
 make up the DevOps platform in an automated manner using Packer, Vagrant and Ansible.
-Support is provided for the Virtualbox, VMware and Hyper-V virtualisation platforms.
+Support is provided for the Virtualbox, VMware Desktop, VMware ESXi and Hyper-V
+virtualisation platforms.
 
 ## Setup
 
@@ -116,7 +117,7 @@ Support is provided for the Virtualbox, VMware and Hyper-V virtualisation platfo
 	```
 
 
-### Option 3: Install Packer, Vagrant,Hyper-V and Ansible on Windows 64-bit
+### Option 3: Install Packer, Vagrant, Hyper-V and Ansible on Windows 64-bit
 
 1. Enable the Hyper-V Windows feature.
 
@@ -147,9 +148,10 @@ images, Packer is able to use tools like Chef or Puppet to install software onto
 
 This project supports the creation of VirtualBox Vagrant boxes, VMware Vagrant boxes, and VMware OVA templates for the following operating systems:
 
-- CentOS 7.7 (centos77)
-- CentOS 8.0 (centos80)
+- CentOS 7 (centos7)
+- CentOS 8 (centos8)
 - Ubuntu 18.04 (ubuntu1804)
+- Ubuntu 20.04 (ubuntu2004)
 
 Build the required templates by executing the *build-os-image.sh* script, under the *packer* directory, in a Terminal window:
 ```
@@ -205,47 +207,47 @@ The following ports are used by the components that form part of the DevOps stac
   <tr>
     <td>32500</td>
     <td>Grafana</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
   <tr>
     <td>32501</td>
     <td>Jaeger</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
   <tr>
     <td>32502</td>
     <td>Kiali</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTPS</td>
   </tr>
   <tr>
     <td>32503</td>
     <td>Prometheus</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
   <tr>
     <td>32504</td>
     <td>Alert Manager</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
   <tr>
     <td>32505</td>
     <td>Elasticsearch</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
   <tr>
     <td>32506</td>
     <td>Kibana</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
   <tr>
     <td>32520</td>
     <td>Longhorn UI</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
   <tr>
     <td>32521</td>
     <td>Postgres Operator UI</td>
-    <td>HTTP (NodePort) HTTPS (Istio Ingress Gateway)</td>
+    <td>HTTP</td>
   </tr>
 </table>
 

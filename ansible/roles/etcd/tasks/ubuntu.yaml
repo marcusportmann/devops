@@ -3,6 +3,12 @@
 - debug:
     msg: Applying the Ubuntu-specific etcd configuration
 
+#  _____ ___ ____  _______        ___    _     _       ____   ___  ____ _____ ____
+# |  ___|_ _|  _ \| ____\ \      / / \  | |   | |     |  _ \ / _ \|  _ \_   _/ ___|
+# | |_   | || |_) |  _|  \ \ /\ / / _ \ | |   | |     | |_) | | | | |_) || | \___ \
+# |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
+# |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
+#
 - name: Allow all access to tcp port 2379
   ufw:
     rule: allow
@@ -14,59 +20,3 @@
     rule: allow
     port: '2380'
     proto: tcp
-
-- name: Collect the package facts
-  package_facts:
-    manager: auto
-
-- name: Retrieve the version of the installed etcd package
-  debug:
-    msg: Found the installed etcd package ({{ ansible_facts.packages['etcd'][0].version }})
-  when: "'etcd' in ansible_facts.packages"
-
-- name: Install the etcd package
-  block:
-  - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
-
-  - name: Unlock the version of the etcd package
-    command:
-      cmd: apt-mark unhold etcd
-
-  - name: Install the etcd package ({{ etcd_ubuntu_package_version }})
-    apt:
-      state: present
-      policy_rc_d: 101
-      name:
-       - etcd={{ etcd_ubuntu_package_version }}
-
-  - name: Lock the version of the etcd package
-    command:
-      cmd: apt-mark hold etcd
-
-  when: (('etcd' not in ansible_facts.packages) or (ansible_facts.packages['etcd'][0].version != etcd_ubuntu_package_version))
-
-- name: Reconfigure etcd to apply the cluster and security settings
-  block:
-  - template:
-      src: ubuntu-etcd.service.j2
-      dest: /lib/systemd/system/etcd.service
-
-  - file:
-      state: absent
-      path: /var/lib/etcd/default
-
-  when: "'etcd' not in ansible_facts.packages"
-
-# NOTE: The restart of the etcd service MUST be non-blocking to handle the initial cluster
-#       bootstrapping process where the first node in the cluster will block and wait for
-#       the second node in the cluster to join, in the case of a 3 node cluster, before
-#       completing the startup process. If the initial startup was blocking the subsequent
-#       nodes would never be provisioned and the deployment of the cluster would hang.
-- name: Restart the etcd service
-  systemd:
-    name: etcd.service
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
-    no_block: yes

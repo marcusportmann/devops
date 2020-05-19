@@ -1,0 +1,50 @@
+{
+  "signing": {
+    "default": {
+      "expiry": "87600h"
+    },
+  "profiles": {
+      "client": {
+        "expiry": "87600h",
+        "usages": [
+          "signing",
+          "key encipherment",
+          "client auth"
+        ]
+      },
+      "client_server": {
+        "expiry": "87600h",
+        "usages": [
+          "signing",
+          "key encipherment",
+          "server auth",
+          "client auth"
+        ]
+      },
+      "intermediate_ca": {
+        "ca_constraint": {
+          "is_ca": true,
+          "max_path_len": 0, 
+          "max_path_len_zero": true
+        },
+        "expiry": "87600h",
+        "usages": [
+					"signing",
+					"digital signature",
+					"key encipherment",
+					"cert sign",
+					"crl sign",
+					"server auth",
+					"client auth"        ]
+      },      
+      "server": {
+        "expiry": "87600h",
+        "usages": [
+          "signing",
+          "key encipherment",
+          "server auth"
+        ]
+      }      
+    }    
+  }
+}

@@ -1,11 +1,33 @@
 # file: roles/etcd/tasks/main.yaml
 
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == "Ubuntu"
+  tags:
+  - unbound
+
+- include_tasks: centos.yaml
+  when: ansible_distribution == "CentOS"
+  tags:
+  - unbound
+
+#  _____ _____ ____ ____
+# | ____|_   _/ ___|  _ \
+# |  _|   | || |   | | | |
+# | |___  | || |___| |_| |
+# |_____| |_| \____|____/
+#
 - name: Create the /var/tmp/ansible directory
   file:
     path: /var/tmp/ansible
     owner: root
     group: root
-    mode: 0700    
+    mode: 0700
     state: directory
 
 - debug:
@@ -22,6 +44,11 @@
     copy:
       src: pki/{{ etcd_cluster_name }}/ca.crt
       dest: /etc/etcd/pki/ca.crt
+
+  - name: Copy the etcd-local-ca.crt certificate to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/etcd-local-ca.crt
+      dest: /etc/etcd/pki/etcd-local-ca.crt
 
   - name: Copy the etcd-{{ etcd_cluster_name }}.key private key to the /etc/etcd/pki directory
     copy:
@@ -42,6 +69,16 @@
     copy:
       src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.crt
       dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt
+
+  - name: Copy the etcd-local-client.key private key to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/etcd-local-client.key
+      dest: /etc/etcd/pki/etcd-local-client.key
+
+  - name: Copy the etcd-local-client.crt certificate to the /etc/etcd/pki directory
+    copy:
+      src: pki/{{ etcd_cluster_name }}/etcd-local-client.crt
+      dest: /etc/etcd/pki/etcd-local-client.crt
 
 - name: Add the etcd group
   group:
@@ -67,16 +104,96 @@
     mode: 0775
     state: directory
 
-- include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
-  tags:
-  - unbound
+- name: Install etcd
+  block:
+  - debug:
+      msg: Check whether the etcd {{ etcd_version }} package has been installed
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == "CentOS"
-  tags:
-  - unbound
+  - stat:
+      path: /bin/etcd
+    register: etcd_installed_stat_result
 
+  - shell:
+      cmd: /bin/etcd --version | head -n1 | awk  {'print $3'}
+    register: etcd_installed_version_output
+    when: (etcd_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      etcd_installed_version: '{{ etcd_installed_version_output.stdout }}'
+    when: (etcd_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      etcd_installed_version: ''
+    when: (etcd_installed_stat_result.stat.exists == False)
+
+  - block:
+    - debug:
+        msg: Install the etcd {{ etcd_version }} package
+
+    - name: Check whether the etcd {{ etcd_version }} package has been downloaded
+      become: no
+      local_action: stat path=packages/etcd-v{{ etcd_version }}-linux-amd64.tar.gz
+      register: etcd_package_stat_result
+
+    - name: Download the etcd {{ etcd_version }} package
+      become: no
+      local_action: get_url url='https://github.com/etcd-io/etcd/releases/download/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz' dest='packages/etcd-v{{ etcd_version }}-linux-amd64.tar.gz' checksum={{ etcd_package_checksum }}
+      when: (etcd_package_stat_result.stat.exists == False)
+
+    - name: Remove the existing etcd binary
+      file:
+        path: /bin/etcd
+        state: absent
+
+    - name: Remove the existing etcdctl binary
+      file:
+        path: /bin/etcd
+        state: absent
+
+    - name: Extract the etcd binary from the etcd {{ etcd_version }} package
+      unarchive:
+        src: packages/etcd-v{{ etcd_version }}-linux-amd64.tar.gz
+        dest: /var/tmp/ansible
+        creates: /var/tmp/ansible/etcd-v{{ etcd_version }}-linux-amd64
+
+    - name: Copy the etcd binary to the /bin directory
+      copy:
+        src: /var/tmp/ansible/etcd-v{{ etcd_version }}-linux-amd64/etcd
+        dest: /usr/bin/etcd
+        owner: root
+        group: root
+        mode: 0755
+        remote_src: yes
+
+    - name: Copy the etcdctl binary to the /bin directory
+      copy:
+        src: /var/tmp/ansible/etcd-v{{ etcd_version }}-linux-amd64/etcdctl
+        dest: /usr/bin/etcdctl
+        owner: root
+        group: root
+        mode: 0755
+        remote_src: yes
+
+    - name: Reconfigure etcd to apply the cluster and security settings
+      block:
+      - template:
+          src: etcd.service.j2
+          dest: /lib/systemd/system/etcd.service
+
+    # NOTE: The restart of the etcd service MUST be non-blocking to handle the initial cluster
+    #       bootstrapping process where the first node in the cluster will block and wait for
+    #       the second node in the cluster to join, in the case of a 3 node cluster, before
+    #       completing the startup process. If the initial startup was blocking the subsequent
+    #       nodes would never be provisioned and the deployment of the cluster would hang.
+    - name: Restart the etcd service
+      systemd:
+        name: etcd.service
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+        no_block: yes
+
+    when: (etcd_installed_version != etcd_version)
 
 
 
