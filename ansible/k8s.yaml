@@ -14,14 +14,6 @@
   roles:
   - docker
 
-- name: Apply the common configuration to both Kubernetes master and worker hosts
-  hosts: k8s_master:k8s_worker
-  become: yes
-  become_user: root
-  roles:
-  - docker
-  - k8s_common
-
 - name: Configure the Kubernetes master hosts
   hosts: k8s_master
   become: yes
@@ -36,28 +28,28 @@
   roles:
   - k8s_worker
 
-- name: Apply the configuration for the storage components to the Kubernetes cluster
+- name: Apply the configuration for the storage components to the Kubernetes cluster only to the last master node if there are no workers or the last worker node
   hosts: k8s_master:k8s_worker
   become: yes
   become_user: root
   roles:
-  - k8s_storage
+  - { role: "k8s_storage", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
 
-- name: Apply the configuration for the operator components to the Kubernetes cluster
+- name: Apply the configuration for the operator components to the Kubernetes cluster only to the last master node if there are no workers or the last worker node
   hosts: k8s_master:k8s_worker
   become: yes
   become_user: root
   roles:
   - { role: "k8s_operators", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
 
-- name: Apply the configuration for the monitoring components to the Kubernetes cluster
+- name: Apply the configuration for the monitoring components to the Kubernetes cluster only to the last master node if there are no workers or the last worker node
   hosts: k8s_master:k8s_worker
   become: yes
   become_user: root
   roles:
   - { role: "k8s_monitoring", when: "(('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))" }
 
-- name: Apply the configuration for the Istio components to the Kubernetes cluster
+- name: Apply the configuration for the Istio components to the Kubernetes cluster only to the last master node if there are no workers or the last worker node
   hosts: k8s_master:k8s_worker
   become: yes
   become_user: root

@@ -6,10 +6,11 @@
 #                       names of the private keys and certificates for the cluster.
 #
 # The following variables influence the deployment and configuration of Kubernetes:
-#   k8s_cluster_name  - The name of the etcd cluster, which influences the location and
-#                       names of the private keys and certificates for the cluster.
-#   k8s_etcd_topology - The etcd topology for the Kubernetes cluster, which can be stacked
-#                       or external, for an external etcd cluster.
+#   k8s_cluster_domain  - The name of the internal domain for the Kubernetes cluster.
+#   k8s_cluster_name    - The name of the Kubernetes cluster, which influences the location
+#                         and names of the private keys and certificates for the cluster.
+#   k8s_etcd_topology   - The etcd topology for the Kubernetes cluster, which can be stacked
+#                         or external, for an external etcd cluster.
 #
 #
 # PROFILES
@@ -21,254 +22,77 @@
 
 variables:
 # ----------------------------------------------------------------------------------------
-# Etcd Configuration
+# Mandatory Configuration
 # ----------------------------------------------------------------------------------------
 - name: etcd_cluster_name
   values:
   - local
-- name: etcd_package_checksum
-  values:
-  - sha256:a3a332a68fe8dedf20149c1a4b8746fe8061b72d75d3a5850b17e04de9ed7942
-- name: etcd_version
-  values:
-  - 3.4.8
 
-# ----------------------------------------------------------------------------------------
-# Kubernetes Configuration
-# ----------------------------------------------------------------------------------------
-- name: containerd_centos_package
-  values:
-  - containerd.io-1.2.13-3.1.el7.x86_64.rpm
-- name: containerd_centos_package_version
-  values:
-  - 1.2.13
-- name: docker_ce_centos_package
-  values:
-  - docker-ce-19.03.8-3.el7.x86_64.rpm
-- name: docker_ce_centos_package_version
-  values:
-  - 19.03.8
-- name: docker_ce_cli_centos_package
-  values:
-  - docker-ce-cli-19.03.8-3.el7.x86_64.rpm
-- name: docker_ce_cli_centos_package_version
-  values:
-  - 19.03.8
-- name: docker_ce_ubuntu_package_version
-  values:
-  - 5:19.03.6~3-0~ubuntu-bionic
-- name: helm_version
-  values:
-  - 3.1.2
-- name: helm_package_checksum
-  values:
-  - sha256:e6be589df85076108c33e12e60cfb85dcd82c5d756a6f6ebc8de0ee505c9fd4c
-- name: k8s_etcd_topology
-  values:
-  - stacked
-- name: k8s_cluster_name
-  values:
-  - local
 - name: k8s_cluster_domain
   values:
   - local.internal
-- name: k8s_control_plane_endpoint
+- name: k8s_cluster_name
   values:
-  - k8s-local-api.local
-- name: k8s_service_subnet
-  values:
-  - 10.254.0.0/16
-- name: k8s_pod_subnet
-  values:
-  - 10.255.0.0/16
-- name: k8s_cni_provider
-  values:
-  - weave
-- name: k8s_centos_package_version
-  values:
-  - 1.18.0
-- name: k8s_ubuntu_package_version
-  values:
-  - 1.18.2-00
+  - local
+
 
 # ----------------------------------------------------------------------------------------
-# Kubernetes Storage Configuration
+# Optional Configuration
 # ----------------------------------------------------------------------------------------
-- name: longhorn_enabled
-  values:
-  - true
-- name: topolvm_enabled
-  values:
-  - true
-- name: topolvm_version
-  values:
-  - 0.4.1
-- name: topolvm_lvmd_version
-  values:
-  - 0.4.1
-- name: topolvm_volume_group
-  values:
-  - system
+#- name: k8s_control_plane_endpoint
+#  values:
+#  - k8s-local-api.local
+#- name: k8s_pod_subnet
+#  values:
+#  - 10.255.0.0/16
+#- name: k8s_service_subnet
+#  values:
+#  - 10.254.0.0/16
 
-# ----------------------------------------------------------------------------------------
-# Kubernetes Extensions Configuration
-# ----------------------------------------------------------------------------------------
-- name: bitnami_labs_sealed_secrets_enabled
+#- name: k8s_operator_lifecycle_manager_enabled
+#  values:
+#  - false
+- name: k8s_postgres_operator_enabled
   values:
   - true
-- name: bitnami_labs_sealed_secrets_helm_chart_version
-  values:
-  - 1.8.0
-- name: bitnami_labs_sealed_secrets_kubeseal_version
-  values:
-  - 0.10.0
 
-# ----------------------------------------------------------------------------------------
-# Kubernetes Operator Configuration
-# ----------------------------------------------------------------------------------------
-- name: operator_lifecycle_manager_enabled
-  values:
-  - false
-- name: postgres_operator_enabled
+- name: k8s_longhorn_enabled
   values:
   - true
-- name: postgres_operator_helm_chart_version
-  values:
-  - 1.5.0
-- name: postgres_operator_ui_enabled
+- name: k8s_topolvm_enabled
   values:
   - true
-- name: postgres_operator_ui_helm_chart_version
-  values:
-  - 1.5.0
 
-# ----------------------------------------------------------------------------------------
-# Istio Configuration
-# ----------------------------------------------------------------------------------------
-- name: istio_enabled
+- name: k8s_monitoring_enabled
   values:
   - true
-- name: istio_grafana_enabled
-  values:
-  - false
-- name: istio_kiali_enabled
-  values:
-  - true
-- name: istio_package_checksum
-  values:
-  - sha256:03e9a1a20cac4f80f21e119ce26e7342d953686d651feeedaae521a722ad42ca
-- name: istio_prometheus_enabled
-  values:
-  - false
-- name: istio_tracing_enabled
-  values:
-  - false
-- name: istio_version
-  values:
-  - 1.5.4
-- name: istioctl_package_checksum
-  values:
-  - sha256:c9062ae88337ca08cd17d83084f7de3814da9911554c32c248f06b1f08e83660
-
-# ----------------------------------------------------------------------------------------
-# External Monitoring Configuration
-# ----------------------------------------------------------------------------------------
-- name: prometheus_data_directory
-  values:
-  - /var/lib/prometheus
-
-# ----------------------------------------------------------------------------------------
-# Monitoring Configuration (Kubernetes-based)
-#
-# Where elasticsearch_cluster_type is one of single, minimal or full.
-#
-# ----------------------------------------------------------------------------------------
-- name: monitoring_enabled
-  values:
-  - true
-- name: monitoring_elasticsearch_cluster_type
+- name: k8s_monitoring_elasticsearch_cluster_type
   values:
   - standalone
-- name: monitoring_elasticsearch_enabled
-  values:
-  - true
-- name: monitoring_elasticsearch_helm_chart_version
-  values:
-  - 7.6.2
-- name: monitoring_elasticsearch_persistent_volume_size
+- name: k8s_monitoring_elasticsearch_persistent_volume_size
   values:
   - 10Gi
-- name: monitoring_elasticsearch_persistent_volume_storage_class_name
+- name: k8s_monitoring_elasticsearch_persistent_volume_storage_class_name
   values:
   - default-local-storage
-- name: monitoring_grafana_enabled
-  values:
-  - true
-- name: monitoring_grafana_helm_chart_version
-  values:
-  - 5.0.13
-- name: monitoring_jaeger_enabled
-  values:
-  - true
-- name: monitoring_jaeger_helm_chart_version
-  values:
-  - 0.28.0
-- name: monitoring_kibana_enabled
-  values:
-  - true
-- name: monitoring_kibana_helm_chart_version
-  values:
-  - 7.6.2
-- name: monitoring_prometheus_enabled
-  values:
-  - true
-- name: monitoring_prometheus_helm_chart_version
-  values:
-  - 11.1.2
-- name: monitoring_prometheus_persistent_volume_storage_class_name
+- name: k8s_monitoring_prometheus_persistent_volume_storage_class_name
   values:
   - default-local-storage
-- name: monitoring_prometheus_alert_manager_persistent_volume_size
+- name: k8s_monitoring_prometheus_alert_manager_persistent_volume_size
   values:
   - 2Gi
-- name: monitoring_prometheus_server_persistent_volume_size
+- name: k8s_monitoring_prometheus_server_persistent_volume_size
   values:
   - 10Gi
 
-# ----------------------------------------------------------------------------------------
-# Monitoring Configuration (External)
-# ----------------------------------------------------------------------------------------
-- name: grafana_centos_package
+- name: k8s_istio_enabled
   values:
-  - grafana-6.7.3-1.x86_64.rpm
-- name: grafana_centos_package_checksum
-  values:
-  - sha256:fbe7eff6b5a6786c9affd5917fce53e24f16c395178352768b96935a62499211
-- name: grafana_centos_package_version
-  values:
-  - 6.7.3
-- name: grafana_ubuntu_package
-  values:
-  - grafana_6.7.3_amd64.deb
-- name: grafana_ubuntu_package_checksum
-  values:
-  - sha256:1ffa1329cb0f574f0f60c3f57116b2a3d68b3db0a39eca9099956e9a349dc8e6
-- name: grafana_ubuntu_package_version
-  values:
-  - 6.7.3
-- name: prometheus_node_exporter_version
-  values:
-  - 1.0.0-rc.0
-- name: prometheus_node_exporter_package_checksum
-  values:
-  - sha256:f175cffc4b96114e336288c9ea54b54abe793ae6fcbec771c81733ebc2d7be7c
-- name: prometheus_version
-  values:
-  - 2.18.1
-- name: prometheus_package_checksum
-  values:
-  - sha256:5fcc35b78bd0a1b84afae6de94248a4bea3cdb4daf0d54a37b5491cb86b014d7
+  - true
 
+
+# ----------------------------------------------------------------------------------------
+# Profiles
+# ----------------------------------------------------------------------------------------
 profiles:
 - name: devops
   hosts:
@@ -277,6 +101,7 @@ profiles:
 - name: etcd-minimal
   hosts:
   - etcd-local-01.local
+  - monitor.local
 
 - name: etcd-full
   hosts:
@@ -340,15 +165,18 @@ profiles:
   - test-ubuntu2004.local
 
 
+# ----------------------------------------------------------------------------------------
+# Hosts
+# ----------------------------------------------------------------------------------------
 hosts:
 - name:               devops.local
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus,grafana,k8s_master
+  ansible_groups:     k8s_master
   virtualbox:
     cpus:             4
-    memory:           7168
+    memory:           6144
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.60/24

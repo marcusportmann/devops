@@ -1,4 +1,8 @@
 # file: roles/etcd/vars/main.yaml
 
+etcd_package_checksum: sha256:a3a332a68fe8dedf20149c1a4b8746fe8061b72d75d3a5850b17e04de9ed7942
+etcd_version: 3.4.8
+
+
 
 

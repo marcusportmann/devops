@@ -43,10 +43,10 @@ sidecarResources:
 
 volumeClaimTemplate:
   accessModes: [ "ReadWriteOnce" ]
-  storageClassName: {{ monitoring_elasticsearch_persistent_volume_storage_class_name }}
+  storageClassName: {{ k8s_monitoring_elasticsearch_persistent_volume_storage_class_name }}
   resources:
     requests:
-      storage: {{ monitoring_elasticsearch_persistent_volume_size }}
+      storage: {{ k8s_monitoring_elasticsearch_persistent_volume_size }}
 
 antiAffinity: "soft"
 

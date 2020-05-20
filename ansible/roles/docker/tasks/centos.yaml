@@ -13,22 +13,22 @@
   when: "'containerd.io' in ansible_facts.packages"
 
 - name: Install the containerd package
-  block: 
+  block:
   - name: Check whether the {{ containerd_centos_package }} package has been downloaded
     become: no
     local_action: stat path=packages/{{ containerd_centos_package }}
-    register: containerd_package_stat_result  
+    register: containerd_package_stat_result
 
   - name: Download the {{ containerd_centos_package }} package
     become: no
     local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ containerd_centos_package }}' dest='packages/{{ containerd_centos_package }}'
     when: (containerd_package_stat_result.stat.exists == False)
- 
+
   - name: Copy the {{ containerd_centos_package }} package
     copy:
       src: packages/{{ containerd_centos_package }}
       dest: /var/tmp/ansible/{{ containerd_centos_package }}
- 
+
   - name: Install the {{ containerd_centos_package }} package
     yum:
       name: /var/tmp/ansible/{{ containerd_centos_package }}
@@ -43,22 +43,22 @@
   when: "'docker-ce-cli' in ansible_facts.packages"
 
 - name: Install the docker-ce-cli package
-  block: 
+  block:
   - name: Check whether the {{ docker_ce_cli_centos_package }} package has been downloaded
     become: no
     local_action: stat path=packages/{{ docker_ce_cli_centos_package }}
-    register: docker_ce_cli_package_stat_result  
+    register: docker_ce_cli_package_stat_result
 
   - name: Download the {{ docker_ce_cli_centos_package }} package
     become: no
     local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ docker_ce_cli_centos_package }}' dest='packages/{{ docker_ce_cli_centos_package }}'
     when: (docker_ce_cli_package_stat_result.stat.exists == False)
- 
+
   - name: Copy the {{ docker_ce_cli_centos_package }} package
     copy:
       src: packages/{{ docker_ce_cli_centos_package }}
       dest: /var/tmp/ansible/{{ docker_ce_cli_centos_package }}
- 
+
   - name: Install the {{ docker_ce_cli_centos_package }} package
     yum:
       name: /var/tmp/ansible/{{ docker_ce_cli_centos_package }}
@@ -73,27 +73,27 @@
   when: "'docker-ce' in ansible_facts.packages"
 
 - name: Install the docker-ce package
-  block: 
+  block:
   - name: Check whether the {{ docker_ce_centos_package }} package has been downloaded
     become: no
     local_action: stat path=packages/{{ docker_ce_centos_package }}
-    register: docker_ce_package_stat_result  
+    register: docker_ce_package_stat_result
 
   - name: Download the {{ docker_ce_centos_package }} package
     become: no
     local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ docker_ce_centos_package }}' dest='packages/{{ docker_ce_centos_package }}'
     when: (docker_ce_package_stat_result.stat.exists == False)
- 
+
   - name: Copy the {{ docker_ce_centos_package }} package
     copy:
       src: packages/{{ docker_ce_centos_package }}
       dest: /var/tmp/ansible/{{ docker_ce_centos_package }}
- 
+
   - name: Install the {{ docker_ce_centos_package }} package
     yum:
       name: /var/tmp/ansible/{{ docker_ce_centos_package }}
       state: present
-      
+
   - name: Create the /etc/docker directory
     file:
       path: /etc/docker
@@ -103,34 +103,13 @@
     template:
       src: daemon.json.j2
       dest: /etc/docker/daemon.json
-      
+
   - name: Restart the docker service
     systemd:
       name: docker.service
       state: restarted
       enabled: yes
-      daemon_reload: yes   
+      daemon_reload: yes
 
   when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_centos_package_version))
 
-
-
-
-
-
-#- name: Install the podman package
-#  yum: 
-#    name: podman
-#    state: latest
-#
-#- name: Install the podman-docker package
-#  yum: 
-#    name: podman-docker
-#    state: latest
-#
-#- name: Create the /etc/containers/nodocker file
-#  file:
-#    path: /etc/containers/nodocker
-#    state: touch
-#    owner: root
-#    group: root

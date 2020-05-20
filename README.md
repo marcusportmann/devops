@@ -263,6 +263,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 * prometheus (302)
 * grafana (303)
 * k8s-admin (310)
+* kafka (320)
 * vagrant (1000)
 
 ### Groups
@@ -272,6 +273,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 * prometheus (302)
 * grafana (303)
 * k8s-admin (310)
+* kafka (320)
 * vagrant (1000)
 
 

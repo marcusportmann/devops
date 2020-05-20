@@ -25,7 +25,7 @@ collector:
       port: 9411
 
 
-{% if ((monitoring_elasticsearch_cluster_type == "standalone") or (monitoring_elasticsearch_cluster_type == "minimal")) %}
+{% if ((k8s_monitoring_elasticsearch_cluster_type == "standalone") or (k8s_monitoring_elasticsearch_cluster_type == "minimal")) %}
   cmdlineParams:
     es.num-replicas: "0"
     es.num-shards: "1"

@@ -22,10 +22,10 @@
 #   | || |_| |  __/| |_| | |__\ V / | |  | | | |__\ V / | |  | | |_| |
 #   |_| \___/|_|    \___/|_____\_/  |_|  |_| |_____\_/  |_|  |_|____/
 #
-- name: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
+- name: Install the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
   block:
   - debug:
-      msg: Check whether the TopoLVM lvmd {{ topolvm_lvmd_version }} package has been installed
+      msg: Check whether the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package has been installed
 
   - stat:
       path: /usr/bin/lvmd
@@ -46,16 +46,16 @@
 
   - block:
     - debug:
-        msg: Install the TopoLVM lvmd {{ topolvm_lvmd_version }} package
+        msg: Install the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package
 
-    - name: Check whether the TopoLVM lvmd {{ topolvm_lvmd_version }} package has been downloaded
+    - name: Check whether the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz
+      local_action: stat path=packages/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz
       register: topolvm_lvmd_package_stat_result
 
-    - name: Download the TopoLVM lvmd {{ topolvm_lvmd_version }} package
+    - name: Download the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package
       become: no
-      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ topolvm_lvmd_version }}/lvmd-{{ topolvm_lvmd_version }}.tar.gz' dest='packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz'
+      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ k8s_topolvm_lvmd_version }}/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz' dest='packages/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz'
       when: (topolvm_lvmd_package_stat_result.stat.exists == False)
 
     - name: Remove the existing TopoLVM lvmd binary
@@ -63,9 +63,9 @@
         path: /usr/bin/lvmd
         state: absent
 
-    - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ topolvm_lvmd_version }} package
+    - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package
       unarchive:
-        src: packages/lvmd-{{ topolvm_lvmd_version }}.tar.gz
+        src: packages/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz
         dest: /usr/bin
         creates: /usr/bin/lvmd
 
@@ -80,9 +80,9 @@
         enabled: yes
         daemon_reload: yes
 
-    when: (topolvm_lvmd_installed_version != topolvm_lvmd_version)
+    when: (topolvm_lvmd_installed_version != k8s_topolvm_lvmd_version)
 
-  when: ((("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+  when: ((("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))
 
 
 - name: Install the Kubernetes storage components
@@ -153,7 +153,7 @@
 
       when: longhorn_system_namespace_exists_output.stdout == "0"
 
-    when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+    when: ((k8s_longhorn_enabled is defined) and (k8s_longhorn_enabled != None) and (k8s_longhorn_enabled == true))
 
   #  _____ ___  ____   ___  _ __     ____  __
   # |_   _/ _ \|  _ \ / _ \| |\ \   / /  \/  |
@@ -195,12 +195,12 @@
       - name: Disable the TopoLVM mutating webhook for the longhorn-system namespace
         command:
           cmd: /usr/bin/kubectl label --overwrite ns longhorn-system topolvm.cybozu.com/webhook=ignore
-        when: ((longhorn_enabled is defined) and (longhorn_enabled != None) and (longhorn_enabled == true))
+        when: ((k8s_longhorn_enabled is defined) and (k8s_longhorn_enabled != None) and (k8s_longhorn_enabled == true))
 
       - name: Disable the TopoLVM mutating webhook for the olm namespace
         command:
           cmd: /usr/bin/kubectl label --overwrite ns olm topolvm.cybozu.com/webhook=ignore
-        when: ((operator_lifecycle_manager_enabled is defined) and (operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
+        when: ((k8s_operator_lifecycle_manager_enabled is defined) and (k8s_operator_lifecycle_manager_enabled != None) and (k8s_operator_lifecycle_manager_enabled == true))
 
       - name: Generate the TopoLVM Custom Resource Definition configuration
         template:
@@ -302,7 +302,7 @@
       - debug:
           msg: 'Successfully connected to TopoLVM controller service'
 
-    when: ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))
+    when: ((k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))
 
   when: (('k8s_worker' not in groups.keys()) and (groups['k8s_master'][((groups['k8s_master']|length) - 1)] == inventory_hostname)) or (('k8s_worker' in groups.keys()) and (groups['k8s_worker'][((groups['k8s_worker']|length) - 1)] == inventory_hostname))
 

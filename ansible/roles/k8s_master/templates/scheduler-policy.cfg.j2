@@ -4,7 +4,7 @@
   "extenders" :
     [
     
-{% if ((topolvm_enabled is defined) and (topolvm_enabled != None) and (topolvm_enabled == true))  %}    
+{% if ((k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))  %}    
     
     {
 {% if ('k8s_master' in groups) %}

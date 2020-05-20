@@ -51,7 +51,7 @@ spec:
       serviceAccountName: topolvm-scheduler
       containers:
         - name: topolvm-scheduler
-          image: quay.io/cybozu/topolvm:0.3.0
+          image: quay.io/cybozu/topolvm:0.4.7
           command:
             - /topolvm-scheduler
             - --listen=:9251
@@ -72,4 +72,3 @@ spec:
   ports:
   - protocol: TCP
     port: 9251
-

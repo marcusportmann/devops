@@ -84,9 +84,9 @@
 
         - name: Install Elasticsearch using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --force --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
-        when: elasticsearch_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
-      when: (monitoring_elasticsearch_cluster_type == "standalone")
+            cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
+        when: elasticsearch_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
+      when: (k8s_monitoring_elasticsearch_cluster_type == "standalone")
 
     - name: Install a multi node Elasticsearch cluster using Helm
       block:
@@ -104,8 +104,8 @@
 
         - name: Install the Elasticsearch master nodes using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch-master elastic/elasticsearch --install --force --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-master-values.yaml
-        when: elasticsearch_master_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
+            cmd: /usr/bin/helm upgrade elasticsearch-master elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-master-values.yaml
+        when: elasticsearch_master_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
 
       - name: Check if the Elasticsearch ingest nodes are installed
         shell:
@@ -121,8 +121,8 @@
 
         - name: Install the Elasticsearch ingest nodes using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch-ingest elastic/elasticsearch --install --force --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-ingest-values.yaml
-        when: elasticsearch_ingest_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
+            cmd: /usr/bin/helm upgrade elasticsearch-ingest elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-ingest-values.yaml
+        when: elasticsearch_ingest_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
 
       - name: Check if the Elasticsearch data nodes are installed
         shell:
@@ -138,12 +138,12 @@
 
         - name: Install the Elasticsearch data nodes using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --force --version={{ monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
-        when: elasticsearch_data_installed_helm_chart_version_output.stdout != monitoring_elasticsearch_helm_chart_version
+            cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
+        when: elasticsearch_data_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
 
-      when: ((monitoring_elasticsearch_cluster_type == "minimal") or (monitoring_elasticsearch_cluster_type == "full"))
+      when: ((k8s_monitoring_elasticsearch_cluster_type == "minimal") or (k8s_monitoring_elasticsearch_cluster_type == "full"))
 
-    when: ((monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true))
+    when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true))
 
 
   #  _  _____ ____    _    _   _    _
@@ -204,11 +204,11 @@
 
       - name: Install Kibana using Helm
         command:
-          cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --force --version={{ monitoring_kibana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
+          cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --force --version={{ k8s_monitoring_kibana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
 
-      when: kibana_installed__helm_chart_version_output.stdout != monitoring_kibana_helm_chart_version
+      when: kibana_installed__helm_chart_version_output.stdout != k8s_monitoring_kibana_helm_chart_version
 
-    when: ((monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true) and (monitoring_kibana_enabled is defined) and (monitoring_kibana_enabled != None) and (monitoring_kibana_enabled == true))
+    when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true) and (k8s_monitoring_kibana_enabled is defined) and (k8s_monitoring_kibana_enabled != None) and (k8s_monitoring_kibana_enabled == true))
 
 
   #      _   _    _____ ____ _____ ____
@@ -269,11 +269,11 @@
 
       - name: Install Jaeger using Helm
         command:
-          cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --force --version={{ monitoring_jaeger_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
+          cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --force --version={{ k8s_monitoring_jaeger_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
 
-      when: jaeger_installed__helm_chart_version_output.stdout != monitoring_jaeger_helm_chart_version
+      when: jaeger_installed__helm_chart_version_output.stdout != k8s_monitoring_jaeger_helm_chart_version
 
-    when: ((monitoring_elasticsearch_enabled is defined) and (monitoring_elasticsearch_enabled != None) and (monitoring_elasticsearch_enabled == true) and (monitoring_jaeger_enabled is defined) and (monitoring_jaeger_enabled != None) and (monitoring_jaeger_enabled == true))
+    when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true) and (k8s_monitoring_jaeger_enabled is defined) and (k8s_monitoring_jaeger_enabled != None) and (k8s_monitoring_jaeger_enabled == true))
 
 
   #  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____
@@ -298,9 +298,9 @@
 
       - name: Install Prometheus using Helm
         command:
-          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --force --version={{ monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
+          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --force --version={{ k8s_monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
 
-      when: prometheus_installed__helm_chart_version_output.stdout != monitoring_prometheus_helm_chart_version
+      when: prometheus_installed__helm_chart_version_output.stdout != k8s_monitoring_prometheus_helm_chart_version
 
     - name: Generate the Prometheus Server configuration
       template:
@@ -311,7 +311,7 @@
       command:
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-server-config-map.yaml
 
-    when: ((monitoring_prometheus_enabled is defined) and (monitoring_prometheus_enabled != None) and (monitoring_prometheus_enabled == true))
+    when: ((k8s_monitoring_prometheus_enabled is defined) and (k8s_monitoring_prometheus_enabled != None) and (k8s_monitoring_prometheus_enabled == true))
 
 
   #   ____ ____      _    _____ _    _   _    _
@@ -348,9 +348,9 @@
 
       - name: Install Grafana using Helm
         command:
-          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --force --version={{ monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --force --version={{ k8s_monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
 
-      when: grafana_installed_helm_chart_version_output.stdout != monitoring_grafana_helm_chart_version
+      when: grafana_installed_helm_chart_version_output.stdout != k8s_monitoring_grafana_helm_chart_version
 
     - name: Generate and install the Kubernetes Grafana dashboard ConfigMaps
       block:
@@ -374,7 +374,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
 
-      when: ((istio_enabled is defined) and (istio_enabled != None) and (istio_enabled == true))
+      when: ((k8s_istio_enabled is defined) and (k8s_istio_enabled != None) and (k8s_istio_enabled == true))
 
     - name: Retrieve the grafana admin username and password
       block:
@@ -392,7 +392,7 @@
       - debug:
           msg: "Grafana Admin Password: {{ grafana_admin_password_output.stdout }}"
 
-    when: ((monitoring_grafana_enabled is defined) and (monitoring_grafana_enabled != None) and (monitoring_grafana_enabled == true))
+    when: ((k8s_monitoring_grafana_enabled is defined) and (k8s_monitoring_grafana_enabled != None) and (k8s_monitoring_grafana_enabled == true))
 
-  when: ((monitoring_enabled is defined) and (monitoring_enabled != None) and (monitoring_enabled == true))
+  when: ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == true))
 

@@ -17,60 +17,6 @@
   when: operators_namespace_exists_output.stdout == "0"
 
 
-#   ___  ____  _____ ____      _  _____ ___  ____    _     ___ _____ _____ ______   ______ _     _____   __  __    _    _   _    _    ____ _____ ____
-#  / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \  | |   |_ _|  ___| ____/ ___\ \ / / ___| |   | ____| |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \
-# | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) | | |    | || |_  |  _|| |    \ V / |   | |   |  _|   | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |
-# | |_| |  __/| |___|  _ <  / ___ \| || |_| |  _ <  | |___ | ||  _| | |__| |___  | || |___| |___| |___  | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <
-#  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\ |_____|___|_|   |_____\____| |_| \____|_____|_____| |_|  |_/_/   \_\_| \_/_/   \_\____|_____|_| \_\
-#
-- name: Install the Operator Lifecycle Manager if it is enabled
-  block:
-
-  - name: Check if the Operator Lifecycle Manager (olm) namespace exists
-    shell:
-      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep olm | wc -l
-    register: operator_lifecycle_manager_namespace_exists_output
-
-  - block:
-    - name: Generate the Operator Lifecycle Manager Custom Resource Definitions configuration
-      template:
-        src: operator-lifecycle-manager-crds.yaml.j2
-        dest: /var/tmp/ansible/operator-lifecycle-manager-crds.yaml
-
-    - name: Apply the Operator Lifecycle Manager Custom Resource Definitions configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/operator-lifecycle-manager-crds.yaml
-
-    - name: Generate the Operator Lifecycle Manager configuration
-      template:
-        src: operator-lifecycle-manager-olm.yaml.j2
-        dest: /var/tmp/ansible/operator-lifecycle-manager-olm.yaml
-
-    - name: Apply the Operator Lifecycle Manager configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/operator-lifecycle-manager-olm.yaml
-
-    - name: Wait for the Operator Lifecycle Manager olm-operator deployment to complete
-      command:
-        cmd: /usr/bin/kubectl -n olm rollout status -w deployment/olm-operator
-      register: wait_for_olm_operator_deployment_result
-      until: wait_for_olm_operator_deployment_result is succeeded
-      retries: 180
-      delay: 10
-
-    - name: Wait for the Operator Lifecycle Manager catalog-operator deployment to complete
-      command:
-        cmd: /usr/bin/kubectl -n olm rollout status -w deployment/catalog-operator
-      register: wait_for_catalog_operator_deployment_result
-      until: wait_for_catalog_operator_deployment_result is succeeded
-      retries: 180
-      delay: 10
-
-    when: operator_lifecycle_manager_namespace_exists_output.stdout == "0"
-
-  when: ((operator_lifecycle_manager_enabled is defined) and (operator_lifecycle_manager_enabled != None) and (operator_lifecycle_manager_enabled == true))
-
-
 #  ____   ___  ____ _____ ____ ____  _____ ____     ___  ____  _____ ____      _  _____ ___  ____
 # |  _ \ / _ \/ ___|_   _/ ___|  _ \| ____/ ___|   / _ \|  _ \| ____|  _ \    / \|_   _/ _ \|  _ \
 # | |_) | | | \___ \ | || |  _| |_) |  _| \___ \  | | | | |_) |  _| | |_) |  / _ \ | || | | | |_) |
@@ -86,22 +32,22 @@
 
   - name: Install the Postgres Operator
     block:
-    - name: Copy the Postgres Operator v{{ postgres_operator_helm_chart_version }} Helm chart
+    - name: Copy the Postgres Operator v{{ k8s_postgres_operator_helm_chart_version }} Helm chart
       copy:
-        src: postgres-operator-{{ postgres_operator_helm_chart_version }}.tgz
-        dest: /var/tmp/ansible/postgres-operator-{{ postgres_operator_helm_chart_version }}.tgz
+        src: postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz
+        dest: /var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz
 
     - name: Generate the Postgres Operator Helm values
       template:
-        src: postgres-operator-{{ postgres_operator_helm_chart_version }}-values.yaml.j2
-        dest: /var/tmp/ansible/postgres-operator-{{ postgres_operator_helm_chart_version }}-values.yaml
+        src: postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}-values.yaml.j2
+        dest: /var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}-values.yaml
 
     - name: Install the Postgres Operator using Helm
       command:
-        cmd: /usr/bin/helm -n operators upgrade --install --force postgres-operator /var/tmp/ansible/postgres-operator-{{ postgres_operator_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-{{ postgres_operator_helm_chart_version }}-values.yaml
-    when: postgres_operator_installed_helm_chart_version_output.stdout != postgres_operator_helm_chart_version
+        cmd: /usr/bin/helm -n operators upgrade --install --force postgres-operator /var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}-values.yaml
+    when: postgres_operator_installed_helm_chart_version_output.stdout != k8s_postgres_operator_helm_chart_version
 
-  when: ((postgres_operator_enabled is defined) and (postgres_operator_enabled != None) and (postgres_operator_enabled == true))
+  when: ((k8s_postgres_operator_enabled is defined) and (k8s_postgres_operator_enabled != None) and (k8s_postgres_operator_enabled == true))
 
 
 #  ____   ___  ____ _____ ____ ____  _____ ____     ___  ____  _____ ____      _  _____ ___  ____    _   _ ___
@@ -119,20 +65,20 @@
 
   - name: Install the Postgres Operator UI
     block:
-    - name: Copy the Postgres Operator UI v{{ postgres_operator_ui_helm_chart_version }} Helm chart
+    - name: Copy the Postgres Operator UI v{{ k8s_postgres_operator_ui_helm_chart_version }} Helm chart
       copy:
-        src: postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}.tgz
-        dest: /var/tmp/ansible/postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}.tgz
+        src: postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz
+        dest: /var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz
 
     - name: Generate the Postgres Operator UI Helm values
       template:
-        src: postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}-values.yaml.j2
-        dest: /var/tmp/ansible/postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}-values.yaml
+        src: postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}-values.yaml.j2
+        dest: /var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}-values.yaml
 
     - name: Install the Postgres Operator UI using Helm
       command:
-        cmd: /usr/bin/helm -n operators upgrade --install --force postgres-operator-ui /var/tmp/ansible/postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-ui-{{ postgres_operator_ui_helm_chart_version }}-values.yaml
-    when: postgres_operator_ui_installed_helm_chart_version_output.stdout != postgres_operator_ui_helm_chart_version
+        cmd: /usr/bin/helm -n operators upgrade --install --force postgres-operator-ui /var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}-values.yaml
+    when: postgres_operator_ui_installed_helm_chart_version_output.stdout != k8s_postgres_operator_ui_helm_chart_version
 
-  when: ((postgres_operator_ui_enabled is defined) and (postgres_operator_ui_enabled != None) and (postgres_operator_ui_enabled == true))
+  when: ((k8s_postgres_operator_enabled is defined) and (k8s_postgres_operator_enabled != None) and (k8s_postgres_operator_enabled == true) and (k8s_postgres_operator_ui_enabled is defined) and (k8s_postgres_operator_ui_enabled != None) and (k8s_postgres_operator_ui_enabled == true))
 

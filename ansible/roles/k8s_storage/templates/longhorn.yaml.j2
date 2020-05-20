@@ -348,6 +348,8 @@ spec:
       - name: longhorn-ui
         image: longhornio/longhorn-ui:v0.8.1
         imagePullPolicy: Always
+        securityContext:
+          runAsUser: 0
         ports:
         - containerPort: 8000
           name: http
@@ -367,7 +369,6 @@ metadata:
 spec:
   selector:
     app: longhorn-ui
-  ports:
   ports:
   - port: 80
     targetPort: 8000
@@ -443,6 +444,8 @@ spec:
       #imagePullSecrets:
       #- name:
       serviceAccountName: longhorn-service-account
+      securityContext:
+        runAsUser: 0
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -460,4 +463,3 @@ parameters:
 #                   {"name":"backup", "task":"backup", "cron":"*/2 * * * *", "retain":1,
 #                    "labels": {"interval":"2m"}}]'
 ---
-

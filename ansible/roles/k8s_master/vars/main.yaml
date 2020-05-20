@@ -1,4 +1,11 @@
 # file: roles/k8s_master/vars/main.yaml
 
+k8s_bitnami_labs_sealed_secrets_enabled: true
+k8s_bitnami_labs_sealed_secrets_helm_chart_version: 1.10.1
+k8s_bitnami_labs_sealed_secrets_kubeseal_version: 0.12.3
+k8s_cni_provider: weave
+k8s_etcd_topology: stacked
+k8s_pod_subnet: 10.255.0.0/16
+k8s_service_subnet: 10.254.0.0/16
 
 

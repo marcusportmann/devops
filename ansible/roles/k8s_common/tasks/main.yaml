@@ -44,7 +44,7 @@
     comment: Kubernetes Administrator
     uid: 310
     group: k8s-admin
-    groups: 
+    groups:
     - k8s-admin
     - docker
     shell: /bin/bash
@@ -68,7 +68,7 @@
 - name: Install Helm
   block:
   - debug:
-      msg: Check whether the helm {{ helm_version }} package has been installed
+      msg: Check whether the helm {{ k8s_helm_version }} package has been installed
 
   - stat:
       path: /usr/bin/helm
@@ -89,16 +89,16 @@
 
   - block:
     - debug:
-        msg: Install the helm {{ helm_version }} package
+        msg: Install the helm {{ k8s_helm_version }} package
 
-    - name: Check whether the helm {{ helm_version }} package has been downloaded
+    - name: Check whether the helm {{ k8s_helm_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/helm-v{{ helm_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz
       register: helm_package_stat_result
 
-    - name: Download the helm {{ helm_version }} package
+    - name: Download the helm {{ k8s_helm_version }} package
       become: no
-      local_action: get_url url='https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz' dest='packages/helm-v{{ helm_version }}-linux-amd64.tar.gz' checksum={{ helm_package_checksum }}
+      local_action: get_url url='https://get.helm.sh/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz' dest='packages/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz' checksum={{ k8s_helm_package_checksum }}
       when: (helm_package_stat_result.stat.exists == False)
 
     - name: Remove the existing helm binary
@@ -106,15 +106,14 @@
         path: /usr/bin/helm
         state: absent
 
-    - name: Extract the helm binary from the helm {{ helm_version }} package
+    - name: Extract the helm binary from the helm {{ k8s_helm_version }} package
       unarchive:
-        src: packages/helm-v{{ helm_version }}-linux-amd64.tar.gz
+        src: packages/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz
         dest: /usr/bin
         extra_opts:
         - --strip-components=1
         - linux-amd64/helm
         creates: /usr/bin/helm
 
-    when: (helm_installed_version != helm_version)
-
+    when: (helm_installed_version != k8s_helm_version)
 
