@@ -1,0 +1,6 @@
+# file: roles/k8s_operators/vars/main.yaml
+
+k8s_postgres_operator_enabled: false
+k8s_postgres_operator_helm_chart_version: 1.5.0
+k8s_postgres_operator_ui_enabled: true
+k8s_postgres_operator_ui_helm_chart_version: 1.5.0

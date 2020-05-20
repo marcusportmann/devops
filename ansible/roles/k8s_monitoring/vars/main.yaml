@@ -1,0 +1,24 @@
+# file: roles/k8s_monitoring/tasks/main.yaml
+
+k8s_monitoring_enabled: false
+
+k8s_monitoring_elasticsearch_cluster_type: standalone
+k8s_monitoring_elasticsearch_enabled: true
+k8s_monitoring_elasticsearch_helm_chart_version: 7.6.2
+k8s_monitoring_elasticsearch_persistent_volume_size: 10Gi
+k8s_monitoring_elasticsearch_persistent_volume_storage_class_name: default-local-storage
+
+k8s_monitoring_grafana_enabled: true
+k8s_monitoring_grafana_helm_chart_version: 5.0.13
+
+k8s_monitoring_jaeger_enabled: true
+k8s_monitoring_jaeger_helm_chart_version: 0.28.0
+
+k8s_monitoring_kibana_enabled: true
+k8s_monitoring_kibana_helm_chart_version: 7.6.2
+
+k8s_monitoring_prometheus_enabled: true
+k8s_monitoring_prometheus_helm_chart_version: 11.1.2
+k8s_monitoring_prometheus_persistent_volume_storage_class_name: default-local-storage
+k8s_monitoring_prometheus_alert_manager_persistent_volume_size: 2Gi
+k8s_monitoring_prometheus_server_persistent_volume_size: 10Gi

@@ -1,0 +1,4 @@
+# file: roles/k8s_worker/meta/main.yaml
+
+dependencies:
+  - role: k8s_common

@@ -1,0 +1,5 @@
+# file: roles/prometheus/vars/main.yaml
+
+prometheus_data_directory: /var/lib/prometheus
+prometheus_version: 2.18.1
+prometheus_package_checksum: sha256:5fcc35b78bd0a1b84afae6de94248a4bea3cdb4daf0d54a37b5491cb86b014d7
