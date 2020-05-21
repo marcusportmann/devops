@@ -1,0 +1,4 @@
+# file: roles/kafka_common/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kafka common configuration

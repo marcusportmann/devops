@@ -262,8 +262,9 @@ The following users and groups are provisioned by the various Ansible scripts:
 * etcd (301)
 * prometheus (302)
 * grafana (303)
-* k8s-admin (310)
-* kafka (320)
+* zookeeper (304)
+* kafka (305)
+* k8s-admin (350)
 * vagrant (1000)
 
 ### Groups
@@ -272,8 +273,9 @@ The following users and groups are provisioned by the various Ansible scripts:
 * etcd (301)
 * prometheus (302)
 * grafana (303)
-* k8s-admin (310)
-* kafka (320)
+* zookeeper (304)
+* kafka (305)
+* k8s-admin (350)
 * vagrant (1000)
 
 

@@ -1,14 +1,5 @@
 # file: roles/k8s_worker/tasks/main.yaml
 
-- name: Create the /var/tmp/ansible directory
-  file:
-    path: /var/tmp/ansible
-    owner: root
-    group: root
-    mode: 0700
-    state: directory
-
-
 #  _  _____ ____   __        _____  ____  _  _______ ____
 # | |/ ( _ ) ___|  \ \      / / _ \|  _ \| |/ / ____|  _ \
 # | ' // _ \___ \   \ \ /\ / / | | | |_) | ' /|  _| | |_) |

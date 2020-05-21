@@ -7,3 +7,6 @@ grafana_centos_package_version: 6.7.3
 grafana_ubuntu_package: grafana_6.7.3_amd64.deb
 grafana_ubuntu_package_checksum: sha256:1ffa1329cb0f574f0f60c3f57116b2a3d68b3db0a39eca9099956e9a349dc8e6
 grafana_ubuntu_package_version: 6.7.3
+
+grafana_user_id: 303
+grafana_group_id: 303

@@ -1,0 +1,27 @@
+#file: roles/kafka_zookeeper/tasks/main.yaml
+
+- name: Add the zookeeper group
+  group:
+    name: zookeeper
+    gid: '{{ kafka_zookeeper_group_id }}'
+    state: present
+
+- name: Add the zookeeper user
+  user:
+    name: zookeeper
+    uid: '{{ kafka_zookeeper_user_id }}'
+    group: kafka
+    create_home: no
+    shell: /usr/sbin/nologin
+    state: present
+
+- name: Setup the zookeeper data directory
+  block:
+  - debug:
+      msg: Check whether the zookeper data directory exists
+
+  - stat:
+      path: /data/zookeeper
+    register: zookeeper_data_directory_stat_result
+
+

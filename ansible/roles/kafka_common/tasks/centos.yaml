@@ -1,0 +1,4 @@
+# file: roles/kafka_common/tasks/centos.yaml
+
+- debug:
+    msg: Applying the CentOS-specific Kafka common configuration

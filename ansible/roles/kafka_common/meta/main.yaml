@@ -1,0 +1,4 @@
+# file: roles/kafka_common/meta/main.yaml
+
+dependencies:
+  - { role: common, common_initialise_data_directory: True }

@@ -6,4 +6,6 @@
 
 - import_playbook: monitoring.yaml
 
+- import_playbook: kafka.yaml
+
 

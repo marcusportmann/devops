@@ -23,14 +23,6 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |__| |_| | |  | | |  | | |_| | |\  |
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
-- name: Create the /var/tmp/ansible directory
-  file:
-    path: /var/tmp/ansible
-    owner: root
-    group: root
-    mode: 0700
-    state: directory
-
 - name: Add the kafka group
   group:
     name: kafka
@@ -51,25 +43,9 @@
   - debug:
       msg: Check whether the kafka {{ kafka_version }} package has been installed
 
-  https://downloads.apache.org/kafka/2.5.0/kafka_2.13-2.5.0.tgz
-
-
   - stat:
-      path: /bin/kafka
+      path: /opt/kafka
     register: kafka_installed_stat_result
-
-  - shell:
-      cmd: /bin/kafka --version | head -n1 | awk  {'print $3'}
-    register: kafka_installed_version_output
-    when: (kafka_installed_stat_result.stat.exists == True)
-
-  - set_fact:
-      kafka_installed_version: '{{ kafka_installed_version_output.stdout }}'
-    when: (kafka_installed_stat_result.stat.exists == True)
-
-  - set_fact:
-      kafka_installed_version: ''
-    when: (kafka_installed_stat_result.stat.exists == False)
 
   - block:
     - debug:
@@ -77,10 +53,26 @@
 
     - name: Check whether the kafka {{ kafka_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/kafka-v{{ kafka_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/kafka_2.13-{{ kafka_version }}.tgz
       register: kafka_package_stat_result
 
     - name: Download the kafka {{ kafka_version }} package
       become: no
-      local_action: get_url url='https://github.com/kafka-io/kafka/releases/download/v{{ kafka_version }}/kafka-v{{ kafka_version }}-linux-amd64.tar.gz' dest='packages/kafka-v{{ kafka_version }}-linux-amd64.tar.gz' checksum={{ kafka_package_checksum }}
+      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka_version }}/kafka_2.13-{{ kafka_version }}.tgz' dest='packages/kafka_2.13-{{ kafka_version }}.tgz' checksum={{ kafka_package_checksum }}
       when: (kafka_package_stat_result.stat.exists == False)
+
+    - name: Extract the kafka {{ kafka_version }} package
+      unarchive:
+        src: packages/kafka_2.13-{{ kafka_version }}.tgz
+        dest: /opt
+
+    - name: Create the symbolic link to the kafka {{ kafka_version }} package
+      file:
+        src: /opt/kafka_2.13-{{ kafka_version }}
+        dest: /opt/kafka
+        owner: root
+        group: root
+        state: link
+
+    when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ("/opt/kafka_2.13-" + kafka_version)))
+

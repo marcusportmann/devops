@@ -1,0 +1,4 @@
+# file: roles/k8s_load_balancer/meta/main.yaml
+
+dependencies:
+  - role: common

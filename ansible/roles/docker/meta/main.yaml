@@ -1,0 +1,4 @@
+# file: roles/docker/meta/main.yaml
+
+dependencies:
+  - role: common

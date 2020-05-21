@@ -1,0 +1,4 @@
+# file: roles/k8s_monitoring/meta/main.yaml
+
+dependencies:
+  - role: common

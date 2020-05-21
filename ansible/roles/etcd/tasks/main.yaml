@@ -22,14 +22,6 @@
 # | |___  | || |___| |_| |
 # |_____| |_| \____|____/
 #
-- name: Create the /var/tmp/ansible directory
-  file:
-    path: /var/tmp/ansible
-    owner: root
-    group: root
-    mode: 0700
-    state: directory
-
 - debug:
     msg: 'Found etcd hosts: {{ groups["etcd"] }}'
 
@@ -83,13 +75,13 @@
 - name: Add the etcd group
   group:
     name: etcd
-    gid: 301
+    gid: '{{ etcd_group_id }}'
     state: present
 
 - name: Add the etcd user
   user:
     name: etcd
-    uid: 301
+    uid: '{{ etcd_user_id }}'
     group: etcd
     home: /var/lib/etcd
     create_home: no

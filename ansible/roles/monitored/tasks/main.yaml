@@ -1,13 +1,5 @@
 # file: roles/monitored/tasks/main.yaml
 
-- name: Create the /var/tmp/ansible directory
-  file:
-    path: /var/tmp/ansible
-    owner: root
-    group: root
-    mode: 0700    
-    state: directory
-
 - set_fact:
     prometheus_data_directory: "{{ prometheus_data_directory if ((prometheus_data_directory is defined) and (prometheus_data_directory != None)) else '/var/lib/prometheus' }}"
 
@@ -74,11 +66,11 @@
         state: stopped
       when: prometheus_node_exporter_service_stat_result.stat.exists == True
       register: prometheus_node_exporter_service_stopped
-      
+
     - name: Check whether the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package has been downloaded
       become: no
       local_action: stat path=packages/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
-      register: prometheus_node_exporter_package_stat_result  
+      register: prometheus_node_exporter_package_stat_result
 
     - name: Download the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
       become: no
@@ -98,7 +90,7 @@
         - --strip-components=1
         - node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64/node_exporter
         creates: /usr/bin/node_exporter
-    
+
     - name: Rename the node_exporter binary extracted from the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package to prometheus-node-exporter
       command:
         cmd: mv /usr/bin/node_exporter /usr/bin/prometheus-node-exporter

@@ -1,0 +1,15 @@
+# This playbook configures a Kafka cluster.
+
+- name: Configure the Kafka ZooKeeper hosts
+  hosts: kafka_zookeeper
+  become: yes
+  become_user: root
+  roles:
+  - kafka_zookeeper
+
+- name: Configure the Kafka Server hosts
+  hosts: kafka_server
+  become: yes
+  become_user: root
+  roles:
+  - kafka_server

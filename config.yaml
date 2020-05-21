@@ -132,6 +132,10 @@ profiles:
   - k8s-local-w-02.local
   - k8s-local-w-03.local
 
+- name: kafka-minimal
+  hosts:
+  - kafka-local-01.local
+
 - name: test-all
   hosts:
   - test-centos7.local
@@ -414,7 +418,7 @@ hosts:
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
-    memory:           5120
+    memory:           4096
     fqdn:             k8s-local-w-01.local
     domain:           local
     ip:               192.168.184.54/24
@@ -422,7 +426,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           5120
+    memory:           4096
     fqdn:             k8s-local-w-01.local
     domain:           local
     ip:               192.168.184.54/24
@@ -430,7 +434,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
-    memory:           5120
+    memory:           4096
     data_disk:        40960
     fqdn:             k8s-local-w-01.local
     domain:           local
@@ -445,7 +449,7 @@ hosts:
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
-    memory:           5120
+    memory:           4096
     fqdn:             k8s-local-w-02.local
     domain:           local
     ip:               192.168.184.55/24
@@ -453,7 +457,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           5120
+    memory:           4096
     fqdn:             k8s-local-w-02.local
     domain:           local
     ip:               192.168.184.55/24
@@ -461,7 +465,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
-    memory:           5120
+    memory:           4096
     data_disk:        40960
     fqdn:             k8s-local-w-02.local
     domain:           local
@@ -476,7 +480,7 @@ hosts:
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
-    memory:           5120
+    memory:           4096
     fqdn:             k8s-local-w-03.local
     domain:           local
     ip:               192.168.184.56/24
@@ -484,7 +488,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           5120
+    memory:           4096
     fqdn:             k8s-local-w-03.local
     domain:           local
     ip:               192.168.184.56/24
@@ -492,11 +496,43 @@ hosts:
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
-    memory:           5120
+    memory:           4096
     data_disk:        40960
     fqdn:             k8s-local-w-03.local
     domain:           local
     ip:               192.168.0.56/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               kafka-local-01.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     kafka_zookeeper
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-01.local
+    domain:           local
+    ip:               192.168.184.65/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-01.local
+    domain:           local
+    ip:               192.168.184.65/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             kafka-local-01.local
+    domain:           local
+    ip:               192.168.0.65/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 

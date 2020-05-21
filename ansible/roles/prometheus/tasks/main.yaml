@@ -1,13 +1,5 @@
 # file: roles/prometheus/tasks/main.yaml
 
-- name: Create the /var/tmp/ansible directory
-  file:
-    path: /var/tmp/ansible
-    owner: root
-    group: root
-    mode: 0700    
-    state: directory
-
 - set_fact:
     prometheus_data_directory: "{{ prometheus_data_directory if ((prometheus_data_directory is defined) and (prometheus_data_directory != None)) else '/var/lib/prometheus' }}"
 
@@ -50,13 +42,13 @@
     - name: Add the prometheus group
       group:
         name: prometheus
-        gid: 302
+        gid: '{{ prometheus_group_id }}'
         state: present
 
     - name: Add the prometheus user
       user:
         name: prometheus
-        uid: 302
+        uid: '{{ prometheus_user_id }}'
         group: prometheus
         home: /var/lib/prometheus
         create_home: no
@@ -78,7 +70,7 @@
     - name: Check whether the Prometheus {{ prometheus_version }} package has been downloaded
       become: no
       local_action: stat path=packages/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
-      register: prometheus_package_stat_result  
+      register: prometheus_package_stat_result
 
     - name: Download the Prometheus {{ prometheus_version }} package
       become: no
@@ -98,7 +90,7 @@
         - --strip-components=1
         - prometheus-{{ prometheus_version }}.linux-amd64/prometheus
         creates: /usr/bin/prometheus
-    
+
     - name: Create the /etc/prometheus directory
       file:
         path: /etc/prometheus
@@ -124,7 +116,7 @@
         - --strip-components=1
         - prometheus-{{ prometheus_version }}.linux-amd64/console_libraries
         creates: /etc/prometheus/console_libraries
-    
+
     when: (prometheus_installed_version != prometheus_version)
 
 - name: Create the {{ prometheus_data_directory }} directory

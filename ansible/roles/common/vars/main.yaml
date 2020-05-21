@@ -1,0 +1,3 @@
+#file: roles/common/vars/main.yaml
+
+common_initialise_data_directory: false

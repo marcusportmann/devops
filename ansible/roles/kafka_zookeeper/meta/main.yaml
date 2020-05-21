@@ -1,0 +1,4 @@
+# file: roles/kafka_zookeeper/meta/main.yaml
+
+dependencies:
+  - role: kafka_common

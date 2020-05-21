@@ -1,14 +1,5 @@
 # file: roles/k8s_common/tasks/main.yaml
 
-- name: Create the /var/tmp/ansible directory
-  file:
-    path: /var/tmp/ansible
-    owner: root
-    group: root
-    mode: 0700
-    state: directory
-
-
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
@@ -35,14 +26,14 @@
 - name: Add the k8s-admin group
   group:
     name: k8s-admin
-    gid: 310
+    gid: '{{ k8s_k8s_admin_group_id}}'
     state: present
 
 - name: Add the k8s-admin user with a specific uid and a primary group of 'k8s-admin'
   user:
     name: k8s-admin
     comment: Kubernetes Administrator
-    uid: 310
+    uid: '{{ k8s_k8s_admin_user_id }}'
     group: k8s-admin
     groups:
     - k8s-admin

@@ -1,0 +1,4 @@
+# file: roles/k8s_istio/meta/main.yaml
+
+dependencies:
+  - role: common
