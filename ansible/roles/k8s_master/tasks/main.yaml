@@ -1,3 +1,4 @@
+---
 # file: roles/k8s_master/tasks/main.yaml
 
 #  _  _____ ____       _    _     _       __  __    _    ____ _____ _____ ____  ____
@@ -18,7 +19,7 @@
       path: /etc/kubernetes/scheduler
       state: directory
 
-- name: Copying the standard keys and certificates for the "{{ k8s_cluster_name }}" Kubernetes cluster
+- name: Copy the standard keys and certificates for the "{{ k8s_cluster_name }}" Kubernetes cluster
   block:
   - name: Create the /etc/kubernetes/pki/etcd directory
     file:
@@ -51,7 +52,7 @@
 
   - name: Initializing the first master node in the Kubernetes cluster
     block:
-    - name: Copying the keys and certificates for the stacked etcd topology
+    - name: Copy the keys and certificates for the stacked etcd topology
       block:
       - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki/etcd directory
         copy:
@@ -65,7 +66,7 @@
 
       when: k8s_etcd_topology == "stacked"
 
-    - name: Copying the keys and certificates for the external etcd topology
+    - name: Copy the keys and certificates for the external etcd topology
       block:
       - name: Copy the etcd-ca.crt certificate to the /etc/kubernetes/pki/etcd directory
         copy:

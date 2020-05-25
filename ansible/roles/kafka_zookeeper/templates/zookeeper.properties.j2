@@ -1,0 +1,39 @@
+# The directory where the snapshot is stored.
+dataDir={{ kafka_zookeeper_data_directory }}
+dataLogDir={{ kafka_zookeeper_data_log_directory }}
+
+# The port at which the clients will connect
+clientPort={{ kafka_zookeeper_client_port }}
+
+# The per-ip limit on the number of connections
+maxClientCnxns={{ kafka_zookeeper_max_client_connections }}
+
+# The admin server configuration
+admin.enableServer={{ kafka_zookeeper_enable_admin_server }}
+admin.serverPort={{ kafka_zookeeper_admin_server_port }}
+
+# The time in milliseconds used by ZooKeeper to do heartbeats
+tickTime={{ kafka_zookeeper_tick_time }}
+
+# The timeout in ticks that ZooKeeper servers in a quorum have to connect to a leader
+initLimit={{ kafka_zookeeper_init_limit }}
+
+# The timeout in ticks that a ZooKeeper server can be out of date with the leader
+syncLimit={{ kafka_zookeeper_sync_limit }}
+
+#
+{% if kafka_zookeeper_autopurge_purge_interval > 0 %}
+# The interval in hours between triggers of the autopurge task
+autopurge.purgeInterval={{ kafka_zookeeper_autopurge_purge_interval }}
+
+# The number of recent Snapshots and corresponding transaction logs in the dataDir and dataLogDir to retain on autopurge. The minimum number is 3.
+autopurge.snapRetainCount={{ kafka_zookeeper_autopurge_snap_retain_count }}
+{% endif %}
+
+
+{% if ((kafka_zookeeper_hosts | length) > 1) %}
+# The cluster hosts
+{% for kafka_zookeeper_host in kafka_zookeeper_hosts -%}
+server.{{ loop.index }}={{ kafka_zookeeper_host }}:{{ kafaka_zookeeper_cluster_ports }}
+{% endfor -%}
+{% endif %}

@@ -1,3 +1,4 @@
+---
 # file: roles/k8s_common/vars/main.yaml
 
 k8s_centos_package_version: 1.18.0

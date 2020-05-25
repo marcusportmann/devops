@@ -1,0 +1,27 @@
+---
+# file: roles/kafka_zookeeper/tasks/centos.yaml
+
+- debug:
+    msg: Applying the CentOS-specific Kafka Zookeeper configuration
+
+- name: Allow all access to tcp port 2181
+  firewalld:
+    port: 2181/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 2888
+  firewalld:
+    port: 2888/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all access to tcp port 3888
+  firewalld:
+    port: 3888/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+

@@ -1,3 +1,4 @@
+---
 # file: roles/prometheus/vars/main.yaml
 
 prometheus_data_directory: /var/lib/prometheus

@@ -1,3 +1,4 @@
+---
 # file: roles/grafana/vars/main.yaml
 
 grafana_centos_package: grafana-6.7.3-1.x86_64.rpm

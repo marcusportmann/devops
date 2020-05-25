@@ -1,3 +1,4 @@
+---
 # file: roles/prometheus/tasks/centos.yaml
 
 - debug:

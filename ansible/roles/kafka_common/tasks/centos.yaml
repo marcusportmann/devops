@@ -1,4 +1,10 @@
+---
 # file: roles/kafka_common/tasks/centos.yaml
 
 - debug:
     msg: Applying the CentOS-specific Kafka common configuration
+
+- name: Install the arptables package
+  yum:
+    name: java-11-openjdk
+    state: latest

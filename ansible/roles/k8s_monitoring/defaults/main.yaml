@@ -1,3 +1,4 @@
+---
 # file: roles/k8s_monitoring/tasks/main.yaml
 
 k8s_monitoring_enabled: false

@@ -1,3 +1,5 @@
+# {{ansible_managed}}
+
 [Unit]
 Description=lvmd for TopoLVM
 Wants=lvm2-monitor.service
@@ -7,7 +9,7 @@ After=lvm2-monitor.service
 Type=simple
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
-ExecStartPre=/bin/mkdir -p /run/topolvm 
+ExecStartPre=/bin/mkdir -p /run/topolvm
 ExecStart=/usr/bin/lvmd --volume-group={{ k8s_topolvm_volume_group }} --listen=/run/topolvm/lvmd.sock
 
 [Install]

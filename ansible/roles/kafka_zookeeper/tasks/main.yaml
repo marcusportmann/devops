@@ -1,27 +1,179 @@
+---
 #file: roles/kafka_zookeeper/tasks/main.yaml
 
-- name: Add the zookeeper group
-  group:
-    name: zookeeper
-    gid: '{{ kafka_zookeeper_group_id }}'
-    state: present
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == "Ubuntu"
+  tags:
+  - unbound
 
-- name: Add the zookeeper user
-  user:
-    name: zookeeper
-    uid: '{{ kafka_zookeeper_user_id }}'
-    group: kafka
-    create_home: no
-    shell: /usr/sbin/nologin
-    state: present
+- include_tasks: centos.yaml
+  when: ansible_distribution == "CentOS"
+  tags:
+  - unbound
 
-- name: Setup the zookeeper data directory
+
+#  _  __    _    _____ _  __    _      ________   ___  _  _______ _____ ____  _____ ____
+# | |/ /   / \  |  ___| |/ /   / \    |__  / _ \ / _ \| |/ / ____| ____|  _ \| ____|  _ \
+# | ' /   / _ \ | |_  | ' /   / _ \     / / | | | | | | ' /|  _| |  _| | |_) |  _| | |_) |
+# | . \  / ___ \|  _| | . \  / ___ \   / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
+# |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
+#
+- name: Copy the Kafka Zookeeper keys and certificates for the "{{ kafka_cluster_name }}" Kafka cluster
   block:
-  - debug:
-      msg: Check whether the zookeper data directory exists
+  - name: Create the /etc/kafka/pki/kafka-zookeeper directory
+    file:
+      path: /etc/kafka/pki/kafka-zookeeper
+      owner: kafka
+      group: kafka
+      mode: '0770'
+      state: directory
 
-  - stat:
-      path: /data/zookeeper
-    register: zookeeper_data_directory_stat_result
+  - name: Copy the ca.crt certificate to the /etc/kafka/pki/kafka-zookeeper directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/ca.crt
+      dest: /etc/kafka/pki/kafka-zookeeper/ca.crt
+    register: kafka_zookeeper_ca_copy_result
 
+  - name: Copy the Kafka Zookeeper private key for the "{{ kafka_cluster_name }}" Kafka cluster to the /etc/kubernetes/pki/kafka-zookeeper directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/kafka-zookeeper-{{ kafka_cluster_name }}.key
+      dest: /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.key
+    register: kafka_zookeeper_private_key_copy_result
+
+  - name: Copy the Kafka Zookeeper certificate for the "{{ kafka_cluster_name }}" Kafka cluster to the /etc/kubernetes/pki/kafka-zookeeper directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/kafka-zookeeper-{{ kafka_cluster_name }}.crt
+      dest: /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.crt
+    register: kafka_zookeeper_certificate_copy_result
+
+  - name: Generate or retrieve the password for the Kafka Zookeeper keystores
+    set_fact:
+      kafka_zookeeper_keystore_password: "{{ lookup('password', 'credentials/kafka_zookeeper_keystore_password_{{ kafka_cluster_name }} length=16') }}"
+
+  - name: Generate and copy the new Kafka Zookeeper PKCS12 keystore if required
+    block:
+    - name: Generate the new Kafka Zookeeper PKCS12 keystore
+      shell:
+        cmd: openssl pkcs12 -export -name "kafka-zookeeper-{{ kafka_cluster_name }}" -out /var/tmp/ansible/kafka-zookeeper-{{ kafka_cluster_name }}.p12 -inkey /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.key -in /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.crt -CAfile /etc/kafka/pki/kafka-zookeeper/ca.crt  -chain -passout pass:{{ kafka_zookeeper_keystore_password }}
+
+    - name: Copy the new Kafka Zookeeper PKCS12 keystore
+      copy:
+        src: /var/tmp/ansible/kafka-zookeeper-{{ kafka_cluster_name }}.p12
+        dest: /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.p12
+        remote_src: yes
+
+    when: ((kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True))
+
+- name: Create the {{ kafka_zookeeper_log_directory }} directory
+  file:
+    path: '{{ kafka_zookeeper_log_directory }}'
+    owner: kafka
+    group: kafka
+    mode: 0755
+    state: directory
+
+- name: Create the {{ kafka_zookeeper_data_directory }} directory
+  file:
+    path: '{{ kafka_zookeeper_data_directory }}'
+    owner: kafka
+    group: kafka
+    mode: 0755
+    state: directory
+
+- name: Create the {{ kafka_zookeeper_data_log_directory }} directory
+  file:
+    path: '{{ kafka_zookeeper_data_log_directory }}'
+    owner: kafka
+    group: kafka
+    mode: 0755
+    state: directory
+
+- name: Create the Kafka Zookeeper configuration file
+  template:
+    src: zookeeper.properties.j2
+    dest: /opt/kafka/config/zookeeper.properties
+  register: kafka_zookeeper_configuration_file_template_result
+
+- name: Create the myid file containing the Kafka Zookeeper instance ID
+  template:
+    src: myid.j2
+    dest: '{{ kafka_zookeeper_data_directory }}/myid'
+  when: ((kafka_zookeeper_hosts | length) > 1)
+
+- name: Configure the Kafka Zookeeper service
+  template:
+    src: kafka-zookeeper.service.j2
+    dest: /lib/systemd/system/kafka-zookeeper.service
+
+- name: Enable and start the Kafka Zookeeper service
+  systemd:
+    name: kafka-zookeeper.service
+    state: started
+    enabled: yes
+
+- name: Restart the Kafka Zookeeper service if required
+  systemd:
+    name: kafka-zookeeper.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: ((kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True) or (kafka_zookeeper_configuration_file_template_result.changed == True))
+
+
+
+
+#
+#
+#
+#- name: Overwrite myid file.
+#  template: src=myid.j2 dest={{zookeeper_conf_dir}}/conf/myid force="{{ zookeeper_force_myid }}"
+#  tags: deploy
+#  notify:
+#    - Restart zookeeper
+#
+#- name: Overwrite default config file
+#  template: src=zoo.cfg.j2 dest={{zookeeper_conf_dir}}/conf/zoo.cfg
+#  tags: deploy
+#  notify:
+#    - Restart zookeeper
+#
+#- name: Add zookeeper's bin dir to the PATH
+#  copy: content="export PATH=$PATH:{{zookeeper_dir}}/bin" dest="/etc/profile.d/zookeeper_path.sh" mode=755
+#  when: zookeeper_register_path_env
+#
+#
+#
+#
+#- name: Configure zookeeper-env.sh
+#  template: src=zookeeper-env.sh.j2 dest={{ zookeeper_conf_dir }}/conf/zookeeper-env.sh owner=zookeeper group=zookeeper
+#  tags: deploy
+#  notify:
+#    - Restart zookeeper
+#  when: zookeeper_env is defined and zookeeper_env|length > 0
+#
+#- name: Update the log4j config with saner production values
+#  template: src=log4j.properties.j2 dest={{ zookeeper_conf_dir }}/conf/log4j.properties
+#  tags: deploy
+#  notify:
+#    - Restart zookeeper
+#
+#
+#- name: Systemd script.
+#  template: src=zookeeper.service.j2 dest=/lib/systemd/system/zookeeper.service
+#  when: ansible_service_mgr == 'systemd'
+#  notify:
+#    - Reload systemctl daemon
+#    - Restart zookeeper
+#
+#
+#
+#- name: Enable zookeeper service
+#  service: name=zookeeper enabled=yes
+#  tags: deploy
 

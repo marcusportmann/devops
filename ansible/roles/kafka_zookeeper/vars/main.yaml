@@ -1,7 +1,0 @@
-#file: roles/kafka_zookeeper/vars/main.yaml
-
-kafka_zookeeper_data_directory: /data/zookeeper
-
-kafka_zookeeper_user_id: 304
-kafka_zookeeper_group_id: 304
-

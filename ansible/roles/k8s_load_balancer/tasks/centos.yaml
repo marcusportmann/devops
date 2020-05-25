@@ -1,3 +1,4 @@
+---
 # file: roles/k8s_load_balancer/tasks/centos.yaml
 
 - debug:

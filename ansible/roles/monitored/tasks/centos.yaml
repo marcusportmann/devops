@@ -1,3 +1,4 @@
+---
 # file: roles/monitored/tasks/centos.yaml
 
 - debug:
@@ -9,5 +10,5 @@
     permanent: yes
     state: enabled
     immediate: yes
-    
-    
+
+

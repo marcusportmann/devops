@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# xattr -d com.apple.quarantine generate-certificates.sh
+# Execute the following command to allow the script to be executed on MacOS:
+#   xattr -d com.apple.quarantine generate-certificates.sh
 
 mkdir -p ../ansible/roles/etcd/files/pki/local
 mkdir -p ../ansible/roles/k8s_common/files/pki/local
@@ -24,6 +25,8 @@ cp ca.crt ../ansible/roles/k8s_monitoring/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_operators/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca-bundle.crt
+cp ca.crt ../ansible/roles/kafka_server/files/pki/local/ca.crt
+cp ca.crt ../ansible/roles/kafka_zookeeper/files/pki/local/ca.crt
 
 
 # Generate the etcd intermediate CA private key and certificate
@@ -169,3 +172,18 @@ mv -f k8s-local-jaeger-key.pem k8s-local-jaeger.key
 mv -f k8s-local-jaeger.pem k8s-local-jaeger.crt
 cp k8s-local-jaeger.key ../ansible/roles/k8s_monitoring/files/pki/local
 cp k8s-local-jaeger.crt ../ansible/roles/k8s_monitoring/files/pki/local
+
+
+# Generate the Kafka Zookeeper private keys and certificates
+cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server kafka-zookeeper-local-csr.json | cfssljson -bare kafka-zookeeper-local
+mv -f kafka-zookeeper-local-key.pem kafka-zookeeper-local.key
+mv -f kafka-zookeeper-local.pem kafka-zookeeper-local.crt
+cp kafka-zookeeper-local.key ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-zookeeper-local.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+
+
+
+
+
+

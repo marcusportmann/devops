@@ -1,0 +1,27 @@
+---
+# file: roles/kafka_zookeeper/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kafka Zookeeper configuration
+
+- name: Enable the firewall
+  ufw:
+    state: enabled
+
+- name: Allow all access to tcp port 2181
+  ufw:
+    rule: allow
+    port: '2181'
+    proto: tcp
+
+- name: Allow all access to tcp port 2888
+  ufw:
+    rule: allow
+    port: '2888'
+    proto: tcp
+
+- name: Allow all access to tcp port 3888
+  ufw:
+    rule: allow
+    port: '3888'
+    proto: tcp

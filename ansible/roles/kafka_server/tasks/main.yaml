@@ -1,16 +1,2 @@
+---
 #file: roles/kafka_server/tasks/main.yaml
-
-- name: Add the kafka group
-  group:
-    name: kafka
-    gid: '{{ kafka_kafka_group_id }}'
-    state: present
-
-- name: Add the kafka user
-  user:
-    name: kafka
-    uid: '{{ kafka_kafka_user_id }}'
-    group: kafka
-    create_home: no
-    shell: /usr/sbin/nologin
-    state: present

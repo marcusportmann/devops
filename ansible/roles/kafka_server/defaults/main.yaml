@@ -1,7 +1,6 @@
+---
 #file: roles/kafka_server/vars/main.yaml
 
 kafka_kafka_data_directory: /data/kafka
 
-kafka_kafka_user_id: 305
-kafka_kafka_group_id: 305
 

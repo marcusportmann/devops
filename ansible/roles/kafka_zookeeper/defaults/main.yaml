@@ -1,0 +1,66 @@
+---
+#file: roles/kafka_zookeeper/vars/main.yaml
+
+kafka_zookeeper_log_directory: /data/kafka-zookeeper/log
+kafka_zookeeper_data_directory: /data/kafka-zookeeper/data
+kafka_zookeeper_data_log_directory: /data/kafka-zookeeper/data-log
+
+
+
+
+kafka_zookeeper_client_port: 2181
+kafaka_zookeeper_cluster_ports: "2888:3888"
+
+kafka_zookeeper_hosts: "{{groups['kafka_zookeeper']}}"
+
+kafka_zookeeper_enable_admin_server: 'false'
+kafka_zookeeper_admin_server_port: 8080
+
+kafka_zookeeper_max_client_connections: 60
+
+
+
+## Rolling file appender setttings
+kafka_zookeeper_rolling_log_file_max_size: 10MB
+kafka_zookeeper_max_rolling_log_file_count: 10
+
+
+kafka_zookeeper_tick_time: 2000
+
+
+kafka_zookeeper_init_limit: 5
+
+
+kafka_zookeeper_sync_limit: 2
+
+
+kafka_zookeeper_autopurge_purge_interval: 1
+kafka_zookeeper_autopurge_snap_retain_count: 10
+
+
+
+
+#zookeeper_register_path_env: false
+#
+#
+#
+#
+
+#
+#log_dir: /var/log/zookeeper
+#zookeeper_dir: "{{ zookeeper_debian_apt_install | ternary('/usr/share/zookeeper', '/opt/zookeeper-' + zookeeper_version) }}"
+#zookeeper_conf_dir: "{{ zookeeper_debian_apt_install | ternary('/etc/zookeeper', zookeeper_dir) }}"
+#zookeeper_tarball_dir: /opt/src
+#
+#
+#zookeeper_hosts_hostname: "{{inventory_hostname}}"
+## List of dict (i.e. {zookeeper_hosts:[{host:,id:},{host:,id:},...]})
+#zookeeper_hosts:
+#  - host: "{{zookeeper_hosts_hostname}}" # the machine running
+#    id: 1
+#
+## Dict of ENV settings to be written into the (optional) conf/zookeeper-env.sh
+#zookeeper_env: {}
+#
+## Controls Zookeeper myid generation
+#zookeeper_force_myid: yes

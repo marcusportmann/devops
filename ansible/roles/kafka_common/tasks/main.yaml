@@ -1,3 +1,4 @@
+---
 # file: roles/kafka_common/tasks/main.yaml
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -26,17 +27,33 @@
 - name: Add the kafka group
   group:
     name: kafka
-    gid: 320
+    gid: '{{ kafka_kafka_group_id }}'
     state: present
 
 - name: Add the kafka user
   user:
     name: kafka
-    uid: 320
+    uid: '{{ kafka_kafka_user_id }}'
     group: kafka
     create_home: no
     shell: /usr/sbin/nologin
     state: present
+
+- name: Create the /etc/kafka directory
+  file:
+    path: /etc/kafka
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- name: Create the /etc/kafka/pki directory
+  file:
+    path: /etc/kafka/pki
+    owner: kafka
+    group: kafka
+    mode: '0770'
+    state: directory
 
 - name: Install kafka
   block:

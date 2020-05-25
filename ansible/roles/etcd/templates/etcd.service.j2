@@ -1,3 +1,5 @@
+# {{ansible_managed}}
+
 {% set initial_cluster_hosts = [] -%}
 {% for host in groups["etcd"] -%}
   {% set _ = initial_cluster_hosts.append("%s=https://%s:2380" % (hostvars[host]['inventory_hostname_short'], host)) -%}
@@ -6,7 +8,6 @@
 [Unit]
 Description=etcd - highly-available key value store
 Documentation=https://github.com/coreos/etcd
-Documentation=man:etcd
 After=network.target
 Wants=network-online.target
 

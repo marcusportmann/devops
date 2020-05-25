@@ -1,3 +1,4 @@
+---
 # file: roles/grafana/tasks/main.yaml
 
 - name: Add the grafana group

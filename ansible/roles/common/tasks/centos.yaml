@@ -1,3 +1,4 @@
+---
 #file: roles/common/tasks/centos.yaml
 
 - debug:
@@ -34,6 +35,7 @@
         vg: data
         lv: data
         size: 100%FREE
+      when: ('data' not in ansible_lvm.lvs)
 
     - name: Format the data logical volume in the data volume group using the xfs filesystem
       filesystem:

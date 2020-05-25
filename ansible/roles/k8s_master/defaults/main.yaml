@@ -1,3 +1,4 @@
+---
 # file: roles/k8s_master/vars/main.yaml
 
 k8s_bitnami_labs_sealed_secrets_enabled: true

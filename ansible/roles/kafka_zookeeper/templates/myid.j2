@@ -1,0 +1,5 @@
+{% for kafka_zookeeper_host in kafka_zookeeper_hosts -%}
+{% if (kafka_zookeeper_host == inventory_hostname) %}
+{{ loop.index }}
+{% endif %}
+{% endfor -%}

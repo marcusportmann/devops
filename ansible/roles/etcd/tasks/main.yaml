@@ -1,3 +1,4 @@
+---
 # file: roles/etcd/tasks/main.yaml
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -25,11 +26,30 @@
 - debug:
     msg: 'Found etcd hosts: {{ groups["etcd"] }}'
 
-- name: Copying the keys and certificates for the "{{ etcd_cluster_name }}" etcd cluster
+- name: Add the etcd group
+  group:
+    name: etcd
+    gid: '{{ etcd_group_id }}'
+    state: present
+
+- name: Add the etcd user
+  user:
+    name: etcd
+    uid: '{{ etcd_user_id }}'
+    group: etcd
+    home: /var/lib/etcd
+    create_home: no
+    shell: /usr/sbin/nologin
+    state: present
+
+- name: Copy the keys and certificates for the "{{ etcd_cluster_name }}" etcd cluster
   block:
   - name: Create the /etc/etcd/pki directory
     file:
       path: /etc/etcd/pki
+      owner: etcd
+      group: etcd
+      mode: 0770
       state: directory
 
   - name: Copy the ca.crt certificate to the /etc/etcd/pki directory
@@ -37,10 +57,10 @@
       src: pki/{{ etcd_cluster_name }}/ca.crt
       dest: /etc/etcd/pki/ca.crt
 
-  - name: Copy the etcd-local-ca.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-ca.crt certificate to the /etc/etcd/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-local-ca.crt
-      dest: /etc/etcd/pki/etcd-local-ca.crt
+      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-ca.crt
+      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}-ca.crt
 
   - name: Copy the etcd-{{ etcd_cluster_name }}.key private key to the /etc/etcd/pki directory
     copy:
@@ -62,38 +82,22 @@
       src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.crt
       dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt
 
-  - name: Copy the etcd-local-client.key private key to the /etc/etcd/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key to the /etc/etcd/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-local-client.key
-      dest: /etc/etcd/pki/etcd-local-client.key
+      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.key
+      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}-client.key
 
-  - name: Copy the etcd-local-client.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate to the /etc/etcd/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-local-client.crt
-      dest: /etc/etcd/pki/etcd-local-client.crt
-
-- name: Add the etcd group
-  group:
-    name: etcd
-    gid: '{{ etcd_group_id }}'
-    state: present
-
-- name: Add the etcd user
-  user:
-    name: etcd
-    uid: '{{ etcd_user_id }}'
-    group: etcd
-    home: /var/lib/etcd
-    create_home: no
-    shell: /usr/sbin/nologin
-    state: present
+      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.crt
+      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}-client.crt
 
 - name: Create the /var/lib/etcd directory
   file:
     path: /var/lib/etcd
     owner: etcd
     group: etcd
-    mode: 0775
+    mode: '0770'
     state: directory
 
 - name: Install etcd
@@ -166,7 +170,7 @@
         mode: 0755
         remote_src: yes
 
-    - name: Reconfigure etcd to apply the cluster and security settings
+    - name: Reconfigure the etcd service to apply the cluster and security settings
       block:
       - template:
           src: etcd.service.j2

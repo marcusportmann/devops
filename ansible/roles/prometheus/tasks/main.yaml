@@ -1,3 +1,4 @@
+---
 # file: roles/prometheus/tasks/main.yaml
 
 - set_fact:

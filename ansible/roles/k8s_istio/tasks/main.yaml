@@ -1,3 +1,4 @@
+---
 # file: roles/k8s_istio/tasks/main.yaml
 
 #  ___ ____ _____ ___ ___
@@ -92,7 +93,7 @@
 
   - name: Install and configure the Istio service mesh
     block:
-    - name: Copying the keys and certificates for the Istio service mesh
+    - name: Copy the keys and certificates for the Istio service mesh
       block:
       - name: Create the /var/tmp/ansible/istio-pki directory
         file:

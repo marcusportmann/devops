@@ -1,3 +1,4 @@
+---
 # file: roles/monitored/tasks/ubuntu.yaml
 
 - debug:
