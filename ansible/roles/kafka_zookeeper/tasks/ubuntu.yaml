@@ -9,16 +9,19 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 2182 (Secure ZooKeeper Client Port)
+- name: Allow all access to tcp port 2182 (Secure ZooKeeper Client Port) for Kafka Server hosts
   ufw:
     rule: allow
+    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '2182'
     proto: tcp
+  loop: "{{ groups['kafka_server'] | default([]) }}"
+  when: (item != inventory_hostname)
 
 - name: Allow all access to tcp port 2888 to other Kafka ZooKeeper hosts
   ufw:
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     rule: allow
+    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '2888'
     proto: tcp
   loop: "{{ groups['kafka_zookeeper'] }}"
@@ -26,8 +29,8 @@
 
 - name: Allow all access to tcp port 3888 to other Kafka ZooKeeper hosts
   ufw:
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     rule: allow
+    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '3888'
     proto: tcp
   loop: "{{ groups['kafka_zookeeper'] }}"

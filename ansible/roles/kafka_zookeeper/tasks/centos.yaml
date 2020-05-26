@@ -52,6 +52,15 @@
     permanent: true
     immediate: yes
 
+- name: Allow all the Kafka Server hosts access to the zookeeper_clients firewalld zone
+  firewalld:
+    zone: zookeeper_clients
+    source: "{{ hostvars[item].ansible_default_ipv4.address }}"
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop: "{{ groups['kafka_server'] | default([]) }}"
+
 - name: Allow the other Kafka ZooKeeper hosts access to the zookeeper_peers firewalld zone
   firewalld:
     zone: zookeeper_peers
@@ -61,14 +70,4 @@
     immediate: yes
   loop: "{{ groups['kafka_zookeeper'] }}"
   when: (item != inventory_hostname)
-
-
-- name: Allow all the Kafka Server hosts access to the zookeeper_clients firewalld zone
-  firewalld:
-    zone: zookeeper_clients
-    source: "{{ hostvars[item].ansible_default_ipv4.address }}"
-    state: enabled
-    permanent: yes
-    immediate: yes
-  loop: "{{ groups['kafka_server'] | default([]) }}"
 
