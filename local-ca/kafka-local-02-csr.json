@@ -1,0 +1,15 @@
+{
+  "CN": "kafka-local-02.local",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "kafka-local-02.local"
+    }
+  ],
+  "hosts": [
+    "kafka-local-02.local"
+  ]
+}

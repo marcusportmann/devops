@@ -62,5 +62,5 @@ kafka_zookeeper_autopurge_snap_retain_count: 10
 ## Dict of ENV settings to be written into the (optional) conf/zookeeper-env.sh
 #zookeeper_env: {}
 #
-## Controls Zookeeper myid generation
+## Controls ZooKeeper myid generation
 #zookeeper_force_myid: yes

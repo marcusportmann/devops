@@ -10,6 +10,8 @@ mkdir -p ../ansible/roles/k8s_master/files/pki/local
 mkdir -p ../ansible/roles/k8s_monitoring/files/pki/local
 mkdir -p ../ansible/roles/k8s_operators/files/pki/local
 mkdir -p ../ansible/roles/k8s_storage/files/pki/local
+mkdir -p ../ansible/roles/kafka_server/files/pki/local
+mkdir -p ../ansible/roles/kafka_zookeeper/files/pki/local
 
 
 # Generate the Root CA private key and certificate
@@ -59,7 +61,8 @@ cp k8s-local-etcd-ca.crt ../ansible/roles/k8s_master/files/pki/local
 
 
 # Generate the etcd cluster private key and certificate
-cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-csr.json | cfssljson -bare etcd-local
+cfssl genkey etcd-local-csr.json | cfssljson -bare etcd-local
+cfssl sign -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile client_server etcd-local.csr | cfssljson -bare etcd-local
 mv -f etcd-local-key.pem etcd-local.key
 mv -f etcd-local.pem etcd-local.crt
 cp etcd-local.key ../ansible/roles/etcd/files/pki/local
@@ -67,19 +70,22 @@ cp etcd-local.crt ../ansible/roles/etcd/files/pki/local
 
 
 # Generate the etcd cluster peer private keys and certificates
-cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-01-etcd-peer-csr.json | cfssljson -bare etcd-local-01-etcd-peer
+cfssl genkey etcd-local-01-etcd-peer-csr.json | cfssljson -bare etcd-local-01-etcd-peer
+cfssl sign -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile client_server etcd-local-01-etcd-peer.csr | cfssljson -bare etcd-local-01-etcd-peer
 mv -f etcd-local-01-etcd-peer-key.pem etcd-local-01-etcd-peer.key
 mv -f etcd-local-01-etcd-peer.pem etcd-local-01-etcd-peer.crt
 cp etcd-local-01-etcd-peer.key ../ansible/roles/etcd/files/pki/local
 cp etcd-local-01-etcd-peer.crt ../ansible/roles/etcd/files/pki/local
 
-cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-02-etcd-peer-csr.json | cfssljson -bare etcd-local-02-etcd-peer
+cfssl genkey etcd-local-02-etcd-peer-csr.json | cfssljson -bare etcd-local-02-etcd-peer
+cfssl sign -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile client_server etcd-local-02-etcd-peer.csr | cfssljson -bare etcd-local-02-etcd-peer
 mv -f etcd-local-02-etcd-peer-key.pem etcd-local-02-etcd-peer.key
 mv -f etcd-local-02-etcd-peer.pem etcd-local-02-etcd-peer.crt
 cp etcd-local-02-etcd-peer.key ../ansible/roles/etcd/files/pki/local
 cp etcd-local-02-etcd-peer.crt ../ansible/roles/etcd/files/pki/local
 
-cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client_server etcd-local-03-etcd-peer-csr.json | cfssljson -bare etcd-local-03-etcd-peer
+cfssl genkey etcd-local-03-etcd-peer-csr.json | cfssljson -bare etcd-local-03-etcd-peer
+cfssl sign -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile client_server etcd-local-03-etcd-peer.csr | cfssljson -bare etcd-local-03-etcd-peer
 mv -f etcd-local-03-etcd-peer-key.pem etcd-local-03-etcd-peer.key
 mv -f etcd-local-03-etcd-peer.pem etcd-local-03-etcd-peer.crt
 cp etcd-local-03-etcd-peer.key ../ansible/roles/etcd/files/pki/local
@@ -87,7 +93,8 @@ cp etcd-local-03-etcd-peer.crt ../ansible/roles/etcd/files/pki/local
 
 
 # Generate the etcd client key and certificate
-cfssl gencert -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile=client etcd-local-client-csr.json | cfssljson -bare etcd-local-client
+cfssl genkey etcd-local-client-csr.json | cfssljson -bare etcd-local-client
+cfssl sign -ca=etcd-local-ca.crt -ca-key=etcd-local-ca.key -config=etcd-local-ca-config.json -profile client_server etcd-local-client.csr | cfssljson -bare etcd-local-client
 mv -f etcd-local-client-key.pem etcd-local-client.key
 mv -f etcd-local-client.pem etcd-local-client.crt
 cp etcd-local-client.key ../ansible/roles/etcd/files/pki/local
@@ -95,19 +102,22 @@ cp etcd-local-client.crt ../ansible/roles/etcd/files/pki/local
 
 
 # Generate the Kubernetes etcd client private keys and certificates for connecting a Kubernetes cluster to an external etcd cluster
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client k8s-local-m-01-etcd-client-csr.json | cfssljson -bare k8s-local-m-01-etcd-client
+cfssl genkey k8s-local-m-01-etcd-client-csr.json | cfssljson -bare k8s-local-m-01-etcd-client
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-m-01-etcd-client.csr | cfssljson -bare k8s-local-m-01-etcd-client
 mv -f k8s-local-m-01-etcd-client-key.pem k8s-local-m-01-etcd-client.key
 mv -f k8s-local-m-01-etcd-client.pem k8s-local-m-01-etcd-client.crt
 cp k8s-local-m-01-etcd-client.key ../ansible/roles/k8s_master/files/pki/local
 cp k8s-local-m-01-etcd-client.crt ../ansible/roles/k8s_master/files/pki/local
 
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client k8s-local-m-02-etcd-client-csr.json | cfssljson -bare k8s-local-m-02-etcd-client
+cfssl genkey k8s-local-m-02-etcd-client-csr.json | cfssljson -bare k8s-local-m-02-etcd-client
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-m-02-etcd-client.csr | cfssljson -bare k8s-local-m-02-etcd-client
 mv -f k8s-local-m-02-etcd-client-key.pem k8s-local-m-02-etcd-client.key
 mv -f k8s-local-m-02-etcd-client.pem k8s-local-m-02-etcd-client.crt
 cp k8s-local-m-02-etcd-client.key ../ansible/roles/k8s_master/files/pki/local
 cp k8s-local-m-02-etcd-client.crt ../ansible/roles/k8s_master/files/pki/local
 
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client k8s-local-m-03-etcd-client-csr.json | cfssljson -bare k8s-local-m-03-etcd-client
+cfssl genkey k8s-local-m-03-etcd-client-csr.json | cfssljson -bare k8s-local-m-03-etcd-client
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-m-03-etcd-client.csr | cfssljson -bare k8s-local-m-03-etcd-client
 mv -f k8s-local-m-03-etcd-client-key.pem k8s-local-m-03-etcd-client.key
 mv -f k8s-local-m-03-etcd-client.pem k8s-local-m-03-etcd-client.crt
 cp k8s-local-m-03-etcd-client.key ../ansible/roles/k8s_master/files/pki/local
@@ -127,7 +137,8 @@ cp k8s-local-istio-ca-chain.crt ../ansible/roles/k8s_istio/files/pki/local
 
 
 # Generate the Istio ingress gateway private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-istio-ingressgateway-csr.json | cfssljson -bare k8s-local-istio-ingressgateway
+cfssl genkey k8s-local-istio-ingressgateway-csr.json | cfssljson -bare k8s-local-istio-ingressgateway
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-istio-ingressgateway.csr | cfssljson -bare k8s-local-istio-ingressgateway
 mv -f k8s-local-istio-ingressgateway-key.pem k8s-local-istio-ingressgateway.key
 mv -f k8s-local-istio-ingressgateway.pem k8s-local-istio-ingressgateway.crt
 cp k8s-local-istio-ingressgateway.key ../ansible/roles/k8s_istio/files/pki/local
@@ -135,7 +146,8 @@ cp k8s-local-istio-ingressgateway.crt ../ansible/roles/k8s_istio/files/pki/local
 
 
 # Generate the default ingress gateway private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-default-ingressgateway-csr.json | cfssljson -bare k8s-local-default-ingressgateway
+cfssl genkey k8s-local-default-ingressgateway-csr.json | cfssljson -bare k8s-local-default-ingressgateway
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-default-ingressgateway.csr | cfssljson -bare k8s-local-default-ingressgateway
 mv -f k8s-local-default-ingressgateway-key.pem k8s-local-default-ingressgateway.key
 mv -f k8s-local-default-ingressgateway.pem k8s-local-default-ingressgateway.crt
 cp k8s-local-default-ingressgateway.key ../ansible/roles/k8s_istio/files/pki/local
@@ -143,7 +155,8 @@ cp k8s-local-default-ingressgateway.crt ../ansible/roles/k8s_istio/files/pki/loc
 
 
 # Generate the TopoLVM mutating webhook private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-topolvm-mutatingwebhook-csr.json | cfssljson -bare k8s-local-topolvm-mutatingwebhook
+cfssl genkey k8s-local-topolvm-mutatingwebhook-csr.json | cfssljson -bare k8s-local-topolvm-mutatingwebhook
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-topolvm-mutatingwebhook.csr | cfssljson -bare k8s-local-topolvm-mutatingwebhook
 mv -f k8s-local-topolvm-mutatingwebhook-key.pem k8s-local-topolvm-mutatingwebhook.key
 mv -f k8s-local-topolvm-mutatingwebhook.pem k8s-local-topolvm-mutatingwebhook.crt
 cp k8s-local-topolvm-mutatingwebhook.key ../ansible/roles/k8s_storage/files/pki/local
@@ -151,7 +164,8 @@ cp k8s-local-topolvm-mutatingwebhook.crt ../ansible/roles/k8s_storage/files/pki/
 
 
 # Generate the Elasticsearch private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-elasticsearch-csr.json | cfssljson -bare k8s-local-elasticsearch
+cfssl genkey k8s-local-elasticsearch-csr.json | cfssljson -bare k8s-local-elasticsearch
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-elasticsearch.csr | cfssljson -bare k8s-local-elasticsearch
 mv -f k8s-local-elasticsearch-key.pem k8s-local-elasticsearch.key
 mv -f k8s-local-elasticsearch.pem k8s-local-elasticsearch.crt
 cp k8s-local-elasticsearch.key ../ansible/roles/k8s_monitoring/files/pki/local
@@ -159,7 +173,8 @@ cp k8s-local-elasticsearch.crt ../ansible/roles/k8s_monitoring/files/pki/local
 
 
 # Generate the Kibana private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-kibana-csr.json | cfssljson -bare k8s-local-kibana
+cfssl genkey k8s-local-kibana-csr.json | cfssljson -bare k8s-local-kibana
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-kibana.csr | cfssljson -bare k8s-local-kibana
 mv -f k8s-local-kibana-key.pem k8s-local-kibana.key
 mv -f k8s-local-kibana.pem k8s-local-kibana.crt
 cp k8s-local-kibana.key ../ansible/roles/k8s_monitoring/files/pki/local
@@ -167,19 +182,60 @@ cp k8s-local-kibana.crt ../ansible/roles/k8s_monitoring/files/pki/local
 
 
 # Generate the Jaeger private key and certificate
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server k8s-local-jaeger-csr.json | cfssljson -bare k8s-local-jaeger
+cfssl genkey k8s-local-jaeger-csr.json | cfssljson -bare k8s-local-jaeger
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server k8s-local-jaeger.csr | cfssljson -bare k8s-local-jaeger
 mv -f k8s-local-jaeger-key.pem k8s-local-jaeger.key
 mv -f k8s-local-jaeger.pem k8s-local-jaeger.crt
 cp k8s-local-jaeger.key ../ansible/roles/k8s_monitoring/files/pki/local
 cp k8s-local-jaeger.crt ../ansible/roles/k8s_monitoring/files/pki/local
 
 
+# Generate the Kafka intermediate CA private key and certificate
+cfssl gencert -initca kafka-local-ca-csr.json | cfssljson -bare kafka-local-ca
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile intermediate_ca kafka-local-ca.csr | cfssljson -bare kafka-local-ca
+mv -f kafka-local-ca-key.pem kafka-local-ca.key
+mv -f kafka-local-ca.pem kafka-local-ca.crt
+cp kafka-local-ca.crt ../ansible/roles/kafka_server/files/pki/local
+cp kafka-local-ca.key ../ansible/roles/kafka_server/files/pki/local
+cp kafka-local-ca.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-local-ca.key ../ansible/roles/kafka_zookeeper/files/pki/local
+
+
 # Generate the Kafka Zookeeper private keys and certificates
-cfssl gencert -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile=client_server kafka-zookeeper-local-csr.json | cfssljson -bare kafka-zookeeper-local
-mv -f kafka-zookeeper-local-key.pem kafka-zookeeper-local.key
-mv -f kafka-zookeeper-local.pem kafka-zookeeper-local.crt
-cp kafka-zookeeper-local.key ../ansible/roles/kafka_zookeeper/files/pki/local
-cp kafka-zookeeper-local.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+cfssl genkey kafka-local-01-csr.json | cfssljson -bare kafka-local-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-01.csr | cfssljson -bare kafka-local-01
+mv -f kafka-local-01-key.pem kafka-local-01.key
+mv -f kafka-local-01.pem kafka-local-01.crt
+cp kafka-local-01.key ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-local-01.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+cfssl genkey kafka-local-02-csr.json | cfssljson -bare kafka-local-02
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-02.csr | cfssljson -bare kafka-local-02
+mv -f kafka-local-02-key.pem kafka-local-02.key
+mv -f kafka-local-02.pem kafka-local-02.crt
+cp kafka-local-02.key ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-local-02.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+cfssl genkey kafka-local-03-csr.json | cfssljson -bare kafka-local-03
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-03.csr | cfssljson -bare kafka-local-03
+mv -f kafka-local-03-key.pem kafka-local-03.key
+mv -f kafka-local-03.pem kafka-local-03.crt
+cp kafka-local-03.key ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-local-03.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+
+
+
+#
+#
+# cfssl gencert -ca=kafka-local-ca.crt -ca-key=kafka-local-ca.key -config=kafka-local-ca-config.json -profile=client_server kafka-zookeeper-local-csr.json | cfssljson -bare kafka-zookeeper-local
+# mv -f kafka-zookeeper-local-key.pem kafka-zookeeper-local.key
+# mv -f kafka-zookeeper-local.pem kafka-zookeeper-local.crt
+# cp kafka-zookeeper-local.key ../ansible/roles/kafka_zookeeper/files/pki/local
+# cp kafka-zookeeper-local.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+#
+#
+#
 
 
 

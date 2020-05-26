@@ -24,7 +24,7 @@
 # | . \  / ___ \|  _| | . \  / ___ \   / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
-- name: Copy the Kafka Zookeeper keys and certificates for the "{{ kafka_cluster_name }}" Kafka cluster
+- name: Copy the Kafka ZooKeeper keys and certificates for the "{{ kafka_cluster_name }}" Kafka cluster
   block:
   - name: Create the /etc/kafka/pki/kafka-zookeeper directory
     file:
@@ -34,48 +34,71 @@
       mode: '0770'
       state: directory
 
-  - name: Copy the ca.crt certificate to the /etc/kafka/pki/kafka-zookeeper directory
+  - name: Copy the CA certificate for the "{{ kafka_cluster_name }}" Kafka cluster to the /var/tmp/ansible/kafka directory
     copy:
       src: pki/{{ kafka_cluster_name }}/ca.crt
-      dest: /etc/kafka/pki/kafka-zookeeper/ca.crt
+      dest: /var/tmp/ansible/kafka/ca.crt
     register: kafka_zookeeper_ca_copy_result
 
-  - name: Copy the Kafka Zookeeper private key for the "{{ kafka_cluster_name }}" Kafka cluster to the /etc/kubernetes/pki/kafka-zookeeper directory
+#  - name: Copy the Kafka intermediate CA certificate for the "{{ kafka_cluster_name }}" Kafka cluster to the /var/tmp/ansible/kafka directory
+#    copy:
+#      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-ca.crt
+#      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-ca.crt
+#    register: kafka_zookeeper_kafka_intermediate_ca_copy_result
+
+  - name: Copy the host-specific Kafka ZooKeeper private key ({{ inventory_hostname_short }}.key) for the "{{ kafka_cluster_name }}" Kafka cluster to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-zookeeper-{{ kafka_cluster_name }}.key
-      dest: /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.key
+      src: pki/{{ kafka_cluster_name }}/{{inventory_hostname_short}}.key
+      dest: /var/tmp/ansible/kafka/{{inventory_hostname_short}}.key
     register: kafka_zookeeper_private_key_copy_result
 
-  - name: Copy the Kafka Zookeeper certificate for the "{{ kafka_cluster_name }}" Kafka cluster to the /etc/kubernetes/pki/kafka-zookeeper directory
+  - name: Copy the host-specific Kafka ZooKeeper certificate ({{ inventory_hostname_short }}.key) for the "{{ kafka_cluster_name }}" Kafka cluster to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-zookeeper-{{ kafka_cluster_name }}.crt
-      dest: /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.crt
+      src: pki/{{ kafka_cluster_name }}/{{inventory_hostname_short}}.crt
+      dest: /var/tmp/ansible/kafka/{{inventory_hostname_short}}.crt
     register: kafka_zookeeper_certificate_copy_result
 
-  - name: Generate or retrieve the password for the Kafka Zookeeper keystores
+  - name: Generate or retrieve the password for the Kafka ZooKeeper keystores
     set_fact:
-      kafka_zookeeper_keystore_password: "{{ lookup('password', 'credentials/kafka_zookeeper_keystore_password_{{ kafka_cluster_name }} length=16') }}"
+      kafka_zookeeper_keystore_password: "{{ lookup('password', 'credentials/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate and copy the new Kafka Zookeeper PKCS12 keystore if required
+  - name: Generate and copy the new Kafka ZooKeeper keystore if required
     block:
-    - name: Generate the new Kafka Zookeeper PKCS12 keystore
+    - name: Generate the new Kafka ZooKeeper PKCS12 keystore
       shell:
-        cmd: openssl pkcs12 -export -name "kafka-zookeeper-{{ kafka_cluster_name }}" -out /var/tmp/ansible/kafka-zookeeper-{{ kafka_cluster_name }}.p12 -inkey /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.key -in /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.crt -CAfile /etc/kafka/pki/kafka-zookeeper/ca.crt  -chain -passout pass:{{ kafka_zookeeper_keystore_password }}
+        cmd: openssl pkcs12 -export -name "{{ inventory_hostname_short }}" -out /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.p12 -inkey /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key -in /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt -passout pass:{{ kafka_zookeeper_keystore_password }}
 
-    - name: Copy the new Kafka Zookeeper PKCS12 keystore
+    - name: Remove the new Kafka ZooKeeper JKS keystore if it exists
+      file:
+        path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.jks
+        state: absent
+
+    - name: Convert the new Kafka ZooKeeper PKCS12 keystore to a JKS keystore
+      shell:
+        cmd: keytool -importkeystore -srckeystore /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.p12 -srcstoretype pkcs12 -srcstorepass {{ kafka_zookeeper_keystore_password }} -destkeystore /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.jks -deststoretype JKS -deststorepass {{ kafka_zookeeper_keystore_password }}
+
+    - name: Add the CA certificate to the Kafka ZooKeeper JKS keystore
+      shell:
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "CA" -file /var/tmp/ansible/kafka/ca.crt -keystore /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.jks -storepass {{ kafka_zookeeper_keystore_password }}
+
+#    - name: Add the Kafka intermediate CA certificate to the Kafka ZooKeeper JKS keystore
+#      shell:
+#        cmd: keytool -importcert -noprompt -trustcacerts -alias "Kafka Intermediate CA" -file /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-ca.crt -keystore /var/tmp/ansible/kafka/kafka-zookeeper-{{ kafka_cluster_name }}.jks -storepass {{ kafka_zookeeper_keystore_password }}
+
+    - name: Copy the new Kafka ZooKeeper JKS keystore
       copy:
-        src: /var/tmp/ansible/kafka-zookeeper-{{ kafka_cluster_name }}.p12
-        dest: /etc/kafka/pki/kafka-zookeeper/kafka-zookeeper-{{ kafka_cluster_name }}.p12
+        src: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.jks
+        dest: /etc/kafka/pki/kafka-zookeeper/{{ inventory_hostname_short }}.jks
         remote_src: yes
 
-    when: ((kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True))
+    when: (True or (kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_kafka_intermediate_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True))
 
 - name: Create the {{ kafka_zookeeper_log_directory }} directory
   file:
     path: '{{ kafka_zookeeper_log_directory }}'
     owner: kafka
     group: kafka
-    mode: 0755
+    mode: 0750
     state: directory
 
 - name: Create the {{ kafka_zookeeper_data_directory }} directory
@@ -83,7 +106,7 @@
     path: '{{ kafka_zookeeper_data_directory }}'
     owner: kafka
     group: kafka
-    mode: 0755
+    mode: 0750
     state: directory
 
 - name: Create the {{ kafka_zookeeper_data_log_directory }} directory
@@ -91,39 +114,40 @@
     path: '{{ kafka_zookeeper_data_log_directory }}'
     owner: kafka
     group: kafka
-    mode: 0755
+    mode: 0750
     state: directory
 
-- name: Create the Kafka Zookeeper configuration file
+- name: Create the Kafka ZooKeeper configuration file
   template:
     src: zookeeper.properties.j2
     dest: /opt/kafka/config/zookeeper.properties
   register: kafka_zookeeper_configuration_file_template_result
 
-- name: Create the myid file containing the Kafka Zookeeper instance ID
+- name: Create the myid file containing the Kafka ZooKeeper instance ID
   template:
     src: myid.j2
     dest: '{{ kafka_zookeeper_data_directory }}/myid'
   when: ((kafka_zookeeper_hosts | length) > 1)
 
-- name: Configure the Kafka Zookeeper service
+- name: Configure the Kafka ZooKeeper service
   template:
     src: kafka-zookeeper.service.j2
     dest: /lib/systemd/system/kafka-zookeeper.service
+  register: kafka_zookeeper_service_file_template_result
 
-- name: Enable and start the Kafka Zookeeper service
+- name: Enable and start the Kafka ZooKeeper service
   systemd:
     name: kafka-zookeeper.service
     state: started
     enabled: yes
 
-- name: Restart the Kafka Zookeeper service if required
+- name: Restart the Kafka ZooKeeper service if required
   systemd:
     name: kafka-zookeeper.service
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True) or (kafka_zookeeper_configuration_file_template_result.changed == True))
+  when: ((kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True) or (kafka_zookeeper_configuration_file_template_result.changed == True) or (kafka_zookeeper_service_file_template_result.changed == True))
 
 
 

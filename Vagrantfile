@@ -48,9 +48,9 @@ def generate_hosts_file(provider, profile, hosts)
 
         hosts_file += "%-15.15s" % host_ip
         hosts_file += ' '
-        hosts_file += host_hostname
-        hosts_file += ' '
         hosts_file += host_fqdn
+        hosts_file += ' '
+        hosts_file += host_hostname
 
         hosts_file += "\n"
 

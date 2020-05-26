@@ -1,5 +1,29 @@
 # This playbook configures a Kafka cluster.
 
+- name: Gather facts from all Kafka ZooKeeper hosts
+  hosts: kafka_zookeeper
+  become: yes
+  become_user: root
+  pre_tasks:
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ groups['kafka_zookeeper'] }}"
+  tasks: []
+
+- name: Gather facts from all Kafka Server hosts
+  hosts: kafka_server
+  become: yes
+  become_user: root
+  pre_tasks:
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ groups['kafka_server'] }}"
+  tasks: []
+
 - name: Configure the Kafka ZooKeeper hosts
   hosts: kafka_zookeeper
   become: yes

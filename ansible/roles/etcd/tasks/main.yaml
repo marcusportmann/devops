@@ -52,12 +52,12 @@
       mode: 0770
       state: directory
 
-  - name: Copy the ca.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the CA certificate to the /etc/etcd/pki directory
     copy:
       src: pki/{{ etcd_cluster_name }}/ca.crt
       dest: /etc/etcd/pki/ca.crt
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}-ca.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the Etcd intermediate CA certificate certificate to the /etc/etcd/pki directory
     copy:
       src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-ca.crt
       dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}-ca.crt

@@ -72,6 +72,7 @@
 - name: Enable the firewall
   ufw:
     state: enabled
+    policy: deny
 
 - name: Allow all access to tcp port 22 (SSH)
   ufw:

@@ -6,8 +6,8 @@ After=network.target remote-fs.target
 
 [Service]
 Type=simple
-User=zookeeper
-Group=zookeeper
+User=kafka
+Group=kafka
 Environment=LOG_DIR={{ kafka_zookeeper_log_directory }}
 ExecStart=/opt/kafka/bin/zookeeper-server-start.sh /opt/kafka/config/zookeeper.properties
 ExecStop=/opt/kafka/bin/zookeeper-server-stop.sh /opt/kafka/config/zookeeper.properties
