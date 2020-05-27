@@ -15,7 +15,7 @@
 - name: Create the operators namespace if required
   command:
     cmd: /usr/bin/kubectl create ns operators
-  when: operators_namespace_exists_output.stdout == "0"
+  when: operators_namespace_exists_output.stdout == '0'
 
 
 #  ____   ___  ____ _____ ____ ____  _____ ____     ___  ____  _____ ____      _  _____ ___  ____
@@ -28,7 +28,7 @@
   block:
   - name: Check if the Postgres Operator is installed
     shell:
-      cmd: /usr/bin/helm -n operators list --filter "postgres-operator" --output json | jq -r '.[0].chart' | cut -s -f3- -d-
+      cmd: /usr/bin/helm -n operators list --filter 'postgres-operator' --output json | jq -r '.[0].chart' | cut -s -f3- -d-
     register: postgres_operator_installed_helm_chart_version_output
 
   - name: Install the Postgres Operator
@@ -61,7 +61,7 @@
   block:
   - name: Check if the Postgres Operator UI is installed
     shell:
-      cmd: /usr/bin/helm -n operators list --filter "postgres-operator-ui" --output json | jq -r '.[0].chart' | cut -s -f4- -d-
+      cmd: /usr/bin/helm -n operators list --filter 'postgres-operator-ui' --output json | jq -r '.[0].chart' | cut -s -f4- -d-
     register: postgres_operator_ui_installed_helm_chart_version_output
 
   - name: Install the Postgres Operator UI

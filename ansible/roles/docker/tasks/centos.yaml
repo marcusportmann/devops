@@ -11,7 +11,7 @@
 - name: Retrieve the version of the installed containerd package
   debug:
     msg: Found the installed containerd package ({{ ansible_facts.packages['containerd.io'][0].version }})
-  when: "'containerd.io' in ansible_facts.packages"
+  when: ('containerd.io' in ansible_facts.packages)
 
 - name: Install the containerd package
   block:
@@ -41,7 +41,7 @@
 - name: Retrieve the version of the installed docker-ce-cli package
   debug:
     msg: Found the installed docker-ce-cli package ({{ ansible_facts.packages['docker-ce-cli'][0].version }})
-  when: "'docker-ce-cli' in ansible_facts.packages"
+  when: ('docker-ce-cli' in ansible_facts.packages)
 
 - name: Install the docker-ce-cli package
   block:
@@ -71,7 +71,7 @@
 - name: Retrieve the version of the installed docker-ce package
   debug:
     msg: Found the installed docker-ce package ({{ ansible_facts.packages['docker-ce'][0].version }})
-  when: "'docker-ce' in ansible_facts.packages"
+  when: ('docker-ce' in ansible_facts.packages)
 
 - name: Install the docker-ce package
   block:

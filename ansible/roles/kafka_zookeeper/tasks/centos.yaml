@@ -4,22 +4,9 @@
 - debug:
     msg: Applying the CentOS-specific Kafka ZooKeeper configuration
 
-- name: Allow all access to tcp port 2182 (Secure ZooKeeper Client Port)
+- name: Add the kafka firewalld zone
   firewalld:
-    port: 2182/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Add the zookeeper_clients firewalld zone
-  firewalld:
-    zone: zookeeper_clients
-    state: present
-    permanent: true
-
-- name: Add the zookeeper_peers firewalld zone
-  firewalld:
-    zone: zookeeper_peers
+    zone: kafka
     state: present
     permanent: true
 
@@ -28,43 +15,43 @@
     name: firewalld
     state: reloaded
 
-- name: Allow access to tcp port 2182 for the zookeeper_clients firewalld zone
+- name: Allow access to tcp port 2182 for the kafka firewalld zone
   firewalld:
-    zone: zookeeper_clients
+    zone: kafka
     port: 2182/tcp
     state: enabled
     permanent: true
     immediate: yes
 
-- name: Allow access to tcp port 2888 for the zookeeper_peers firewalld zone
+- name: Allow access to tcp port 2888 for the kafka firewalld zone
   firewalld:
-    zone: zookeeper_peers
+    zone: kafka
     port: 2888/tcp
     state: enabled
     permanent: true
     immediate: yes
 
-- name: Allow access to tcp port 3888 for the zookeeper_peers firewalld zone
+- name: Allow access to tcp port 3888 for the kafka firewalld zone
   firewalld:
-    zone: zookeeper_peers
+    zone: kafka
     port: 3888/tcp
     state: enabled
     permanent: true
     immediate: yes
 
-- name: Allow all the Kafka Server hosts access to the zookeeper_clients firewalld zone
+- name: Allow all the Kafka Server hosts access to the kafka firewalld zone
   firewalld:
-    zone: zookeeper_clients
-    source: "{{ hostvars[item].ansible_default_ipv4.address }}"
+    zone: kafka
+    source: '{{ hostvars[item].ansible_default_ipv4.address }}'
     state: enabled
     permanent: yes
     immediate: yes
   loop: "{{ groups['kafka_server'] | default([]) }}"
 
-- name: Allow the other Kafka ZooKeeper hosts access to the zookeeper_peers firewalld zone
+- name: Allow the other Kafka ZooKeeper hosts access to the kafka firewalld zone
   firewalld:
-    zone: zookeeper_peers
-    source: "{{ hostvars[item].ansible_default_ipv4.address }}"
+    zone: kafka
+    source: '{{ hostvars[item].ansible_default_ipv4.address }}'
     state: enabled
     permanent: yes
     immediate: yes

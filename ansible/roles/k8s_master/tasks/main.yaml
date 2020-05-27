@@ -19,7 +19,7 @@
       path: /etc/kubernetes/scheduler
       state: directory
 
-- name: Copy the standard keys and certificates for the "{{ k8s_cluster_name }}" Kubernetes cluster
+- name: Copy the standard keys and certificates for the Kubernetes cluster
   block:
   - name: Create the /etc/kubernetes/pki/etcd directory
     file:
@@ -64,7 +64,7 @@
           src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-etcd-ca.crt
           dest: /etc/kubernetes/pki/etcd/ca.crt
 
-      when: k8s_etcd_topology == "stacked"
+      when: k8s_etcd_topology == 'stacked'
 
     - name: Copy the keys and certificates for the external etcd topology
       block:
@@ -83,14 +83,14 @@
           src: pki/{{ k8s_cluster_name }}/{{ inventory_hostname_short }}-etcd-client.crt
           dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.crt
 
-      when: k8s_etcd_topology == "external"
+      when: k8s_etcd_topology == 'external'
 
     - command:
         cmd: hostname -i
       register: hostname_i_result
 
     - set_fact:
-        k8s_apiserver_advertise_address: "{{ hostname_i_result.stdout_lines[0] }}"
+        k8s_apiserver_advertise_address: '{{ hostname_i_result.stdout_lines[0] }}'
 
     - name: Create the Kubernetes API server encryption configuration
       block:
@@ -100,7 +100,7 @@
         register: generate_kube_apiserver_encryption_key_result
 
       - set_fact:
-          kube_apiserver_encryption_key: "{{ generate_kube_apiserver_encryption_key_result.stdout }}"
+          kube_apiserver_encryption_key: '{{ generate_kube_apiserver_encryption_key_result.stdout }}'
 
       - template:
           src: k8s-apiserver-encryption.yaml.j2
@@ -197,7 +197,7 @@
     - name: Allows pods to scheduled on the master if there are no worker nodes
       shell:
         cmd: /usr/bin/kubectl taint node `hostname` node-role.kubernetes.io/master:NoSchedule-
-      when: ("k8s_worker" not in groups.keys())
+      when: ('k8s_worker' not in groups.keys())
 
     - name: Create the Prometheus service account
       block:
@@ -208,7 +208,7 @@
       - shell:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-service-account.yaml
 
-    when: kubelet_config_stat_result.stat.exists == False
+    when: (kubelet_config_stat_result.stat.exists == False)
 
   - name: Check whether a CNI provider has been configured
     stat:
@@ -382,7 +382,7 @@
       register: hostname_i_result
 
     - set_fact:
-        k8s_apiserver_advertise_address: "{{ hostname_i_result.stdout_lines[0] }}"
+        k8s_apiserver_advertise_address: '{{ hostname_i_result.stdout_lines[0] }}'
 
     - name: Retrieve the Kubernetes join command from the first master
       command:
@@ -392,11 +392,11 @@
 
     - name: Save the Kubernetes join command
       set_fact:
-        kubeadm_join_command: "{{ kubeadm_join_command_result.stdout_lines[0] }}"
+        kubeadm_join_command: '{{ kubeadm_join_command_result.stdout_lines[0] }}'
 
     - name: Execute the command to Join the additional master to the Kubernetes cluster
       command:
-        cmd: "{{ kubeadm_join_command }} --control-plane --apiserver-advertise-address={{ k8s_apiserver_advertise_address }}"
+        cmd: '{{ kubeadm_join_command }} --control-plane --apiserver-advertise-address={{ k8s_apiserver_advertise_address }}'
 
     - name: Wait for Kubernetes node initialization to complete
       command:
@@ -465,7 +465,7 @@
     - name: Allows pods to scheduled on the master if there are no worker nodes
       command:
         cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
-      when: ("k8s_worker" not in groups.keys())
+      when: ('k8s_worker' not in groups.keys())
 
     when: kubelet_config_stat_result.stat.exists == False
 
@@ -494,7 +494,7 @@
   - name: Add the stable Helm repository
     command:
       cmd: /usr/bin/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-    when: helm_stable_repo_added_output.stdout == "0"
+    when: helm_stable_repo_added_output.stdout == '0'
 
   - name: Configure the monitoring Helm repos
     block:
@@ -506,7 +506,7 @@
     - name: Add the elastic Helm repository
       command:
         cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
-      when: helm_elastic_repo_added_output.stdout == "0"
+      when: helm_elastic_repo_added_output.stdout == '0'
 
     - name: Check if the jaegertracing Helm repository has been added
       shell:
@@ -516,7 +516,7 @@
     - name: Add the jaegertracing Helm repository
       command:
         cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
-      when: helm_jaegertracing_repo_added_output.stdout == "0"
+      when: helm_jaegertracing_repo_added_output.stdout == '0'
 
     when: ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == true))
 
@@ -586,14 +586,14 @@
         path: /usr/bin/kubeseal
         owner: root
         group: root
-        mode: 0770
+        mode: '0770'
         state: file
 
     when: (kubeseal_installed_version.startswith(k8s_bitnami_labs_sealed_secrets_kubeseal_version) == False)
 
   - name: Check if Bitnami Labs Sealed Secrets is installed
     shell:
-      cmd: /usr/bin/helm -n monitoring-system list --filter "sealed-secrets" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      cmd: /usr/bin/helm -n monitoring-system list --filter 'sealed-secrets' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
     register: sealed_secrets_installed__helm_chart_version_output
 
   - name: Install Bitnami Labs Sealed Secrets

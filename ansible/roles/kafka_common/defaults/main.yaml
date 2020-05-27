@@ -7,8 +7,9 @@
 kafka_package_checksum: sha512:AD6EDBAEC667584D18F3F9B9C03B9A39A5462EEB77F2BC5DFB2F14DE02E84CA14ACC4630F76B64AFF1142B0807A3851DBD7CDFA077678FABBFCE542EAF09598C
 kafka_version: 2.4.1
 
-kafka_kafka_user_id: 305
-kafka_kafka_group_id: 305
+kafka_user_id: 315
+kafka_group_id: 315
+
 
 
 

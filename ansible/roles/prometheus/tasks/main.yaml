@@ -122,7 +122,7 @@
 
 - name: Create the {{ prometheus_data_directory }} directory
   file:
-    path: "{{ prometheus_data_directory }}"
+    path: '{{ prometheus_data_directory }}'
     owner: prometheus
     group: prometheus
     mode: 0775
@@ -130,7 +130,7 @@
 
 - name: Create the {{ prometheus_data_directory }}/metrics2 directory
   file:
-    path: "{{ prometheus_data_directory }}/metrics2"
+    path: '{{ prometheus_data_directory }}/metrics2'
     owner: prometheus
     group: prometheus
     mode: 0775

@@ -229,7 +229,7 @@
 - name: Retrieve the version of the installed kubectl package
   debug:
     msg: Found the installed kubectl package ({{ ansible_facts.packages['kubectl'][0].version }})
-  when: "'kubectl' in ansible_facts.packages"
+  when: ('kubectl' in ansible_facts.packages)
 
 - name: Install the kubectl package
   block:
@@ -243,7 +243,7 @@
 - name: Retrieve the version of the installed kubelet package
   debug:
     msg: Found the installed kubelet package ({{ ansible_facts.packages['kubelet'][0].version }})
-  when: "'kubelet' in ansible_facts.packages"
+  when: ('kubelet' in ansible_facts.packages)
 
 - name: Install the kubelet package
   block:
@@ -257,7 +257,7 @@
 - name: Retrieve the version of the installed kubeadm package
   debug:
     msg: Found the installed kubeadm package ({{ ansible_facts.packages['kubeadm'][0].version }})
-  when: "'kubeadm' in ansible_facts.packages"
+  when: ('kubeadm' in ansible_facts.packages)
 
 - name: Install the kubeadm package
   block:

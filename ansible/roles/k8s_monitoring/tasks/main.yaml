@@ -55,7 +55,7 @@
       - name: Create the Elasticsearch credentials secret if it does not exist
         shell:
           cmd: /usr/bin/kubectl -n monitoring-system create secret generic elasticsearch-credentials --from-literal=username=elastic --from-literal=password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1` --dry-run -o yaml | kubectl apply -f -
-        when: (elasticsearch_credentials_secret_exists_output.stdout == "0")
+        when: (elasticsearch_credentials_secret_exists_output.stdout == '0')
 
       - name: Retrieve the Elasticsearch password
         block:
@@ -67,13 +67,13 @@
             elasticsearch_credentials_password: '{{ retrieve_elasticsearch_credentials_password_output.stdout }}'
 
         - debug:
-            msg: "Elasticsearch Password: {{ elasticsearch_credentials_password }}"
+            msg: 'Elasticsearch Password: {{ elasticsearch_credentials_password }}'
 
     - name: Install a single node Elasticsearch cluster using Helm
       block:
       - name: Check if Elasticsearch is installed
         shell:
-          cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+          cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_installed_helm_chart_version_output
 
       - name: Install Elasticsearch
@@ -87,13 +87,13 @@
           command:
             cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
         when: elasticsearch_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
-      when: (k8s_monitoring_elasticsearch_cluster_type == "standalone")
+      when: (k8s_monitoring_elasticsearch_cluster_type == 'standalone')
 
     - name: Install a multi node Elasticsearch cluster using Helm
       block:
       - name: Check if the Elasticsearch master nodes are installed
         shell:
-          cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch-master" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+          cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch-master' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_master_installed_helm_chart_version_output
 
       - name: Install the Elasticsearch master nodes
@@ -110,7 +110,7 @@
 
       - name: Check if the Elasticsearch ingest nodes are installed
         shell:
-          cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch-ingest" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+          cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch-ingest' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_ingest_installed_helm_chart_version_output
 
       - name: Install the Elasticsearch ingest nodes
@@ -127,7 +127,7 @@
 
       - name: Check if the Elasticsearch data nodes are installed
         shell:
-          cmd: /usr/bin/helm -n monitoring-system list --filter "elasticsearch-data" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+          cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch-data' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_data_installed_helm_chart_version_output
 
       - name: Install the Elasticsearch data nodes
@@ -142,7 +142,7 @@
             cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
         when: elasticsearch_data_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
 
-      when: ((k8s_monitoring_elasticsearch_cluster_type == "minimal") or (k8s_monitoring_elasticsearch_cluster_type == "full"))
+      when: ((k8s_monitoring_elasticsearch_cluster_type == 'minimal') or (k8s_monitoring_elasticsearch_cluster_type == 'full'))
 
     when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true))
 
@@ -189,11 +189,11 @@
       - name: Create the Kibana Elasticsearch credentials secret if it does not exist
         shell:
           cmd: /usr/bin/kubectl -n monitoring-system create secret generic kibana-elasticsearch-credentials --from-literal=username=elastic --from-literal=password={{ elasticsearch_credentials_password }} --dry-run -o yaml | kubectl apply -f -
-        when: (kibana_elasticsearch_credentials_secret_exists_output.stdout == "0")
+        when: (kibana_elasticsearch_credentials_secret_exists_output.stdout == '0')
 
     - name: Check if Kibana is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter "kibana" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+        cmd: /usr/bin/helm -n monitoring-system list --filter 'kibana' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: kibana_installed__helm_chart_version_output
 
     - name: Install Kibana
@@ -254,11 +254,11 @@
       - name: Create the Jaeger Elasticsearch credentials secret if it does not exist
         shell:
           cmd: /usr/bin/kubectl -n monitoring-system create secret generic jaeger-elasticsearch-credentials --from-literal=username=elastic --from-literal=password={{ elasticsearch_credentials_password }} --dry-run -o yaml | kubectl apply -f -
-        when: (jaeger_elasticsearch_credentials_secret_exists_output.stdout == "0")
+        when: (jaeger_elasticsearch_credentials_secret_exists_output.stdout == '0')
 
     - name: Check if Jaeger is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter "jaeger" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+        cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: jaeger_installed__helm_chart_version_output
 
     - name: Install Jaeger
@@ -287,7 +287,7 @@
     block:
     - name: Check if Prometheus is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter "prometheus" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+        cmd: /usr/bin/helm -n monitoring-system list --filter 'prometheus' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: prometheus_installed__helm_chart_version_output
 
     - name: Install Prometheus
@@ -333,11 +333,11 @@
         - name: Create the Grafana admin credentials secret if it does not exist
           shell:
             cmd: /usr/bin/kubectl -n monitoring-system create secret generic grafana-admin-credentials --from-literal=username=admin --from-literal=password=admin --dry-run -o yaml | kubectl apply -f -
-          when: (grafana_admin_credentials_secret_exists_output.stdout == "0")
+          when: (grafana_admin_credentials_secret_exists_output.stdout == '0')
 
     - name: Check if Grafana is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter "grafana" --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+        cmd: /usr/bin/helm -n monitoring-system list --filter 'grafana' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: grafana_installed_helm_chart_version_output
 
     - name: Install Grafana
@@ -384,14 +384,14 @@
         register: grafana_admin_username_output
 
       - debug:
-          msg: "Grafana Admin Username: {{ grafana_admin_username_output.stdout }}"
+          msg: 'Grafana Admin Username: {{ grafana_admin_username_output.stdout }}'
 
       - shell:
           cmd: kubectl -n monitoring-system get secret grafana-admin-credentials -o=jsonpath='{.data.password}' | base64 --decode
         register: grafana_admin_password_output
 
       - debug:
-          msg: "Grafana Admin Password: {{ grafana_admin_password_output.stdout }}"
+          msg: 'Grafana Admin Password: {{ grafana_admin_password_output.stdout }}'
 
     when: ((k8s_monitoring_grafana_enabled is defined) and (k8s_monitoring_grafana_enabled != None) and (k8s_monitoring_grafana_enabled == true))
 

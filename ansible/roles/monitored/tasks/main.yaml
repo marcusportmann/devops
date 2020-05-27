@@ -43,15 +43,14 @@
     - name: Add the prometheus group
       group:
         name: prometheus
-        gid: 302
+        gid: 330
         state: present
 
     - name: Add the prometheus user
       user:
         name: prometheus
-        uid: 302
+        uid: 330
         group: prometheus
-        home: /var/lib/prometheus
         create_home: no
         shell: /usr/sbin/nologin
         state: present

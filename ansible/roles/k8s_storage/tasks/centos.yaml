@@ -24,4 +24,4 @@
       state: started
       enabled: yes
 
-  when: (("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker']))
+  when: (('k8s_worker' not in groups.keys()) or (inventory_hostname in groups['k8s_worker']))

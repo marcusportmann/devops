@@ -1,0 +1,17 @@
+---
+# file: roles/kafka_server/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kafka Server configuration
+
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Allow all access to tcp port 9092 (Kafka Broker)
+  ufw:
+    rule: allow
+    port: '9092'
+    proto: tcp
+

@@ -18,7 +18,7 @@
   loop: "{{ groups['kafka_server'] | default([]) }}"
   when: (item != inventory_hostname)
 
-- name: Allow all access to tcp port 2888 to other Kafka ZooKeeper hosts
+- name: Allow all access to tcp port 2888 to other ZooKeeper hosts
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -27,7 +27,7 @@
   loop: "{{ groups['kafka_zookeeper'] }}"
   when: (item != inventory_hostname)
 
-- name: Allow all access to tcp port 3888 to other Kafka ZooKeeper hosts
+- name: Allow all access to tcp port 3888 to other ZooKeeper hosts
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"

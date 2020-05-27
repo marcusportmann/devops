@@ -24,11 +24,11 @@
 
     - name: Save the Kubernetes join command
       set_fact:
-        kubeadm_join_command: "{{ kubeadm_join_command_result.stdout_lines[0] }}"
+        kubeadm_join_command: '{{ kubeadm_join_command_result.stdout_lines[0] }}'
 
     - name: Execute the command to Join the additional worker to the Kubernetes cluster
       command:
-        cmd: "{{ kubeadm_join_command }}"
+        cmd: '{{ kubeadm_join_command }}'
 
     when: kubelet_config_stat_result.stat.exists == False
 

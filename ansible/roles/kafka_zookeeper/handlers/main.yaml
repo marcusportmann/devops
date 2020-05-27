@@ -4,5 +4,5 @@
   command: systemctl daemon-reload
   when: ansible_service_mgr == 'systemd'
 
-- name: Restart zookeeper
-  service: name=zookeeper state=restarted
+- name: Restart Kafka ZooKeeper
+  service: name=kafka-zookeeper state=restarted

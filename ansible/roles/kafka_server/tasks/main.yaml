@@ -1,2 +1,156 @@
 ---
 #file: roles/kafka_server/tasks/main.yaml
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+  - unbound
+
+- include_tasks: centos.yaml
+  when: ansible_distribution == 'CentOS'
+  tags:
+  - unbound
+
+
+#  _  __    _    _____ _  __    _      ____  _____ ______     _______ ____
+# | |/ /   / \  |  ___| |/ /   / \    / ___|| ____|  _ \ \   / / ____|  _ \
+# | ' /   / _ \ | |_  | ' /   / _ \   \___ \|  _| | |_) \ \ / /|  _| | |_) |
+# | . \  / ___ \|  _| | . \  / ___ \   ___) | |___|  _ < \ V / | |___|  _ <
+# |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |____/|_____|_| \_\ \_/  |_____|_| \_\
+#
+- name: Create the /var/tmp/ansible/kafka-server directory
+  file:
+    path: /var/tmp/ansible/kafka-server
+    owner: root
+    group: root
+    mode: '0700'
+    state: directory
+
+- name: Create the {{ kafka_server_etc_directory }} directory
+  file:
+    path: '{{ kafka_server_etc_directory }}'
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+
+- name: Copy the Kafka Server keys and certificates
+  block:
+  - name: Create the {{ kafka_server_etc_directory }}/pki directory
+    file:
+      path: '{{ kafka_server_etc_directory }}/pki'
+      owner: kafka
+      group: kafka
+      mode: '0770'
+      state: directory
+
+  - name: Copy the CA certificate to the /var/tmp/ansible/kafka-server directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/ca.crt
+      dest: /var/tmp/ansible/kafka-server/ca.crt
+    register: kafka_server_ca_copy_result
+
+#  - name: Copy the Kafka intermediate CA certificate to the /var/tmp/ansible/kafka-server directory
+#    copy:
+#      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-ca.crt
+#      dest: /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-ca.crt
+#    register: kafka_server_kafka_intermediate_ca_copy_result
+
+  - name: Copy the shared Kafka Server private key (kafka-{{ kafka_cluster_name }}-server.key) to the /var/tmp/ansible/kafka-server directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-server.key
+      dest: /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.key
+    register: kafka_server_private_key_copy_result
+
+  - name: Copy the shared Kafka Server certificate (kafka-{{ kafka_cluster_name }}-server.key) to the /var/tmp/ansible/kafka-server directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-server.crt
+      dest: /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.crt
+    register: kafka_server_certificate_copy_result
+
+  - name: Generate or retrieve the password for the Kafka Server keystores
+    set_fact:
+      kafka_server_keystore_password: "{{ lookup('password', 'credentials/kafka-{{ kafka_cluster_name }}-server-keystore-password chars=ascii_letters,digits length=16') }}"
+
+  - name: Generate and copy the new Kafka Server keystore if required
+    block:
+    - name: Generate the new Kafka Server PKCS12 keystore
+      shell:
+        cmd: openssl pkcs12 -export -name 'kafka-{{ kafka_cluster_name }}-server' -out /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.p12 -inkey /var/tmp/ansible/kafka-server/{{ inventory_hostname_short }}.key -in /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.crt -passout pass:{{ kafka_server_keystore_password }}
+
+    - name: Remove the new Kafka Server JKS keystore if it exists
+      file:
+        path: /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.jks
+        state: absent
+
+    - name: Convert the new Kafka Server PKCS12 keystore to a JKS keystore
+      shell:
+        cmd: keytool -importkeystore -srckeystore /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.p12 -srcstoretype pkcs12 -srcstorepass {{ kafka_server_keystore_password }} -destkeystore /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.jks -deststoretype JKS -deststorepass {{ kafka_server_keystore_password }}
+
+    - name: Add the CA certificate to the ZooKeeper JKS keystore
+      shell:
+        cmd: keytool -importcert -noprompt -trustcacerts -alias 'CA' -file /var/tmp/ansible/kafka-server/ca.crt -keystore /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.jks -storepass {{ kafka_server_keystore_password }}
+
+    - name: Copy the new Kafka Server JKS keystore
+      copy:
+        src: /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.jks
+        dest: '{{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks'
+        remote_src: yes
+
+    when: (True or (kafka_server_ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
+
+- name: Create the {{ kafka_server_log_directory }} directory
+  file:
+    path: '{{ kafka_server_log_directory }}'
+    owner: kafka
+    group: kafka
+    mode: 0750
+    state: directory
+
+- name: Create the {{ kafka_server_data_directory }} directory
+  file:
+    path: '{{ kafka_server_data_directory }}'
+    owner: kafka
+    group: kafka
+    mode: 0750
+    state: directory
+
+- name: Create the {{ kafka_server_data_log_directory }} directory
+  file:
+    path: '{{ kafka_server_data_log_directory }}'
+    owner: kafka
+    group: kafka
+    mode: 0750
+    state: directory
+
+- name: Create the Kafka Server configuration file
+  template:
+    src: server.properties.j2
+    dest: /opt/kafka/config/server.properties
+  register: kafka_server_configuration_file_template_result
+
+- name: Configure the Kafka Server service
+  template:
+    src: kafka-server.service.j2
+    dest: /lib/systemd/system/kafka-server.service
+  register: kafka_server_service_file_template_result
+
+- name: Enable and start the Kafka Server service
+  systemd:
+    name: kafka-server.service
+    state: started
+    enabled: yes
+
+- name: Restart the Kafka Server service if required
+  systemd:
+    name: kafka-server.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: ((kafka_server_ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_file_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))

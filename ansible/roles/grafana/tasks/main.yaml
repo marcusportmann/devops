@@ -18,12 +18,12 @@
     state: present
 
 - include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_distribution == 'Ubuntu'
   tags:
   - unbound
 
 - include_tasks: centos.yaml
-  when: ansible_distribution == "CentOS"
+  when: ansible_distribution == 'CentOS'
   tags:
   - unbound
 

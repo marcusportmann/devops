@@ -8,12 +8,12 @@
 #  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
 #
 - include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_distribution == 'Ubuntu'
   tags:
   - unbound
 
 - include_tasks: centos.yaml
-  when: ansible_distribution == "CentOS"
+  when: ansible_distribution == 'CentOS'
   tags:
   - unbound
 
@@ -24,44 +24,20 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |__| |_| | |  | | |  | | |_| | |\  |
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
-- name: Create the /var/tmp/ansible/kafka directory
-  file:
-    path: /var/tmp/ansible/kafka
-    owner: root
-    group: root
-    mode: '0700'
-    state: directory
-
 - name: Add the kafka group
   group:
     name: kafka
-    gid: '{{ kafka_kafka_group_id }}'
+    gid: '{{ kafka_group_id }}'
     state: present
 
 - name: Add the kafka user
   user:
     name: kafka
-    uid: '{{ kafka_kafka_user_id }}'
+    uid: '{{ kafka_user_id }}'
     group: kafka
     create_home: no
     shell: /usr/sbin/nologin
     state: present
-
-- name: Create the /etc/kafka directory
-  file:
-    path: /etc/kafka
-    owner: root
-    group: root
-    mode: '0755'
-    state: directory
-
-- name: Create the /etc/kafka/pki directory
-  file:
-    path: /etc/kafka/pki
-    owner: kafka
-    group: kafka
-    mode: '0770'
-    state: directory
 
 - name: Install kafka
   block:
@@ -99,5 +75,5 @@
         group: root
         state: link
 
-    when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ("/opt/kafka_2.13-" + kafka_version)))
+    when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka_version)))
 

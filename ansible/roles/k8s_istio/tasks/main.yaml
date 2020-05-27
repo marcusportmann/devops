@@ -80,7 +80,7 @@
 
   - name: Check if the correct version of Istio is installed
     shell:
-      cmd: /usr/bin/istioctl version --remote | grep "pilot version" | awk -F ':' {'print $2'} | tr -d ' '
+      cmd: /usr/bin/istioctl version --remote | grep 'pilot version' | awk -F ':' {'print $2'} | tr -d ' '
     register: istio_installed_version_output
 
   - set_fact:
@@ -175,7 +175,7 @@
     - name: Wait for the Istio service mesh initialization to complete
       command:
         cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=900s
-      when: ("k8s_worker" not in groups.keys())
+      when: ('k8s_worker' not in groups.keys())
 
     - name: Enable ingress for Jaeger
       block:

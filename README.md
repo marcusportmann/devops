@@ -258,25 +258,51 @@ The following users and groups are provisioned by the various Ansible scripts:
 
 ### Users
 
-* cloud-user (300)
-* etcd (301)
-* prometheus (302)
-* grafana (303)
-* zookeeper (304)
-* kafka (305)
-* k8s-admin (350)
-* vagrant (1000)
+* General
+  * cloud-user (300)
+* Platform Services
+  * etcd (310)
+  * kafka (315)
+* Logging and Monitoring
+  * beats (320)
+  * elasticsearch (321)
+  * fluentd (322)
+  * flume (323)
+  * grafana (324)
+  * graylog (325)
+  * jaeger (326)
+  * kiali (327)
+  * kibana (328)
+  * logstash (329)
+  * prometheus (330)
+* Kubernetes
+  * k8s-admin (400)
+* Other
+  * vagrant (1000)
 
 ### Groups
 
-* cloud-user (300)
-* etcd (301)
-* prometheus (302)
-* grafana (303)
-* zookeeper (304)
-* kafka (305)
-* k8s-admin (350)
-* vagrant (1000)
+* General
+  * cloud-user (300)
+* Platform Services
+  * etcd (310)
+  * kafka (315)
+* Logging and Monitoring
+  * beats (320)
+  * elasticsearch (321)
+  * fluentd (322)
+  * flume (323)
+  * grafana (324)
+  * graylog (325)
+  * jaeger (326)
+  * kiali (327)
+  * kibana (328)
+  * logstash (329)
+  * prometheus (330)
+* Kubernetes
+  * k8s-admin (400)
+* Other
+  * vagrant (1000)
 
 
 ## Troubleshooting

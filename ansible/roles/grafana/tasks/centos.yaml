@@ -18,7 +18,7 @@
 - name: Retrieve the version of the installed grafana package
   debug:
     msg: Found the installed grafana package ({{ ansible_facts.packages['grafana'][0].version  }})
-  when: "'grafana' in ansible_facts.packages"
+  when: ('grafana' in ansible_facts.packages)
 
 - name: Install the grafana package
   block:

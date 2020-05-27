@@ -12,7 +12,7 @@
     with_items: "{{ groups['kafka_zookeeper'] }}"
   tasks: []
 
-- name: Gather facts from all Kafka Server hosts
+- name: Gather facts from all Kafka Broker hosts
   hosts: kafka_server
   become: yes
   become_user: root
@@ -31,7 +31,7 @@
   roles:
   - kafka_zookeeper
 
-- name: Configure the Kafka Server hosts
+- name: Configure the Kafka Broker hosts
   hosts: kafka_server
   become: yes
   become_user: root

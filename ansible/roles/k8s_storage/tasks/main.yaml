@@ -8,12 +8,12 @@
 #  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
 #
 - include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_distribution == 'Ubuntu'
   tags:
   - unbound
 
 - include_tasks: centos.yaml
-  when: ansible_distribution == "CentOS"
+  when: ansible_distribution == 'CentOS'
   tags:
   - unbound
 
@@ -83,7 +83,7 @@
 
     when: (topolvm_lvmd_installed_version != k8s_topolvm_lvmd_version)
 
-  when: ((("k8s_worker" not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))
+  when: ((('k8s_worker' not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))
 
 
 - name: Install the Kubernetes storage components
@@ -152,7 +152,7 @@
         retries: 180
         delay: 10
 
-      when: longhorn_system_namespace_exists_output.stdout == "0"
+      when: longhorn_system_namespace_exists_output.stdout == '0'
 
     when: ((k8s_longhorn_enabled is defined) and (k8s_longhorn_enabled != None) and (k8s_longhorn_enabled == true))
 
@@ -225,13 +225,13 @@
         template:
           src: topolvm-scheduler-daemonset.yaml.j2
           dest: /var/tmp/ansible/topolvm-scheduler.yaml
-        when: ("k8s_master" in groups.keys())
+        when: ('k8s_master' in groups.keys())
 
       - name: Generate the TopoLVM Scheduler service configuration
         template:
           src: topolvm-scheduler-service.yaml.j2
           dest: /var/tmp/ansible/topolvm-scheduler.yaml
-        when: ("k8s_master" not in groups.keys())
+        when: ('k8s_master' not in groups.keys())
 
       - name: Apply the TopoLVM Scheduler configuration to Kubernetes
         command:
@@ -259,10 +259,10 @@
         command:
           cmd: /usr/bin/kubectl -n topolvm-system rollout status -w deployment/controller
         register: wait_for_topo_lvm_controller_deployment_result
-        until: ((wait_for_topo_lvm_controller_deployment_result is succeeded) and (wait_for_topo_lvm_controller_deployment_result.stdout == "deployment \"controller\" successfully rolled out"))
+        until: ((wait_for_topo_lvm_controller_deployment_result is succeeded) and (wait_for_topo_lvm_controller_deployment_result.stdout == 'deployment "controller" successfully rolled out'))
         retries: 180
         delay: 10
-        when: ("k8s_worker" not in groups.keys())
+        when: ('k8s_worker' not in groups.keys())
 
       - name: Generate the TopoLVM Node configuration
         template:
@@ -282,7 +282,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-provisioner.yaml
 
-      when: topolvm_system_namespace_exists_output.stdout == "0"
+      when: topolvm_system_namespace_exists_output.stdout == '0'
 
     - name: Confirm that the TopoLVM controller is available
       block:

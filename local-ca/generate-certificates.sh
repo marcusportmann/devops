@@ -3,6 +3,36 @@
 # Execute the following command to allow the script to be executed on MacOS:
 #   xattr -d com.apple.quarantine generate-certificates.sh
 
+# NOTE: All certificates follow one of the following naming conventions:
+#
+#         1. <platform>-<platform_instance_name_or_cluster_name>
+#
+#              e.g. etcd-local
+#
+#         2. <platform>-<platform_instance_name_or_cluster_name>-<platform_component>
+#
+#              e.g. k8s-local-topolvm-mutatingwebhook where the <platform> is k8s, the
+#                   <platform_instance_name_or_cluster_name> is local, and the
+#                   <platform_component> is topolvm-mutatingwebhook
+#
+#                   k8s-local-kibana where the <platform> is k8s, the
+#                   <platform_instance_name_or_cluster_name> is local, and the
+#                   <platform_component> is kibana
+#
+#                   k8s-digital-prod-elasticsearch where the <platform> is k8s, the
+#                   <platform_instance_name_or_cluster_name> is digital-prod, and the
+#                   <platform_component> is elasticsearch
+#
+#         3. <hostname>, where <hostname> is normally made up of
+#            <platform>-<platform_instance_name_or_cluster_name>-<instance_id>
+#
+#              e.g. kafka-local-01 where the <instance_id> is 01
+#
+#         4. <hostname>-<purpose>, where <hostname> is normally made up of
+#            <platform>-<platform_instance_name_or_cluster_name>-<instance_id>
+#
+#              e.g. etcd-local-01-etcd-peer where the <purpose> is etcd-peer
+
 mkdir -p ../ansible/roles/etcd/files/pki/local
 mkdir -p ../ansible/roles/k8s_common/files/pki/local
 mkdir -p ../ansible/roles/k8s_istio/files/pki/local
@@ -222,6 +252,15 @@ mv -f kafka-local-03-key.pem kafka-local-03.key
 mv -f kafka-local-03.pem kafka-local-03.crt
 cp kafka-local-03.key ../ansible/roles/kafka_zookeeper/files/pki/local
 cp kafka-local-03.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+
+# Generate the Kafka Server certificate
+cfssl genkey kafka-local-server-csr.json | cfssljson -bare kafka-local-server
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-server.csr | cfssljson -bare kafka-local-server
+mv -f kafka-local-server-key.pem kafka-local-server.key
+mv -f kafka-local-server.pem kafka-local-server.crt
+cp kafka-local-server.key ../ansible/roles/kafka_server/files/pki/local
+cp kafka-local-server.crt ../ansible/roles/kafka_server/files/pki/local
 
 
 

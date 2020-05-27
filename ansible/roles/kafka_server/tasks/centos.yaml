@@ -1,0 +1,12 @@
+---
+# file: roles/kafka_server/tasks/centos.yaml
+
+- debug:
+    msg: Applying the CentOS-specific Kafka Server configuration
+
+- name: Allow all access to tcp port 9092 (Kafka Broker)
+  firewalld:
+    port: 9092/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes

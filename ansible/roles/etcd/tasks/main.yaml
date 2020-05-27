@@ -8,12 +8,12 @@
 #  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
 #
 - include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_distribution == 'Ubuntu'
   tags:
   - unbound
 
 - include_tasks: centos.yaml
-  when: ansible_distribution == "CentOS"
+  when: ansible_distribution == 'CentOS'
   tags:
   - unbound
 
@@ -23,9 +23,6 @@
 # | |___  | || |___| |_| |
 # |_____| |_| \____|____/
 #
-- debug:
-    msg: 'Found etcd hosts: {{ groups["etcd"] }}'
-
 - name: Add the etcd group
   group:
     name: etcd
@@ -42,7 +39,7 @@
     shell: /usr/sbin/nologin
     state: present
 
-- name: Copy the keys and certificates for the "{{ etcd_cluster_name }}" etcd cluster
+- name: Copy the keys and certificates for the etcd cluster
   block:
   - name: Create the /etc/etcd/pki directory
     file:

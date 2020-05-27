@@ -18,7 +18,7 @@ scrape_configs:
   static_configs:
   - targets: [{{ monitored_hosts | join(',') }}]
 
-{% if 'k8s_master' in groups %}
+{% if ('k8s_master' in groups) %}
 
 - job_name: 'kubernetes-apiservers'
   scheme: https
@@ -159,3 +159,13 @@ scrape_configs:
     target_label: instance
 
 {% endif %}
+
+{% if ('kafka_server' in groups) %}
+
+{% endif %}
+
+{% if ('kafka_zookeeper' in groups) %}
+
+{% endif %}
+
+

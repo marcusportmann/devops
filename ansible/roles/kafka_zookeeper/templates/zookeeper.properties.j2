@@ -1,6 +1,9 @@
 # The directory where the snapshot is stored.
 dataDir={{ kafka_zookeeper_data_directory }}
+
+{% if ((kafka_zookeeper_data_log_directory is defined) and (kafka_zookeeper_data_log_directory != None)) %}
 dataLogDir={{ kafka_zookeeper_data_log_directory }}
+{% endif %}
 
 # The port at which the clients will connect
 clientPort={{ kafka_zookeeper_client_port }}
@@ -24,8 +27,7 @@ syncLimit={{ kafka_zookeeper_sync_limit }}
 # Disable dynamic reconfiguration
 reconfigEnabled=false
 
-#
-{% if kafka_zookeeper_autopurge_purge_interval > 0 %}
+{% if (kafka_zookeeper_autopurge_purge_interval > 0) %}
 # The interval in hours between triggers of the autopurge task
 autopurge.purgeInterval={{ kafka_zookeeper_autopurge_purge_interval }}
 
@@ -37,24 +39,24 @@ autopurge.snapRetainCount={{ kafka_zookeeper_autopurge_snap_retain_count }}
 secureClientPort=2182
 serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
 authProvider.x509=org.apache.zookeeper.server.auth.X509AuthenticationProvider
-ssl.keyStore.location=/etc/kafka/pki/kafka-zookeeper/{{ inventory_hostname_short }}.jks
+ssl.keyStore.location={{ kafka_zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
 ssl.keyStore.password={{ kafka_zookeeper_keystore_password }}
-ssl.trustStore.location=/etc/kafka/pki/kafka-zookeeper/{{ inventory_hostname_short }}.jks
+ssl.trustStore.location={{ kafka_zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
 ssl.trustStore.password={{ kafka_zookeeper_keystore_password }}
 ssl.clientAuth=need
 
 # Enable ZooKeeper quorum mTLS authentication
 sslQuorum=true
 serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
-ssl.quorum.keyStore.location=/etc/kafka/pki/kafka-zookeeper/{{ inventory_hostname_short }}.jks
+ssl.quorum.keyStore.location={{ kafka_zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
 ssl.quorum.keyStore.password={{ kafka_zookeeper_keystore_password }}
-ssl.quorum.trustStore.location=/etc/kafka/pki/kafka-zookeeper/{{ inventory_hostname_short }}.jks
+ssl.quorum.trustStore.location={{ kafka_zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
 ssl.quorum.trustStore.password={{ kafka_zookeeper_keystore_password }}
 
 {% if ((kafka_zookeeper_hosts | length) > 1) %}
 # The cluster hosts
 {% for kafka_zookeeper_host in kafka_zookeeper_hosts -%}
-server.{{ loop.index }}={{ kafka_zookeeper_host }}:{{ kafaka_zookeeper_cluster_ports }}
+server.{{ loop.index }}={{ kafka_zookeeper_host }}:{{ kafka_zookeeper_cluster_ports }}
 {% endfor -%}
 {% endif %}
 
