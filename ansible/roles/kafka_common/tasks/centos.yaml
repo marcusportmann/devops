@@ -4,7 +4,7 @@
 - debug:
     msg: Applying the CentOS-specific Kafka common configuration
 
-- name: Install the arptables package
+- name: Install the java-11-openjdk package
   yum:
     name: java-11-openjdk
     state: latest

@@ -11,8 +11,12 @@ Type=simple
 User=kafka
 Group=kafka
 Environment=LOG_DIR={{ kafka_zookeeper_log_directory }}
-ExecStart=/opt/kafka/bin/zookeeper-server-start.sh /opt/kafka/config/zookeeper.properties
-ExecStop=/opt/kafka/bin/zookeeper-server-stop.sh /opt/kafka/config/zookeeper.properties
+{% if ((kafka_zookeeper_sasl_enabled is defined) and (kafka_zookeeper_sasl_enabled != None) and (kafka_zookeeper_sasl_enabled == true)) %}
+Environment=EXTRA_ARGS=-Djava.security.auth.login.config={{ kafka_zookeeper_etc_directory }}/conf/zookeeper-jaas.conf
+{% endif %}
+ExecStart=/opt/kafka/bin/zookeeper-server-start.sh {{ kafka_zookeeper_etc_directory }}/conf/zookeeper.properties
+ExecStop=/opt/kafka/bin/zookeeper-server-stop.sh {{ kafka_zookeeper_etc_directory }}/conf/zookeeper.properties
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

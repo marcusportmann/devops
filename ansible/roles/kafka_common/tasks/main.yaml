@@ -35,8 +35,7 @@
     name: kafka
     uid: '{{ kafka_user_id }}'
     group: kafka
-    create_home: no
-    shell: /usr/sbin/nologin
+    create_home: yes
     state: present
 
 - name: Install kafka

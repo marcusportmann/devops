@@ -10,15 +10,21 @@ broker.id={{ loop.index }}
 ############################# Socket Server Settings #############################
 
 # The address the socket server listens on
+{% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
+listeners=SASL_SSL://{{ inventory_hostname }}:9093
+{% else %}
 listeners=PLAINTEXT://{{ inventory_hostname }}:9092
+{% endif %}
 
 # Hostname and port the broker will advertise to producers and consumers. If not set,
 # it uses the value for "listeners" if configured.  Otherwise, it will use the value
 # returned from java.net.InetAddress.getCanonicalHostName().
+{% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
+advertised.listeners=SASL_SSL://{{ inventory_hostname }}:9093
+{% else %}
 advertised.listeners=PLAINTEXT://{{ inventory_hostname }}:9092
+{% endif %}
 
-# Maps listener names to security protocols, the default is for them to be the same. See the config documentation for more details
-#listener.security.protocol.map=PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
 
 # The number of threads that the server uses for receiving requests from the network and sending responses to the network
 num.network.threads=3
@@ -54,10 +60,10 @@ num.recovery.threads.per.data.dir=1
 ############################# Internal Topic Settings  #############################
 # The replication factor for the group metadata internal topics "__consumer_offsets" and "__transaction_state"
 # For anything other than development testing, a value greater than 1 is recommended to ensure availability such as 3.
-{% if ((groups['kafka_server'] | length) >= 3) %}
+{% if ((groups['kafka_server'] | length) > 3) %}
 offsets.topic.replication.factor=3
 transaction.state.log.replication.factor=3
-transaction.state.log.min.isr=3
+transaction.state.log.min.isr=2
 {% else %}
 offsets.topic.replication.factor=1
 transaction.state.log.replication.factor=1
@@ -120,8 +126,8 @@ log.retention.check.interval.ms=300000
 zookeeper.connect={{ kafka_zookeeper_nodes | join(',') }}
 
 # Enable mTLS authentication when connecting to ZooKeeper
-zookeeper.ssl.client.enable=true
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
+zookeeper.ssl.client.enable=true
 zookeeper.ssl.keystore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
 zookeeper.ssl.keystore.password={{ kafka_server_keystore_password }}
 zookeeper.ssl.truststore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
@@ -138,7 +144,39 @@ zookeeper.connection.timeout.ms=6000
 # The following configuration specifies the time, in milliseconds, that the GroupCoordinator will delay the initial consumer rebalance.
 # The rebalance will be further delayed by the value of group.initial.rebalance.delay.ms as new members join the group, up to a maximum of max.poll.interval.ms.
 # The default value for this is 3 seconds.
-# We override this to 0 here as it makes for a better out-of-the-box experience for development and testing.
-# However, in production environments the default value of 3 seconds is more suitable as this will help to avoid unnecessary, and potentially expensive, rebalances during application startup.
-group.initial.rebalance.delay.ms=0
+group.initial.rebalance.delay.ms=3000
+
+
+
+############################# SASL and SSL Security Settings #############################
+{% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
+sasl.enabled.mechanisms=SCRAM-SHA-256
+
+sasl.mechanism.inter.broker.protocol=SCRAM-SHA-256
+
+security.inter.broker.protocol=SASL_SSL
+
+# NOTE: We do not require mTLS, change to "required" if this mTLS is required
+ssl.client.auth=requested
+
+ssl.keystore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
+ssl.keystore.password={{ kafka_server_keystore_password }}
+ssl.truststore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
+ssl.truststore.password={{ kafka_server_keystore_password }}
+ssl.key.password={{ kafka_server_keystore_password }}
+{% endif %}
+
+
+
+
+
+
+
+# listener.name.sasl_ssl.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required user_consumer="pw4consumer" user_producer="pw4producer";
+
+
+# offsets.topic.replication.factor=2
+# transaction.state.log.replication.factor=2
+# transaction.state.log.min.isr=2
+
 

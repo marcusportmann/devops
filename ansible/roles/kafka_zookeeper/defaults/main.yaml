@@ -29,7 +29,20 @@ kafka_zookeeper_init_limit: 5
 
 kafka_zookeeper_sync_limit: 2
 
-
 kafka_zookeeper_autopurge_purge_interval: 1
 kafka_zookeeper_autopurge_snap_retain_count: 10
+
+# Enable mTLS for ZooKeeper.
+# NOTE: This will allow ZooKeeper nodes to be secured by adding the DNs for the ZooKeeper
+#       client certificates to the ACLs for the nodes. This is not the preferred approach
+#       since the security of the ZooKeeper nodes for a particular client becomes dependent
+#       on the integrity of the certificate authority that issued the certificate for that
+#       client.
+kafka_zookeeper_mtls_enabled: false
+
+
+# Enable SASL authentication and authorization for ZooKeeper.
+# NOTE: This will allow ZooKeeper nodes to be secured by adding the SASL authenticated IDs
+#       of the clients to the ACLs for the nodes. This is the preferred mechanism.
+kafka_zookeeper_sasl_enabled: true
 

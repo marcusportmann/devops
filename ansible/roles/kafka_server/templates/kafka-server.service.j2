@@ -11,8 +11,13 @@ Type=simple
 User=kafka
 Group=kafka
 Environment=LOG_DIR={{ kafka_server_log_directory }}
-ExecStart=/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties
-ExecStop=/opt/kafka/bin/kafka-server-stop.sh /opt/kafka/config/server.properties
+Environment=EXTRA_ARGS=-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf
+ExecStart=/opt/kafka/bin/kafka-server-start.sh {{ kafka_server_etc_directory }}/conf/server.properties
+ExecStop=/opt/kafka/bin/kafka-server-stop.sh {{ kafka_server_etc_directory }}/conf/server.properties
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
+
+
+

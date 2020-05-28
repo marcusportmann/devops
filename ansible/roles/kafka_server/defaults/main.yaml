@@ -8,6 +8,13 @@ kafka_server_data_directory: /data/kafka-server
 kafka_server_user_id: 350
 kafka_server_group_id: 350
 
+# Enable SASL authentication when connecting to ZooKeeper
+# If mTLS is enable
+kafka_server_zookeeper_sasl_enabled: true
+
+
+# Enable SASL SSL security for the Kafka Server
+kafka_server_sasl_ssl_enabled: true
 
 
 

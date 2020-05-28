@@ -550,7 +550,7 @@ hosts:
 - name:               kafka-local-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     kafka_zookeeper
   virtualbox:
     cpus:             2
     memory:           1536
@@ -582,7 +582,7 @@ hosts:
 - name:               kafka-local-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     kafka_zookeeper
   virtualbox:
     cpus:             2
     memory:           1536

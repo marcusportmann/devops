@@ -35,9 +35,17 @@
 - name: Create the {{ kafka_server_etc_directory }} directory
   file:
     path: '{{ kafka_server_etc_directory }}'
-    owner: root
-    group: root
-    mode: '0755'
+    owner: kafka
+    group: kafka
+    mode: '0550'
+    state: directory
+
+- name: Create the {{ kafka_server_etc_directory }}/conf directory
+  file:
+    path: '{{ kafka_server_etc_directory }}/conf'
+    owner: kafka
+    group: kafka
+    mode: '0550'
     state: directory
 
 - name: Copy the Kafka Server keys and certificates
@@ -47,7 +55,7 @@
       path: '{{ kafka_server_etc_directory }}/pki'
       owner: kafka
       group: kafka
-      mode: '0770'
+      mode: '0550'
       state: directory
 
   - name: Copy the CA certificate to the /var/tmp/ansible/kafka-server directory
@@ -82,7 +90,7 @@
     block:
     - name: Generate the new Kafka Server PKCS12 keystore
       shell:
-        cmd: openssl pkcs12 -export -name 'kafka-{{ kafka_cluster_name }}-server' -out /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.p12 -inkey /var/tmp/ansible/kafka-server/{{ inventory_hostname_short }}.key -in /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.crt -passout pass:{{ kafka_server_keystore_password }}
+        cmd: openssl pkcs12 -export -name 'kafka-{{ kafka_cluster_name }}-server' -out /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.p12 -inkey /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.key -in /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.crt -passout pass:{{ kafka_server_keystore_password }}
 
     - name: Remove the new Kafka Server JKS keystore if it exists
       file:
@@ -110,7 +118,7 @@
     path: '{{ kafka_server_log_directory }}'
     owner: kafka
     group: kafka
-    mode: 0750
+    mode: '0750'
     state: directory
 
 - name: Create the {{ kafka_server_data_directory }} directory
@@ -118,22 +126,50 @@
     path: '{{ kafka_server_data_directory }}'
     owner: kafka
     group: kafka
-    mode: 0750
-    state: directory
-
-- name: Create the {{ kafka_server_data_log_directory }} directory
-  file:
-    path: '{{ kafka_server_data_log_directory }}'
-    owner: kafka
-    group: kafka
-    mode: 0750
+    mode: '0750'
     state: directory
 
 - name: Create the Kafka Server configuration file
   template:
     src: server.properties.j2
-    dest: /opt/kafka/config/server.properties
+    dest: '{{ kafka_server_etc_directory }}/conf/server.properties'
+    owner: kafka
+    group: kafka
+    mode: '0440'
   register: kafka_server_configuration_file_template_result
+
+# NOTE: This is the password used to secure the connections the Kafka Server makes to ZooKeeper
+- name: Generate or retrieve the password for the Kafka ZooKeeper kafka user
+  set_fact:
+    kafka_server_zookeeper_kafka_user_password: "{{ lookup('password', 'credentials/kafka-{{ kafka_cluster_name }}-zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+
+# NOTE: This is the password used to secure the inter broker connections
+- name: Generate or retrieve the password for the Kafka Server kafka user
+  set_fact:
+    kafka_server_kafka_user_password: "{{ lookup('password', 'credentials/kafka-{{ kafka_cluster_name }}-server-kafka-user-password chars=ascii_letters,digits length=16') }}"
+
+- name: Create the Kafka Server JAAS configuration file
+  template:
+    src: server-jaas.conf.j2
+    dest: '{{ kafka_server_etc_directory }}/conf/server-jaas.conf'
+    owner: kafka
+    group: kafka
+    mode: '0440'
+  register: kafka_server_jaas_configuration_file_template_result
+
+- name: Create the Kafka ZooKeeper Shell TLS configuration file
+  template:
+    src: zookeeper-shell-tls.conf.j2
+    dest: '{{ kafka_server_etc_directory }}/conf/zookeeper-shell-tls.conf'
+    owner: kafka
+    group: kafka
+    mode: '0440'
+
+- name: Setup the zookeeper-shell alias for the kafka user
+  lineinfile:
+    dest: /home/kafka/.bash_profile
+    state: present
+    line: 'alias zookeeper-shell="/opt/kafka/bin/zookeeper-shell.sh -zk-tls-config-file {{ kafka_server_etc_directory }}/conf/zookeeper-shell-tls.conf"'
 
 - name: Configure the Kafka Server service
   template:
