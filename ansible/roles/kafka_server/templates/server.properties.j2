@@ -11,18 +11,18 @@ broker.id={{ loop.index }}
 
 # The address the socket server listens on
 {% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
-listeners=SASL_SSL://{{ inventory_hostname }}:9093
+listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
 {% else %}
-listeners=PLAINTEXT://{{ inventory_hostname }}:9092
+listeners=PLAINTEXT://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
 {% endif %}
 
 # Hostname and port the broker will advertise to producers and consumers. If not set,
 # it uses the value for "listeners" if configured.  Otherwise, it will use the value
 # returned from java.net.InetAddress.getCanonicalHostName().
 {% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
-advertised.listeners=SASL_SSL://{{ inventory_hostname }}:9093
+advertised.listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
 {% else %}
-advertised.listeners=PLAINTEXT://{{ inventory_hostname }}:9092
+advertised.listeners=PLAINTEXT://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
 {% endif %}
 
 

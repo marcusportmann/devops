@@ -82,7 +82,7 @@
       dest: /var/tmp/ansible/kafka-server/kafka-{{ kafka_cluster_name }}-server.crt
     register: kafka_server_certificate_copy_result
 
-  - name: Generate or retrieve the password for the Kafka Server keystores
+  - name: Generate or retrieve the password for the Kafka Server keystore
     set_fact:
       kafka_server_keystore_password: "{{ lookup('password', 'credentials/kafka-{{ kafka_cluster_name }}-server-keystore-password chars=ascii_letters,digits length=16') }}"
 
@@ -165,11 +165,93 @@
     group: kafka
     mode: '0440'
 
-- name: Setup the zookeeper-shell alias for the kafka user
-  lineinfile:
-    dest: /home/kafka/.bash_profile
-    state: present
-    line: 'alias zookeeper-shell="/opt/kafka/bin/zookeeper-shell.sh -zk-tls-config-file {{ kafka_server_etc_directory }}/conf/zookeeper-shell-tls.conf"'
+- name: Create the Kafka Command-line Tools configuration file
+  template:
+    src: tools.properties.j2
+    dest: '{{ kafka_server_etc_directory }}/conf/tools.properties'
+    owner: kafka
+    group: kafka
+    mode: '0440'
+
+- name: Add the aliases for the Kafka tools to the /etc/profile.d/kafka-server.sh file
+  block:
+  - name: Add the kafka-acls alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      create: yes
+      state: present
+      regexp: '^%alias kafka-acls'
+      line: alias kafka-acls='/opt/kafka/bin/kafka-acls.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-broker-api-versions alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-broker-api-versions'
+      line: alias kafka-broker-api-versions='/opt/kafka/bin/kafka-broker-api-versions.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-configs alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-configs'
+      line: alias kafka-configs='/opt/kafka/bin/kafka-configs.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-consumer-groups alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-consumer-groups'
+      line: alias kafka-consumer-groups='/opt/kafka/bin/kafka-consumer-groups.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-delegation-tokens alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-delegation-tokens'
+      line: alias kafka-delegation-tokens='/opt/kafka/bin/kafka-delegation-tokens.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-delete-records alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-delete-records'
+      line: alias kafka-delete-records='/opt/kafka/bin/kafka-delete-records.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-leader-election alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-leader-election'
+      line: alias kafka-leader-election='/opt/kafka/bin/kafka-leader-election.sh --admin.config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-log-dirs alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-log-dirs'
+      line: alias kafka-log-dirs='/opt/kafka/bin/kafka-log-dirs.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-reassign-partitions alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-reassign-partitions'
+      line: alias kafka-reassign-partitions='/opt/kafka/bin/kafka-reassign-partitions.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the kafka-topics alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias kafka-topics'
+      line: alias kafka-topics='/opt/kafka/bin/kafka-topics.sh --command-config {{ kafka_server_etc_directory }}/conf/tools.properties --bootstrap-server {{ inventory_hostname }}:{{ kafka_server_broker_port }}'
+
+  - name: Add the zookeeper-shell alias to the /etc/profile.d/kafka-server.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka-server.sh
+      state: present
+      regexp: '^%alias zookeeper-shell'
+      line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/zookeeper-shell.sh -zk-tls-config-file {{ kafka_server_etc_directory }}/conf/zookeeper-shell-tls.conf'
 
 - name: Configure the Kafka Server service
   template:
@@ -190,3 +272,9 @@
     enabled: yes
     daemon_reload: yes
   when: ((kafka_server_ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_file_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
+
+- name: Set the password for the Kafka Server user (kafka) in ZooKeeper
+  shell:
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/zookeeper-shell-tls.conf  --zookeeper {{ groups['kafka_zookeeper'][0] }}:2182 --alter --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_kafka_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_kafka_user_password }}]' --entity-type users --entity-name kafka
+  when: (groups['kafka_server'][((groups['kafka_server']|length) - 1)] == inventory_hostname)
+

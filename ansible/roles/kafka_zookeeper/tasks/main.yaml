@@ -82,7 +82,7 @@
       dest: /var/tmp/ansible/kafka-zookeeper/{{inventory_hostname_short}}.crt
     register: kafka_zookeeper_certificate_copy_result
 
-  - name: Generate or retrieve the password for the Kafka ZooKeeper keystores
+  - name: Generate or retrieve the password for the Kafka ZooKeeper keystore
     set_fact:
       kafka_zookeeper_keystore_password: "{{ lookup('password', 'credentials/{{ inventory_hostname_short }}-zookeeper-keystore-password chars=ascii_letters,digits length=16') }}"
 
