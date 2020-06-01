@@ -2,59 +2,30 @@
 # file: roles/kafka_zookeeper/tasks/centos.yaml
 
 - debug:
-    msg: Applying the CentOS-specific Kafka ZooKeeper configuration
+    msg: Applying the CentOS-specific ZooKeeper configuration
 
-- name: Add the kafka firewalld zone
+- name: Allow the other ZooKeeper hosts access to tcp port 2888
   firewalld:
-    zone: kafka
-    state: present
-    permanent: true
-
-- name: Reload service firewalld
-  systemd:
-    name: firewalld
-    state: reloaded
-
-- name: Allow access to tcp port 2182 for the kafka firewalld zone
-  firewalld:
-    zone: kafka
-    port: 2182/tcp
-    state: enabled
-    permanent: true
-    immediate: yes
-
-- name: Allow access to tcp port 2888 for the kafka firewalld zone
-  firewalld:
-    zone: kafka
-    port: 2888/tcp
-    state: enabled
-    permanent: true
-    immediate: yes
-
-- name: Allow access to tcp port 3888 for the kafka firewalld zone
-  firewalld:
-    zone: kafka
-    port: 3888/tcp
-    state: enabled
-    permanent: true
-    immediate: yes
-
-- name: Allow all the Kafka Server hosts access to the kafka firewalld zone
-  firewalld:
-    zone: kafka
-    source: '{{ hostvars[item].ansible_default_ipv4.address }}'
-    state: enabled
-    permanent: yes
-    immediate: yes
-  loop: "{{ groups['kafka_server'] | default([]) }}"
-
-- name: Allow the other Kafka ZooKeeper hosts access to the kafka firewalld zone
-  firewalld:
-    zone: kafka
-    source: '{{ hostvars[item].ansible_default_ipv4.address }}'
+    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=2888 protocol=tcp accept'
     state: enabled
     permanent: yes
     immediate: yes
   loop: "{{ groups['kafka_zookeeper'] }}"
   when: (item != inventory_hostname)
 
+- name: Allow the other ZooKeeper hosts access to tcp port 3888
+  firewalld:
+    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=3888 protocol=tcp accept'
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop: "{{ groups['kafka_zookeeper'] }}"
+  when: (item != inventory_hostname)
+
+- name: Allow all the Kafka Server hosts access to tcp port {{ zookeeper_secure_client_port }}
+  firewalld:
+    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port={{ zookeeper_secure_client_port }} protocol=tcp accept'
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop: "{{ groups['kafka_server'] | default([]) }}"

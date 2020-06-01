@@ -10,21 +10,12 @@ broker.id={{ loop.index }}
 ############################# Socket Server Settings #############################
 
 # The address the socket server listens on
-{% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
-listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
-{% else %}
-listeners=PLAINTEXT://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
-{% endif %}
+listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_secure_broker_port }}
 
 # Hostname and port the broker will advertise to producers and consumers. If not set,
 # it uses the value for "listeners" if configured.  Otherwise, it will use the value
 # returned from java.net.InetAddress.getCanonicalHostName().
-{% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
-advertised.listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
-{% else %}
-advertised.listeners=PLAINTEXT://{{ inventory_hostname }}:{{ kafka_server_broker_port }}
-{% endif %}
-
+advertised.listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_secure_broker_port }}
 
 # The number of threads that the server uses for receiving requests from the network and sending responses to the network
 num.network.threads=3
@@ -46,7 +37,7 @@ socket.request.max.bytes=104857600
 ############################# Log Basics #############################
 
 # A comma separated list of directories under which to store log files
-log.dirs={{ kafka_server_data_directory }}
+log.dirs={{ kafka_data_directory }}
 
 # The default number of log partitions per topic. More partitions allow greater
 # parallelism for consumption, but this will also result in more files across
@@ -120,7 +111,7 @@ log.retention.check.interval.ms=300000
 
 {% set kafka_zookeeper_nodes = [] -%}
 {% for host in groups["kafka_zookeeper"] -%}
-  {% set _ = kafka_zookeeper_nodes.append("%s:2182" % host) -%}
+  {% set _ = kafka_zookeeper_nodes.append("%s:%d" % (host, kafka_server_zookeeper_secure_client_port)) -%}
 {% endfor -%}
 
 zookeeper.connect={{ kafka_zookeeper_nodes | join(',') }}
@@ -128,10 +119,10 @@ zookeeper.connect={{ kafka_zookeeper_nodes | join(',') }}
 # Enable mTLS authentication when connecting to ZooKeeper
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
 zookeeper.ssl.client.enable=true
-zookeeper.ssl.keystore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
+zookeeper.ssl.keystore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-keystore.jks
 zookeeper.ssl.keystore.password={{ kafka_server_keystore_password }}
-zookeeper.ssl.truststore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
-zookeeper.ssl.truststore.password={{ kafka_server_keystore_password }}
+zookeeper.ssl.truststore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-truststore.jks
+zookeeper.ssl.truststore.password={{ kafka_server_truststore_password }}
 zookeeper.set.acl=true
 
 # Timeout in ms for connecting to zookeeper
@@ -149,34 +140,18 @@ group.initial.rebalance.delay.ms=3000
 
 
 ############################# SASL and SSL Security Settings #############################
-{% if ((kafka_server_sasl_ssl_enabled is defined) and (kafka_server_sasl_ssl_enabled != None) and (kafka_server_sasl_ssl_enabled == true)) %}
 sasl.enabled.mechanisms=SCRAM-SHA-256
 
 sasl.mechanism.inter.broker.protocol=SCRAM-SHA-256
 
 security.inter.broker.protocol=SASL_SSL
 
-# NOTE: We do not require mTLS, change to "required" if this mTLS is required
+# NOTE: We do not require mTLS since Kafka users will be authenticated via SCRAM using a password, change to "required" if this mTLS is required
 ssl.client.auth=requested
 
-ssl.keystore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
+ssl.keystore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-keystore.jks
 ssl.keystore.password={{ kafka_server_keystore_password }}
-ssl.truststore.location={{ kafka_server_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server.jks
-ssl.truststore.password={{ kafka_server_keystore_password }}
 ssl.key.password={{ kafka_server_keystore_password }}
-{% endif %}
-
-
-
-
-
-
-
-# listener.name.sasl_ssl.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required user_consumer="pw4consumer" user_producer="pw4producer";
-
-
-# offsets.topic.replication.factor=2
-# transaction.state.log.replication.factor=2
-# transaction.state.log.min.isr=2
-
+ssl.truststore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-truststore.jks
+ssl.truststore.password={{ kafka_server_truststore_password }}
 

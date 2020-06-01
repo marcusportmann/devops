@@ -1,6 +1,12 @@
+Client {
+       org.apache.zookeeper.server.auth.DigestLoginModule required
+       username="admin"
+       password="{{ zookeeper_admin_user_password }}";
+};
+
 Server {
     org.apache.zookeeper.server.auth.DigestLoginModule required
-    user_admin="{{ kafka_zookeeper_admin_user_password }}"
-    user_kafka="{{ kafka_zookeeper_kafka_user_password }}";
+    user_admin="{{ zookeeper_admin_user_password }}"
+    user_kafka="{{ zookeeper_kafka_user_password }}";
 };
 

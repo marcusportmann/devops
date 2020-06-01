@@ -1,14 +1,11 @@
-{% if ((kafka_server_zookeeper_sasl_enabled is defined) and (kafka_server_zookeeper_sasl_enabled != None) and (kafka_server_zookeeper_sasl_enabled == true)) %}
 Client {
   org.apache.zookeeper.server.auth.DigestLoginModule required
   username="kafka"
   password="{{ kafka_server_zookeeper_kafka_user_password }}";
 };
-{% endif %}
 
 KafkaServer {
   org.apache.kafka.common.security.scram.ScramLoginModule required
   username="kafka"
   password="{{ kafka_server_kafka_user_password }}";
 };
-

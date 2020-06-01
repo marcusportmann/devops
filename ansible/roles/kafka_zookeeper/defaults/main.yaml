@@ -1,48 +1,34 @@
 ---
 #file: roles/kafka_zookeeper/vars/main.yaml
 
-kafka_zookeeper_etc_directory: /etc/kafka-zookeeper
-kafka_zookeeper_log_directory: /var/log/kafka-zookeeper
-kafka_zookeeper_data_directory: /data/kafka-zookeeper/data
-kafka_zookeeper_data_log_directory: /data/kafka-zookeeper/data-log
+zookeeper_etc_directory: /etc/zookeeper
+zookeeper_log_directory: /var/log/zookeeper
+zookeeper_data_directory: /data/zookeeper/data
+zookeeper_data_log_directory: /data/zookeeper/data-log
 
-kafka_zookeeper_user_id: 351
-kafka_zookeeper_group_id: 351
+zookeeper_user_id: 340
+zookeeper_group_id: 340
 
-kafka_zookeeper_client_port: 2181
-kafka_zookeeper_cluster_ports: "2888:3888"
+zookeeper_client_port: 2181
+zookeeper_secure_client_port: 2182
+zookeeper_cluster_ports: "2888:3888"
 
-kafka_zookeeper_hosts: "{{ groups['kafka_zookeeper'] }}"
+zookeeper_hosts: "{{ groups['kafka_zookeeper'] }}"
 
-kafka_zookeeper_enable_admin_server: 'false'
-kafka_zookeeper_admin_server_port: 8080
+zookeeper_enable_admin_server: 'false'
+zookeeper_admin_server_port: 8080
 
-kafka_zookeeper_max_client_connections: 60
+zookeeper_max_client_connections: 60
 
 ## Rolling file appender setttings
-kafka_zookeeper_rolling_log_file_max_size: 10MB
-kafka_zookeeper_max_rolling_log_file_count: 10
+zookeeper_rolling_log_file_max_size: 10MB
+zookeeper_max_rolling_log_file_count: 10
 
-kafka_zookeeper_tick_time: 2000
+zookeeper_tick_time: 2000
 
-kafka_zookeeper_init_limit: 5
+zookeeper_init_limit: 5
 
-kafka_zookeeper_sync_limit: 2
+zookeeper_sync_limit: 2
 
-kafka_zookeeper_autopurge_purge_interval: 1
-kafka_zookeeper_autopurge_snap_retain_count: 10
-
-# Enable mTLS for ZooKeeper.
-# NOTE: This will allow ZooKeeper nodes to be secured by adding the DNs for the ZooKeeper
-#       client certificates to the ACLs for the nodes. This is not the preferred approach
-#       since the security of the ZooKeeper nodes for a particular client becomes dependent
-#       on the integrity of the certificate authority that issued the certificate for that
-#       client.
-kafka_zookeeper_mtls_enabled: false
-
-
-# Enable SASL authentication and authorization for ZooKeeper.
-# NOTE: This will allow ZooKeeper nodes to be secured by adding the SASL authenticated IDs
-#       of the clients to the ACLs for the nodes. This is the preferred mechanism.
-kafka_zookeeper_sasl_enabled: true
-
+zookeeper_autopurge_purge_interval: 1
+zookeeper_autopurge_snap_retain_count: 10

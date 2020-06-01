@@ -4,9 +4,9 @@
 - debug:
     msg: Applying the CentOS-specific Kafka Server configuration
 
-- name: Allow all access to tcp port {{ kafka_server_broker_port }} (Kafka Broker)
+- name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Broker)
   firewalld:
-    port: '{{ kafka_server_broker_port }}/tcp'
+    port: '{{ kafka_secure_broker_port }}/tcp'
     permanent: yes
     state: enabled
     immediate: yes

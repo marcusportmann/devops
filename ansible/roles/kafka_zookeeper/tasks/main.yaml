@@ -24,190 +24,217 @@
 # | . \  / ___ \|  _| | . \  / ___ \   / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
-- name: Create the /var/tmp/ansible/kafka-zookeeper directory
+- name: Add the zookeeper group
+  group:
+    name: zookeeper
+    gid: '{{ zookeeper_group_id }}'
+    state: present
+
+- name: Add the zookeeper user
+  user:
+    name: zookeeper
+    uid: '{{ zookeeper_user_id }}'
+    group: zookeeper
+    create_home: yes
+    state: present
+
+- name: Create the /var/tmp/ansible/zookeeper directory
   file:
-    path: /var/tmp/ansible/kafka-zookeeper
+    path: /var/tmp/ansible/zookeeper
     owner: root
     group: root
     mode: '0700'
     state: directory
 
-- name: Create the {{ kafka_zookeeper_etc_directory }} directory
+- name: Create the {{ zookeeper_etc_directory }} directory
   file:
-    path: '{{ kafka_zookeeper_etc_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ zookeeper_etc_directory }}'
+    owner: zookeeper
+    group: zookeeper
     mode: '0550'
     state: directory
 
-- name: Create the {{ kafka_zookeeper_etc_directory }}/conf directory
+- name: Create the {{ zookeeper_etc_directory }}/conf directory
   file:
-    path: '{{ kafka_zookeeper_etc_directory }}/conf'
-    owner: kafka
-    group: kafka
+    path: '{{ zookeeper_etc_directory }}/conf'
+    owner: zookeeper
+    group: zookeeper
     mode: '0550'
     state: directory
 
-- name: Copy the Kafka ZooKeeper keys and certificates
+- name: Copy the ZooKeeper keys and certificates
   block:
-  - name: Create the {{ kafka_zookeeper_etc_directory }}/pki directory
+  - name: Create the {{ zookeeper_etc_directory }}/pki directory
     file:
-      path: '{{ kafka_zookeeper_etc_directory }}/pki'
-      owner: kafka
-      group: kafka
+      path: '{{ zookeeper_etc_directory }}/pki'
+      owner: zookeeper
+      group: zookeeper
       mode: '0550'
       state: directory
 
-  - name: Copy the CA certificate to the /var/tmp/ansible/kafka-zookeeper directory
+  - name: Copy the CA certificate to the /var/tmp/ansible/zookeeper directory
     copy:
       src: pki/{{ kafka_cluster_name }}/ca.crt
-      dest: /var/tmp/ansible/kafka-zookeeper/ca.crt
-    register: kafka_zookeeper_ca_copy_result
+      dest: /var/tmp/ansible/zookeeper/ca.crt
+    register: zookeeper_ca_copy_result
 
-#  - name: Copy the Kafka intermediate CA certificate to the /var/tmp/ansible/kafka-zookeeper directory
-#    copy:
-#      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-ca.crt
-#      dest: /var/tmp/ansible/kafka-zookeeper/kafka-{{ kafka_cluster_name }}-ca.crt
-#    register: kafka_zookeeper_kafka_intermediate_ca_copy_result
-
-  - name: Copy the host-specific ZooKeeper private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka-zookeeper directory
+  - name: Copy the host-specific ZooKeeper private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/{{inventory_hostname_short}}.key
-      dest: /var/tmp/ansible/kafka-zookeeper/{{inventory_hostname_short}}.key
-    register: kafka_zookeeper_private_key_copy_result
+      src: pki/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key
+    register: zookeeper_private_key_copy_result
 
-  - name: Copy the host-specific ZooKeeper certificate ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka-zookeeper directory
+  - name: Copy the host-specific ZooKeeper certificate ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/{{inventory_hostname_short}}.crt
-      dest: /var/tmp/ansible/kafka-zookeeper/{{inventory_hostname_short}}.crt
-    register: kafka_zookeeper_certificate_copy_result
+      src: pki/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt
+    register: zookeeper_certificate_copy_result
 
-  - name: Generate or retrieve the password for the Kafka ZooKeeper keystore
+  - name: Generate or retrieve the password for the ZooKeeper keystore
     set_fact:
-      kafka_zookeeper_keystore_password: "{{ lookup('password', 'credentials/{{ inventory_hostname_short }}-zookeeper-keystore-password chars=ascii_letters,digits length=16') }}"
+      zookeeper_keystore_password: "{{ lookup('password', 'credentials/{{ inventory_hostname_short }}-zookeeper-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate and copy the new Kafka ZooKeeper keystore if required
+  - name: Generate or retrieve the password for the ZooKeeper truststore
+    set_fact:
+      zookeeper_truststore_password: "{{ lookup('password', 'credentials/{{ inventory_hostname_short }}-zookeeper-truststore-password chars=ascii_letters,digits length=16') }}"
+
+  - name: Generate and copy the new ZooKeeper keystore if required
     block:
-    - name: Generate the new Kafka ZooKeeper PKCS12 keystore
+    - name: Generate the new ZooKeeper PKCS12 keystore
       shell:
-        cmd: openssl pkcs12 -export -name '{{ inventory_hostname_short }}' -out /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.p12 -inkey /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.key -in /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.crt -passout pass:{{ kafka_zookeeper_keystore_password }}
+        cmd: openssl pkcs12 -export -name '{{ inventory_hostname_short }}' -out /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.p12 -inkey /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key -in /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt -passout pass:{{ zookeeper_keystore_password }}
 
-    - name: Remove the new Kafka ZooKeeper JKS keystore if it exists
+    - name: Remove the new ZooKeeper JKS keystore if it exists
       file:
-        path: /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.jks
+        path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.jks
         state: absent
 
-    - name: Convert the new Kafka ZooKeeper PKCS12 keystore to a JKS keystore
-      shell:
-        cmd: keytool -importkeystore -srckeystore /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.p12 -srcstoretype pkcs12 -srcstorepass {{ kafka_zookeeper_keystore_password }} -destkeystore /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.jks -deststoretype JKS -deststorepass {{ kafka_zookeeper_keystore_password }}
+    - name: Remove the new ZooKeeper JKS truststore if it exists
+      file:
+        path: /var/tmp/ansible/zookeeper/ca.jks
+        state: absent
 
-    - name: Add the CA certificate to the Kafka ZooKeeper JKS keystore
+    - name: Convert the new ZooKeeper PKCS12 keystore to a JKS keystore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias 'CA' -file /var/tmp/ansible/kafka-zookeeper/ca.crt -keystore /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.jks -storepass {{ kafka_zookeeper_keystore_password }}
+        cmd: keytool -importkeystore -srckeystore /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.p12 -srcstoretype pkcs12 -srcstorepass {{ zookeeper_keystore_password }} -destkeystore /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.jks -deststoretype JKS -deststorepass {{ zookeeper_keystore_password }}
 
-    - name: Copy the new Kafka ZooKeeper JKS keystore
+    - name: Add the CA certificate to the ZooKeeper JKS keystore
+      shell:
+        cmd: keytool -importcert -noprompt -trustcacerts -alias 'CA' -file /var/tmp/ansible/zookeeper/ca.crt -keystore /var/tmp/ansible/zookeeper/ca.jks -storepass {{ zookeeper_truststore_password }}
+
+    - name: Copy the new ZooKeeper JKS keystore
       copy:
-        src: /var/tmp/ansible/kafka-zookeeper/{{ inventory_hostname_short }}.jks
-        dest: '{{ kafka_zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks'
-        owner: kafka
-        group: kafka
+        src: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.jks
+        dest: '{{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks'
+        owner: zookeeper
+        group: zookeeper
         mode: '0440'
         remote_src: yes
 
-    when: (True or (kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True))
+    - name: Copy the new ZooKeeper JKS truststore
+      copy:
+        src: /var/tmp/ansible/zookeeper/ca.jks
+        dest: '{{ zookeeper_etc_directory }}/pki/ca.jks'
+        owner: zookeeper
+        group: zookeeper
+        mode: '0440'
+        remote_src: yes
 
-- name: Create the {{ kafka_zookeeper_log_directory }} directory
+    when: ((zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
+
+- name: Create the {{ zookeeper_log_directory }} directory
   file:
-    path: '{{ kafka_zookeeper_log_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ zookeeper_log_directory }}'
+    owner: zookeeper
+    group: zookeeper
     mode: '0750'
     state: directory
 
-- name: Create the {{ kafka_zookeeper_data_directory }} directory
+- name: Create the {{ zookeeper_data_directory }} directory
   file:
-    path: '{{ kafka_zookeeper_data_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ zookeeper_data_directory }}'
+    owner: zookeeper
+    group: zookeeper
     mode: '0750'
     state: directory
 
-- name: Create the {{ kafka_zookeeper_data_log_directory }} directory
+- name: Create the {{ zookeeper_data_log_directory }} directory
   file:
-    path: '{{ kafka_zookeeper_data_log_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ zookeeper_data_log_directory }}'
+    owner: zookeeper
+    group: zookeeper
     mode: '0750'
     state: directory
 
-- name: Create the Kafka ZooKeeper configuration file
+- name: Create the ZooKeeper configuration file
   template:
     src: zookeeper.properties.j2
-    dest: '{{ kafka_zookeeper_etc_directory }}/conf/zookeeper.properties'
-    owner: kafka
-    group: kafka
+    dest: '{{ zookeeper_etc_directory }}/conf/zookeeper.properties'
+    owner: zookeeper
+    group: zookeeper
     mode: '0440'
-  register: kafka_zookeeper_configuration_file_template_result
+  register: zookeeper_configuration_file_template_result
 
-- name: Generate or retrieve the password for the Kafka ZooKeeper admin user
+- name: Generate or retrieve the password for the ZooKeeper admin user
   set_fact:
-    kafka_zookeeper_admin_user_password: "{{ lookup('password', 'credentials/kafka-{{ kafka_cluster_name }}-zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"
+    zookeeper_admin_user_password: "{{ lookup('password', 'credentials/zookeeper-{{ kafka_cluster_name }}-admin-user-password chars=ascii_letters,digits length=16') }}"
 
-- name: Generate or retrieve the password for the Kafka ZooKeeper kafka user
+- name: Generate or retrieve the password for the ZooKeeper kafka user
   set_fact:
-    kafka_zookeeper_kafka_user_password: "{{ lookup('password', 'credentials/kafka-{{ kafka_cluster_name }}-zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+    zookeeper_kafka_user_password: "{{ lookup('password', 'credentials/zookeeper-{{ kafka_cluster_name }}-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
-- name: Create the Kafka ZooKeeper JAAS configuration file
+- name: Create the ZooKeeper JAAS configuration file
   template:
     src: zookeeper-jaas.conf.j2
-    dest: '{{ kafka_zookeeper_etc_directory }}/conf/zookeeper-jaas.conf'
-    owner: kafka
-    group: kafka
+    dest: '{{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf'
+    owner: zookeeper
+    group: zookeeper
     mode: '0440'
-  register: kafka_zookeeper_jaas_configuration_file_template_result
-  when: ((kafka_zookeeper_sasl_enabled is defined) and (kafka_zookeeper_sasl_enabled != None) and (kafka_zookeeper_sasl_enabled == true))
+  register: zookeeper_jaas_configuration_file_template_result
 
-- name: Create the myid file containing the Kafka ZooKeeper instance ID
+- name: Create the ZooKeeper TLS configuration file
+  template:
+    src: zookeeper-tls.conf.j2
+    dest: '{{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0440'
+
+- name: Create the myid file containing the ZooKeeper instance ID
   template:
     src: myid.j2
-    dest: '{{ kafka_zookeeper_data_directory }}/myid'
-    owner: kafka
-    group: kafka
+    dest: '{{ zookeeper_data_directory }}/myid'
+    owner: zookeeper
+    group: zookeeper
     mode: '0440'
-  when: ((kafka_zookeeper_hosts | length) > 1)
+  when: ((zookeeper_hosts | length) > 1)
 
-- name: Create the Kafka ZooKeeper Admin JAAS configuration file
+- name: Add the aliases for the ZooKeeper tools to the /etc/profile.d/zookeeper.sh file
+  block:
+  - name: Add the zookeeper-shell alias to the /etc/profile.d/zookeeper.sh file
+    lineinfile:
+      dest: /etc/profile.d/zookeeper.sh
+      create: yes
+      state: present
+      regexp: '^%alias zookeeper-shell'
+      line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf" /opt/kafka/bin/zookeeper-shell.sh -zk-tls-config-file {{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ zookeeper_secure_client_port }}'
+
+- name: Configure the ZooKeeper service
   template:
-    src: zookeeper-admin-jaas.conf.j2
-    dest: '{{ kafka_zookeeper_etc_directory }}/conf/zookeeper-admin-jaas.conf'
-    owner: kafka
-    group: kafka
-    mode: '0440'
+    src: zookeeper.service.j2
+    dest: /lib/systemd/system/zookeeper.service
+  register: zookeeper_service_file_template_result
 
-- name: Create the Kafka ZooKeeper Shell TLS configuration file
-  template:
-    src: zookeeper-shell-tls.conf.j2
-    dest: '{{ kafka_zookeeper_etc_directory }}/conf/zookeeper-shell-tls.conf'
-    owner: kafka
-    group: kafka
-    mode: '0440'
-
-- name: Configure the Kafka ZooKeeper service
-  template:
-    src: kafka-zookeeper.service.j2
-    dest: /lib/systemd/system/kafka-zookeeper.service
-  register: kafka_zookeeper_service_file_template_result
-
-- name: Enable and start the Kafka ZooKeeper service
+- name: Enable and start the ZooKeeper service
   systemd:
-    name: kafka-zookeeper.service
+    name: zookeeper.service
     state: started
     enabled: yes
 
-- name: Restart the Kafka ZooKeeper service if required
+- name: Restart the ZooKeeper service if required
   systemd:
-    name: kafka-zookeeper.service
+    name: zookeeper.service
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((kafka_zookeeper_ca_copy_result.changed == True) or (kafka_zookeeper_private_key_copy_result.changed == True) or (kafka_zookeeper_certificate_copy_result.changed == True) or (kafka_zookeeper_configuration_file_template_result.changed == True) or (kafka_zookeeper_service_file_template_result.changed == True))
+  when: ((zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True) or (zookeeper_configuration_file_template_result.changed == True) or (zookeeper_service_file_template_result.changed == True))

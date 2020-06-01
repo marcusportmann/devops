@@ -1,28 +1,14 @@
 ---
 #file: roles/kafka_server/vars/main.yaml
 
+kafka_secure_broker_port: 9093
 
+kafka_etc_directory: /etc/kafka
+kafka_log_directory: /var/log/kafka
+kafka_data_directory: /data/kafka
 
-kafka_server_etc_directory: /etc/kafka-server
-kafka_server_log_directory: /var/log/kafka-server
-kafka_server_data_directory: /data/kafka-server
+kafka_user_id: 330
+kafka_group_id: 330
 
-kafka_server_user_id: 350
-kafka_server_group_id: 350
-
-# Enable SASL authentication when connecting to ZooKeeper
-# If mTLS is enable
-kafka_server_zookeeper_sasl_enabled: true
-
-
-# Enable SASL SSL security for the Kafka Server
-kafka_server_sasl_ssl_enabled: true
-
-
-kafka_server_broker_port: "{{ '9093' if kafka_server_sasl_ssl_enabled else '9092' }}"
-
-
-
-
-
+kafka_server_zookeeper_secure_client_port: 2182
 

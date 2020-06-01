@@ -24,20 +24,6 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |__| |_| | |  | | |  | | |_| | |\  |
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
-- name: Add the kafka group
-  group:
-    name: kafka
-    gid: '{{ kafka_group_id }}'
-    state: present
-
-- name: Add the kafka user
-  user:
-    name: kafka
-    uid: '{{ kafka_user_id }}'
-    group: kafka
-    create_home: yes
-    state: present
-
 - name: Install kafka
   block:
   - debug:

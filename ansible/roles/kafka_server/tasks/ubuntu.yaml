@@ -9,9 +9,9 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port {{ kafka_server_broker_port }} (Kafka Broker)
+- name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Broker)
   ufw:
     rule: allow
-    port: '{{ kafka_server_broker_port }}'
+    port: '{{ kafka_secure_broker_port }}'
     proto: tcp
 

@@ -3,7 +3,7 @@
 
 galaxy_info:
   author: Marcus Portmann
-  description: Ansible Kafka ZooKeeper Role
+  description: Ansible ZooKeeper Role
   company: http://mmp.guru
   license: Apache 2
   min_ansible_version: 2.9

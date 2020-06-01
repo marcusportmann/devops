@@ -43,13 +43,13 @@
     - name: Add the prometheus group
       group:
         name: prometheus
-        gid: 330
+        gid: '{{ prometheus_group_id }}'
         state: present
 
     - name: Add the prometheus user
       user:
         name: prometheus
-        uid: 330
+        uid: '{{ prometheus_user_id }}'
         group: prometheus
         create_home: no
         shell: /usr/sbin/nologin

@@ -220,17 +220,6 @@ cp k8s-local-jaeger.key ../ansible/roles/k8s_monitoring/files/pki/local
 cp k8s-local-jaeger.crt ../ansible/roles/k8s_monitoring/files/pki/local
 
 
-# Generate the Kafka intermediate CA private key and certificate
-cfssl gencert -initca kafka-local-ca-csr.json | cfssljson -bare kafka-local-ca
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile intermediate_ca kafka-local-ca.csr | cfssljson -bare kafka-local-ca
-mv -f kafka-local-ca-key.pem kafka-local-ca.key
-mv -f kafka-local-ca.pem kafka-local-ca.crt
-cp kafka-local-ca.crt ../ansible/roles/kafka_server/files/pki/local
-cp kafka-local-ca.key ../ansible/roles/kafka_server/files/pki/local
-cp kafka-local-ca.crt ../ansible/roles/kafka_zookeeper/files/pki/local
-cp kafka-local-ca.key ../ansible/roles/kafka_zookeeper/files/pki/local
-
-
 # Generate the Kafka Zookeeper private keys and certificates
 cfssl genkey kafka-local-01-csr.json | cfssljson -bare kafka-local-01
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-01.csr | cfssljson -bare kafka-local-01
@@ -262,19 +251,6 @@ mv -f kafka-local-server.pem kafka-local-server.crt
 cp kafka-local-server.key ../ansible/roles/kafka_server/files/pki/local
 cp kafka-local-server.crt ../ansible/roles/kafka_server/files/pki/local
 
-
-
-
-#
-#
-# cfssl gencert -ca=kafka-local-ca.crt -ca-key=kafka-local-ca.key -config=kafka-local-ca-config.json -profile=client_server kafka-zookeeper-local-csr.json | cfssljson -bare kafka-zookeeper-local
-# mv -f kafka-zookeeper-local-key.pem kafka-zookeeper-local.key
-# mv -f kafka-zookeeper-local.pem kafka-zookeeper-local.crt
-# cp kafka-zookeeper-local.key ../ansible/roles/kafka_zookeeper/files/pki/local
-# cp kafka-zookeeper-local.crt ../ansible/roles/kafka_zookeeper/files/pki/local
-#
-#
-#
 
 
 

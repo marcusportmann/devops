@@ -2,18 +2,18 @@
 # file: roles/kafka_zookeeper/tasks/ubuntu.yaml
 
 - debug:
-    msg: Applying the Ubuntu-specific Kafka ZooKeeper configuration
+    msg: Applying the Ubuntu-specific ZooKeeper configuration
 
 - name: Enable the firewall
   ufw:
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 2182 (Secure ZooKeeper Client Port) for Kafka Server hosts
+- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Kafka Server hosts
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-    port: '2182'
+    port: '{{ zookeeper_secure_client_port }}'
     proto: tcp
   loop: "{{ groups['kafka_server'] | default([]) }}"
   when: (item != inventory_hostname)
