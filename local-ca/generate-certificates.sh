@@ -252,6 +252,13 @@ cp kafka-local-server.key ../ansible/roles/kafka_server/files/pki/local
 cp kafka-local-server.crt ../ansible/roles/kafka_server/files/pki/local
 
 
+# Generate the Kafka Admin certificate
+cfssl genkey kafka-local-admin-csr.json | cfssljson -bare kafka-local-admin
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-admin.csr | cfssljson -bare kafka-local-admin
+mv -f kafka-local-admin-key.pem kafka-local-admin.key
+mv -f kafka-local-admin.pem kafka-local-admin.crt
+cp kafka-local-admin.key ../ansible/roles/kafka_server/files/pki/local
+cp kafka-local-admin.crt ../ansible/roles/kafka_server/files/pki/local
 
 
 

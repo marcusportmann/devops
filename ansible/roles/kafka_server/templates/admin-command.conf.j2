@@ -1,0 +1,12 @@
+ssl.protocol=TLS
+ssl.keystore.location={{ kafka_etc_directory }}/pki/admin.jks
+ssl.keystore.password={{ kafka_admin_keystore_password }}
+ssl.truststore.location={{ kafka_etc_directory }}/pki/ca.jks
+ssl.truststore.password={{ kafka_ca_truststore_password }}
+security.protocol=SASL_SSL
+sasl.mechanism=SCRAM-SHA-256
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ kafka_admin_user_username }}" password="{{ kafka_admin_user_password }}";
+
+
+
+

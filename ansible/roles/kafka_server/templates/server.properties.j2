@@ -119,10 +119,10 @@ zookeeper.connect={{ kafka_zookeeper_nodes | join(',') }}
 # Enable mTLS authentication when connecting to ZooKeeper
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
 zookeeper.ssl.client.enable=true
-zookeeper.ssl.keystore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-keystore.jks
+zookeeper.ssl.keystore.location={{ kafka_etc_directory }}/pki/server.jks
 zookeeper.ssl.keystore.password={{ kafka_server_keystore_password }}
-zookeeper.ssl.truststore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-truststore.jks
-zookeeper.ssl.truststore.password={{ kafka_server_truststore_password }}
+zookeeper.ssl.truststore.location={{ kafka_etc_directory }}/pki/ca.jks
+zookeeper.ssl.truststore.password={{ kafka_ca_truststore_password }}
 zookeeper.set.acl=true
 
 # Timeout in ms for connecting to zookeeper
@@ -149,9 +149,16 @@ security.inter.broker.protocol=SASL_SSL
 # NOTE: We do not require mTLS since Kafka users will be authenticated via SCRAM using a password, change to "required" if this mTLS is required
 ssl.client.auth=requested
 
-ssl.keystore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-keystore.jks
+ssl.keystore.location={{ kafka_etc_directory }}/pki/server.jks
 ssl.keystore.password={{ kafka_server_keystore_password }}
 ssl.key.password={{ kafka_server_keystore_password }}
-ssl.truststore.location={{ kafka_etc_directory }}/pki/kafka-{{ kafka_cluster_name }}-server-truststore.jks
-ssl.truststore.password={{ kafka_server_truststore_password }}
+ssl.truststore.location={{ kafka_etc_directory }}/pki/ca.jks
+ssl.truststore.password={{ kafka_ca_truststore_password }}
+
+
+
+authorizer.class.name=kafka.security.authorizer.AclAuthorizer
+super.users=User:kafka;User:admin
+
+
 

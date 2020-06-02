@@ -32,3 +32,8 @@ zookeeper_sync_limit: 2
 
 zookeeper_autopurge_purge_interval: 1
 zookeeper_autopurge_snap_retain_count: 10
+
+
+zookeeper_kafka_user_username: kafka
+
+zookeeper_admin_user_username: admin

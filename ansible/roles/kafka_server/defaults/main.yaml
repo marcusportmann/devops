@@ -10,5 +10,9 @@ kafka_data_directory: /data/kafka
 kafka_user_id: 330
 kafka_group_id: 330
 
-kafka_server_zookeeper_secure_client_port: 2182
+kafka_server_user_username: kafka
 
+kafka_server_zookeeper_secure_client_port: 2182
+kafka_server_zookeeper_user_username: kafka
+
+kafka_admin_user_username: admin

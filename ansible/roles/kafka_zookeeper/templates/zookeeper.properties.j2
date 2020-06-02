@@ -45,7 +45,7 @@ ssl.clientAuth=none
 ssl.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
 ssl.keyStore.password={{ zookeeper_keystore_password }}
 ssl.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.jks
-ssl.trustStore.password={{ zookeeper_truststore_password }}
+ssl.trustStore.password={{ zookeeper_ca_truststore_password }}
 
 # Enable ZooKeeper quorum mTLS authentication
 sslQuorum=true
@@ -53,7 +53,7 @@ ssl.quorum.clientAuth=need
 ssl.quorum.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
 ssl.quorum.keyStore.password={{ zookeeper_keystore_password }}
 ssl.quorum.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.jks
-ssl.quorum.trustStore.password={{ zookeeper_truststore_password }}
+ssl.quorum.trustStore.password={{ zookeeper_ca_truststore_password }}
 
 # Enable SASL authentication for ZooKeeper
 authProvider.sasl=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
