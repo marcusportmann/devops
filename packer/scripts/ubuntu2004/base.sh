@@ -37,6 +37,9 @@ echo "install sctp /bin/false" > /etc/modprobe.d/sctp.conf
 echo "install rds /bin/false" > /etc/modprobe.d/rds.conf
 echo "install tipc /bin/false" > /etc/modprobe.d/tipc.conf
 
+echo "Installing additional packages"
+apt-get -y install python3-pip
+
 echo "Removing unnecessary packages"
 
 # echo "Updating all packages"
@@ -73,6 +76,8 @@ sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_conf
 echo "Disabling DNS for SSH"
 echo "UseDNS no" >> /etc/ssh/sshd_config
 
+echo "Install the pyOpenSSL python package"
+pip3 install pyOpenSSL
 
 
 

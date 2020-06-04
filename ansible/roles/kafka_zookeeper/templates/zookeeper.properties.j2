@@ -42,17 +42,21 @@ serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
 # This supports privacy and not authentication or authorization
 secureClientPort={{ zookeeper_secure_client_port }}
 ssl.clientAuth=none
-ssl.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
+ssl.keyStore.type=PKCS12
+ssl.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 ssl.keyStore.password={{ zookeeper_keystore_password }}
-ssl.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.jks
+ssl.trustStore.type=PKCS12
+ssl.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.p12
 ssl.trustStore.password={{ zookeeper_ca_truststore_password }}
 
 # Enable ZooKeeper quorum mTLS authentication
 sslQuorum=true
 ssl.quorum.clientAuth=need
-ssl.quorum.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks
+ssl.quorum.keyStore.type=PKCS12
+ssl.quorum.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 ssl.quorum.keyStore.password={{ zookeeper_keystore_password }}
-ssl.quorum.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.jks
+ssl.quorum.trustStore.type=PKCS12
+ssl.quorum.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.p12
 ssl.quorum.trustStore.password={{ zookeeper_ca_truststore_password }}
 
 # Enable SASL authentication for ZooKeeper

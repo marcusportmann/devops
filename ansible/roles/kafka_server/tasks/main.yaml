@@ -98,47 +98,36 @@
     set_fact:
       kafka_ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate and copy the Kafka server keystore and Kafka CA truststore
+  - name: Generate the Kafka server keystore and Kafka CA truststore
     block:
     - name: Generate the Kafka server PKCS12 keystore
-      shell:
-        cmd: openssl pkcs12 -export -name 'kafka-{{ kafka_cluster_name }}-server' -out /var/tmp/ansible/kafka/server.p12 -inkey /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.key -in /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.crt -passout pass:{{ kafka_server_keystore_password }}
-
-    - name: Remove the Kafka server JKS keystore if it exists
-      file:
-        path: /var/tmp/ansible/kafka/server.jks
-        state: absent
-
-    - name: Remove the Kafka CA JKS truststore if it exists
-      file:
-        path: /var/tmp/ansible/kafka/ca.jks
-        state: absent
-
-    - name: Convert the Kafka server PKCS12 keystore to a JKS keystore
-      shell:
-        cmd: keytool -importkeystore -srckeystore /var/tmp/ansible/kafka/server.p12 -srcstoretype pkcs12 -srcstorepass {{ kafka_server_keystore_password }} -destkeystore /var/tmp/ansible/kafka/server.jks -deststoretype JKS -deststorepass {{ kafka_server_keystore_password }}
-
-    - name: Add the Kafka CA certificate to the Kafka CA JKS truststore
-      shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias 'CA' -file /var/tmp/ansible/kafka/ca.crt -keystore /var/tmp/ansible/kafka/ca.jks -storepass {{ kafka_ca_truststore_password }}
-
-    - name: Copy the Kafka server JKS keystore
-      copy:
-        src: /var/tmp/ansible/kafka/server.jks
-        dest: '{{ kafka_etc_directory }}/pki/server.jks'
+      openssl_pkcs12:
+        action: export
+        path: '{{ kafka_etc_directory }}/pki/server.p12'
+        friendly_name: 'kafka-{{ kafka_cluster_name }}-server'
+        privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.key
+        certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.crt
+        passphrase: '{{ kafka_server_keystore_password }}'
         owner: kafka
         group: kafka
         mode: '0440'
-        remote_src: yes
+        state: present
 
-    - name: Copy the Kafka CA JKS truststore
-      copy:
-        src: /var/tmp/ansible/kafka/ca.jks
-        dest: '{{ kafka_etc_directory }}/pki/ca.jks'
+    - name: Remove the Kafka CA PKCS12 truststore if it already exists
+      file:
+        path: '{{ kafka_etc_directory }}/pki/ca.p12'
+        state: absent
+
+    - name: Generate the Kafka CA PKCS12 truststore
+      shell:
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
+
+    - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
+      file:
+        path: '{{ kafka_etc_directory }}/pki/ca.p12'
         owner: kafka
         group: kafka
         mode: '0440'
-        remote_src: yes
 
     when: ((kafka_ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
 
@@ -186,12 +175,6 @@
     mode: '0440'
   register: kafka_server_jaas_configuration_template_result
 
-# NOTE: This is the password for the user that is used to secure the inter broker connections
-- name: Set the password for the Kafka server user in ZooKeeper
-  shell:
-    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ groups['kafka_zookeeper'][0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
-  when: (groups['kafka_server'][((groups['kafka_server']|length) - 1)] == inventory_hostname)
-
 - name: Configure the Kafka service
   template:
     src: kafka.service.j2
@@ -203,6 +186,12 @@
     name: kafka.service
     state: started
     enabled: yes
+
+# NOTE: This is the password for the user that is used to secure the inter broker connections
+- name: Set the password for the Kafka server user in ZooKeeper
+  shell:
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ groups['kafka_zookeeper'][0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
+  when: (groups['kafka_server'][((groups['kafka_server']|length) - 1)] == inventory_hostname)
 
 - name: Restart the Kafka service if required
   systemd:
@@ -218,23 +207,28 @@
     set_fact:
       kafka_admin_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Create the Kafka admin keystore
-    java_keystore:
-      name: 'kafka-{{ kafka_cluster_name }}-admin'
-      certificate: "{{lookup('file', 'pki/' + kafka_cluster_name + '/kafka-' + kafka_cluster_name + '-admin.crt') }}"
-      private_key: "{{lookup('file', 'pki/' + kafka_cluster_name + '/kafka-' + kafka_cluster_name + '-admin.key') }}"
-      password: '{{ kafka_admin_keystore_password }}'
-      dest: '{{ kafka_etc_directory }}/pki/admin.jks'
-      owner: kafka
-      group: kafka
-      mode: '0550'
+  - name: Copy the Kafka admin private key (kafka-{{ kafka_cluster_name }}-admin.key) to the /var/tmp/ansible/kafka directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-admin.key
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.key
 
-  - name: Set the permissions for the {{ kafka_etc_directory }}/pki/admin.jks file
-    file:
-      path: '{{ kafka_etc_directory }}/pki/admin.jks'
+  - name: Copy the Kafka admin certificate (kafka-{{ kafka_cluster_name }}-admin.crt) to the /var/tmp/ansible/kafka directory
+    copy:
+      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-admin.crt
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.crt
+
+  - name: Generate the Kafka admin PKCS12 keystore
+    openssl_pkcs12:
+      action: export
+      path: '{{ kafka_etc_directory }}/pki/admin.p12'
+      friendly_name: 'kafka-{{ kafka_cluster_name }}-admin'
+      privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.key
+      certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.crt
+      passphrase: '{{ kafka_admin_keystore_password }}'
       owner: kafka
       group: kafka
       mode: '0440'
+      state: present
 
   - name: Generate or retrieve the password for the Kafka admin user
     set_fact:

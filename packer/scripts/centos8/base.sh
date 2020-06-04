@@ -38,7 +38,7 @@ echo "install rds /bin/false" > /etc/modprobe.d/rds.conf
 echo "install tipc /bin/false" > /etc/modprobe.d/tipc.conf
 
 echo "Installing additional packages"
-yum -y install bzip2 chrony python3 python3-yaml net-tools
+yum -y install bzip2 chrony python3 python3-pip python3-yaml net-tools
 
 echo "Removing unnecessary packages"
 yum -y remove wpa_supplicant
@@ -70,5 +70,8 @@ echo "UseDNS no" >> /etc/ssh/sshd_config
 
 echo "Creating the new initial ramdisk image"
 dracut --no-hostonly --force
+
+echo "Install the pyOpenSSL python package"
+pip3 install pyOpenSSL
 
 

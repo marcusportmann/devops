@@ -98,49 +98,38 @@
     set_fact:
       zookeeper_ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate and copy the ZooKeeper keystore and ZooKeeper CA truststore
+  - name: Generate the ZooKeeper keystore and ZooKeeper CA truststore
     block:
     - name: Generate the ZooKeeper PKCS12 keystore
-      shell:
-        cmd: openssl pkcs12 -export -name '{{ inventory_hostname_short }}' -out /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.p12 -inkey /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key -in /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt -passout pass:{{ zookeeper_keystore_password }}
-
-    - name: Remove the ZooKeeper JKS keystore if it exists
-      file:
-        path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.jks
-        state: absent
-
-    - name: Remove the ZooKeeper CA JKS truststore if it exists
-      file:
-        path: /var/tmp/ansible/zookeeper/ca.jks
-        state: absent
-
-    - name: Convert the ZooKeeper PKCS12 keystore to a JKS keystore
-      shell:
-        cmd: keytool -importkeystore -srckeystore /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.p12 -srcstoretype pkcs12 -srcstorepass {{ zookeeper_keystore_password }} -destkeystore /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.jks -deststoretype JKS -deststorepass {{ zookeeper_keystore_password }}
-
-    - name: Add the ZooKeeper CA certificate to the ZooKeeper CA JKS truststore
-      shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias 'CA' -file /var/tmp/ansible/zookeeper/ca.crt -keystore /var/tmp/ansible/zookeeper/ca.jks -storepass {{ zookeeper_ca_truststore_password }}
-
-    - name: Copy the ZooKeeper JKS keystore
-      copy:
-        src: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.jks
-        dest: '{{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.jks'
+      openssl_pkcs12:
+        action: export
+        path: '{{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
+        friendly_name: '{{ inventory_hostname_short }}'
+        privatekey_path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt
+        passphrase: '{{ zookeeper_keystore_password }}'
         owner: zookeeper
         group: zookeeper
         mode: '0440'
-        remote_src: yes
+        state: present
 
-    - name: Copy the ZooKeeper CA JKS truststore
-      copy:
-        src: /var/tmp/ansible/zookeeper/ca.jks
-        dest: '{{ zookeeper_etc_directory }}/pki/ca.jks'
+    - name: Remove the ZooKeeper CA PKCS12 truststore if it already exists
+      file:
+        path: '{{ zookeeper_etc_directory }}/pki/ca.p12'
+        state: absent
+
+    - name: Generate the ZooKeeper CA PKCS12 truststore
+      shell:
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/zookeeper/ca.crt -keystore '{{ zookeeper_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ zookeeper_ca_truststore_password }}'
+
+    - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
+      file:
+        path: '{{ zookeeper_etc_directory }}/pki/ca.p12'
         owner: zookeeper
         group: zookeeper
         mode: '0440'
-        remote_src: yes
 
-    when: ((zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
+    when: (True or (zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
 
 - name: Create the {{ zookeeper_log_directory }} directory
   file:

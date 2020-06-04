@@ -1,0 +1,12 @@
+{
+  "CN": "demo-producer",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "demo-producer"
+    }
+  ]
+}

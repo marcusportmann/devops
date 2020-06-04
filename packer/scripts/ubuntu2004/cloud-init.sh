@@ -17,7 +17,7 @@ VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
 if [[ $VIRT == "VMware" ]]; then
 
 # Install packages required for cloud-init
-apt-get -y install python3-pip cloud-init
+apt-get -y install cloud-init
 
 # Install the VMware Guest Info provider for cloud-init
 curl -sSL https://raw.githubusercontent.com/vmware/cloud-init-vmware-guestinfo/master/install.sh | sh -
@@ -26,7 +26,7 @@ curl -sSL https://raw.githubusercontent.com/vmware/cloud-init-vmware-guestinfo/m
 sed -i 's/ssh_pwauth:   0/ssh_pwauth:   1/g' /etc/cloud/cloud.cfg
 sed -i 's/name: ubuntu/name: cloud-user/g' /etc/cloud/cloud.cfg
 sed -i 's/gecos: Ubuntu/gecos: Cloud User/g' /etc/cloud/cloud.cfg
-sed -i 's/lock_passwd: True/lock_passwd: False/g' /etc/cloud/cloud.cfg	
+sed -i 's/lock_passwd: True/lock_passwd: False/g' /etc/cloud/cloud.cfg
 
 # Enable cloud-init
 systemctl enable cloud-init

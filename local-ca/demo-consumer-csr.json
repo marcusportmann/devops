@@ -1,0 +1,12 @@
+{
+  "CN": "demo-consumer",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "demo-consumer"
+    }
+  ]
+}

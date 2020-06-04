@@ -1,0 +1,29 @@
+spring:
+  kafka:
+    bootstrap-servers: kafka-local-01.local:9093,kafka-local-02.local:9093,kafka-local-03.local:9093
+    ssl:
+      protocol: TLS
+      key-store-type: PKCS12
+      key-store-location: classpath:demo-producer.p12
+      key-store-password: bdm1QKInU586etBN
+      trust-store-type: PKCS12
+      trust-store-location: classpath:ca.p12
+      trust-store-password: ulLdVI9hUP46gaQj
+    security:
+      protocol: SASL_SSL
+    properties:
+      sasl:
+        jaas:
+          config: org.apache.kafka.common.security.scram.ScramLoginModule required username='demo-producer' password='jsi9zxp28syOTQf2';
+        mechanism: SCRAM-SHA-256
+      linger:
+        ms: 100
+#    producer:
+#      bootstrap-servers: kafka-local-01.local:9093
+#      acks: 1
+#      buffer-memory: 10485760
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#    template:
+#      default-topic: test
+

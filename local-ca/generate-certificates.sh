@@ -48,6 +48,9 @@ mkdir -p ../ansible/roles/kafka_zookeeper/files/pki/local
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 mv -f ca.pem ca.crt
 mv -f ca-key.pem ca.key
+rm -f ca.p12
+keytool -importcert -noprompt -trustcacerts -alias "Local Root Certificate Authority (1)" -file ca.crt -keystore ca.p12 -storetype PKCS12 -storepass "ca"
+#keytool -list -keystore ca.p12 -storetype PKCS12 -storepass "ca"
 cp ca.crt ../ansible/roles/etcd/files/pki/local
 cp ca.crt ../ansible/roles/k8s_common/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_istio/files/pki/local/ca.crt
@@ -59,6 +62,7 @@ cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca-bundle.crt
 cp ca.crt ../ansible/roles/kafka_server/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/kafka_zookeeper/files/pki/local/ca.crt
+cp ca.p12 ../demos/kafka/demo-producer/src/main/resources/ca.p12
 
 
 # Generate the etcd intermediate CA private key and certificate
@@ -254,14 +258,31 @@ cp kafka-local-server.crt ../ansible/roles/kafka_server/files/pki/local
 
 # Generate the Kafka Admin certificate
 cfssl genkey kafka-local-admin-csr.json | cfssljson -bare kafka-local-admin
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-admin.csr | cfssljson -bare kafka-local-admin
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client kafka-local-admin.csr | cfssljson -bare kafka-local-admin
 mv -f kafka-local-admin-key.pem kafka-local-admin.key
 mv -f kafka-local-admin.pem kafka-local-admin.crt
 cp kafka-local-admin.key ../ansible/roles/kafka_server/files/pki/local
 cp kafka-local-admin.crt ../ansible/roles/kafka_server/files/pki/local
 
 
+# Generate the Kafka demo-producer certificate
+cfssl genkey demo-producer-csr.json | cfssljson -bare demo-producer
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client demo-producer.csr | cfssljson -bare demo-producer
+mv -f demo-producer-key.pem demo-producer.key
+mv -f demo-producer.pem demo-producer.crt
+rm -f demo-producer.p12
+openssl pkcs12 -export -name "demo-producer" -out demo-producer.p12 -inkey demo-producer.key -in demo-producer.crt -CAfile ca.crt -caname "Local Root Certificate Authority (1)" -chain -passout pass:bdm1QKInU586etBN
+openssl pkcs12 -info -nodes -in demo-producer.p12 -passin pass:bdm1QKInU586etBN
+cp demo-producer.p12 ../demos/kafka/demo-producer/src/main/resources/demo-producer.p12
 
 
-
+# Generate the Kafka demo-consumer certificate
+cfssl genkey demo-consumer-csr.json | cfssljson -bare demo-consumer
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client demo-consumer.csr | cfssljson -bare demo-consumer
+mv -f demo-consumer-key.pem demo-consumer.key
+mv -f demo-consumer.pem demo-consumer.crt
+rm -f demo-consumer.p12
+openssl pkcs12 -export -name "demo-consumer" -out demo-consumer.p12 -inkey demo-consumer.key -in demo-consumer.crt -CAfile ca.crt -caname "Local Root Certificate Authority (1)" -chain -passout pass:C0OlV5W19wyvboZv
+openssl pkcs12 -info -nodes -in demo-consumer.p12 -passin pass:C0OlV5W19wyvboZv
+cp demo-consumer.p12 ../demos/kafka/demo-consumer/src/main/resources/demo-consumer.p12
 

@@ -31,3 +31,7 @@
     group: root
     mode: 0700
     state: directory
+
+- name: Install the pyOpenSSL python package
+  pip:
+    name: pyOpenSSL

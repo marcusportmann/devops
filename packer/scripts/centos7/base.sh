@@ -41,7 +41,7 @@ echo "Enabling the EPEL repo"
 yum -y install epel-release
 
 echo "Installing additional packages"
-yum -y install bzip2 ntp ntpdate python-yaml screen net-tools
+yum -y install bzip2 ntp ntpdate python-yaml screen net-tools python2-pip
 
 echo "Installing additional python libraries"
 curl -o /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm https://cbs.centos.org/kojifiles/packages/python-netifaces/0.10.4/1.el7/x86_64/python-netifaces-0.10.4-1.el7.x86_64.rpm
@@ -82,3 +82,5 @@ echo "UseDNS no" >> /etc/ssh/sshd_config
 echo "Creating the new initial ramdisk image"
 dracut --no-hostonly --force
 
+echo "Install the pyOpenSSL python package"
+pip install pyOpenSSL

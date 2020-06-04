@@ -21,7 +21,7 @@ VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
 if [[ $VIRT == "VMware" ]]; then
 
 # Install cloud-init
-yum -y install python2-pip cloud-init
+yum -y install cloud-init
 
 # Install the VMware Guest Info provider for cloud-init
 curl -sSL https://raw.githubusercontent.com/vmware/cloud-init-vmware-guestinfo/master/install.sh | sh -
