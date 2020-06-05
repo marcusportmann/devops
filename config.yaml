@@ -141,6 +141,10 @@ profiles:
   hosts:
   - kafka-local-01.local
 
+- name: monitor
+  hosts:
+  - monitor.local
+
 - name: kafka-full
   hosts:
   - kafka-local-01.local

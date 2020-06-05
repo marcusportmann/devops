@@ -1,13 +1,13 @@
 ---
 # file: roles/grafana/vars/main.yaml
 
-grafana_centos_package: grafana-6.7.3-1.x86_64.rpm
-grafana_centos_package_checksum: sha256:fbe7eff6b5a6786c9affd5917fce53e24f16c395178352768b96935a62499211
-grafana_centos_package_version: 6.7.3
+grafana_centos_package: grafana-7.0.3-1.x86_64.rpm
+grafana_centos_package_checksum: sha256:f725795c64901cd44cadb6db733c5f6fa5a265cc5185e68cdc82fb75b49c1878
+grafana_centos_package_version: 7.0.3
 
-grafana_ubuntu_package: grafana_6.7.3_amd64.deb
-grafana_ubuntu_package_checksum: sha256:1ffa1329cb0f574f0f60c3f57116b2a3d68b3db0a39eca9099956e9a349dc8e6
-grafana_ubuntu_package_version: 6.7.3
+grafana_ubuntu_package: grafana_7.0.3_amd64.deb
+grafana_ubuntu_package_checksum: sha256:b7c5f67607238000287658fc000cf32f1e7e29110a7ba26a64a04ce55c5784cb
+grafana_ubuntu_package_version: 7.0.3
 
 grafana_user_id: 425
 grafana_group_id: 425

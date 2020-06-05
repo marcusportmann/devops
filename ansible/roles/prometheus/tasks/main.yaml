@@ -51,7 +51,6 @@
         name: prometheus
         uid: '{{ prometheus_user_id }}'
         group: prometheus
-        home: /var/lib/prometheus
         create_home: no
         shell: /usr/sbin/nologin
         state: present
