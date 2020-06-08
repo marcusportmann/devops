@@ -86,7 +86,14 @@
         - name: Install Elasticsearch using Helm
           command:
             cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
+
         when: elasticsearch_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
+
+      - name: Wait for the Elasticsearch initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
+        when: ('k8s_worker' not in groups.keys())
+
       when: (k8s_monitoring_elasticsearch_cluster_type == 'standalone')
 
     - name: Install a multi node Elasticsearch cluster using Helm
@@ -142,6 +149,11 @@
             cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --force --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
         when: elasticsearch_data_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
 
+      - name: Wait for the Elasticsearch initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
+        when: ('k8s_worker' not in groups.keys())
+
       when: ((k8s_monitoring_elasticsearch_cluster_type == 'minimal') or (k8s_monitoring_elasticsearch_cluster_type == 'full'))
 
     when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true))
@@ -194,7 +206,7 @@
     - name: Check if Kibana is installed
       shell:
         cmd: /usr/bin/helm -n monitoring-system list --filter 'kibana' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
-      register: kibana_installed__helm_chart_version_output
+      register: kibana_installed_helm_chart_version_output
 
     - name: Install Kibana
       block:
@@ -207,7 +219,12 @@
         command:
           cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --force --version={{ k8s_monitoring_kibana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
 
-      when: kibana_installed__helm_chart_version_output.stdout != k8s_monitoring_kibana_helm_chart_version
+      - name: Wait for the Kibana initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
+        when: ('k8s_worker' not in groups.keys())
+
+      when: kibana_installed_helm_chart_version_output.stdout != k8s_monitoring_kibana_helm_chart_version
 
     when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true) and (k8s_monitoring_kibana_enabled is defined) and (k8s_monitoring_kibana_enabled != None) and (k8s_monitoring_kibana_enabled == true))
 
@@ -258,8 +275,8 @@
 
     - name: Check if Jaeger is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
-      register: jaeger_installed__helm_chart_version_output
+        cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger-tracing' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: jaeger_installed_helm_chart_version_output
 
     - name: Install Jaeger
       block:
@@ -272,7 +289,12 @@
         command:
           cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --force --version={{ k8s_monitoring_jaeger_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
 
-      when: jaeger_installed__helm_chart_version_output.stdout != k8s_monitoring_jaeger_helm_chart_version
+      - name: Wait for the Jaeger initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
+        when: ('k8s_worker' not in groups.keys())
+
+      when: jaeger_installed_helm_chart_version_output.stdout != k8s_monitoring_jaeger_helm_chart_version
 
     when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true) and (k8s_monitoring_jaeger_enabled is defined) and (k8s_monitoring_jaeger_enabled != None) and (k8s_monitoring_jaeger_enabled == true))
 
@@ -288,7 +310,7 @@
     - name: Check if Prometheus is installed
       shell:
         cmd: /usr/bin/helm -n monitoring-system list --filter 'prometheus' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
-      register: prometheus_installed__helm_chart_version_output
+      register: prometheus_installed_helm_chart_version_output
 
     - name: Install Prometheus
       block:
@@ -301,7 +323,12 @@
         command:
           cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --force --version={{ k8s_monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
 
-      when: prometheus_installed__helm_chart_version_output.stdout != k8s_monitoring_prometheus_helm_chart_version
+      - name: Wait for the Prometheus initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
+        when: ('k8s_worker' not in groups.keys())
+
+      when: prometheus_installed_helm_chart_version_output.stdout != k8s_monitoring_prometheus_helm_chart_version
 
     - name: Generate the Prometheus Server configuration
       template:
@@ -350,6 +377,11 @@
       - name: Install Grafana using Helm
         command:
           cmd: /usr/bin/helm upgrade grafana stable/grafana --install --force --version={{ k8s_monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+
+      - name: Wait for the Grafana initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
+        when: ('k8s_worker' not in groups.keys())
 
       when: grafana_installed_helm_chart_version_output.stdout != k8s_monitoring_grafana_helm_chart_version
 

@@ -1,5 +1,7 @@
 # This playbook configures a Kafka cluster.
 
+
+
 - name: Gather facts from all Kafka ZooKeeper hosts
   hosts: kafka_zookeeper
   become: yes

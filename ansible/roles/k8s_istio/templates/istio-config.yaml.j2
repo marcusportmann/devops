@@ -2,6 +2,7 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   profile: minimal
+
   namespace: istio-system
 
   addonComponents:
@@ -12,7 +13,8 @@ spec:
     grafana:
       enabled: false
 {% endif %}
-
+    istiocoredns:
+      enabled: false
 {% if ((k8s_istio_kiali_enabled is defined) and (k8s_istio_kiali_enabled != None) and (k8s_istio_kiali_enabled == True))  %}
     kiali:
       enabled: true
@@ -41,57 +43,16 @@ spec:
     egressGateways:
     - name: istio-engressgateway
       enabled: true
-
-#       k8s:
-#         overlays:
-#         - kind: Deployment
-#           name: istio-egressgateway
-#           patches:
-#           - path: spec.template.spec.volumes
-#             value:
-#             - name: istio-token
-#               projected:
-#                 sources:
-#                   - serviceAccountToken:
-#                       audience: istio-ca
-#                       expirationSeconds: 43200
-#                       path: istio-token
-#             - hostPath:
-#                 path: /var/run/sds
-#               name: sdsudspath
-#             - name: istio-certs
-#               secret:
-#                 optional: true
-#                 secretName: istio.default
-#             - name: egressgateway-certs
-#               secret:
-#                 optional: true
-#                 secretName: istio-egressgateway-certs
-#             - name: egressgateway-ca-certs
-#               secret:
-#                 optional: true
-#                 secretName: istio-egressgateway-ca-certs
-#           - path: spec.template.spec.containers.[name:istio-proxy].volumeMounts
-#             value:
-#               - mountPath: /var/run/sds
-#                 name: sdsudspath
-#                 readOnly: true
-#               - mountPath: /var/run/secrets/tokens
-#                 name: istio-token
-#               - mountPath: /etc/certs
-#                 name: istio-certs
-#                 readOnly: true
-#               - mountPath: /etc/istio/egressgateway-certs
-#                 name: egressgateway-certs
-#                 readOnly: true
-#               - mountPath: /etc/istio/egressgateway-ca-certs
-#                 name: egressgateway-ca-certs
-#                 readOnly: true
-
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
 
+# See https://istio.io/docs/reference/config/istio.mesh.v1alpha1/
+#   meshConfig:
+#     enablePrometheusMerge: false
+
+
+# See https://archive.istio.io/v1.4/docs/reference/config/installation-options/
   values:
     gateways:
       istio-ingressgateway:
@@ -99,8 +60,7 @@ spec:
           app: istio-ingressgateway
           istio: istio-ingressgateway
         type: NodePort
-        sds:
-          enabled: true
+        # TODO: CHECK ALL THESE PORTS -- MARCUS
         ports:
         - name: status-port
           port: 15020
@@ -113,7 +73,6 @@ spec:
           port: 443
           targetPort: 443
           nodePort: 30443
-
 {% if ((k8s_istio_grafana_enabled is defined) and (k8s_istio_grafana_enabled != None) and (k8s_istio_grafana_enabled == True)) %}
         - name: https-grafana
           port: 3000
@@ -132,7 +91,6 @@ spec:
           targetPort: 20001
           nodePort: 32502
 {% endif %}
-
 {% if ((k8s_istio_prometheus_enabled is defined) and (k8s_istio_prometheus_enabled != None) and (k8s_istio_prometheus_enabled == True)) %}
         - name: https-prometheus
           port: 9090
@@ -143,7 +101,6 @@ spec:
           targetPort: 9093
           nodePort: 32504
 {% endif %}
-
         - name: tcp
           port: 1400
           targetPort: 1400
@@ -153,47 +110,63 @@ spec:
           targetPort: 1443
           nodePort: 31443
 
+#         debug: info
+#         domain: ""
+#         env: {}
+#         meshExpansionPorts:
+#         - name: tcp-pilot-grpc-tls
+#           port: 15011
+#           targetPort: 15011
+#         - name: tcp-istiod
+#           port: 15012
+#           targetPort: 15012
+#         - name: tcp-citadel-grpc-tls
+#           port: 8060
+#           targetPort: 8060
+#         - name: tcp-dns-tls
+#           port: 853
+#           targetPort: 8853
+#         name: istio-ingressgateway
+#         secretVolumes:
+#         - mountPath: /etc/istio/ingressgateway-certs
+#           name: ingressgateway-certs
+#           secretName: istio-ingressgateway-certs
+#         - mountPath: /etc/istio/ingressgateway-ca-certs
+#           name: ingressgateway-ca-certs
+#           secretName: istio-ingressgateway-ca-certs
+
     global:
-      trustDomain: {{ k8s_cluster_domain }}
       mtls:
         auto: true
-        enabled: false
       proxy:
-        accessLogFile: "/dev/stdout"
-        logLevel: "debug"
         clusterDomain: {{ k8s_cluster_domain }}
+        # logLevel: debug
       sds:
         enabled: true
-
 {% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True))  %}
       tracer:
         zipkin:
           address: jaeger-collector.monitoring-system.svc.{{ k8s_cluster_domain }}:9411
 {% endif %}
-
-    security:
-      selfSigned: false
-    sidecarInjectorWebhook:
-      rewriteAppHTTPProbe: true
-    grafana:
-      security:
-        enabled: false
+      trustDomain: {{ k8s_cluster_domain }}
     kiali:
 {% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True) and (k8s_monitoring_prometheus_enabled is defined) and (k8s_monitoring_prometheus_enabled != None) and (k8s_monitoring_prometheus_enabled == True)) %}
       prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_cluster_domain }}:9090
 {% endif %}
-
       dashboard:
 {% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True) and (k8s_monitoring_grafana_enabled is defined) and (k8s_monitoring_grafana_enabled != None) and (k8s_monitoring_grafana_enabled == True)) %}
         grafanaURL: https://{{ groups['k8s_master'][0] }}:32500/
         grafanaInClusterURL: http://grafana.monitoring-system.svc.{{ k8s_cluster_domain }}:3000
 {% endif %}
-
 {% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True) and (k8s_monitoring_jaeger_enabled is defined) and (k8s_monitoring_jaeger_enabled != None) and (k8s_monitoring_jaeger_enabled == True)) %}
         jaegerURL: https://{{ groups['k8s_master'][0] }}:32501/
         jaegerInClusterURL: http://jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}:16686
 {% endif %}
 
-      security:
-        enabled: false
+    # TODO: CONFIRM THE BELOW IS APPLIED AUTOMATICALLY NOW (https://istio.io/docs/tasks/security/cert-management/plugin-ca-cert/)
+    # security:
+    #  selfSigned: false
+
+
+
 

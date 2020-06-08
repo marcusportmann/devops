@@ -1,5 +1,5 @@
-{% for zookeeper_host in zookeeper_hosts -%}
-{% if (zookeeper_host == inventory_hostname) %}
-{{ loop.index }}
+{% if (inventory_hostname in kafka_zookeeper_dc1_actual_hosts)  %}
+{{ (kafka_zookeeper_dc1_actual_hosts.index(inventory_hostname) + 1) }}
+{% elif (inventory_hostname in kafka_zookeeper_dc2_actual_hosts)  %}
+{{ (kafka_zookeeper_dc2_actual_hosts.index(inventory_hostname) + 1) }}
 {% endif %}
-{% endfor -%}

@@ -49,8 +49,7 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 mv -f ca.pem ca.crt
 mv -f ca-key.pem ca.key
 rm -f ca.p12
-keytool -importcert -noprompt -trustcacerts -alias "Local Root Certificate Authority (1)" -file ca.crt -keystore ca.p12 -storetype PKCS12 -storepass "ca"
-#keytool -list -keystore ca.p12 -storetype PKCS12 -storepass "ca"
+keytool -importcert -noprompt -trustcacerts -alias "Local Root Certificate Authority (1)" -file ca.crt -keystore ca.p12 -storetype PKCS12 -storepass "ulLdVI9hUP46gaQj"
 cp ca.crt ../ansible/roles/etcd/files/pki/local
 cp ca.crt ../ansible/roles/k8s_common/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/k8s_istio/files/pki/local/ca.crt
@@ -63,6 +62,7 @@ cp ca.crt ../ansible/roles/k8s_storage/files/pki/local/ca-bundle.crt
 cp ca.crt ../ansible/roles/kafka_server/files/pki/local/ca.crt
 cp ca.crt ../ansible/roles/kafka_zookeeper/files/pki/local/ca.crt
 cp ca.p12 ../demos/kafka/demo-producer/src/main/resources/ca.p12
+cp ca.p12 ../demos/kafka/demo-consumer/src/main/resources/ca.p12
 
 
 # Generate the etcd intermediate CA private key and certificate
@@ -245,6 +245,27 @@ mv -f kafka-local-03-key.pem kafka-local-03.key
 mv -f kafka-local-03.pem kafka-local-03.crt
 cp kafka-local-03.key ../ansible/roles/kafka_zookeeper/files/pki/local
 cp kafka-local-03.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+cfssl genkey kafka-local-04-csr.json | cfssljson -bare kafka-local-04
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-04.csr | cfssljson -bare kafka-local-04
+mv -f kafka-local-04-key.pem kafka-local-04.key
+mv -f kafka-local-04.pem kafka-local-04.crt
+cp kafka-local-04.key ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-local-04.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+cfssl genkey kafka-local-05-csr.json | cfssljson -bare kafka-local-05
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-05.csr | cfssljson -bare kafka-local-05
+mv -f kafka-local-05-key.pem kafka-local-05.key
+mv -f kafka-local-05.pem kafka-local-05.crt
+cp kafka-local-05.key ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-local-05.crt ../ansible/roles/kafka_zookeeper/files/pki/local
+
+cfssl genkey kafka-local-06-csr.json | cfssljson -bare kafka-local-06
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-local-06.csr | cfssljson -bare kafka-local-06
+mv -f kafka-local-06-key.pem kafka-local-06.key
+mv -f kafka-local-06.pem kafka-local-06.crt
+cp kafka-local-06.key ../ansible/roles/kafka_zookeeper/files/pki/local
+cp kafka-local-06.crt ../ansible/roles/kafka_zookeeper/files/pki/local
 
 
 # Generate the Kafka Server certificate

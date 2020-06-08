@@ -1,6 +1,31 @@
 ---
 #file: roles/kafka_zookeeper/tasks/main.yaml
 
+- set_fact:
+    kafka_server_dc1_actual_hosts: "{{ kafka_server_dc1_possible_hosts | intersect(groups['kafka_server']) }}"
+- set_fact:
+    kafka_server_dc2_actual_hosts: "{{ kafka_server_dc2_possible_hosts | intersect(groups['kafka_server']) }}"
+- set_fact:
+    kafka_zookeeper_dc1_actual_hosts: "{{ kafka_zookeeper_dc1_possible_hosts | intersect(groups['kafka_zookeeper']) }}"
+- set_fact:
+    kafka_zookeeper_dc2_actual_hosts: "{{ kafka_zookeeper_dc2_possible_hosts | intersect(groups['kafka_zookeeper']) }}"
+
+- debug:
+    msg: 'Kafka server DC1 hosts: {{ kafka_server_dc1_actual_hosts  }}'
+- debug:
+    msg: 'Kafka server DC2 hosts: {{ kafka_server_dc2_actual_hosts  }}'
+- debug:
+    msg: 'Kafka Zookeeper DC1 hosts: {{ kafka_zookeeper_dc1_actual_hosts  }}'
+- debug:
+    msg: 'Kafka Zookeeper DC2 hosts: {{ kafka_zookeeper_dc2_actual_hosts  }}'
+
+- debug:
+    msg: "Kafka Zookeeper host {{ inventory_hostname }} is in DC1"
+  when: (inventory_hostname in kafka_zookeeper_dc1_actual_hosts)
+- debug:
+    msg: "Kafka Zookeeper host {{ inventory_hostname }} is in DC2"
+  when: (inventory_hostname in kafka_zookeeper_dc2_actual_hosts)
+
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
@@ -196,7 +221,6 @@
     owner: zookeeper
     group: zookeeper
     mode: '0440'
-  when: ((zookeeper_hosts | length) > 1)
 
 - name: Add the aliases for the ZooKeeper tools to the /etc/profile.d/zookeeper.sh file
   block:

@@ -29,25 +29,30 @@ virtualisation platforms.
 	```
 	brew install ansible
 	```
-6. Install Apache Maven by executing the following command in a Terminal window:
+6. Install OpenJDK 11 by executing the following commands in a Terminal window:
+	```
+	brew tap AdoptOpenJDK/openjdk
+	brew cask install adoptopenjdk11
+	```
+7. Install Apache Maven by executing the following command in a Terminal window:
 	```
 	brew install maven
 	```
-7. Install jenv by executing the following commands in a Terminal window:
+8. Install jenv by executing the following commands in a Terminal window:
 	```
 	brew install jenv
 	```
-8. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
+9. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
   ```
   export PATH="$HOME/.jenv/bin:$PATH"
   eval "$(jenv init -)"
   ```
-9. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
+10. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
   ```
   jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
   jenv global 11.0
   ```
-10. Install the maven plugin for jenv by executing the following command in a Terminal window:
+11. Install the maven plugin for jenv by executing the following command in a Terminal window:
 	```
 	jenv enable-plugin maven
 	```
@@ -93,25 +98,30 @@ virtualisation platforms.
 	```
 	brew install ansible
 	```
-12. Install Apache Maven by executing the following command in a Terminal window:
+12. Install OpenJDK 11 by executing the following commands in a Terminal window:
+	```
+	brew tap AdoptOpenJDK/openjdk
+	brew cask install adoptopenjdk11
+	```
+13. Install Apache Maven by executing the following command in a Terminal window:
 	```
 	brew install maven
 	```
-13. Install jenv by executing the following commands in a Terminal window:
+14. Install jenv by executing the following commands in a Terminal window:
 	```
 	brew install jenv
 	```
-14. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
+15. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
   ```
   export PATH="$HOME/.jenv/bin:$PATH"
   eval "$(jenv init -)"
   ```
-15. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
+16. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
   ```
   jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
   jenv global 11.0
   ```
-16. Install the maven plugin for jenv by executing the following command in a Terminal window:
+17. Install the maven plugin for jenv by executing the following command in a Terminal window:
 	```
 	jenv enable-plugin maven
 	```

@@ -39,6 +39,26 @@ variables:
 - name: kafka_cluster_name
   values:
   - local
+- name: kafka_zookeeper_dc1_possible_hosts
+  values:
+  - kafka-local-01.local
+  - kafka-local-03.local
+  - kafka-local-05.local
+- name: kafka_server_dc1_possible_hosts
+  values:
+  - kafka-local-01.local
+  - kafka-local-03.local
+  - kafka-local-05.local
+- name: kafka_zookeeper_dc2_possible_hosts
+  values:
+  - kafka-local-02.local
+  - kafka-local-04.local
+  - kafka-local-06.local
+- name: kafka_server_dc2_possible_hosts
+  values:
+  - kafka-local-02.local
+  - kafka-local-04.local
+  - kafka-local-06.local
 
 
 # ----------------------------------------------------------------------------------------
@@ -57,13 +77,13 @@ variables:
 #- name: k8s_operator_lifecycle_manager_enabled
 #  values:
 #  - false
-- name: k8s_postgres_operator_enabled
-  values:
-  - true
+#- name: k8s_postgres_operator_enabled
+#  values:
+#  - false
 
 - name: k8s_longhorn_enabled
   values:
-  - true
+  - false
 - name: k8s_topolvm_enabled
   values:
   - true
@@ -137,19 +157,33 @@ profiles:
   - k8s-local-w-02.local
   - k8s-local-w-03.local
 
-- name: kafka-minimal
+- name: kafka-multi-dc-minimal
   hosts:
   - kafka-local-01.local
+  - kafka-local-02.local
 
-- name: monitor
-  hosts:
-  - monitor.local
-
-- name: kafka-full
+- name: kafka-multi-dc-full
   hosts:
   - kafka-local-01.local
   - kafka-local-02.local
   - kafka-local-03.local
+  - kafka-local-04.local
+  - kafka-local-05.local
+  - kafka-local-06.local
+
+- name: kafka-single-dc-minimal
+  hosts:
+  - kafka-local-01.local
+
+- name: kafka-single-dc-full
+  hosts:
+  - kafka-local-01.local
+  - kafka-local-03.local
+  - kafka-local-05.local
+
+- name: monitor
+  hosts:
+  - monitor.local
 
 - name: test-all
   hosts:
@@ -612,6 +646,102 @@ hosts:
     fqdn:             kafka-local-03.local
     domain:           local
     ip:               192.168.0.67/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               kafka-local-04.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     kafka_zookeeper,kafka_server
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-04.local
+    domain:           local
+    ip:               192.168.184.68/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-04.local
+    domain:           local
+    ip:               192.168.184.68/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             kafka-local-04.local
+    domain:           local
+    ip:               192.168.0.68/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               kafka-local-05.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     kafka_zookeeper,kafka_server
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-05.local
+    domain:           local
+    ip:               192.168.184.69/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-05.local
+    domain:           local
+    ip:               192.168.184.69/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             kafka-local-05.local
+    domain:           local
+    ip:               192.168.0.69/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               kafka-local-06.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     kafka_zookeeper,kafka_server
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-06.local
+    domain:           local
+    ip:               192.168.184.70/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             kafka-local-06.local
+    domain:           local
+    ip:               192.168.184.70/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             kafka-local-06.local
+    domain:           local
+    ip:               192.168.0.70/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 

@@ -1,6 +1,6 @@
 spring:
   kafka:
-    bootstrap-servers: kafka-local-01.local:9093,kafka-local-02.local:9093,kafka-local-03.local:9093
+    bootstrap-servers: kafka-local-01.local:9093
     ssl:
       protocol: TLS
       key-store-type: PKCS12

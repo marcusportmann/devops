@@ -42,6 +42,9 @@ server:
     servicePort: 9090
     nodePort: 32503
 
+  env:
+  - name: JAEGER_AGENT_PORT
+    value: "5755"
 
 # alertmanager:
 #   enabled: false

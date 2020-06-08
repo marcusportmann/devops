@@ -593,8 +593,8 @@
 
   - name: Check if Bitnami Labs Sealed Secrets is installed
     shell:
-      cmd: /usr/bin/helm -n monitoring-system list --filter 'sealed-secrets' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
-    register: sealed_secrets_installed__helm_chart_version_output
+      cmd: /usr/bin/helm -n kube-system list --filter 'sealed-secrets' --output json | jq -r '.[0].chart' | cut -s -f3- -d-
+    register: sealed_secrets_installed_helm_chart_version_output
 
   - name: Install Bitnami Labs Sealed Secrets
     block:
@@ -607,7 +607,7 @@
       command:
         cmd: /usr/bin/helm upgrade sealed-secrets stable/sealed-secrets --install --force --version={{ k8s_bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
 
-    when: sealed_secrets_installed__helm_chart_version_output.stdout != k8s_bitnami_labs_sealed_secrets_helm_chart_version
+    when: sealed_secrets_installed_helm_chart_version_output.stdout != k8s_bitnami_labs_sealed_secrets_helm_chart_version
 
   when: ((groups['k8s_master'][0] == inventory_hostname) and (k8s_bitnami_labs_sealed_secrets_enabled is defined) and (k8s_bitnami_labs_sealed_secrets_enabled != None) and (k8s_bitnami_labs_sealed_secrets_enabled == true))
 
