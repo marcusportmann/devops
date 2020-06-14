@@ -49,6 +49,11 @@
       - name: Install the Postgres Operator using Helm
         command:
           cmd: /usr/bin/helm -n operators upgrade --install postgres-operator /var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-values.yaml
+
+      - name: Wait for the Postgres Operator initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=operators --for=condition=Ready pods --all --timeout=1200s
+
       when: postgres_operator_installed_helm_chart_version_output.stdout != k8s_postgres_operator_helm_chart_version
 
     when: ((k8s_postgres_operator_enabled is defined) and (k8s_postgres_operator_enabled != None) and (k8s_postgres_operator_enabled == true))
@@ -82,6 +87,11 @@
       - name: Install the Postgres Operator UI using Helm
         command:
           cmd: /usr/bin/helm -n operators upgrade --install postgres-operator-ui /var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-ui-values.yaml
+
+      - name: Wait for the Postgres Operator UI initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=operators --for=condition=Ready pods --all --timeout=1200s
+
       when: postgres_operator_ui_installed_helm_chart_version_output.stdout != k8s_postgres_operator_ui_helm_chart_version
 
     when: ((k8s_postgres_operator_enabled is defined) and (k8s_postgres_operator_enabled != None) and (k8s_postgres_operator_enabled == true) and (k8s_postgres_operator_ui_enabled is defined) and (k8s_postgres_operator_ui_enabled != None) and (k8s_postgres_operator_ui_enabled == true))

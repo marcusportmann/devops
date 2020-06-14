@@ -670,7 +670,7 @@ hosts:
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
-    memory:           5120
+    memory:           4096
     fqdn:             k8s-local-dev-w-01.local
     domain:           local
     ip:               192.168.184.54/24
