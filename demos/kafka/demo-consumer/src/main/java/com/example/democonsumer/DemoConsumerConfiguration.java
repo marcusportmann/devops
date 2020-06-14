@@ -24,7 +24,8 @@ public class DemoConsumerConfiguration {
     Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-    props.put(ConsumerConfig.CLIENT_ID_CONFIG, "demo-consumer");
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, "demo-consumer");
+    props.put(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, "1");
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
     return props;
   }

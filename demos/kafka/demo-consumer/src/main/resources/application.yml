@@ -1,13 +1,12 @@
 spring:
   kafka:
-    bootstrap-servers: kafka-local-01.local:9093
     ssl:
       protocol: TLS
       key-store-type: PKCS12
-      key-store-location: classpath:demo-consumer.p12
+      key-store-location: file:pki/demo-consumer.p12
       key-store-password: C0OlV5W19wyvboZv
       trust-store-type: PKCS12
-      trust-store-location: classpath:ca.p12
+      trust-store-location: file:pki/ca.p12
       trust-store-password: ulLdVI9hUP46gaQj
     security:
       protocol: SASL_SSL
@@ -19,4 +18,14 @@ spring:
       linger:
         ms: 100
 
+---
+spring:
+  profiles: dc1
+  kafka:
+    bootstrap-servers: kafka-local-01.local:9093
 
+---
+spring:
+  profiles: dc2
+  kafka:
+    bootstrap-servers: kafka-local-02.local:9093

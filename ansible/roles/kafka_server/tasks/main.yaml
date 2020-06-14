@@ -15,9 +15,9 @@
 - debug:
     msg: 'Kafka server DC2 hosts: {{ kafka_server_dc2_actual_hosts  }}'
 - debug:
-    msg: 'Kafka Zookeeper DC1 hosts: {{ kafka_zookeeper_dc1_actual_hosts  }}'
+    msg: 'Kafka ZooKeeper DC1 hosts: {{ kafka_zookeeper_dc1_actual_hosts  }}'
 - debug:
-    msg: 'Kafka Zookeeper DC2 hosts: {{ kafka_zookeeper_dc2_actual_hosts  }}'
+    msg: 'Kafka ZooKeeper DC2 hosts: {{ kafka_zookeeper_dc2_actual_hosts  }}'
 
 - debug:
     msg: "Kafka server host {{ inventory_hostname }} is in DC1"
@@ -25,6 +25,7 @@
 - debug:
     msg: "Kafka server host {{ inventory_hostname }} is in DC2"
   when: (inventory_hostname in kafka_server_dc2_actual_hosts)
+
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
@@ -147,7 +148,7 @@
       shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
 
-    - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
+    - name: Set the permissions for the Kafka CA PKCS12 truststore
       file:
         path: '{{ kafka_etc_directory }}/pki/ca.p12'
         owner: kafka
@@ -191,9 +192,6 @@
   set_fact:
     kafka_server_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-server-user-password chars=ascii_letters,digits length=16') }}"
 
-- debug:
-    msg: 'kafka_server_user_password = {{ kafka_server_user_password }}'
-
 - name: Create the Kafka server JAAS configuration file
   template:
     src: server-jaas.conf.j2
@@ -203,7 +201,7 @@
     mode: '0440'
   register: kafka_server_jaas_configuration_template_result
 
-- name: Configure the Kafka service
+- name: Configure the Kafka server service
   template:
     src: kafka.service.j2
     dest: /lib/systemd/system/kafka.service
@@ -276,6 +274,21 @@
       owner: kafka
       group: kafka
       mode: '0440'
+
+- name: Setup the Kafka MirrorMaker user
+  block:
+  - name: Generate or retrieve the password for the Kafka MirrorMaker user
+    set_fact:
+      kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+
+  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC1)
+    shell:
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
+    when: (((kafka_server_dc1_actual_hosts|length) > 0) and (kafka_server_dc1_actual_hosts[((kafka_server_dc1_actual_hosts|length) - 1)] == inventory_hostname))
+  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC2)
+    shell:
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
+    when: (((kafka_server_dc2_actual_hosts|length) > 0) and (kafka_server_dc2_actual_hosts[((kafka_server_dc2_actual_hosts|length) - 1)] == inventory_hostname))
 
 - name: Create the Kafka profile file
   template:

@@ -41,15 +41,23 @@ spec:
 
   components:
     egressGateways:
-    - name: istio-engressgateway
+    - name: istio-egressgateway
       enabled: true
     ingressGateways:
     - name: istio-ingressgateway
       enabled: true
+    # TODO: Confirm if this should be enabled -- MARCUS
+    policy:
+      enabled: false
+    # TODO: Confirm is this should be enabled -- MARCUS
+    telemetry:
+      enabled: false
 
 # See https://istio.io/docs/reference/config/istio.mesh.v1alpha1/
-#   meshConfig:
-#     enablePrometheusMerge: false
+  meshConfig:
+    enableAutoMtls: true
+    # TODO: Confirm if this should be enabled -- MARCUS
+    enablePrometheusMerge: false
 
 
 # See https://archive.istio.io/v1.4/docs/reference/config/installation-options/
@@ -136,8 +144,6 @@ spec:
 #           secretName: istio-ingressgateway-ca-certs
 
     global:
-      mtls:
-        auto: true
       proxy:
         clusterDomain: {{ k8s_cluster_domain }}
         # logLevel: debug

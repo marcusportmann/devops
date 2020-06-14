@@ -4,9 +4,11 @@
 k8s_istio_enabled: false
 k8s_istio_grafana_enabled: false
 k8s_istio_kiali_enabled: true
-k8s_istio_package_checksum: sha256:5ac280f72515b328ce1b5779f0f00df742bbb3be142fafa935da58b25a2c1caf
+k8s_istio_package_checksum: sha256:9e6c7f5cc52663a4177d6f275c500b4de5c59f075384c7084e3a7412921c310d
 k8s_istio_prometheus_enabled: false
 k8s_istio_tracing_enabled: false
-k8s_istio_version: 1.6.1
-k8s_istioctl_package_checksum: sha256:7640c766266c0ade655636bb3e73eef05a282b1aa4cd977f96dd19eb4a7cded5
+k8s_istio_version: 1.6.2
+k8s_istioctl_package_checksum: sha256:b2f0eb8188ba35754809980a35ee0a4ab2622c2a644fbe8b96a32d24c6c0a870
+k8s_istio_demo_configuration_enabled: false
+
 

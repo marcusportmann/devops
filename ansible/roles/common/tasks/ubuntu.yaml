@@ -16,7 +16,7 @@
       gather_subset:
       - hardware
 
-  when: (('sdb' in ansible_devices) and ('data' not in ansible_lvm.vgs))
+  when: (('sdb' in ansible_devices) and ('wwn' not in ansible_devices['sdb']) and ('data' not in ansible_lvm.vgs))
 
 - name: Initialise the /data directory
   block:

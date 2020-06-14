@@ -69,15 +69,15 @@
       src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.crt
       dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}.crt
 
-  - name: Copy the {{ inventory_hostname_short }}-etcd-peer.key private key to the /etc/etcd/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.key private key to the /etc/etcd/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.key
-      dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.key
+      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: /etc/etcd/pki/{{ inventory_hostname_short }}.key
 
-  - name: Copy the {{ inventory_hostname_short }}-etcd-peer.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.crt certificate to the /etc/etcd/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}-etcd-peer.crt
-      dest: /etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt
+      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: /etc/etcd/pki/{{ inventory_hostname_short }}.crt
 
   - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key to the /etc/etcd/pki directory
     copy:

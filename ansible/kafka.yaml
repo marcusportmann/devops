@@ -1,9 +1,7 @@
 # This playbook configures a Kafka cluster.
 
-
-
-- name: Gather facts from all Kafka ZooKeeper hosts
-  hosts: kafka_zookeeper
+- name: Gather facts from all Kafka MirrorMaker hosts
+  hosts: kafka_mirrorkeeper
   become: yes
   become_user: root
   pre_tasks:
@@ -11,7 +9,7 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['kafka_zookeeper'] }}"
+    with_items: "{{ groups['kafka_mirrorkeeper'] }}"
   tasks: []
 
 - name: Gather facts from all Kafka Broker hosts
@@ -24,6 +22,18 @@
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
     with_items: "{{ groups['kafka_server'] }}"
+  tasks: []
+
+- name: Gather facts from all Kafka ZooKeeper hosts
+  hosts: kafka_zookeeper
+  become: yes
+  become_user: root
+  pre_tasks:
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ groups['kafka_zookeeper'] }}"
   tasks: []
 
 - name: Configure the Kafka ZooKeeper hosts
@@ -39,3 +49,10 @@
   become_user: root
   roles:
   - kafka_server
+
+- name: Configure the Kafka MirrorMaker hosts
+  hosts: kafka_mirrormaker
+  become: yes
+  become_user: root
+  roles:
+  - kafka_mirrormaker

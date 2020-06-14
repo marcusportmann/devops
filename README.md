@@ -12,119 +12,119 @@ virtualisation platforms.
 ### Option 1: Install Packer, Vagrant, VirtualBox and Ansible on MacOS
 
 1. Install Homebrew by executing the following command in a Terminal window:
-	```
-	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-	```
+   ```
+   /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+   ```
 2. Install Packer by executing the following command in a Terminal window:
-	```
-	brew install packer
-	```
+   ```
+   brew install packer
+   ```
 3. Install HashiCorp Vagrant by executing the following command in a Terminal window:
-	```
-	brew cask install vagrant
-	```
+   ```
+   brew cask install vagrant
+   ```
 4. Download and install VirtualBox from https://virtualbox.org.
 
 5. Install Ansible by executing the following command in a Terminal window:
-	```
-	brew install ansible
-	```
+   ```
+   brew install ansible
+   ```
 6. Install OpenJDK 11 by executing the following commands in a Terminal window:
-	```
-	brew tap AdoptOpenJDK/openjdk
-	brew cask install adoptopenjdk11
-	```
+   ```
+   brew tap AdoptOpenJDK/openjdk
+   brew cask install adoptopenjdk11
+   ```
 7. Install Apache Maven by executing the following command in a Terminal window:
-	```
-	brew install maven
-	```
+   ```
+   brew install maven
+   ```
 8. Install jenv by executing the following commands in a Terminal window:
-	```
-	brew install jenv
-	```
+   ```
+   brew install jenv
+   ```
 9. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
-  ```
-  export PATH="$HOME/.jenv/bin:$PATH"
-  eval "$(jenv init -)"
-  ```
+   ```
+   export PATH="$HOME/.jenv/bin:$PATH"
+   eval "$(jenv init -)"
+   ```
 10. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
-  ```
-  jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
-  jenv global 11.0
-  ```
+    ```
+    jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
+    jenv global 11.0
+    ```
 11. Install the maven plugin for jenv by executing the following command in a Terminal window:
-	```
-	jenv enable-plugin maven
-	```
+    ```
+    jenv enable-plugin maven
+    ```
 
 
 ### Option 2: Install Packer, Vagrant, VMware Fusion and Ansible on MacOS
 
 1. Install Homebrew by executing the following command in a Terminal window:
-	```
-	/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-	```
+   ```
+   /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+   ```
 2. Install Packer by executing the following command in a Terminal window:
-	```
-	brew install packer
-	```
+   ```
+   brew install packer
+   ```
 3. Install HashiCorp Vagrant by executing the following command in a Terminal window:
-	```
-	brew cask install vagrant
-	```
+   ```
+   brew cask install vagrant
+   ```
 4. Install VMware Fusion Pro.
 5. Download and install the Vagrant VMware Utility for your MacOS from *https://www.vagrantup.com/vmware/downloads.html*.
 6. Install the Vagrant VMware provider plugin by executing the following command in a Terminal window:
-	```
-	vagrant plugin install vagrant-vmware-desktop
-	```
+   ```
+   vagrant plugin install vagrant-vmware-desktop
+   ```
 7. Install the license for the Vagrant VMware provider plugin by executing the following command in a Terminal window:
-	```
-	vagrant plugin license vagrant-vmware-desktop ~/Downloads/license.lic
-	```
+   ```
+   vagrant plugin license vagrant-vmware-desktop ~/Downloads/license.lic
+   ```
 8. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
-  ```
-  https://code.vmware.com/web/tool/4.3.0/ovf
-  ```
+   ```
+   https://code.vmware.com/web/tool/4.3.0/ovf
+   ```
 9. Create a link to the ovftool binary in /usr/local/bin.
-  ```
-  ln -s /Applications/VMware\ OVF\ Tool/ovftool /usr/local/bin/ovftool
-  ```
+   ```
+   ln -s /Applications/VMware\ OVF\ Tool/ovftool /usr/local/bin/ovftool
+   ```
 10. OPTIONAL: If required install the Vagrant VMware ESXi plugin.
-  ```
-  vagrant plugin install vagrant-vmware-esxi
-  ```
+    ```
+    vagrant plugin install vagrant-vmware-esxi
+    ```
 11. Install Ansible by executing the following command in a Terminal window:
-	```
-	brew install ansible
-	```
+    ```
+    brew install ansible
+    ```
 12. Install OpenJDK 11 by executing the following commands in a Terminal window:
-	```
-	brew tap AdoptOpenJDK/openjdk
-	brew cask install adoptopenjdk11
-	```
+    ```
+    brew tap AdoptOpenJDK/openjdk
+    brew cask install adoptopenjdk11
+    ```
 13. Install Apache Maven by executing the following command in a Terminal window:
-	```
-	brew install maven
-	```
+    ```
+    brew install maven
+    ```
 14. Install jenv by executing the following commands in a Terminal window:
-	```
-	brew install jenv
-	```
+    ```
+    brew install jenv
+    ```
 15. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
-  ```
-  export PATH="$HOME/.jenv/bin:$PATH"
-  eval "$(jenv init -)"
-  ```
+    ```
+    export PATH="$HOME/.jenv/bin:$PATH"
+    eval "$(jenv init -)"
+    ```
 16. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
-  ```
-  jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
-  jenv global 11.0
-  ```
+    ```
+    jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
+    jenv global 11.0
+    ```
 17. Install the maven plugin for jenv by executing the following command in a Terminal window:
-	```
-	jenv enable-plugin maven
-	```
+    ```
+    jenv enable-plugin maven
+    ```
 
 
 ### Option 3: Install Packer, Vagrant, Hyper-V and Ansible on Windows 64-bit
@@ -173,9 +173,9 @@ e.g. ./build.sh -p vmware_desktop -o ubuntu1804
 
 ## Configuration
 
-The config.yml file defines all the hosts that make up the DevOps platform and the
+The config.yaml file defines all the hosts that make up the DevOps platform and the
 Ansible configuration that should be applied to these hosts. The **profiles** section
-at the top of the **config.yml** file defines collections of hosts that should be
+at the top of the **config.yaml** file defines collections of hosts that should be
 provisioned together as a set. This allows a portion of the DevOps platform to be
 deployed using commands similar to the following:
 
@@ -184,14 +184,44 @@ devops.sh -p <PROVIDER> <ACTION> <PROFILE>
 
 e.g.
 
-devops.sh -p vmware_desktop up etcd
+devops.sh -p vmware_desktop up etcd-minimal
 
-devops.sh -p vmware_desktop provision etcd
+devops.sh -p vmware_desktop provision etcd-minimal
 
-devops.sh -p vmware_desktop destroy etcd
+devops.sh -p vmware_desktop destroy etcd-minimal
 ```
 
 You can connect to a server using SSH with the username **cloud-user** and the password **cloud**. This user is able to **su** to the **root** user.
+
+### Host Naming Convention
+
+Hosts in the config.yaml file are named according to one of the following naming convention:
+
+- **platform** - **platform_instance** - **environment** - **platform_component** - **instance_id**
+
+   e.g. kafka-local-dev-mirrormaker-01.local where the *platform* is kafka, the *platform_instance* is local, the *environment* is dev (Development), the *platform_component* is mirrormaker, and the *instance_id* is 01.
+
+   e.g. k8s-shared-test-m-01.local where the *platform* is k8s (Kubernetes), the *platform_instance* is shared, the *environment* is test (Test), the *platform_component* is m (Master), and the *instance_id* is 01.
+
+   e.g. kafka-event-bus-prod-mirrormaker-01.local where the *platform* is kafka, the *platform_instance* is event-bus, the *environment* is prod (Production), the *platform_component* is mirrormaker, and the *instance_id* is 01.
+
+- **platform** - **platform_instance** - **environment** -  **instance_id**
+
+   e.g. kafka-local-dev-01.local where the *platform* is kafka, the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+
+   e.g. kafka-shared-prod-01.local where the *platform* is kafka, the *platform_instance* is shared, the *environment* is prod (Production), and the *instance_id* is 01.
+
+   e.g. kafka-event-bus-uat-01.local where the *platform* is kafka, the *platform_instance* is event-bus, the *environment* is uat (User Acceptance Testing), and the *instance_id* is 01.
+
+**NOTE:** The following environment indicators are used:
+
+- **dev** - Development
+- **test** - Test
+- **uat** - User Acceptance Testing
+- **preprod** - Pre-Production
+- **prod** - Production
+
+   e.g. kafka-local-dev-mirrormaker-01.local where the *platform* is kafka, the *platform_instance* is local, the *environment* is dev (Development), the *platform_component* is mirrormaker, and the *instance_id* is 01.
 
 
 ## Ports

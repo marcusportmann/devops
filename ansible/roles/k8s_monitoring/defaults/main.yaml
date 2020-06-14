@@ -13,7 +13,7 @@ k8s_monitoring_grafana_enabled: true
 k8s_monitoring_grafana_helm_chart_version: 5.1.4
 
 k8s_monitoring_jaeger_enabled: true
-k8s_monitoring_jaeger_helm_chart_version: 0.30.0
+k8s_monitoring_jaeger_helm_chart_version: 0.32.0
 
 k8s_monitoring_kibana_enabled: true
 k8s_monitoring_kibana_helm_chart_version: 7.7.1

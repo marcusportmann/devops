@@ -1,0 +1,57 @@
+# Windows-specific files
+/**/Thumbs.db
+/**/desktop.ini
+
+# Mac-specific files
+/**/.DS_Store/
+/**/.Spotlight-V100
+/**/.Trashes
+
+# Editors temporary files 
+/**/*~
+
+# Maven build directory
+target/
+
+# Eclipse files
+.classpath
+.project
+.settings/
+
+# Compiled source
+/**/*.com
+/**/*.class
+/**/*.dll
+/**/*.exe
+/**/*.o
+/**/*.so
+/**/*.dylib
+/**/*.obj
+
+# Packages
+/**/*.7z
+/**/*.dmg
+/**/*.gz
+/**/*.iso
+/**/*.rar
+/**/*.tar
+/**/*.zip
+/**/*.Z
+
+# Other
+/**/*.BAK
+/**/*.ln
+/**/*.log
+/**/*.obj
+/**/*.olb
+/**/*.old
+/**/*.orig
+/**/*.rej
+/**/.#*
+/**/.del-*
+/**/.deployables
+/**/.make.state
+/**/.nse_depinfo
+/**/CVS.adm
+
+/.apt_generated/

@@ -4,6 +4,11 @@
 - debug:
     msg: Applying the CentOS-specific common configuration
 
+- name: Collect only facts about hardware
+  setup:
+    gather_subset:
+    - hardware
+
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group
@@ -11,12 +16,7 @@
       vg: data
       pvs: /dev/sdb
 
-  - name: Collect only facts about hardware
-    setup:
-      gather_subset:
-      - hardware
-
-  when: (('sdb' in ansible_devices) and ('data' not in ansible_lvm.vgs))
+  when: (('sdb' in ansible_devices) and ('wwn' not in ansible_devices['sdb'])  and ('data' not in ansible_lvm.vgs))
 
 - name: Initialise the /data directory
   block:

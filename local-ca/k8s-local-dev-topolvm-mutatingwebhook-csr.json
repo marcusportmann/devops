@@ -1,0 +1,17 @@
+{
+  "CN": "k8s-local-dev-topolvm-mutatingwebhook",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "k8s-local-dev-topolvm-mutatingwebhook"
+    }
+  ],
+  "hosts": [
+    "controller",
+    "controller.topolvm-system",
+    "controller.topolvm-system.svc"
+  ]
+}

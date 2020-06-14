@@ -1,0 +1,16 @@
+{
+  "CA": {
+    "expiry": "175200h",
+    "pathlen": 0
+  },
+  "CN": "k8s-local-dev-ca",
+  "key": {
+    "algo": "rsa",
+    "size": 4096
+  },
+  "names": [
+  {
+    "CN": "k8s-local-dev-ca"
+  }
+ ]
+}

@@ -16,3 +16,4 @@ kafka_server_zookeeper_secure_client_port: 2182
 kafka_server_zookeeper_user_username: kafka
 
 kafka_admin_user_username: admin
+kafka_mirrormaker_user_username: mirrormaker

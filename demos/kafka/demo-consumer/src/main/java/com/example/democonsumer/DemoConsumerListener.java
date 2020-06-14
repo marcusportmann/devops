@@ -11,7 +11,7 @@ public class DemoConsumerListener {
   private final Logger logger = LoggerFactory.getLogger(DemoConsumerListener.class);
 
   @KafkaListener(
-      topics = "test",
+      topicPattern = "(.*\\.test|test)",
       groupId = "demo-consumer",
       containerFactory = "demoKafkaListenerContainerFactory")
   public void consumer(String message) {

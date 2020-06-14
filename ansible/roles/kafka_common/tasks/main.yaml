@@ -60,5 +60,12 @@
         group: root
         state: link
 
+    - name: Copy the custom-replication-policy.jar file to the /opt/kafka/libs directory
+      copy:
+        src: custom-replication-policy.jar
+        dest: /opt/kafka/libs/custom-replication-policy.jar
+        owner: root
+        group: root
+
     when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka_version)))
 

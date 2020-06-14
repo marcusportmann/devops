@@ -22,8 +22,8 @@ PermissionsStartOnly=true
 ExecStart=/usr/bin/etcd $DAEMON_ARGS \
   --cert-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}.crt \
   --key-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}.key \
-  --peer-cert-file=/etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.crt \
-  --peer-key-file=/etc/etcd/pki/{{ inventory_hostname_short }}-etcd-peer.key \
+  --peer-cert-file=/etc/etcd/pki/{{ inventory_hostname_short }}.crt \
+  --peer-key-file=/etc/etcd/pki/{{ inventory_hostname_short }}.key \
   --trusted-ca-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}-ca.crt \
   --peer-trusted-ca-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name }}-ca.crt \
   --peer-client-cert-auth \
