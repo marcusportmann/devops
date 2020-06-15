@@ -109,3 +109,45 @@
 
     when: (helm_installed_version != k8s_helm_version)
 
+
+#  _   _ _____ _     __  __   ____  _____ ____   ___  ____
+# | | | | ____| |   |  \/  | |  _ \| ____|  _ \ / _ \/ ___|
+# | |_| |  _| | |   | |\/| | | |_) |  _| | |_) | | | \___ \
+# |  _  | |___| |___| |  | | |  _ <| |___|  __/| |_| |___) |
+# |_| |_|_____|_____|_|  |_| |_| \_\_____|_|    \___/|____/
+#
+- name: Configure the Helm repos
+  block:
+  - name: Check if the stable Helm repository has been added
+    shell:
+      cmd: /usr/bin/helm repo list | grep stable | wc -l
+    register: helm_stable_repo_added_output
+
+  - name: Add the stable Helm repository
+    command:
+      cmd: /usr/bin/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+    when: helm_stable_repo_added_output.stdout == '0'
+
+  - name: Configure the monitoring Helm repos
+    block:
+    - name: Check if the elastic Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep elastic | wc -l
+      register: helm_elastic_repo_added_output
+
+    - name: Add the elastic Helm repository
+      command:
+        cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
+      when: helm_elastic_repo_added_output.stdout == '0'
+
+    - name: Check if the jaegertracing Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep jaegertracing | wc -l
+      register: helm_jaegertracing_repo_added_output
+
+    - name: Add the jaegertracing Helm repository
+      command:
+        cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+      when: helm_jaegertracing_repo_added_output.stdout == '0'
+
+    when: ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == true))
