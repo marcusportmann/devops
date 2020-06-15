@@ -1,0 +1,66 @@
+---
+# file: roles/confluent_common/tasks/main.yaml
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+  - unbound
+
+- include_tasks: centos.yaml
+  when: ansible_distribution == 'CentOS'
+  tags:
+  - unbound
+
+
+
+
+#   ____ ___  _   _ _____ _    _   _ _____ _   _ _____    ____ ___  __  __ __  __  ___  _   _
+#  / ___/ _ \| \ | |  ___| |  | | | | ____| \ | |_   _|  / ___/ _ \|  \/  |  \/  |/ _ \| \ | |
+# | |  | | | |  \| | |_  | |  | | | |  _| |  \| | | |   | |  | | | | |\/| | |\/| | | | |  \| |
+# | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |   | |__| |_| | |  | | |  | | |_| | |\  |
+#  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|    \____\___/|_|  |_|_|  |_|\___/|_| \_|
+#
+- name: Install Confluent
+  block:
+  - debug:
+      msg: Check whether the Confluent {{ confluent_version }} package has been installed
+
+  - stat:
+      path: /opt/confluent
+    register: confluent_installed_stat_result
+
+  - block:
+    - debug:
+        msg: Install the Confluent {{ confluent_version }} package
+
+    - name: Check whether the Confluent {{ confluent_version }} package has been downloaded
+      become: no
+      local_action: stat path=packages/confluent-community-{{ confluent_version }}-2.12.tar.gz
+      register: confluent_package_stat_result
+
+    - name: Download the Confluent {{ confluent_version }} package
+      become: no
+      local_action: get_url url='https://packages.confluent.io/archive/{{ confluent_major_version }}/confluent-community-{{ confluent_version }}-2.12.tar.gz' dest='packages/confluent-community-{{ confluent_version }}-2.12.tar.gz'
+      when: (confluent_package_stat_result.stat.exists == False)
+
+    - name: Extract the Confluent {{ confluent_version }} package
+      unarchive:
+        src: packages/confluent-community-{{ confluent_version }}-2.12.tar.gz
+        dest: /opt
+
+    - name: Create the symbolic link to the Confluent {{ confluent_version }} package
+      file:
+        src: /opt/confluent-{{ confluent_version }}
+        dest: /opt/confluent
+        owner: root
+        group: root
+        state: link
+
+    when: ((confluent_installed_stat_result.stat.exists == False) or (confluent_installed_stat_result.stat.lnk_target != ('/opt/confluent-' + confluent_version)))
+

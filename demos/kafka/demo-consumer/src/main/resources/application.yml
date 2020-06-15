@@ -20,12 +20,24 @@ spring:
 
 ---
 spring:
-  profiles: dc1
+  profiles: kafka-dc1
   kafka:
-    bootstrap-servers: kafka-local-01.local:9093
+    bootstrap-servers: kafka-local-dev-01.local:9093
 
 ---
 spring:
-  profiles: dc2
+  profiles: kafka-dc2
   kafka:
-    bootstrap-servers: kafka-local-02.local:9093
+    bootstrap-servers: kafka-local-dev-02.local:9093
+
+---
+spring:
+  profiles: confluent-dc1
+  kafka:
+    bootstrap-servers: confluent-local-dev-01.local:9093
+
+---
+spring:
+  profiles: confluent-dc2
+  kafka:
+    bootstrap-servers: confluent-local-dev-02.local:9093

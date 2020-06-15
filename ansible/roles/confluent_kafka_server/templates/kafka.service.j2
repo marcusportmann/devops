@@ -1,0 +1,25 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=Kafka Server Service
+Documentation=http://kafka.apache.org
+Requires=network.target remote-fs.target
+After=network.target remote-fs.target
+
+[Service]
+Type=simple
+User=kafka
+Group=kafka
+Environment=LOG_DIR={{ kafka_log_directory }}
+Environment=EXTRA_ARGS=-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf
+ExecStart=/opt/confluent/bin/kafka-server-start {{ kafka_etc_directory }}/conf/server.properties
+ExecStop=/opt/confluent/bin/kafka-server-stop {{ kafka_etc_directory }}/conf/server.properties
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+

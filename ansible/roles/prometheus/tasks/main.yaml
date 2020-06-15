@@ -14,7 +14,7 @@
   tags:
   - unbound
 
-- name: Install the Prometheus
+- name: Install Prometheus
   block:
   - debug:
       msg: Check whether the Prometheus {{ prometheus_version }} package has been installed

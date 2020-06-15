@@ -1,0 +1,24 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=Kafka MirrorMaker Service
+Documentation=http://kafka.apache.org
+Requires=network.target remote-fs.target
+After=network.target remote-fs.target
+
+[Service]
+Type=simple
+User=kafka
+Group=kafka
+Environment=LOG_DIR={{ kafka_log_directory }}
+#Environment=EXTRA_ARGS=-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/mirrormaker-jaas.conf
+ExecStart=/opt/kafka/bin/connect-mirror-maker {{ kafka_etc_directory }}/conf/mirrormaker.properties
+ExecStop=/opt/kafka/bin/connect-mirror-maker {{ kafka_etc_directory }}/conf/mirrormaker.properties
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+

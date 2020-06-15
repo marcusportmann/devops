@@ -1,0 +1,12 @@
+---
+# file: roles/confluent_kafka_server/tasks/centos.yaml
+
+- debug:
+    msg: Applying the CentOS-specific Confluent Kafka Server configuration
+
+- name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Broker)
+  firewalld:
+    port: '{{ kafka_secure_broker_port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes

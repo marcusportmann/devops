@@ -1,0 +1,72 @@
+# Specify the cluster aliases
+clusters = DC1, DC2
+
+# Connection information for each cluster
+# This is a comma separated list of host:port pairs for each cluster
+{% set kafka_bootstrap_servers_dc1 = [] -%}
+{% for kafka_server_host in confluent_kafka_server_dc1_actual_hosts %}
+{% set _ = kafka_bootstrap_servers_dc1.append("%s:%d" % (kafka_server_host, kafka_secure_broker_port)) %}
+{% endfor %}
+DC1.bootstrap.servers = {{ kafka_bootstrap_servers_dc1 | join(',') }}
+
+{% set kafka_bootstrap_servers_dc2 = [] -%}
+{% for kafka_server_host in confluent_kafka_server_dc2_actual_hosts %}
+{% set _ = kafka_bootstrap_servers_dc2.append("%s:%d" % (kafka_server_host, kafka_secure_broker_port)) %}
+{% endfor %}
+DC2.bootstrap.servers = {{ kafka_bootstrap_servers_dc2 | join(',') }}
+
+# Enable and configure individual replication flows
+DC1->DC2.enabled = true
+DC2->DC1.enabled = true
+
+# Regex which defines which topics gets replicated. For eg "foo-.*"
+DC1->DC2.topics = .*
+DC2->DC1.topics = .*
+
+DC1.producer.enable.idempotence = true
+DC2.producer.enable.idempotence = true
+
+
+# Setting replication factor of newly created remote topics
+replication.factor=1
+
+
+############################# Internal Topic Settings  #############################
+# The replication factor for mm2 internal topics
+# For anything other than development testing, a value greater than 1 is recommended to ensure availability such as 3.
+checkpoints.topic.replication.factor=1
+heartbeats.topic.replication.factor=1
+offset-syncs.topic.replication.factor=1
+
+# The replication factor for connect internal topics
+# For anything other than development testing, a value greater than 1 is recommended to ensure availability such as 3.
+offset.storage.replication.factor=1
+status.storage.replication.factor=1
+config.storage.replication.factor=1
+
+# Customize as needed
+# replication.policy.separator = _
+# emit.heartbeats.interval.seconds = 5
+
+
+sync.topic.acls.enabled = true
+#sync.topic.acls.interval.seconds = 10
+sync.topic.configs.enabled = true
+#sync.topic.configs.interval.seconds = 10
+refresh.topics.enabled = true
+#refresh.topics.interval.seconds = 60
+refresh.groups.enabled = true
+#refresh.groups.interval.seconds = 60
+
+
+security.protocol=SASL_SSL
+ssl.protocol=TLS
+ssl.keystore.type=PKCS12
+ssl.keystore.location={{ kafka_etc_directory }}/pki/mirrormaker.p12
+ssl.keystore.password={{ kafka_mirrormaker_keystore_password }}
+ssl.truststore.type=PKCS12
+ssl.truststore.location={{ kafka_etc_directory }}/pki/ca.p12
+ssl.truststore.password={{ kafka_ca_truststore_password }}
+sasl.mechanism=SCRAM-SHA-256
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ kafka_mirrormaker_user_username }}" password="{{ kafka_mirrormaker_user_password }}";
+

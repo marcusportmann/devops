@@ -1,0 +1,35 @@
+---
+# file: roles/confluent_kafka_server/meta/main.yaml
+
+galaxy_info:
+  author: Marcus Portmann
+  description: Ansible Confluent Kafka Server Role
+  company: http://mmp.guru
+  license: Apache 2
+  min_ansible_version: 2.9
+  platforms:
+  - name: EL
+    versions:
+     - 7
+  - name: Ubuntu
+    versions:
+      - breezy
+      - focal
+  categories:
+  #- cloud
+  #- cloud:ec2
+  #- cloud:gce
+  #- cloud:rax
+  #- database
+  #- database:nosql
+  #- database:sql
+  #- development
+  #- monitoring
+  #- networking
+  #- packaging
+  #- system
+  #- web
+  - platform
+
+dependencies:
+  - role: confluent_common

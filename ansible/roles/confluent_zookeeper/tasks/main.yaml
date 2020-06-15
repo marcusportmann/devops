@@ -1,0 +1,254 @@
+---
+#file: roles/confluent_zookeeper/tasks/main.yaml
+
+- set_fact:
+    confluent_kafka_server_dc1_actual_hosts: "{{ confluent_kafka_server_dc1_possible_hosts | intersect(groups['confluent_kafka_server']) }}"
+- set_fact:
+    confluent_kafka_server_dc2_actual_hosts: "{{ confluent_kafka_server_dc2_possible_hosts | intersect(groups['confluent_kafka_server']) }}"
+- set_fact:
+    confluent_zookeeper_dc1_actual_hosts: "{{ confluent_zookeeper_dc1_possible_hosts | intersect(groups['confluent_zookeeper']) }}"
+- set_fact:
+    confluent_zookeeper_dc2_actual_hosts: "{{ confluent_zookeeper_dc2_possible_hosts | intersect(groups['confluent_zookeeper']) }}"
+
+- debug:
+    msg: 'Confluent Kafka Server DC1 hosts: {{ confluent_kafka_server_dc1_actual_hosts  }}'
+- debug:
+    msg: 'Confluent Kafka Server DC2 hosts: {{ confluent_kafka_server_dc2_actual_hosts  }}'
+- debug:
+    msg: 'Confluent ZooKeeper DC1 hosts: {{ confluent_zookeeper_dc1_actual_hosts  }}'
+- debug:
+    msg: 'Confluent ZooKeeper DC2 hosts: {{ confluent_zookeeper_dc2_actual_hosts  }}'
+
+- debug:
+    msg: "Confluent ZooKeeper host {{ inventory_hostname }} is in DC1"
+  when: (inventory_hostname in confluent_zookeeper_dc1_actual_hosts)
+- debug:
+    msg: "Confluent ZooKeeper host {{ inventory_hostname }} is in DC2"
+  when: (inventory_hostname in confluent_zookeeper_dc2_actual_hosts)
+
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+  - unbound
+
+- include_tasks: centos.yaml
+  when: ansible_distribution == 'CentOS'
+  tags:
+  - unbound
+
+
+#   ____ ___  _   _ _____ _    _   _ _____ _   _ _____   ________   ___  _  _______ _____ ____  _____ ____
+#  / ___/ _ \| \ | |  ___| |  | | | | ____| \ | |_   _| |__  / _ \ / _ \| |/ / ____| ____|  _ \| ____|  _ \
+# | |  | | | |  \| | |_  | |  | | | |  _| |  \| | | |     / / | | | | | | ' /|  _| |  _| | |_) |  _| | |_) |
+# | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |    / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
+#  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
+#
+- name: Add the zookeeper group
+  group:
+    name: zookeeper
+    gid: '{{ zookeeper_group_id }}'
+    state: present
+
+- name: Add the zookeeper user
+  user:
+    name: zookeeper
+    uid: '{{ zookeeper_user_id }}'
+    group: zookeeper
+    create_home: yes
+    state: present
+
+- name: Create the /var/tmp/ansible/zookeeper directory
+  file:
+    path: /var/tmp/ansible/zookeeper
+    owner: root
+    group: root
+    mode: '0700'
+    state: directory
+
+- name: Create the {{ zookeeper_etc_directory }} directory
+  file:
+    path: '{{ zookeeper_etc_directory }}'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0550'
+    state: directory
+
+- name: Create the {{ zookeeper_etc_directory }}/conf directory
+  file:
+    path: '{{ zookeeper_etc_directory }}/conf'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0550'
+    state: directory
+
+- name: Setup the ZooKeeper keystore and ZooKeeper CA truststore
+  block:
+  - name: Create the {{ zookeeper_etc_directory }}/pki directory
+    file:
+      path: '{{ zookeeper_etc_directory }}/pki'
+      owner: zookeeper
+      group: zookeeper
+      mode: '0550'
+      state: directory
+
+  - name: Copy the ZooKeeper CA certificate to the /var/tmp/ansible/zookeeper directory
+    copy:
+      src: pki/{{ confluent_cluster_name }}/ca.crt
+      dest: /var/tmp/ansible/zookeeper/ca.crt
+    register: zookeeper_ca_copy_result
+
+  - name: Copy the host-specific ZooKeeper private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
+    copy:
+      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key
+    register: zookeeper_private_key_copy_result
+
+  - name: Copy the host-specific ZooKeeper certificate ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
+    copy:
+      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt
+    register: zookeeper_certificate_copy_result
+
+  - name: Generate or retrieve the password for the ZooKeeper keystore
+    set_fact:
+      zookeeper_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+
+  - name: Generate or retrieve the password for the ZooKeeper truststore
+    set_fact:
+      zookeeper_ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
+
+  - name: Generate the ZooKeeper keystore and ZooKeeper CA truststore
+    block:
+    - name: Generate the ZooKeeper PKCS12 keystore
+      openssl_pkcs12:
+        action: export
+        path: '{{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
+        friendly_name: '{{ inventory_hostname_short }}'
+        privatekey_path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt
+        passphrase: '{{ zookeeper_keystore_password }}'
+        owner: zookeeper
+        group: zookeeper
+        mode: '0440'
+        state: present
+
+    - name: Remove the ZooKeeper CA PKCS12 truststore if it already exists
+      file:
+        path: '{{ zookeeper_etc_directory }}/pki/ca.p12'
+        state: absent
+
+    - name: Generate the ZooKeeper CA PKCS12 truststore
+      shell:
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/zookeeper/ca.crt -keystore '{{ zookeeper_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ zookeeper_ca_truststore_password }}'
+
+    - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
+      file:
+        path: '{{ zookeeper_etc_directory }}/pki/ca.p12'
+        owner: zookeeper
+        group: zookeeper
+        mode: '0440'
+
+    when: (True or (zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
+
+- name: Create the {{ zookeeper_log_directory }} directory
+  file:
+    path: '{{ zookeeper_log_directory }}'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0750'
+    state: directory
+
+- name: Create the {{ zookeeper_data_directory }} directory
+  file:
+    path: '{{ zookeeper_data_directory }}'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0750'
+    state: directory
+
+- name: Create the {{ zookeeper_data_log_directory }} directory
+  file:
+    path: '{{ zookeeper_data_log_directory }}'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0750'
+    state: directory
+
+- name: Create the ZooKeeper configuration file
+  template:
+    src: zookeeper.properties.j2
+    dest: '{{ zookeeper_etc_directory }}/conf/zookeeper.properties'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0440'
+  register: zookeeper_configuration_template_result
+
+- name: Generate or retrieve the password for the ZooKeeper admin user
+  set_fact:
+    zookeeper_admin_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"
+
+- name: Generate or retrieve the password for the ZooKeeper confluent user
+  set_fact:
+    zookeeper_kafka_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+
+- name: Create the ZooKeeper JAAS configuration file
+  template:
+    src: zookeeper-jaas.conf.j2
+    dest: '{{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0440'
+  register: zookeeper_jaas_configuration_file_template_result
+
+- name: Create the ZooKeeper TLS configuration file
+  template:
+    src: zookeeper-tls.conf.j2
+    dest: '{{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0440'
+
+- name: Create the myid file containing the ZooKeeper instance ID
+  template:
+    src: myid.j2
+    dest: '{{ zookeeper_data_directory }}/myid'
+    owner: zookeeper
+    group: zookeeper
+    mode: '0440'
+
+- name: Add the aliases for the ZooKeeper tools to the /etc/profile.d/zookeeper.sh file
+  block:
+  - name: Add the zookeeper-shell alias to the /etc/profile.d/zookeeper.sh file
+    lineinfile:
+      dest: /etc/profile.d/zookeeper.sh
+      create: yes
+      state: present
+      regexp: '^%alias zookeeper-shell'
+      line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf" /opt/confluent/bin/zookeeper-shell.sh -zk-tls-config-file {{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ zookeeper_secure_client_port }}'
+
+- name: Configure the ZooKeeper service
+  template:
+    src: zookeeper.service.j2
+    dest: /lib/systemd/system/zookeeper.service
+  register: zookeeper_service_template_result
+
+- name: Enable and start the ZooKeeper service
+  systemd:
+    name: zookeeper.service
+    state: started
+    enabled: yes
+
+- name: Restart the ZooKeeper service if required
+  systemd:
+    name: zookeeper.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: ((zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True) or (zookeeper_configuration_template_result.changed == True) or (zookeeper_service_template_result.changed == True))

@@ -1,0 +1,12 @@
+{
+  "CN": "confluent-local-dev-kafka-admin",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-kafka-local-dev-kafka-admin"
+    }
+  ]
+}

@@ -12,7 +12,7 @@
     with_items: "{{ groups['kafka_mirrorkeeper'] }}"
   tasks: []
 
-- name: Gather facts from all Kafka Broker hosts
+- name: Gather facts from all Kafka Server hosts
   hosts: kafka_server
   become: yes
   become_user: root

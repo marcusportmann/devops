@@ -305,6 +305,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 * General
   * cloud-user (300)
 * Platform Services
+  * confluent (315)
   * etcd (320)
   * kafka (330)
   * zookeeper (340)
@@ -330,6 +331,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 * General
   * cloud-user (300)
 * Platform Services
+  * confluent (315)
   * etcd (320)
   * kafka (330)
   * zookeeper(340)

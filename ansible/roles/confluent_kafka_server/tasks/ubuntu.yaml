@@ -1,0 +1,17 @@
+---
+# file: roles/kafka_server/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kafka Server configuration
+
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Broker)
+  ufw:
+    rule: allow
+    port: '{{ kafka_secure_broker_port }}'
+    proto: tcp
+

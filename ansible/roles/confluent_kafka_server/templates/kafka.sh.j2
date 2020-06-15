@@ -1,0 +1,9 @@
+kafka-set-user-password() {
+
+{% if (inventory_hostname in confluent_kafka_server_dc1_actual_hosts)  %}
+KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name $1 --add-config 'SCRAM-SHA-256=[iterations=8192,password=$2],SCRAM-SHA-512=[password=$2]'
+{% elif (inventory_hostname in confluent_kafka_server_dc2_actual_hosts)  %}
+KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name $1 --add-config 'SCRAM-SHA-256=[iterations=8192,password=$2],SCRAM-SHA-512=[password=$2]'
+{% endif %}
+
+}

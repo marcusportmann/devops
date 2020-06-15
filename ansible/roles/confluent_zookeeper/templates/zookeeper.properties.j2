@@ -1,0 +1,80 @@
+# The directory where the snapshot is stored.
+dataDir={{ zookeeper_data_directory }}
+
+{% if ((zookeeper_data_log_directory is defined) and (zookeeper_data_log_directory != None)) %}
+dataLogDir={{ zookeeper_data_log_directory }}
+{% endif %}
+
+# The port at which the clients will connect
+clientPort={{ zookeeper_client_port }}
+
+# The per-ip limit on the number of connections
+maxClientCnxns={{ zookeeper_max_client_connections }}
+
+# The admin server configuration
+admin.enableServer={{ zookeeper_enable_admin_server }}
+admin.serverPort={{ zookeeper_admin_server_port }}
+
+# The time in milliseconds used by ZooKeeper to do heartbeats
+tickTime={{ zookeeper_tick_time }}
+
+# The timeout in ticks that ZooKeeper servers in a quorum have to connect to a leader
+initLimit={{ zookeeper_init_limit }}
+
+# The timeout in ticks that a ZooKeeper server can be out of date with the leader
+syncLimit={{ zookeeper_sync_limit }}
+
+# Disable dynamic reconfiguration
+reconfigEnabled=false
+
+{% if (zookeeper_autopurge_purge_interval > 0) %}
+# The interval in hours between triggers of the autopurge task
+autopurge.purgeInterval={{ zookeeper_autopurge_purge_interval }}
+
+# The number of recent Snapshots and corresponding transaction logs in the dataDir and dataLogDir to retain on autopurge. The minimum number is 3.
+autopurge.snapRetainCount={{ zookeeper_autopurge_snap_retain_count }}
+{% endif %}
+
+# Set the server connection factory to use for mTLS authentication for ZooKeeper and quorum mTLS authentication
+serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
+
+# Enable secure connections to ZooKeeper using TLS (Not mutual TLS)
+# This supports privacy and not authentication or authorization
+secureClientPort={{ zookeeper_secure_client_port }}
+ssl.clientAuth=none
+ssl.keyStore.type=PKCS12
+ssl.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.p12
+ssl.keyStore.password={{ zookeeper_keystore_password }}
+ssl.trustStore.type=PKCS12
+ssl.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.p12
+ssl.trustStore.password={{ zookeeper_ca_truststore_password }}
+
+# Enable ZooKeeper quorum mTLS authentication
+sslQuorum=true
+ssl.quorum.clientAuth=need
+ssl.quorum.keyStore.type=PKCS12
+ssl.quorum.keyStore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.p12
+ssl.quorum.keyStore.password={{ zookeeper_keystore_password }}
+ssl.quorum.trustStore.type=PKCS12
+ssl.quorum.trustStore.location={{ zookeeper_etc_directory }}/pki/ca.p12
+ssl.quorum.trustStore.password={{ zookeeper_ca_truststore_password }}
+
+# Enable SASL authentication for ZooKeeper
+authProvider.sasl=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+jaasLoginRenew=3600000
+authenticationEnforced=true
+enforcedAuthenticationScheme=sasl
+requireClientAuthScheme=sasl
+
+# The cluster hosts
+{% if (inventory_hostname in confluent_zookeeper_dc1_actual_hosts)  %}
+{% for zookeeper_host in confluent_zookeeper_dc1_actual_hosts -%}
+server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
+{% endfor -%}
+{% elif (inventory_hostname in confluent_zookeeper_dc2_actual_hosts)  %}
+{% for zookeeper_host in confluent_zookeeper_dc2_actual_hosts -%}
+server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
+{% endfor -%}
+{% endif %}
+
+

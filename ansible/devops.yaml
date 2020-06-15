@@ -8,4 +8,6 @@
 
 - import_playbook: kafka.yaml
 
+- import_playbook: confluent.yaml
+
 

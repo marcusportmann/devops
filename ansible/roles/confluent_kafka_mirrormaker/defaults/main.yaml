@@ -1,0 +1,13 @@
+---
+#file: roles/confluent_kafka_mirrormaker/vars/main.yaml
+
+kafka_secure_broker_port: 9093
+
+kafka_etc_directory: /etc/kafka
+kafka_log_directory: /var/log/kafka
+
+kafka_user_id: 330
+kafka_group_id: 330
+
+kafka_mirrormaker_user_username: mirrormaker
+

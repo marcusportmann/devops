@@ -1,12 +1,12 @@
 {
-  "CN": "kafka-local-dev-server",
+  "CN": "kafka-local-dev-kafka-server",
   "key": {
     "algo": "rsa",
     "size": 2048
   },
   "names": [
     {
-      "CN": "kafka-local-dev-server"
+      "CN": "kafka-local-dev-kafka-server"
     }
   ],
   "hosts": [

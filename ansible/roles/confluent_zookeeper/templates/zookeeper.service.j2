@@ -1,0 +1,24 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=ZooKeeper Service
+Documentation=http://zookeeper.apache.org
+Requires=network.target remote-fs.target
+After=network.target remote-fs.target
+
+[Service]
+Type=simple
+User=zookeeper
+Group=zookeeper
+Environment=LOG_DIR={{ zookeeper_log_directory }}
+Environment="EXTRA_ARGS=-Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf -Dzookeeper.superUser=admin"
+ExecStart=/opt/confluent/bin/zookeeper-server-start {{ zookeeper_etc_directory }}/conf/zookeeper.properties
+ExecStop=/opt/confluent/bin/zookeeper-server-stop {{ zookeeper_etc_directory }}/conf/zookeeper.properties
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
