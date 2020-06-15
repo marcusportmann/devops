@@ -84,7 +84,7 @@ variables:
 #  - false
 - name: k8s_postgres_operator_enabled
   values:
-  - false
+  - true
 
 - name: k8s_longhorn_enabled
   values:
