@@ -47,6 +47,10 @@
       command:
         cmd: /usr/bin/helm -n operators upgrade --install postgres-operator /var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-values.yaml
 
+    - name: Wait for 10 seconds for the Postgres Operator initialization to start
+      wait_for:
+        timeout: 10
+
     - name: Wait for the Postgres Operator initialization to complete
       command:
         cmd: /usr/bin/kubectl wait --namespace=operators --for=condition=Ready pods --all --timeout=1200s
@@ -84,6 +88,10 @@
     - name: Install the Postgres Operator UI using Helm
       command:
         cmd: /usr/bin/helm -n operators upgrade --install postgres-operator-ui /var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-ui-values.yaml
+
+    - name: Wait for 10 seconds for the Postgres Operator UI initialization to start
+      wait_for:
+        timeout: 10
 
     - name: Wait for the Postgres Operator UI initialization to complete
       command:

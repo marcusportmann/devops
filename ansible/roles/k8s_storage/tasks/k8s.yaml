@@ -47,6 +47,10 @@
       command:
         cmd: /usr/bin/helm -n longhorn-system upgrade --install longhorn /var/tmp/ansible/longhorn-{{ k8s_longhorn_helm_chart_version }}.tgz --values=/var/tmp/ansible/longhorn-values.yaml
 
+    - name: Wait for 10 seconds for the Longhorn initialization to start
+      wait_for:
+        timeout: 10
+
     - name: Wait for the Longhorn initialization to complete
       command:
         cmd: /usr/bin/kubectl wait --namespace=longhorn-system --for=condition=Ready pods --all --timeout=1200s

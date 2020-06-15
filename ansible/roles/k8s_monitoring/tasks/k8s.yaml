@@ -87,6 +87,10 @@
           command:
             cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
 
+        - name: Wait for 10 seconds for the Elasticsearch initialization to start
+          wait_for:
+            timeout: 10
+
         when: elasticsearch_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
 
       - name: Wait for the Elasticsearch initialization to complete
@@ -147,6 +151,10 @@
           command:
             cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
         when: elasticsearch_data_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
+
+      - name: Wait for 10 seconds for the Elasticsearch initialization to start
+        wait_for:
+          timeout: 10
 
       - name: Wait for the Elasticsearch initialization to complete
         command:
@@ -217,6 +225,10 @@
         command:
           cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --version={{ k8s_monitoring_kibana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
 
+      - name: Wait for 10 seconds for the Kibana initialization to start
+        wait_for:
+          timeout: 10
+
       - name: Wait for the Kibana initialization to complete
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
@@ -286,6 +298,10 @@
         command:
           cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --version={{ k8s_monitoring_jaeger_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
 
+      - name: Wait for 10 seconds for the Jaeger initialization to start
+        wait_for:
+          timeout: 10
+
       - name: Wait for the Jaeger initialization to complete
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
@@ -318,6 +334,10 @@
       - name: Install Prometheus using Helm
         command:
           cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ k8s_monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
+
+      - name: Wait for 10 seconds for the Prometheus initialization to start
+        wait_for:
+          timeout: 10
 
       - name: Wait for the Prometheus initialization to complete
         command:
@@ -372,6 +392,10 @@
       - name: Install Grafana using Helm
         command:
           cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ k8s_monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+
+      - name: Wait for 10 seconds for the Grafana initialization to start
+        wait_for:
+          timeout: 10
 
       - name: Wait for the Grafana initialization to complete
         command:
