@@ -1,15 +1,15 @@
 {
-  "CN": "confluent-local-dev-01.local",
+  "CN": "confluent-local-dev-05.local",
   "key": {
     "algo": "rsa",
     "size": 2048
   },
   "names": [
     {
-      "CN": "confluent-local-dev-01.local"
+      "CN": "confluent-local-dev-05.local"
     }
   ],
   "hosts": [
-    "confluent-local-dev-01.local"
+    "confluent-local-dev-05.local"
   ]
 }
