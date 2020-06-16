@@ -6,7 +6,9 @@ zookeeper_log_directory: /var/log/zookeeper
 zookeeper_data_directory: /data/zookeeper/data
 zookeeper_data_log_directory: /data/zookeeper/data-log
 
+zookeeper_user: zookeeper
 zookeeper_user_id: 340
+zookeeper_group: zookeeper
 zookeeper_group_id: 340
 
 zookeeper_client_port: 2181

@@ -50,17 +50,17 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |    / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
-- name: Add the zookeeper group
+- name: Add the {{ zookeeper_group }} group
   group:
-    name: zookeeper
+    name: '{{ zookeeper_group }}'
     gid: '{{ zookeeper_group_id }}'
     state: present
 
-- name: Add the zookeeper user
+- name: Add the {{ zookeeper_user }} user
   user:
-    name: zookeeper
+    name: '{{ zookeeper_user }}'
     uid: '{{ zookeeper_user_id }}'
-    group: zookeeper
+    group: '{{ zookeeper_group }}'
     create_home: yes
     state: present
 
@@ -75,16 +75,16 @@
 - name: Create the {{ zookeeper_etc_directory }} directory
   file:
     path: '{{ zookeeper_etc_directory }}'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0550'
     state: directory
 
 - name: Create the {{ zookeeper_etc_directory }}/conf directory
   file:
     path: '{{ zookeeper_etc_directory }}/conf'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0550'
     state: directory
 
@@ -93,8 +93,8 @@
   - name: Create the {{ zookeeper_etc_directory }}/pki directory
     file:
       path: '{{ zookeeper_etc_directory }}/pki'
-      owner: zookeeper
-      group: zookeeper
+      owner: '{{ zookeeper_user }}'
+      group: '{{ zookeeper_group }}'
       mode: '0550'
       state: directory
 
@@ -134,8 +134,8 @@
         privatekey_path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key
         certificate_path: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt
         passphrase: '{{ zookeeper_keystore_password }}'
-        owner: zookeeper
-        group: zookeeper
+        owner: '{{ zookeeper_user }}'
+        group: '{{ zookeeper_group }}'
         mode: '0440'
         state: present
 
@@ -151,8 +151,8 @@
     - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
       file:
         path: '{{ zookeeper_etc_directory }}/pki/ca.p12'
-        owner: zookeeper
-        group: zookeeper
+        owner: '{{ zookeeper_user }}'
+        group: '{{ zookeeper_group }}'
         mode: '0440'
 
     when: (True or (zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
@@ -160,24 +160,24 @@
 - name: Create the {{ zookeeper_log_directory }} directory
   file:
     path: '{{ zookeeper_log_directory }}'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0750'
     state: directory
 
 - name: Create the {{ zookeeper_data_directory }} directory
   file:
     path: '{{ zookeeper_data_directory }}'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0750'
     state: directory
 
 - name: Create the {{ zookeeper_data_log_directory }} directory
   file:
     path: '{{ zookeeper_data_log_directory }}'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0750'
     state: directory
 
@@ -185,8 +185,8 @@
   template:
     src: zookeeper.properties.j2
     dest: '{{ zookeeper_etc_directory }}/conf/zookeeper.properties'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0440'
   register: zookeeper_configuration_template_result
 
@@ -202,8 +202,8 @@
   template:
     src: zookeeper-jaas.conf.j2
     dest: '{{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0440'
   register: zookeeper_jaas_configuration_file_template_result
 
@@ -211,16 +211,16 @@
   template:
     src: zookeeper-tls.conf.j2
     dest: '{{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0440'
 
 - name: Create the myid file containing the ZooKeeper instance ID
   template:
     src: myid.j2
     dest: '{{ zookeeper_data_directory }}/myid'
-    owner: zookeeper
-    group: zookeeper
+    owner: '{{ zookeeper_user }}'
+    group: '{{ zookeeper_group }}'
     mode: '0440'
 
 - name: Add the aliases for the ZooKeeper tools to the /etc/profile.d/zookeeper.sh file
@@ -231,7 +231,7 @@
       create: yes
       state: present
       regexp: '^%alias zookeeper-shell'
-      line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf" /opt/confluent/bin/zookeeper-shell.sh -zk-tls-config-file {{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ zookeeper_secure_client_port }}'
+      line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf" /opt/confluent/bin/zookeeper-shell -zk-tls-config-file {{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ zookeeper_secure_client_port }}'
 
 - name: Configure the ZooKeeper service
   template:

@@ -3,17 +3,18 @@
 
 kafka_secure_broker_port: 9093
 
-kafka_etc_directory: /etc/kafka
-kafka_log_directory: /var/log/kafka
-kafka_data_directory: /data/kafka
+kafka_server_etc_directory: /etc/kafka
+kafka_server_log_directory: /var/log/kafka
+kafka_server_data_directory: /data/kafka
 
-kafka_user_id: 330
-kafka_group_id: 330
-
-kafka_server_user_username: kafka
+kafka_server_user: kafka
+kafka_server_user_id: 330
+kafka_server_group: kafka
+kafka_server_group_id: 330
 
 kafka_server_zookeeper_secure_client_port: 2182
 kafka_server_zookeeper_user_username: kafka
 
+kafka_server_user_username: kafka
 kafka_admin_user_username: admin
 kafka_mirrormaker_user_username: mirrormaker

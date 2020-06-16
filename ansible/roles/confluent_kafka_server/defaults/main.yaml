@@ -3,12 +3,14 @@
 
 kafka_secure_broker_port: 9093
 
-kafka_etc_directory: /etc/kafka
-kafka_log_directory: /var/log/kafka
-kafka_data_directory: /data/kafka
+kafka_server_etc_directory: /etc/kafka
+kafka_server_log_directory: /var/log/kafka
+kafka_server_data_directory: /data/kafka
 
-kafka_user_id: 330
-kafka_group_id: 330
+kafka_server_user: cp-kafka
+kafka_server_user_id: 311
+kafka_server_group: cp-kafka
+kafka_server_group_id: 311
 
 kafka_server_user_username: kafka
 

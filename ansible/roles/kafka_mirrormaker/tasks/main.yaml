@@ -34,17 +34,17 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |  | || ||  _ <|  _ <| |_| |  _ <  | |  | |/ ___ \| . \| |___|  _ <
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |_|  |_|___|_| \_\_| \_\\___/|_| \_\ |_|  |_/_/   \_\_|\_\_____|_| \_\
 #
-- name: Add the kafka group
+- name: Add the {{ kafka_mirrormaker_group }} group
   group:
-    name: kafka
-    gid: '{{ kafka_group_id }}'
+    name: '{{ kafka_mirrormaker_group }}'
+    gid: '{{ kafka_mirrormaker_group_id }}'
     state: present
 
-- name: Add the kafka user
+- name: Add the {{ kafka_mirrormaker_user }} user
   user:
-    name: kafka
-    uid: '{{ kafka_user_id }}'
-    group: kafka
+    name: '{{ kafka_mirrormaker_user }}'
+    uid: '{{ kafka_mirrormaker_user_id }}'
+    group: '{{ kafka_mirrormaker_group }}'
     create_home: yes
     state: present
 
@@ -56,29 +56,29 @@
     mode: '0700'
     state: directory
 
-- name: Create the {{ kafka_etc_directory }} directory
+- name: Create the {{ kafka_mirrormaker_etc_directory }} directory
   file:
-    path: '{{ kafka_etc_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ kafka_mirrormaker_etc_directory }}'
+    owner: '{{ kafka_mirrormaker_user }}'
+    group: '{{ kafka_mirrormaker_group }}'
     mode: '0550'
     state: directory
 
-- name: Create the {{ kafka_etc_directory }}/conf directory
+- name: Create the {{ kafka_mirrormaker_etc_directory }}/conf directory
   file:
-    path: '{{ kafka_etc_directory }}/conf'
-    owner: kafka
-    group: kafka
+    path: '{{ kafka_mirrormaker_etc_directory }}/conf'
+    owner: '{{ kafka_mirrormaker_user }}'
+    group: '{{ kafka_mirrormaker_group }}'
     mode: '0550'
     state: directory
 
 - name: Setup the Kafka MirrorMaker keystore and Kafka CA truststore
   block:
-  - name: Create the {{ kafka_etc_directory }}/pki directory
+  - name: Create the {{ kafka_mirrormaker_etc_directory }}/pki directory
     file:
-      path: '{{ kafka_etc_directory }}/pki'
-      owner: kafka
-      group: kafka
+      path: '{{ kafka_mirrormaker_etc_directory }}/pki'
+      owner: '{{ kafka_mirrormaker_user }}'
+      group: '{{ kafka_mirrormaker_group }}'
       mode: '0550'
       state: directory
 
@@ -113,39 +113,39 @@
     - name: Generate the Kafka MirrorMaker PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ kafka_etc_directory }}/pki/mirrormaker.p12'
+        path: '{{ kafka_mirrormaker_etc_directory }}/pki/mirrormaker.p12'
         friendly_name: 'kafka-{{ kafka_cluster_name }}-mirrormaker'
         privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-mirrormaker.key
         certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-mirrormaker.crt
         passphrase: '{{ kafka_mirrormaker_keystore_password }}'
-        owner: kafka
-        group: kafka
+        owner: '{{ kafka_mirrormaker_user }}'
+        group: '{{ kafka_mirrormaker_group }}'
         mode: '0440'
         state: present
 
     - name: Remove the Kafka CA PKCS12 truststore if it already exists
       file:
-        path: '{{ kafka_etc_directory }}/pki/ca.p12'
+        path: '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the Kafka CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka CA PKCS12 truststore
       file:
-        path: '{{ kafka_etc_directory }}/pki/ca.p12'
-        owner: kafka
-        group: kafka
+        path: '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12'
+        owner: '{{ kafka_mirrormaker_user }}'
+        group: '{{ kafka_mirrormaker_group }}'
         mode: '0440'
 
     when: ((kafka_ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True))
 
-- name: Create the {{ kafka_log_directory }} directory
+- name: Create the {{ kafka_mirrormaker_log_directory }} directory
   file:
-    path: '{{ kafka_log_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ kafka_mirrormaker_log_directory }}'
+    owner: '{{ kafka_mirrormaker_user }}'
+    group: '{{ kafka_mirrormaker_group }}'
     mode: '0750'
     state: directory
 
@@ -157,20 +157,11 @@
 - name: Create the Kafka MirrorMaker configuration file
   template:
     src: mirrormaker.properties.j2
-    dest: '{{ kafka_etc_directory }}/conf/mirrormaker.properties'
-    owner: kafka
-    group: kafka
+    dest: '{{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties'
+    owner: '{{ kafka_mirrormaker_user }}'
+    group: '{{ kafka_mirrormaker_group }}'
     mode: '0440'
   register: kafka_mirrormaker_configuration_template_result
-
-#- name: Create the Kafka MirrorMaker JAAS configuration file
-#  template:
-#    src: mirrormaker-jaas.conf.j2
-#    dest: '{{ kafka_etc_directory }}/conf/mirrormaker-jaas.conf'
-#    owner: kafka
-#    group: kafka
-#    mode: '0440'
-#  register: kafka_mirrormaker_jaas_configuration_template_result
 
 - name: Configure the Kafka MirrorMaker service
   template:

@@ -39,7 +39,7 @@ socket.request.max.bytes=104857600
 ############################# Log Basics #############################
 
 # A comma separated list of directories under which to store log files
-log.dirs={{ kafka_data_directory }}
+log.dirs={{ kafka_server_data_directory }}
 
 # The default number of log partitions per topic. More partitions allow greater
 # parallelism for consumption, but this will also result in more files across the brokers.
@@ -156,10 +156,10 @@ zookeeper.connect={{ kafka_zookeeper_hosts | join(',') }}
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
 zookeeper.ssl.client.enable=true
 zookeeper.ssl.keystore.type=PKCS12
-zookeeper.ssl.keystore.location={{ kafka_etc_directory }}/pki/server.p12
+zookeeper.ssl.keystore.location={{ kafka_server_etc_directory }}/pki/server.p12
 zookeeper.ssl.keystore.password={{ kafka_server_keystore_password }}
 zookeeper.ssl.truststore.type=PKCS12
-zookeeper.ssl.truststore.location={{ kafka_etc_directory }}/pki/ca.p12
+zookeeper.ssl.truststore.location={{ kafka_server_etc_directory }}/pki/ca.p12
 zookeeper.ssl.truststore.password={{ kafka_ca_truststore_password }}
 zookeeper.set.acl=true
 
@@ -188,11 +188,11 @@ security.inter.broker.protocol=SASL_SSL
 ssl.client.auth=requested
 
 ssl.keystore.type=PKCS12
-ssl.keystore.location={{ kafka_etc_directory }}/pki/server.p12
+ssl.keystore.location={{ kafka_server_etc_directory }}/pki/server.p12
 ssl.keystore.password={{ kafka_server_keystore_password }}
 #ssl.key.password={{ kafka_server_keystore_password }}
 ssl.truststore.type=PKCS12
-ssl.truststore.location={{ kafka_etc_directory }}/pki/ca.p12
+ssl.truststore.location={{ kafka_server_etc_directory }}/pki/ca.p12
 ssl.truststore.password={{ kafka_ca_truststore_password }}
 
 

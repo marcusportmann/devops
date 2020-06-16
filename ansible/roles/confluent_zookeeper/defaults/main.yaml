@@ -6,8 +6,10 @@ zookeeper_log_directory: /var/log/zookeeper
 zookeeper_data_directory: /data/zookeeper/data
 zookeeper_data_log_directory: /data/zookeeper/data-log
 
-zookeeper_user_id: 340
-zookeeper_group_id: 340
+zookeeper_user: cp-zookeeper
+zookeeper_user_id: 316
+zookeeper_group: cp-zookeeper
+zookeeper_group_id: 316
 
 zookeeper_client_port: 2181
 zookeeper_secure_client_port: 2182

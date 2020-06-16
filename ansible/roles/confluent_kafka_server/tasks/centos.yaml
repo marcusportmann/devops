@@ -4,7 +4,7 @@
 - debug:
     msg: Applying the CentOS-specific Confluent Kafka Server configuration
 
-- name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Broker)
+- name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Secure Broker Port)
   firewalld:
     port: '{{ kafka_secure_broker_port }}/tcp'
     permanent: yes

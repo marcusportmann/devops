@@ -50,17 +50,17 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |   | . \  / ___ \|  _| | . \  / ___ \   ___) | |___|  _ < \ V / | |___|  _ <
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |____/|_____|_| \_\ \_/  |_____|_| \_\
 #
-- name: Add the kafka group
+- name: Add the {{ kafka_server_group }} group
   group:
-    name: kafka
-    gid: '{{ kafka_group_id }}'
+    name: '{{ kafka_server_group }}'
+    gid: '{{ kafka_server_group_id }}'
     state: present
 
-- name: Add the kafka user
+- name: Add the {{ kafka_server_user }} user
   user:
-    name: kafka
-    uid: '{{ kafka_user_id }}'
-    group: kafka
+    name: '{{ kafka_server_user }}'
+    uid: '{{ kafka_server_user_id }}'
+    group: '{{ kafka_server_group }}'
     create_home: yes
     state: present
 
@@ -72,29 +72,29 @@
     mode: '0700'
     state: directory
 
-- name: Create the {{ kafka_etc_directory }} directory
+- name: Create the {{ kafka_server_etc_directory }} directory
   file:
-    path: '{{ kafka_etc_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ kafka_server_etc_directory }}'
+    owner: '{{ kafka_server_user }}'
+    group: '{{ kafka_server_group }}'
     mode: '0550'
     state: directory
 
-- name: Create the {{ kafka_etc_directory }}/conf directory
+- name: Create the {{ kafka_server_etc_directory }}/conf directory
   file:
-    path: '{{ kafka_etc_directory }}/conf'
-    owner: kafka
-    group: kafka
+    path: '{{ kafka_server_etc_directory }}/conf'
+    owner: '{{ kafka_server_user }}'
+    group: '{{ kafka_server_group }}'
     mode: '0550'
     state: directory
 
 - name: Setup the Kafka Server keystore and Kafka CA truststore
   block:
-  - name: Create the {{ kafka_etc_directory }}/pki directory
+  - name: Create the {{ kafka_server_etc_directory }}/pki directory
     file:
-      path: '{{ kafka_etc_directory }}/pki'
-      owner: kafka
-      group: kafka
+      path: '{{ kafka_server_etc_directory }}/pki'
+      owner: '{{ kafka_server_user }}'
+      group: '{{ kafka_server_group }}'
       mode: '0550'
       state: directory
 
@@ -129,56 +129,56 @@
     - name: Generate the Kafka Server PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ kafka_etc_directory }}/pki/server.p12'
+        path: '{{ kafka_server_etc_directory }}/pki/server.p12'
         friendly_name: 'confluent-{{ confluent_cluster_name }}-kafka-server'
         privatekey_path: /var/tmp/ansible/kafka/confluent-{{ confluent_cluster_name }}-kafka-server.key
         certificate_path: /var/tmp/ansible/kafka/confluent-{{ confluent_cluster_name }}-kafka-server.crt
         passphrase: '{{ kafka_server_keystore_password }}'
-        owner: kafka
-        group: kafka
+        owner: '{{ kafka_server_user }}'
+        group: '{{ kafka_server_group }}'
         mode: '0440'
         state: present
 
     - name: Remove the Kafka CA PKCS12 truststore if it already exists
       file:
-        path: '{{ kafka_etc_directory }}/pki/ca.p12'
+        path: '{{ kafka_server_etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the Kafka CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_server_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka CA PKCS12 truststore
       file:
-        path: '{{ kafka_etc_directory }}/pki/ca.p12'
-        owner: kafka
-        group: kafka
+        path: '{{ kafka_server_etc_directory }}/pki/ca.p12'
+        owner: '{{ kafka_server_user }}'
+        group: '{{ kafka_server_group }}'
         mode: '0440'
 
     when: ((kafka_ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
 
-- name: Create the {{ kafka_log_directory }} directory
+- name: Create the {{ kafka_server_log_directory }} directory
   file:
-    path: '{{ kafka_log_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ kafka_server_log_directory }}'
+    owner: '{{ kafka_server_user }}'
+    group: '{{ kafka_server_group }}'
     mode: '0750'
     state: directory
 
-- name: Create the {{ kafka_data_directory }} directory
+- name: Create the {{ kafka_server_data_directory }} directory
   file:
-    path: '{{ kafka_data_directory }}'
-    owner: kafka
-    group: kafka
+    path: '{{ kafka_server_data_directory }}'
+    owner: '{{ kafka_server_user }}'
+    group: '{{ kafka_server_group }}'
     mode: '0750'
     state: directory
 
 - name: Create the Kafka Server configuration file
   template:
     src: server.properties.j2
-    dest: '{{ kafka_etc_directory }}/conf/server.properties'
-    owner: kafka
-    group: kafka
+    dest: '{{ kafka_server_etc_directory }}/conf/server.properties'
+    owner: '{{ kafka_server_user }}'
+    group: '{{ kafka_server_group }}'
     mode: '0440'
   register: kafka_server_configuration_template_result
 
@@ -195,9 +195,9 @@
 - name: Create the Kafka Server JAAS configuration file
   template:
     src: server-jaas.conf.j2
-    dest: '{{ kafka_etc_directory }}/conf/server-jaas.conf'
-    owner: kafka
-    group: kafka
+    dest: '{{ kafka_server_etc_directory }}/conf/server-jaas.conf'
+    owner: '{{ kafka_server_user }}'
+    group: '{{ kafka_server_group }}'
     mode: '0440'
   register: kafka_server_jaas_configuration_template_result
 
@@ -216,12 +216,12 @@
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
 - name: Set the password for the Kafka Server user in ZooKeeper (DC1)
   shell:
-    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
   when: (((confluent_kafka_server_dc1_actual_hosts|length) > 0) and (confluent_kafka_server_dc1_actual_hosts[((confluent_kafka_server_dc1_actual_hosts|length) - 1)] == inventory_hostname))
   register: set_password_for_kafka_server_user_in_zookeeper_dc1_result
 - name: Set the password for the Kafka Server user in ZooKeeper (DC2)
   shell:
-    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
   when: (((confluent_kafka_server_dc2_actual_hosts|length) > 0) and (confluent_kafka_server_dc2_actual_hosts[((confluent_kafka_server_dc2_actual_hosts|length) - 1)] == inventory_hostname))
   register: set_password_for_kafka_server_user_in_zookeeper_dc2_result
 
@@ -244,13 +244,13 @@
   - name: Generate the Kafka admin PKCS12 keystore
     openssl_pkcs12:
       action: export
-      path: '{{ kafka_etc_directory }}/pki/admin.p12'
+      path: '{{ kafka_server_etc_directory }}/pki/admin.p12'
       friendly_name: 'confluent-{{ confluent_cluster_name }}-kafka-admin'
       privatekey_path: /var/tmp/ansible/kafka/confluent-{{ confluent_cluster_name }}-kafka-admin.key
       certificate_path: /var/tmp/ansible/kafka/confluent-{{ confluent_cluster_name }}-kafka-admin.crt
       passphrase: '{{ kafka_admin_keystore_password }}'
-      owner: kafka
-      group: kafka
+      owner: '{{ kafka_server_user }}'
+      group: '{{ kafka_server_group }}'
       mode: '0440'
       state: present
 
@@ -260,19 +260,19 @@
 
   - name: Set the password for the Kafka admin user in ZooKeeper (DC1)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
     when: (((confluent_kafka_server_dc1_actual_hosts|length) > 0) and (confluent_kafka_server_dc1_actual_hosts[((confluent_kafka_server_dc1_actual_hosts|length) - 1)] == inventory_hostname))
   - name: Set the password for the Kafka admin user in ZooKeeper (DC2)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
     when: (((confluent_kafka_server_dc2_actual_hosts|length) > 0) and (confluent_kafka_server_dc2_actual_hosts[((confluent_kafka_server_dc2_actual_hosts|length) - 1)] == inventory_hostname))
 
   - name: Create the Kafka admin command configuration file
     template:
       src: admin-command.conf.j2
-      dest: '{{ kafka_etc_directory }}/conf/admin-command.conf'
-      owner: kafka
-      group: kafka
+      dest: '{{ kafka_server_etc_directory }}/conf/admin-command.conf'
+      owner: '{{ kafka_server_user }}'
+      group: '{{ kafka_server_group }}'
       mode: '0440'
 
 - name: Setup the Kafka MirrorMaker user
@@ -283,11 +283,11 @@
 
   - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC1)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
     when: (((confluent_kafka_server_dc1_actual_hosts|length) > 0) and (confluent_kafka_server_dc1_actual_hosts[((confluent_kafka_server_dc1_actual_hosts|length) - 1)] == inventory_hostname))
   - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC2)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
     when: (((confluent_kafka_server_dc2_actual_hosts|length) > 0) and (confluent_kafka_server_dc2_actual_hosts[((confluent_kafka_server_dc2_actual_hosts|length) - 1)] == inventory_hostname))
 
 - name: Create the Kafka profile file
@@ -302,77 +302,77 @@
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-acls'
-      line: alias kafka-acls='/opt/confluent/bin/kafka-acls --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-acls='/opt/confluent/bin/kafka-acls --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-broker-api-versions alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-broker-api-versions'
-      line: alias kafka-broker-api-versions='/opt/confluent/bin/kafka-broker-api-versions --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-broker-api-versions='/opt/confluent/bin/kafka-broker-api-versions --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-configs alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-configs='
-      line: alias kafka-configs='KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_etc_directory }}/conf/server.properties --zookeeper {{ groups['confluent_zookeeper'][0] }}:{{ kafka_server_zookeeper_secure_client_port }}'
+      line: alias kafka-configs='KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ groups['confluent_zookeeper'][0] }}:{{ kafka_server_zookeeper_secure_client_port }}'
 
   - name: Add the kafka-configs-brokers alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-configs-brokers'
-      line: alias kafka-configs='/opt/confluent/bin/kafka-configs --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-configs='/opt/confluent/bin/kafka-configs --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-consumer-groups alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-consumer-groups'
-      line: alias kafka-consumer-groups='/opt/confluent/bin/kafka-consumer-groups --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-consumer-groups='/opt/confluent/bin/kafka-consumer-groups --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-delegation-tokens alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delegation-tokens'
-      line: alias kafka-delegation-tokens='/opt/confluent/bin/kafka-delegation-tokens --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-delegation-tokens='/opt/confluent/bin/kafka-delegation-tokens --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-delete-records alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delete-records'
-      line: alias kafka-delete-records='/opt/confluent/bin/kafka-delete-records --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-delete-records='/opt/confluent/bin/kafka-delete-records --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-leader-election alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-leader-election'
-      line: alias kafka-leader-election='/opt/confluent/bin/kafka-leader-election --admin.config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-leader-election='/opt/confluent/bin/kafka-leader-election --admin.config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-log-dirs alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-log-dirs'
-      line: alias kafka-log-dirs='/opt/confluent/bin/kafka-log-dirs --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-log-dirs='/opt/confluent/bin/kafka-log-dirs --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-reassign-partitions alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-reassign-partitions'
-      line: alias kafka-reassign-partitions='/opt/confluent/bin/kafka-reassign-partitions --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-reassign-partitions='/opt/confluent/bin/kafka-reassign-partitions --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
   - name: Add the kafka-topics alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-topics'
-      line: alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ kafka_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
+      line: alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
 
 - name: Restart the Kafka service if required
   systemd:

@@ -1,19 +1,19 @@
 # {{ansible_managed}}
 
 [Unit]
-Description=Kafka MirrorMaker Service
-Documentation=http://kafka.apache.org
+Description=Confluent Kafka MirrorMaker Service
+Documentation=https://confluent.io
 Requires=network.target remote-fs.target
 After=network.target remote-fs.target
 
 [Service]
 Type=simple
-User=kafka
-Group=kafka
-Environment=LOG_DIR={{ kafka_log_directory }}
-#Environment=EXTRA_ARGS=-Djava.security.auth.login.config={{ kafka_etc_directory }}/conf/mirrormaker-jaas.conf
-ExecStart=/opt/kafka/bin/connect-mirror-maker {{ kafka_etc_directory }}/conf/mirrormaker.properties
-ExecStop=/opt/kafka/bin/connect-mirror-maker {{ kafka_etc_directory }}/conf/mirrormaker.properties
+User={{ kafka_mirrormaker_user }}
+Group={{ kafka_mirrormaker_group }}
+Environment=LOG_DIR={{ kafka_mirrormaker_log_directory }}
+#Environment=EXTRA_ARGS=-Djava.security.auth.login.config={{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker-jaas.conf
+ExecStart=/opt/kafka/bin/connect-mirror-maker {{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties
+ExecStop=/opt/kafka/bin/connect-mirror-maker {{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties
 Restart=always
 
 [Install]
