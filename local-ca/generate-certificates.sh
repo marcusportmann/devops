@@ -47,9 +47,10 @@
 # find . -name "*.p12" -exec rm -f {} \;
 
 
-
-
-
+mkdir -p ../ansible/roles/confluent_kafka_mirrormaker/files/pki/local-dev
+mkdir -p ../ansible/roles/confluent_kafka_server/files/pki/local-dev
+mkdir -p ../ansible/roles/confluent_schema_registry/files/pki/local-dev
+mkdir -p ../ansible/roles/confluent_zookeeper/files/pki/local-dev
 mkdir -p ../ansible/roles/etcd/files/pki/local-dev
 mkdir -p ../ansible/roles/k8s_common/files/pki/local-dev
 mkdir -p ../ansible/roles/k8s_istio/files/pki/local-dev
@@ -70,6 +71,7 @@ rm -f ca.p12
 keytool -importcert -noprompt -trustcacerts -alias "Local Root Certificate Authority (1)" -file ca.crt -keystore ca.p12 -storetype PKCS12 -storepass "ulLdVI9hUP46gaQj"
 cp ca.crt ../ansible/roles/confluent_kafka_mirrormaker/files/pki/local-dev/ca.crt
 cp ca.crt ../ansible/roles/confluent_kafka_server/files/pki/local-dev/ca.crt
+cp ca.crt ../ansible/roles/confluent_schema_registry/files/pki/local-dev/ca.crt
 cp ca.crt ../ansible/roles/confluent_zookeeper/files/pki/local-dev/ca.crt
 cp ca.crt ../ansible/roles/etcd/files/pki/local-dev
 cp ca.crt ../ansible/roles/k8s_common/files/pki/local-dev/ca.crt
@@ -131,13 +133,13 @@ cp confluent-local-dev-06.key ../ansible/roles/confluent_zookeeper/files/pki/loc
 cp confluent-local-dev-06.crt ../ansible/roles/confluent_zookeeper/files/pki/local-dev
 
 
-# Generate the Confluent Kafka Server certificate
-cfssl genkey confluent-local-dev-kafka-server-csr.json | cfssljson -bare confluent-local-dev-kafka-server
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-local-dev-kafka-server.csr | cfssljson -bare confluent-local-dev-kafka-server
-mv -f confluent-local-dev-kafka-server-key.pem confluent-local-dev-kafka-server.key
-mv -f confluent-local-dev-kafka-server.pem confluent-local-dev-kafka-server.crt
-cp confluent-local-dev-kafka-server.key ../ansible/roles/confluent_kafka_server/files/pki/local-dev
-cp confluent-local-dev-kafka-server.crt ../ansible/roles/confluent_kafka_server/files/pki/local-dev
+# Generate the Confluent Kafka Admin certificate
+cfssl genkey confluent-local-dev-kafka-admin-csr.json | cfssljson -bare confluent-local-dev-kafka-admin
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client confluent-local-dev-kafka-admin.csr | cfssljson -bare confluent-local-dev-kafka-admin
+mv -f confluent-local-dev-kafka-admin-key.pem confluent-local-dev-kafka-admin.key
+mv -f confluent-local-dev-kafka-admin.pem confluent-local-dev-kafka-admin.crt
+cp confluent-local-dev-kafka-admin.key ../ansible/roles/confluent_kafka_server/files/pki/local-dev
+cp confluent-local-dev-kafka-admin.crt ../ansible/roles/confluent_kafka_server/files/pki/local-dev
 
 
 # Generate the Confluent Kafka MirrorMaker certificate
@@ -149,13 +151,22 @@ cp confluent-local-dev-kafka-mirrormaker.key ../ansible/roles/confluent_kafka_mi
 cp confluent-local-dev-kafka-mirrormaker.crt ../ansible/roles/confluent_kafka_mirrormaker/files/pki/local-dev
 
 
-# Generate the Confluent Kafka Admin certificate
-cfssl genkey confluent-local-dev-kafka-admin-csr.json | cfssljson -bare confluent-local-dev-kafka-admin
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client confluent-local-dev-kafka-admin.csr | cfssljson -bare confluent-local-dev-kafka-admin
-mv -f confluent-local-dev-kafka-admin-key.pem confluent-local-dev-kafka-admin.key
-mv -f confluent-local-dev-kafka-admin.pem confluent-local-dev-kafka-admin.crt
-cp confluent-local-dev-kafka-admin.key ../ansible/roles/confluent_kafka_server/files/pki/local-dev
-cp confluent-local-dev-kafka-admin.crt ../ansible/roles/confluent_kafka_server/files/pki/local-dev
+# Generate the Confluent Schema Registry certificate
+cfssl genkey confluent-local-dev-schema-registry-csr.json | cfssljson -bare confluent-local-dev-schema-registry
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-local-dev-schema-registry.csr | cfssljson -bare confluent-local-dev-schema-registry
+mv -f confluent-local-dev-schema-registry-key.pem confluent-local-dev-schema-registry.key
+mv -f confluent-local-dev-schema-registry.pem confluent-local-dev-schema-registry.crt
+cp confluent-local-dev-schema-registry.key ../ansible/roles/confluent_schema_registry/files/pki/local-dev
+cp confluent-local-dev-schema-registry.crt ../ansible/roles/confluent_schema_registry/files/pki/local-dev
+
+
+# Generate the Confluent Kafka Server certificate
+cfssl genkey confluent-local-dev-kafka-server-csr.json | cfssljson -bare confluent-local-dev-kafka-server
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-local-dev-kafka-server.csr | cfssljson -bare confluent-local-dev-kafka-server
+mv -f confluent-local-dev-kafka-server-key.pem confluent-local-dev-kafka-server.key
+mv -f confluent-local-dev-kafka-server.pem confluent-local-dev-kafka-server.crt
+cp confluent-local-dev-kafka-server.key ../ansible/roles/confluent_kafka_server/files/pki/local-dev
+cp confluent-local-dev-kafka-server.crt ../ansible/roles/confluent_kafka_server/files/pki/local-dev
 
 
 # Generate the etcd intermediate CA private key and certificate

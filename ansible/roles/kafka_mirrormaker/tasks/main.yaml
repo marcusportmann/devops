@@ -2,30 +2,30 @@
 #file: roles/kafka_mirrormaker/tasks/main.yaml
 
 - set_fact:
-    kafka_mirrormaker_dc1_actual_hosts: "{{ kafka_mirrormaker_dc1_possible_hosts | intersect(groups['kafka_mirrormaker']) }}"
+    kafka_mirrormaker_cluster1_actual_hosts: "{{ kafka_cluster1_possible_hosts | intersect(groups['kafka_mirrormaker']) }}"
 - set_fact:
-    kafka_mirrormaker_dc2_actual_hosts: "{{ kafka_mirrormaker_dc2_possible_hosts | intersect(groups['kafka_mirrormaker']) }}"
+    kafka_mirrormaker_cluster2_actual_hosts: "{{ kafka_cluster2_possible_hosts | intersect(groups['kafka_mirrormaker']) }}"
 
 - set_fact:
-    kafka_server_dc1_actual_hosts: "{{ kafka_server_dc1_possible_hosts | intersect(groups['kafka_server']) }}"
+    kafka_server_cluster1_actual_hosts: "{{ kafka_cluster1_possible_hosts | intersect(groups['kafka_server']) }}"
 - set_fact:
-    kafka_server_dc2_actual_hosts: "{{ kafka_server_dc2_possible_hosts | intersect(groups['kafka_server']) }}"
+    kafka_server_cluster2_actual_hosts: "{{ kafka_cluster2_possible_hosts | intersect(groups['kafka_server']) }}"
 
 - debug:
-    msg: 'Kafka MirrorMaker DC1 hosts: {{ kafka_mirrormaker_dc1_actual_hosts  }}'
+    msg: 'Kafka MirrorMaker Cluster1 hosts: {{ kafka_mirrormaker_cluster1_actual_hosts }}'
 - debug:
-    msg: 'Kafka MirrorMaker DC2 hosts: {{ kafka_mirrormaker_dc2_actual_hosts  }}'
+    msg: 'Kafka MirrorMaker Cluster2 hosts: {{ kafka_mirrormaker_cluster2_actual_hosts }}'
 - debug:
-    msg: 'Kafka server DC1 hosts: {{ kafka_server_dc1_actual_hosts  }}'
+    msg: 'Kafka Server Cluster1 hosts: {{ kafka_server_cluster1_actual_hosts }}'
 - debug:
-    msg: 'Kafka server DC2 hosts: {{ kafka_server_dc2_actual_hosts  }}'
+    msg: 'Kafka Server Cluster2 hosts: {{ kafka_server_cluster2_actual_hosts }}'
 
 - debug:
     msg: "Kafka MirrorMaker host {{ inventory_hostname }} is in DC1"
-  when: (inventory_hostname in kafka_mirrormaker_dc1_actual_hosts)
+  when: (inventory_hostname in kafka_mirrormaker_cluster1_actual_hosts)
 - debug:
     msg: "Kafka MirrorMaker host {{ inventory_hostname }} is in DC2"
-  when: (inventory_hostname in kafka_mirrormaker_dc2_actual_hosts)
+  when: (inventory_hostname in kafka_mirrormaker_cluster2_actual_hosts)
 
 
 #  _  __    _    _____ _  __    _      __  __ ___ ____  ____   ___  ____    __  __    _    _  _______ ____
@@ -72,7 +72,7 @@
     mode: '0550'
     state: directory
 
-- name: Setup the Kafka MirrorMaker keystore and Kafka CA truststore
+- name: Setup the Kafka MirrorMaker keystore and CA truststore
   block:
   - name: Create the {{ kafka_mirrormaker_etc_directory }}/pki directory
     file:
@@ -82,64 +82,64 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the Kafka CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/ca.crt
+      src: pki/{{ kafka_platform_name }}/ca.crt
       dest: /var/tmp/ansible/kafka/ca.crt
-    register: kafka_ca_copy_result
+    register: ca_copy_result
 
-  - name: Copy the Kafka MirrorMaker private key (kafka-{{ kafka_cluster_name }}-mirrormaker.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker private key (kafka-{{ kafka_platform_name }}-mirrormaker.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-mirrormaker.key
-      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-mirrormaker.key
+      src: pki/{{ kafka_platform_name }}/kafka-{{ kafka_platform_name }}-mirrormaker.key
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-mirrormaker.key
     register: kafka_mirrormaker_private_key_copy_result
 
-  - name: Copy the Kafka MirrorMaker certificate (kafka-{{ kafka_cluster_name }}-mirrormaker.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker certificate (kafka-{{ kafka_platform_name }}-mirrormaker.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-mirrormaker.crt
-      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-mirrormaker.crt
+      src: pki/{{ kafka_platform_name }}/kafka-{{ kafka_platform_name }}-mirrormaker.crt
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-mirrormaker.crt
     register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
     set_fact:
-      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-mirrormaker-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate or retrieve the password for the Kafka truststore
+  - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      kafka_ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate the Kafka MirrorMaker keystore and Kafka CA truststore
+  - name: Generate the Kafka MirrorMaker keystore and CA truststore
     block:
     - name: Generate the Kafka MirrorMaker PKCS12 keystore
       openssl_pkcs12:
         action: export
         path: '{{ kafka_mirrormaker_etc_directory }}/pki/mirrormaker.p12'
-        friendly_name: 'kafka-{{ kafka_cluster_name }}-mirrormaker'
-        privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-mirrormaker.key
-        certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-mirrormaker.crt
+        friendly_name: 'kafka-{{ kafka_platform_name }}-mirrormaker'
+        privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-mirrormaker.key
+        certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-mirrormaker.crt
         passphrase: '{{ kafka_mirrormaker_keystore_password }}'
         owner: '{{ kafka_mirrormaker_user }}'
         group: '{{ kafka_mirrormaker_group }}'
         mode: '0440'
         state: present
 
-    - name: Remove the Kafka CA PKCS12 truststore if it already exists
+    - name: Remove the CA PKCS12 truststore if it already exists
       file:
         path: '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12'
         state: absent
 
-    - name: Generate the Kafka CA PKCS12 truststore
+    - name: Generate the CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
-    - name: Set the permissions for the Kafka CA PKCS12 truststore
+    - name: Set the permissions for the CA PKCS12 truststore
       file:
         path: '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12'
         owner: '{{ kafka_mirrormaker_user }}'
         group: '{{ kafka_mirrormaker_group }}'
         mode: '0440'
 
-    when: ((kafka_ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True))
+    when: ((ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True))
 
 - name: Create the {{ kafka_mirrormaker_log_directory }} directory
   file:
@@ -152,7 +152,7 @@
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   template:
@@ -175,4 +175,4 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((kafka_ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True) or (kafka_mirrormaker_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
+  when: ((ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True) or (kafka_mirrormaker_configuration_template_result.changed == True) or (kafka_mirrormaker_service_file_template_result.changed == True))

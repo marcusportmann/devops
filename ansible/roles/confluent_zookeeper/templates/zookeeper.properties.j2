@@ -67,12 +67,12 @@ enforcedAuthenticationScheme=sasl
 requireClientAuthScheme=sasl
 
 # The cluster hosts
-{% if (inventory_hostname in confluent_zookeeper_dc1_actual_hosts)  %}
-{% for zookeeper_host in confluent_zookeeper_dc1_actual_hosts -%}
+{% if (inventory_hostname in confluent_zookeeper_cluster1_actual_hosts)  %}
+{% for zookeeper_host in confluent_zookeeper_cluster1_actual_hosts -%}
 server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
 {% endfor -%}
-{% elif (inventory_hostname in confluent_zookeeper_dc2_actual_hosts)  %}
-{% for zookeeper_host in confluent_zookeeper_dc2_actual_hosts -%}
+{% elif (inventory_hostname in confluent_zookeeper_cluster2_actual_hosts)  %}
+{% for zookeeper_host in confluent_zookeeper_cluster2_actual_hosts -%}
 server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
 {% endfor -%}
 {% endif %}

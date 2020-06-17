@@ -19,3 +19,4 @@ kafka_server_zookeeper_user_username: kafka
 
 kafka_admin_user_username: admin
 kafka_mirrormaker_user_username: mirrormaker
+kafka_schema_registry_user_username: schema-registry

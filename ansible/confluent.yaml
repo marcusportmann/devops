@@ -56,3 +56,11 @@
   become_user: root
   roles:
   - confluent_kafka_mirrormaker
+
+- name: Configure the Confluent Schema Registry hosts
+  hosts: confluent_schema_registry
+  become: yes
+  become_user: root
+  roles:
+  - confluent_schema_registry
+

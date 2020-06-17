@@ -15,8 +15,8 @@
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '2888'
     proto: tcp
-  loop: "{{ confluent_zookeeper_dc1_actual_hosts }}"
-  when: ((inventory_hostname in confluent_zookeeper_dc1_actual_hosts) and (item != inventory_hostname))
+  loop: "{{ confluent_zookeeper_cluster1_actual_hosts }}"
+  when: ((inventory_hostname in confluent_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
 
 - name: Allow all access to tcp port 2888 to other ZooKeeper hosts (DC2)
   ufw:
@@ -24,8 +24,8 @@
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '2888'
     proto: tcp
-  loop: "{{ confluent_zookeeper_dc2_actual_hosts }}"
-  when: ((inventory_hostname in confluent_zookeeper_dc2_actual_hosts) and (item != inventory_hostname))
+  loop: "{{ confluent_zookeeper_cluster2_actual_hosts }}"
+  when: ((inventory_hostname in confluent_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
 
 - name: Allow all access to tcp port 3888 to other ZooKeeper hosts (DC1)
   ufw:
@@ -33,8 +33,8 @@
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '3888'
     proto: tcp
-  loop: "{{ confluent_zookeeper_dc1_actual_hosts }}"
-  when: ((inventory_hostname in confluent_zookeeper_dc1_actual_hosts) and (item != inventory_hostname))
+  loop: "{{ confluent_zookeeper_cluster1_actual_hosts }}"
+  when: ((inventory_hostname in confluent_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
 
 - name: Allow all access to tcp port 3888 to other ZooKeeper hosts (DC2)
   ufw:
@@ -42,8 +42,8 @@
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '3888'
     proto: tcp
-  loop: "{{ confluent_zookeeper_dc2_actual_hosts }}"
-  when: ((inventory_hostname in confluent_zookeeper_dc2_actual_hosts) and (item != inventory_hostname))
+  loop: "{{ confluent_zookeeper_cluster2_actual_hosts }}"
+  when: ((inventory_hostname in confluent_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
 
 - name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Confluent Server hosts (DC1)
   ufw:
@@ -51,8 +51,8 @@
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '{{ zookeeper_secure_client_port }}'
     proto: tcp
-  loop: "{{ confluent_kafka_server_dc1_actual_hosts | default([]) }}"
-  when: (inventory_hostname in confluent_zookeeper_dc1_actual_hosts)
+  loop: "{{ kafka_server_cluster1_actual_hosts | default([]) }}"
+  when: (inventory_hostname in confluent_zookeeper_cluster1_actual_hosts)
 
 - name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Confluent Server hosts (DC2)
   ufw:
@@ -60,6 +60,6 @@
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '{{ zookeeper_secure_client_port }}'
     proto: tcp
-  loop: "{{ confluent_kafka_server_dc2_actual_hosts | default([]) }}"
-  when: (inventory_hostname in confluent_zookeeper_dc2_actual_hosts)
+  loop: "{{ kafka_server_cluster2_actual_hosts | default([]) }}"
+  when: (inventory_hostname in confluent_zookeeper_cluster2_actual_hosts)
 

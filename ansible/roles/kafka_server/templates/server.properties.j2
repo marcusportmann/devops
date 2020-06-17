@@ -1,13 +1,17 @@
 ############################# Server Basics #############################
 
 # The id of the broker. This must be set to a unique integer for each broker
-{% if (inventory_hostname in kafka_server_dc1_actual_hosts)  %}
-broker.id={{ (kafka_server_dc1_actual_hosts.index(inventory_hostname) + 1) }}
-{% elif (inventory_hostname in kafka_server_dc2_actual_hosts)  %}
-broker.id={{ (kafka_server_dc2_actual_hosts.index(inventory_hostname) + 1) }}
+{% if (inventory_hostname in kafka_server_cluster1_actual_hosts)  %}
+broker.id={{ (kafka_server_cluster1_actual_hosts.index(inventory_hostname) + 1) }}
+{% elif (inventory_hostname in kafka_server_cluster2_actual_hosts)  %}
+broker.id={{ (kafka_server_cluster2_actual_hosts.index(inventory_hostname) + 1) }}
 {% endif %}
 
-
+{% for kafka_server_host_rack_id in kafka_server_hosts_rack_ids %}
+{% if kafka_server_host_rack_id.startswith(inventory_hostname) %}
+broker.rack={{ kafka_server_host_rack_id.split(":", 1)[1] }}
+{% endif %}
+{% endfor %}
 
 ############################# Socket Server Settings #############################
 
@@ -43,15 +47,15 @@ log.dirs={{ kafka_server_data_directory }}
 
 # The default number of log partitions per topic. More partitions allow greater
 # parallelism for consumption, but this will also result in more files across the brokers.
-{% if (inventory_hostname in kafka_server_dc1_actual_hosts)  %}
-{% if ((kafka_server_dc1_actual_hosts | length) > 1) %}
-num.partitions={{ ((kafka_server_dc1_actual_hosts | length) - 1) }}
+{% if (inventory_hostname in kafka_server_cluster1_actual_hosts)  %}
+{% if ((kafka_server_cluster1_actual_hosts | length) > 1) %}
+num.partitions={{ ((kafka_server_cluster1_actual_hosts | length) - 1) }}
 {% else %}
 num.partitions=1
 {% endif %}
-{% elif (inventory_hostname in kafka_server_dc2_actual_hosts)  %}
-{% if ((kafka_server_dc2_actual_hosts | length) > 1) %}
-num.partitions={{ ((kafka_server_dc2_actual_hosts | length) - 1) }}
+{% elif (inventory_hostname in kafka_server_cluster2_actual_hosts)  %}
+{% if ((kafka_server_cluster2_actual_hosts | length) > 1) %}
+num.partitions={{ ((kafka_server_cluster2_actual_hosts | length) - 1) }}
 {% else %}
 num.partitions=1
 {% endif %}
@@ -67,8 +71,8 @@ num.recovery.threads.per.data.dir=1
 # The replication factor for the group metadata internal topics "__consumer_offsets" and "__transaction_state"
 # For anything other than development testing, a value greater than 1 is recommended to ensure availability such as 3
 
-{% if (inventory_hostname in kafka_server_dc1_actual_hosts)  %}
-{% if ((kafka_server_dc1_actual_hosts | length) >= 3) %}
+{% if (inventory_hostname in kafka_server_cluster1_actual_hosts)  %}
+{% if ((kafka_server_cluster1_actual_hosts | length) >= 3) %}
 offsets.topic.replication.factor=3
 transaction.state.log.replication.factor=3
 transaction.state.log.min.isr=2
@@ -77,8 +81,8 @@ offsets.topic.replication.factor=1
 transaction.state.log.replication.factor=1
 transaction.state.log.min.isr=1
 {% endif %}
-{% elif (inventory_hostname in kafka_server_dc2_actual_hosts)  %}
-{% if ((kafka_server_dc2_actual_hosts | length) >= 3) %}
+{% elif (inventory_hostname in kafka_server_cluster2_actual_hosts)  %}
+{% if ((kafka_server_cluster2_actual_hosts | length) >= 3) %}
 offsets.topic.replication.factor=3
 transaction.state.log.replication.factor=3
 transaction.state.log.min.isr=2
@@ -141,12 +145,12 @@ offsets.retention.minutes=21024000
 # server. e.g. "127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002".
 # You can also append an optional chroot string to the urls to specify the root directory for all kafka znodes
 {% set kafka_zookeeper_hosts = [] -%}
-{% if (inventory_hostname in kafka_server_dc1_actual_hosts)  %}
-{% for kafka_zookeeper_host in kafka_zookeeper_dc1_actual_hosts %}
+{% if (inventory_hostname in kafka_server_cluster1_actual_hosts)  %}
+{% for kafka_zookeeper_host in kafka_zookeeper_cluster1_actual_hosts %}
 {% set _ = kafka_zookeeper_hosts.append("%s:%d" % (kafka_zookeeper_host, kafka_server_zookeeper_secure_client_port)) %}
 {% endfor %}
-{% elif (inventory_hostname in kafka_server_dc2_actual_hosts)  %}
-{% for kafka_zookeeper_host in kafka_zookeeper_dc2_actual_hosts %}
+{% elif (inventory_hostname in kafka_server_cluster2_actual_hosts)  %}
+{% for kafka_zookeeper_host in kafka_zookeeper_cluster2_actual_hosts %}
 {% set _ = kafka_zookeeper_hosts.append("%s:%d" % (kafka_zookeeper_host, kafka_server_zookeeper_secure_client_port)) %}
 {% endfor %}
 {% endif %}
@@ -160,7 +164,7 @@ zookeeper.ssl.keystore.location={{ kafka_server_etc_directory }}/pki/server.p12
 zookeeper.ssl.keystore.password={{ kafka_server_keystore_password }}
 zookeeper.ssl.truststore.type=PKCS12
 zookeeper.ssl.truststore.location={{ kafka_server_etc_directory }}/pki/ca.p12
-zookeeper.ssl.truststore.password={{ kafka_ca_truststore_password }}
+zookeeper.ssl.truststore.password={{ ca_truststore_password }}
 zookeeper.set.acl=true
 
 # Timeout in ms for connecting to zookeeper
@@ -193,7 +197,7 @@ ssl.keystore.password={{ kafka_server_keystore_password }}
 #ssl.key.password={{ kafka_server_keystore_password }}
 ssl.truststore.type=PKCS12
 ssl.truststore.location={{ kafka_server_etc_directory }}/pki/ca.p12
-ssl.truststore.password={{ kafka_ca_truststore_password }}
+ssl.truststore.password={{ ca_truststore_password }}
 
 
 

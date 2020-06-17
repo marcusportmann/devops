@@ -2,7 +2,7 @@
 # file: roles/confluent_kafka_server/tasks/centos.yaml
 
 - debug:
-    msg: Applying the CentOS-specific Confluent Kafka Server configuration
+    msg: Applying the CentOS-specific Kafka Server configuration
 
 - name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Secure Broker Port)
   firewalld:

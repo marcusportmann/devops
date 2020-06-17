@@ -25,35 +25,35 @@ variables:
 # ----------------------------------------------------------------------------------------
 # Mandatory Configuration
 # ----------------------------------------------------------------------------------------
-- name: confluent_cluster_name
+- name: confluent_platform_name
   values:
   - local-dev
-- name: confluent_kafka_mirrormaker_dc1_possible_hosts
+- name: confluent_cluster1_name
   values:
+  - local-dev-1
+- name: confluent_cluster1_possible_hosts
+  values:
+  - confluent-local-dev-01.local
+  - confluent-local-dev-03.local
+  - confluent-local-dev-05.local
   - confluent-local-dev-07.local
-- name: confluent_kafka_mirrormaker_dc2_possible_hosts
+- name: confluent_cluster2_name
   values:
+  - local-dev-2
+- name: confluent_cluster2_possible_hosts
+  values:
+  - confluent-local-dev-02.local
+  - confluent-local-dev-04.local
+  - confluent-local-dev-06.local
   - confluent-local-dev-08.local
-- name: confluent_kafka_server_dc1_possible_hosts
+- name: confluent_kafka_server_hosts_rack_ids
   values:
-  - confluent-local-dev-01.local
-  - confluent-local-dev-03.local
-  - confluent-local-dev-05.local
-- name: confluent_kafka_server_dc2_possible_hosts
-  values:
-  - confluent-local-dev-02.local
-  - confluent-local-dev-04.local
-  - confluent-local-dev-06.local
-- name: confluent_zookeeper_dc1_possible_hosts
-  values:
-  - confluent-local-dev-01.local
-  - confluent-local-dev-03.local
-  - confluent-local-dev-05.local
-- name: confluent_zookeeper_dc2_possible_hosts
-  values:
-  - confluent-local-dev-02.local
-  - confluent-local-dev-04.local
-  - confluent-local-dev-06.local
+  - confluent-local-dev-01.local:1
+  - confluent-local-dev-02.local:1
+  - confluent-local-dev-03.local:2
+  - confluent-local-dev-04.local:2
+  - confluent-local-dev-05.local:3
+  - confluent-local-dev-06.local:3
 
 - name: etcd_cluster_name
   values:
@@ -66,35 +66,36 @@ variables:
   values:
   - local-dev
 
-- name: kafka_cluster_name
+- name: kafka_platform_name
   values:
   - local-dev
-- name: kafka_mirrormaker_dc1_possible_hosts
+- name: kafka_cluster1_name
   values:
-  - kafka-local-dev-mirrormaker-01.local
-- name: kafka_mirrormaker_dc2_possible_hosts
-  values:
-  - kafka-local-dev-mirrormaker-02.local
-- name: kafka_server_dc1_possible_hosts
+  - local-dev-1
+- name: kafka_cluster1_possible_hosts
   values:
   - kafka-local-dev-01.local
   - kafka-local-dev-03.local
   - kafka-local-dev-05.local
-- name: kafka_server_dc2_possible_hosts
+  - kafka-local-dev-07.local
+- name: kafka_cluster2_name
+  values:
+  - local-dev-2
+- name: kafka_cluster2_possible_hosts
   values:
   - kafka-local-dev-02.local
   - kafka-local-dev-04.local
   - kafka-local-dev-06.local
-- name: kafka_zookeeper_dc1_possible_hosts
+  - kafka-local-dev-08.local
+- name: kafka_server_hosts_rack_ids
   values:
-  - kafka-local-dev-01.local
-  - kafka-local-dev-03.local
-  - kafka-local-dev-05.local
-- name: kafka_zookeeper_dc2_possible_hosts
-  values:
-  - kafka-local-dev-02.local
-  - kafka-local-dev-04.local
-  - kafka-local-dev-06.local
+  - kafka-local-dev-01.local:1
+  - kafka-local-dev-02.local:1
+  - kafka-local-dev-03.local:2
+  - kafka-local-dev-04.local:2
+  - kafka-local-dev-05.local:3
+  - kafka-local-dev-06.local:3
+
 
 # ----------------------------------------------------------------------------------------
 # Optional Configuration
@@ -159,13 +160,13 @@ variables:
 profiles:
 
 
-- name: confluent-multi-dc-minimal
+- name: confluent-multi-cluster-minimal
   hosts:
   - confluent-local-dev-01.local
   - confluent-local-dev-02.local
   - confluent-local-dev-07.local
 
-- name: confluent-multi-dc-full
+- name: confluent-multi-cluster-full
   hosts:
   - confluent-local-dev-01.local
   - confluent-local-dev-02.local
@@ -176,11 +177,11 @@ profiles:
   - confluent-local-dev-07.local
   - confluent-local-dev-08.local
 
-- name: confluent-single-dc-minimal
+- name: confluent-single-cluster-minimal
   hosts:
   - confluent-local-dev-01.local
 
-- name: confluent-single-dc-full
+- name: confluent-single-cluster-full
   hosts:
   - confluent-local-dev-01.local
   - confluent-local-dev-03.local
@@ -224,13 +225,13 @@ profiles:
   - k8s-local-dev-w-02.local
   - k8s-local-dev-w-03.local
 
-- name: kafka-multi-dc-minimal
+- name: kafka-multi-cluster-minimal
   hosts:
   - kafka-local-dev-01.local
   - kafka-local-dev-02.local
-  - kafka-local-dev-mirrormaker-01.local
+  - kafka-local-dev-07.local
 
-- name: kafka-multi-dc-full
+- name: kafka-multi-cluster-full
   hosts:
   - kafka-local-dev-01.local
   - kafka-local-dev-02.local
@@ -238,14 +239,14 @@ profiles:
   - kafka-local-dev-04.local
   - kafka-local-dev-05.local
   - kafka-local-dev-06.local
-  - kafka-local-dev-mirrormaker-01.local
-  - kafka-local-dev-mirrormaker-02.local
+  - kafka-local-dev-07.local
+  - kafka-local-dev-08.local
 
-- name: kafka-single-dc-minimal
+- name: kafka-single-cluster-minimal
   hosts:
   - kafka-local-dev-01.local
 
-- name: kafka-single-dc-full
+- name: kafka-single-cluster-full
   hosts:
   - kafka-local-dev-01.local
   - kafka-local-dev-03.local
@@ -295,7 +296,7 @@ hosts:
 - name:               confluent-local-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_zookeeper,confluent_kafka_server
+  ansible_groups:     confluent_zookeeper,confluent_kafka_server,confluent_schema_registry
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1071,7 +1072,7 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               kafka-local-dev-mirrormaker-01.local
+- name:               kafka-local-dev-07.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     kafka_mirrormaker
@@ -1079,7 +1080,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-local-dev-mirrormaker-01.local
+    fqdn:             kafka-local-dev-07.local
     domain:           local
     ip:               192.168.184.71/24
     gateway:          192.168.184.2
@@ -1088,7 +1089,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-local-dev-mirrormaker-01.local
+    fqdn:             kafka-local-dev-07.local
     domain:           local
     ip:               192.168.184.71/24
     gateway:          192.168.184.2
@@ -1097,13 +1098,13 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             kafka-local-dev-mirrormaker-01.local
+    fqdn:             kafka-local-dev-07.local
     domain:           local
     ip:               192.168.0.71/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               kafka-local-dev-mirrormaker-02.local
+- name:               kafka-local-dev-08.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     kafka_mirrormaker
@@ -1111,7 +1112,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-local-dev-mirrormaker-02.local
+    fqdn:             kafka-local-dev-08.local
     domain:           local
     ip:               192.168.184.72/24
     gateway:          192.168.184.2
@@ -1120,7 +1121,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-local-dev-mirrormaker-02.local
+    fqdn:             kafka-local-dev-08.local
     domain:           local
     ip:               192.168.184.72/24
     gateway:          192.168.184.2
@@ -1129,7 +1130,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             kafka-local-dev-mirrormaker-02.local
+    fqdn:             kafka-local-dev-08.local
     domain:           local
     ip:               192.168.0.72/24
     gateway:          192.168.0.1

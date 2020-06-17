@@ -1,30 +1,30 @@
 # Specify the cluster aliases
-clusters = DC1, DC2
+clusters = {{ confluent_cluster1_name }}, {{ confluent_cluster2_name }}
 
 # Connection information for each cluster
 # This is a comma separated list of host:port pairs for each cluster
-{% set kafka_bootstrap_servers_dc1 = [] -%}
-{% for kafka_server_host in confluent_kafka_server_dc1_actual_hosts %}
-{% set _ = kafka_bootstrap_servers_dc1.append("%s:%d" % (kafka_server_host, kafka_secure_broker_port)) %}
+{% set kafka_bootstrap_servers_cluster1 = [] -%}
+{% for kafka_server_host in kafka_server_cluster1_actual_hosts %}
+{% set _ = kafka_bootstrap_servers_cluster1.append("%s:%d" % (kafka_server_host, kafka_secure_broker_port)) %}
 {% endfor %}
-DC1.bootstrap.servers = {{ kafka_bootstrap_servers_dc1 | join(',') }}
+{{ confluent_cluster1_name }}.bootstrap.servers = {{ kafka_bootstrap_servers_cluster1 | join(',') }}
 
-{% set kafka_bootstrap_servers_dc2 = [] -%}
-{% for kafka_server_host in confluent_kafka_server_dc2_actual_hosts %}
-{% set _ = kafka_bootstrap_servers_dc2.append("%s:%d" % (kafka_server_host, kafka_secure_broker_port)) %}
+{% set kafka_bootstrap_servers_cluster2 = [] -%}
+{% for kafka_server_host in kafka_server_cluster2_actual_hosts %}
+{% set _ = kafka_bootstrap_servers_cluster2.append("%s:%d" % (kafka_server_host, kafka_secure_broker_port)) %}
 {% endfor %}
-DC2.bootstrap.servers = {{ kafka_bootstrap_servers_dc2 | join(',') }}
+{{ confluent_cluster2_name }}.bootstrap.servers = {{ kafka_bootstrap_servers_cluster2 | join(',') }}
 
 # Enable and configure individual replication flows
-DC1->DC2.enabled = true
-DC2->DC1.enabled = true
+{{ confluent_cluster1_name }}->{{ confluent_cluster2_name }}.enabled = true
+{{ confluent_cluster2_name }}->{{ confluent_cluster1_name }}.enabled = true
 
 # Regex which defines which topics gets replicated. For eg "foo-.*"
-DC1->DC2.topics = .*
-DC2->DC1.topics = .*
+{{ confluent_cluster1_name }}->{{ confluent_cluster2_name }}.topics = .*
+{{ confluent_cluster2_name }}->{{ confluent_cluster1_name }}.topics = .*
 
-DC1.producer.enable.idempotence = true
-DC2.producer.enable.idempotence = true
+{{ confluent_cluster1_name }}.producer.enable.idempotence = true
+{{ confluent_cluster2_name }}.producer.enable.idempotence = true
 
 
 # Setting replication factor of newly created remote topics
@@ -66,7 +66,7 @@ ssl.keystore.location={{ kafka_mirrormaker_etc_directory }}/pki/mirrormaker.p12
 ssl.keystore.password={{ kafka_mirrormaker_keystore_password }}
 ssl.truststore.type=PKCS12
 ssl.truststore.location={{ kafka_mirrormaker_etc_directory }}/pki/ca.p12
-ssl.truststore.password={{ kafka_ca_truststore_password }}
+ssl.truststore.password={{ ca_truststore_password }}
 sasl.mechanism=SCRAM-SHA-256
 sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ kafka_mirrormaker_user_username }}" password="{{ kafka_mirrormaker_user_password }}";
 

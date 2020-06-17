@@ -2,29 +2,29 @@
 #file: roles/kafka_server/tasks/main.yaml
 
 - set_fact:
-    kafka_server_dc1_actual_hosts: "{{ kafka_server_dc1_possible_hosts | intersect(groups['kafka_server']) }}"
+    kafka_server_cluster1_actual_hosts: "{{ kafka_cluster1_possible_hosts | intersect(groups['kafka_server']) }}"
 - set_fact:
-    kafka_server_dc2_actual_hosts: "{{ kafka_server_dc2_possible_hosts | intersect(groups['kafka_server']) }}"
+    kafka_server_cluster2_actual_hosts: "{{ kafka_cluster2_possible_hosts | intersect(groups['kafka_server']) }}"
 - set_fact:
-    kafka_zookeeper_dc1_actual_hosts: "{{ kafka_zookeeper_dc1_possible_hosts | intersect(groups['kafka_zookeeper']) }}"
+    kafka_zookeeper_cluster1_actual_hosts: "{{ kafka_cluster1_possible_hosts | intersect(groups['kafka_zookeeper']) }}"
 - set_fact:
-    kafka_zookeeper_dc2_actual_hosts: "{{ kafka_zookeeper_dc2_possible_hosts | intersect(groups['kafka_zookeeper']) }}"
+    kafka_zookeeper_cluster2_actual_hosts: "{{ kafka_cluster2_possible_hosts | intersect(groups['kafka_zookeeper']) }}"
 
 - debug:
-    msg: 'Kafka Server DC1 hosts: {{ kafka_server_dc1_actual_hosts  }}'
+    msg: 'Kafka Server Cluster1 hosts: {{ kafka_server_cluster1_actual_hosts }}'
 - debug:
-    msg: 'Kafka Server DC2 hosts: {{ kafka_server_dc2_actual_hosts  }}'
+    msg: 'Kafka Server Cluster2 hosts: {{ kafka_server_cluster2_actual_hosts }}'
 - debug:
-    msg: 'Kafka ZooKeeper DC1 hosts: {{ kafka_zookeeper_dc1_actual_hosts  }}'
+    msg: 'Kafka ZooKeeper Cluster1 hosts: {{ kafka_zookeeper_cluster1_actual_hosts }}'
 - debug:
-    msg: 'Kafka ZooKeeper DC2 hosts: {{ kafka_zookeeper_dc2_actual_hosts  }}'
+    msg: 'Kafka ZooKeeper Cluster2 hosts: {{ kafka_zookeeper_cluster2_actual_hosts }}'
 
 - debug:
     msg: "Kafka Server host {{ inventory_hostname }} is in DC1"
-  when: (inventory_hostname in kafka_server_dc1_actual_hosts)
+  when: (inventory_hostname in kafka_server_cluster1_actual_hosts)
 - debug:
     msg: "Kafka Server host {{ inventory_hostname }} is in DC2"
-  when: (inventory_hostname in kafka_server_dc2_actual_hosts)
+  when: (inventory_hostname in kafka_server_cluster2_actual_hosts)
 
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -88,7 +88,7 @@
     mode: '0550'
     state: directory
 
-- name: Setup the Kafka Server keystore and Kafka CA truststore
+- name: Setup the Kafka Server keystore and CA truststore
   block:
   - name: Create the {{ kafka_server_etc_directory }}/pki directory
     file:
@@ -98,64 +98,64 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the Kafka CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/ca.crt
+      src: pki/{{ kafka_platform_name }}/ca.crt
       dest: /var/tmp/ansible/kafka/ca.crt
-    register: kafka_ca_copy_result
+    register: ca_copy_result
 
-  - name: Copy the Kafka Server private key (kafka-{{ kafka_cluster_name }}-server.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server private key (kafka-{{ kafka_platform_name }}-server.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-server.key
-      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.key
+      src: pki/{{ kafka_platform_name }}/kafka-{{ kafka_platform_name }}-server.key
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-server.key
     register: kafka_server_private_key_copy_result
 
-  - name: Copy the Kafka Server certificate (kafka-{{ kafka_cluster_name }}-server.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server certificate (kafka-{{ kafka_platform_name }}-server.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-server.crt
-      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.crt
+      src: pki/{{ kafka_platform_name }}/kafka-{{ kafka_platform_name }}-server.crt
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-server.crt
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
     set_fact:
-      kafka_server_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-server-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-server-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate or retrieve the password for the Kafka CA truststore
+  - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      kafka_ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Generate the Kafka Server keystore and Kafka CA truststore
+  - name: Generate the Kafka Server keystore and CA truststore
     block:
     - name: Generate the Kafka Server PKCS12 keystore
       openssl_pkcs12:
         action: export
         path: '{{ kafka_server_etc_directory }}/pki/server.p12'
-        friendly_name: 'kafka-{{ kafka_cluster_name }}-server'
-        privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.key
-        certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-server.crt
+        friendly_name: 'kafka-{{ kafka_platform_name }}-server'
+        privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-server.key
+        certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-server.crt
         passphrase: '{{ kafka_server_keystore_password }}'
         owner: '{{ kafka_server_user }}'
         group: '{{ kafka_server_group }}'
         mode: '0440'
         state: present
 
-    - name: Remove the Kafka CA PKCS12 truststore if it already exists
+    - name: Remove the CA PKCS12 truststore if it already exists
       file:
         path: '{{ kafka_server_etc_directory }}/pki/ca.p12'
         state: absent
 
-    - name: Generate the Kafka CA PKCS12 truststore
+    - name: Generate the CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_server_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ kafka_ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_server_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
-    - name: Set the permissions for the Kafka CA PKCS12 truststore
+    - name: Set the permissions for the CA PKCS12 truststore
       file:
         path: '{{ kafka_server_etc_directory }}/pki/ca.p12'
         owner: '{{ kafka_server_user }}'
         group: '{{ kafka_server_group }}'
         mode: '0440'
 
-    when: ((kafka_ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
+    when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
 
 - name: Create the {{ kafka_server_log_directory }} directory
   file:
@@ -185,12 +185,12 @@
 # NOTE: This is the password used to secure the connections the Kafka Server makes to ZooKeeper, which is generated by the kafka-zookeeper role
 - name: Generate or retrieve the password for the ZooKeeper kafka user
   set_fact:
-    kafka_server_zookeeper_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_zookeeper_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
 # NOTE: This is the password used to secure the inter broker connections
 - name: Generate or retrieve the password for the Kafka Server user
   set_fact:
-    kafka_server_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-server-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-server-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka Server JAAS configuration file
   template:
@@ -216,38 +216,38 @@
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
 - name: Set the password for the Kafka Server user in ZooKeeper (DC1)
   shell:
-    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
-  when: (((kafka_server_dc1_actual_hosts|length) > 0) and (kafka_server_dc1_actual_hosts[((kafka_server_dc1_actual_hosts|length) - 1)] == inventory_hostname))
-  register: set_password_for_kafka_server_user_in_zookeeper_dc1_result
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
+  when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
+  register: set_password_for_kafka_server_user_in_zookeeper_cluster1_result
 - name: Set the password for the Kafka Server user in ZooKeeper (DC2)
   shell:
-    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
-  when: (((kafka_server_dc2_actual_hosts|length) > 0) and (kafka_server_dc2_actual_hosts[((kafka_server_dc2_actual_hosts|length) - 1)] == inventory_hostname))
-  register: set_password_for_kafka_server_user_in_zookeeper_dc2_result
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
+  when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
+  register: set_password_for_kafka_server_user_in_zookeeper_cluster2_result
 
 - name: Setup the Kafka admin user
   block:
   - name: Generate or retrieve the password for the Kafka admin keystore
     set_fact:
-      kafka_admin_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_admin_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Copy the Kafka admin private key (kafka-{{ kafka_cluster_name }}-admin.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin private key (kafka-{{ kafka_platform_name }}-admin.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-admin.key
-      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.key
+      src: pki/{{ kafka_platform_name }}/kafka-{{ kafka_platform_name }}-admin.key
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-admin.key
 
-  - name: Copy the Kafka admin certificate (kafka-{{ kafka_cluster_name }}-admin.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin certificate (kafka-{{ kafka_platform_name }}-admin.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-{{ kafka_cluster_name }}-admin.crt
-      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.crt
+      src: pki/{{ kafka_platform_name }}/kafka-{{ kafka_platform_name }}-admin.crt
+      dest: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-admin.crt
 
   - name: Generate the Kafka admin PKCS12 keystore
     openssl_pkcs12:
       action: export
       path: '{{ kafka_server_etc_directory }}/pki/admin.p12'
-      friendly_name: 'kafka-{{ kafka_cluster_name }}-admin'
-      privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.key
-      certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_cluster_name }}-admin.crt
+      friendly_name: 'kafka-{{ kafka_platform_name }}-admin'
+      privatekey_path: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-admin.key
+      certificate_path: /var/tmp/ansible/kafka/kafka-{{ kafka_platform_name }}-admin.crt
       passphrase: '{{ kafka_admin_keystore_password }}'
       owner: '{{ kafka_server_user }}'
       group: '{{ kafka_server_group }}'
@@ -256,16 +256,16 @@
 
   - name: Generate or retrieve the password for the Kafka admin user
     set_fact:
-      kafka_admin_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-admin-user-password chars=ascii_letters,digits length=16') }}"
+      kafka_admin_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-admin-user-password chars=ascii_letters,digits length=16') }}"
 
   - name: Set the password for the Kafka admin user in ZooKeeper (DC1)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
-    when: (((kafka_server_dc1_actual_hosts|length) > 0) and (kafka_server_dc1_actual_hosts[((kafka_server_dc1_actual_hosts|length) - 1)] == inventory_hostname))
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
+    when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
   - name: Set the password for the Kafka admin user in ZooKeeper (DC2)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
-    when: (((kafka_server_dc2_actual_hosts|length) > 0) and (kafka_server_dc2_actual_hosts[((kafka_server_dc2_actual_hosts|length) - 1)] == inventory_hostname))
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
+    when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
 
   - name: Create the Kafka admin command configuration file
     template:
@@ -279,16 +279,16 @@
   block:
   - name: Generate or retrieve the password for the Kafka MirrorMaker user
     set_fact:
-      kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+      kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
   - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC1)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
-    when: (((kafka_server_dc1_actual_hosts|length) > 0) and (kafka_server_dc1_actual_hosts[((kafka_server_dc1_actual_hosts|length) - 1)] == inventory_hostname))
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
+    when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
   - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC2)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_dc2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
-    when: (((kafka_server_dc2_actual_hosts|length) > 0) and (kafka_server_dc2_actual_hosts[((kafka_server_dc2_actual_hosts|length) - 1)] == inventory_hostname))
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
+    when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
 
 - name: Create the Kafka profile file
   template:
@@ -380,4 +380,4 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((kafka_ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
+  when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
