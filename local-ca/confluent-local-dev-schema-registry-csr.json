@@ -1,0 +1,12 @@
+{
+  "CN": "confluent-local-dev-schema-registry",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-local-dev-schema-registry"
+    }
+  ]
+}

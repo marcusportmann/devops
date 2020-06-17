@@ -1,0 +1,23 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=Confluent Schema Registry Service
+Documentation=https://confluent.io
+Requires=network.target remote-fs.target
+After=network.target remote-fs.target
+
+[Service]
+Type=simple
+User={{ schema_registry_user }}
+Group={{ schema_registry_group }}
+Environment=LOG_DIR={{ schema_registry_log_directory }}
+ExecStart=/opt/confluent/bin/schema-registry-start {{ schema_registry_etc_directory }}/conf/schema-registry.properties
+ExecStop=/opt/confluent/bin/schema-registry-stop {{ schema_registry_etc_directory }}/conf/schema-registry.properties
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+

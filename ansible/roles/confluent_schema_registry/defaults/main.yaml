@@ -1,0 +1,16 @@
+---
+#file: roles/confluent_schema_registry/vars/main.yaml
+
+kafka_secure_broker_port: 9093
+
+schema_registry_etc_directory: /etc/schema-registry
+schema_registry_log_directory: /var/log/schema-registry
+
+schema_registry_user: cp-schema-registry
+schema_registry_user_id: 315
+schema_registry_group: cp-schema-registry
+schema_registry_group_id: 315
+
+kafka_schema_registry_user_username: schema-registry
+
+
