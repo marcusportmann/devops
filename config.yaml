@@ -712,7 +712,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           2048
+    memory:           1536
     fqdn:             k8s-local-dev-m-01.local
     domain:           local
     ip:               192.168.184.51/24
@@ -720,7 +720,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
-    memory:           2048
+    memory:           1536
     fqdn:             k8s-local-dev-m-01.local
     domain:           local
     ip:               192.168.0.51/24
@@ -742,7 +742,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           2048
+    memory:           1536
     fqdn:             k8s-local-dev-m-02.local
     domain:           local
     ip:               192.168.184.52/24
@@ -750,7 +750,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
-    memory:           2048
+    memory:           1536
     fqdn:             k8s-local-dev-m-02.local
     domain:           local
     ip:               192.168.0.52/24
@@ -772,7 +772,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           2048
+    memory:           1536
     fqdn:             k8s-local-dev-m-03.local
     domain:           local
     ip:               192.168.184.53/24
@@ -780,7 +780,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
-    memory:           2048
+    memory:           1536
     fqdn:             k8s-local-dev-m-03.local
     domain:           local
     ip:               192.168.0.53/24
@@ -802,7 +802,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           4096
+    memory:           3072
     fqdn:             k8s-local-dev-w-01.local
     domain:           local
     ip:               192.168.184.54/24
@@ -833,7 +833,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           4096
+    memory:           3072
     fqdn:             k8s-local-dev-w-02.local
     domain:           local
     ip:               192.168.184.55/24
@@ -864,7 +864,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           4096
+    memory:           3072
     fqdn:             k8s-local-dev-w-03.local
     domain:           local
     ip:               192.168.184.56/24
