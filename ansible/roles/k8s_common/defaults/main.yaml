@@ -1,10 +1,10 @@
 ---
 # file: roles/k8s_common/vars/main.yaml
 
-k8s_centos_package_version: 1.18.0
+k8s_centos_package_version: 1.18.4
 k8s_helm_version: 3.2.3
 k8s_helm_package_checksum: sha256:3156e4fe5f034e5b127cf165d61a8a1c48eb7a73b14689b273de5e6117df6fe2
-k8s_ubuntu_package_version: 1.18.2-00
+k8s_ubuntu_package_version: 1.18.4-00
 
 k8s_k8s_admin_user_id: 500
 k8s_k8s_admin_group_id: 500
