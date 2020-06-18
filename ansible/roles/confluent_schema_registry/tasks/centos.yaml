@@ -1,0 +1,14 @@
+---
+# file: roles/confluent_schema_registry/tasks/centos.yaml
+
+- debug:
+    msg: Applying the CentOS-specific Confluent Schema Registry configuration
+
+- name: Allow all access to tcp port 443 (Confluent Schema Registry HTTPS)
+  firewalld:
+    port: '443/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+

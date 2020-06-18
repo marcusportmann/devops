@@ -1,0 +1,16 @@
+---
+# file: roles/confluent_schema_registry/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Confluent Schema Registry configuration
+
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Allow all access to tcp port 443 (Confluent Schema Registry HTTPS)
+  ufw:
+    rule: allow
+    port: 443
+    proto: tcp
