@@ -9,7 +9,7 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 2888 to other ZooKeeper hosts (DC1)
+- name: Allow all access to tcp port 2888 to other ZooKeeper hosts (Cluster1)
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -18,7 +18,7 @@
   loop: "{{ confluent_zookeeper_cluster1_actual_hosts }}"
   when: ((inventory_hostname in confluent_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow all access to tcp port 2888 to other ZooKeeper hosts (DC2)
+- name: Allow all access to tcp port 2888 to other ZooKeeper hosts (Cluster2)
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -27,7 +27,7 @@
   loop: "{{ confluent_zookeeper_cluster2_actual_hosts }}"
   when: ((inventory_hostname in confluent_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow all access to tcp port 3888 to other ZooKeeper hosts (DC1)
+- name: Allow all access to tcp port 3888 to other ZooKeeper hosts (Cluster1)
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -36,7 +36,7 @@
   loop: "{{ confluent_zookeeper_cluster1_actual_hosts }}"
   when: ((inventory_hostname in confluent_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow all access to tcp port 3888 to other ZooKeeper hosts (DC2)
+- name: Allow all access to tcp port 3888 to other ZooKeeper hosts (Cluster2)
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -45,7 +45,7 @@
   loop: "{{ confluent_zookeeper_cluster2_actual_hosts }}"
   when: ((inventory_hostname in confluent_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Confluent Server hosts (DC1)
+- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Confluent Server hosts (Cluster1)
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -54,7 +54,7 @@
   loop: "{{ kafka_server_cluster1_actual_hosts | default([]) }}"
   when: (inventory_hostname in confluent_zookeeper_cluster1_actual_hosts)
 
-- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Confluent Server hosts (DC2)
+- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Confluent Server hosts (Cluster2)
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"

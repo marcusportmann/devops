@@ -214,12 +214,12 @@
 #    enabled: yes
 
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
-- name: Set the password for the Kafka Server user in ZooKeeper (DC1)
+- name: Set the password for the Kafka Server user in ZooKeeper (Cluster1)
   shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
   when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
   register: set_password_for_kafka_server_user_in_zookeeper_cluster1_result
-- name: Set the password for the Kafka Server user in ZooKeeper (DC2)
+- name: Set the password for the Kafka Server user in ZooKeeper (Cluster2)
   shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
   when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
@@ -258,11 +258,11 @@
     set_fact:
       kafka_admin_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/kafka-admin-user-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Set the password for the Kafka admin user in ZooKeeper (DC1)
+  - name: Set the password for the Kafka admin user in ZooKeeper (Cluster1)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
     when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
-  - name: Set the password for the Kafka admin user in ZooKeeper (DC2)
+  - name: Set the password for the Kafka admin user in ZooKeeper (Cluster2)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
     when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
@@ -281,29 +281,74 @@
     set_fact:
       kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC1)
+  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (Cluster1)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
     when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
-  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC2)
+  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (Cluster2)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
     when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
 
-- name: Setup the Schema Registry user
+- name: Apply the Schema Registry configuration (Cluster1)
   block:
   - name: Generate or retrieve the password for the Schema Registry user
     set_fact:
       kafka_schema_registry_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/kafka-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Set the password for the Schema Registry user in ZooKeeper (DC1)
+  - name: Set the password for the Schema Registry user in ZooKeeper (Cluster1)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_schema_registry_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_schema_registry_user_password }}],SCRAM-SHA-512=[password={{ kafka_schema_registry_user_password }}]'
-    when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
-  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC2)
+
+  - name: Check if the Schema Registry topic (_schemas) exists (Cluster1)
     shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ comfluent_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_schema_registry_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_schema_registry_user_password }}],SCRAM-SHA-512=[password={{ kafka_schema_registry_user_password }}]'
-    when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
+      cmd: /opt/confluent/bin/kafka-topics --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --list --topic _schemas
+    register: check_if_schema_registry_topic_exists_result
+
+  - name: Create the Schema Registry topic (_schemas) (Cluster1)
+    shell:
+      cmd: /opt/confluent/bin/kafka-topics --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --create --replication-factor {{ (((kafka_server_cluster1_actual_hosts | length) - 1) if ((kafka_server_cluster1_actual_hosts | length) > 1) else 1) }} --partitions {{ (((kafka_server_cluster1_actual_hosts | length) - 1) if ((kafka_server_cluster1_actual_hosts | length) > 1) else 1) }} --topic _schemas --config cleanup.policy=compact
+    when: (check_if_schema_registry_topic_exists_result.stdout_lines[0] == "0")
+
+  - name: Grant the schema-registry user access to the Schema Registry topic (_schemas) (Cluster1)
+    shell:
+      cmd: /opt/confluent/bin/kafka-acls --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --add --allow-principal User:schema-registry --operation all --topic _schemas
+
+  - name: Grant the schema-registry user access to the Schema Registry consumer group (schema-registry) (Cluster1)
+    shell:
+      cmd: /opt/confluent/bin/kafka-acls --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --add --allow-principal User:schema-registry --operation all --group schema-registry
+
+  when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
+
+- name: Apply the Schema Registry configuration (Cluster2)
+  block:
+  - name: Generate or retrieve the password for the Schema Registry user
+    set_fact:
+      kafka_schema_registry_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/kafka-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
+
+  - name: Set the password for the Schema Registry user in ZooKeeper (Cluster2)
+    shell:
+      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ confluent_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_schema_registry_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_schema_registry_user_password }}],SCRAM-SHA-512=[password={{ kafka_schema_registry_user_password }}]'
+
+  - name: Check if the Schema Registry topic (_schemas) exists (Cluster2)
+    shell:
+      cmd: /opt/confluent/bin/kafka-topics --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --list --topic _schemas
+    register: check_if_schema_registry_topic_exists_result
+
+  - name: Create the Schema Registry topic (_schemas) (Cluster2)
+    shell:
+      cmd: /opt/confluent/bin/kafka-topics --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --create --replication-factor {{ (((kafka_server_cluster2_actual_hosts | length) - 1) if ((kafka_server_cluster2_actual_hosts | length) > 1) else 1) }} --partitions {{ (((kafka_server_cluster2_actual_hosts | length) - 1) if ((kafka_server_cluster2_actual_hosts | length) > 1) else 1) }} --topic _schemas --config cleanup.policy=compact
+    when: (check_if_schema_registry_topic_exists_result.stdout_lines[0] == "0")
+
+  - name: Grant the schema-registry user access to the Schema Registry topic (_schemas) (Cluster2)
+    shell:
+      cmd: /opt/confluent/bin/kafka-acls --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --add --allow-principal User:schema-registry --operation all --topic _schemas
+
+  - name: Grant the schema-registry user access to the Schema Registry consumer group (schema-registry) (Cluster2)
+    shell:
+      cmd: /opt/confluent/bin/kafka-acls --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }} --add --allow-principal User:schema-registry --operation all --group schema-registry
+
+  when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
 
 - name: Create the Kafka profile file
   template:

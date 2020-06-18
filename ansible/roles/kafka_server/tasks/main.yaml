@@ -214,12 +214,12 @@
 #    enabled: yes
 
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
-- name: Set the password for the Kafka Server user in ZooKeeper (DC1)
+- name: Set the password for the Kafka Server user in ZooKeeper (Cluster1)
   shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
   when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
   register: set_password_for_kafka_server_user_in_zookeeper_cluster1_result
-- name: Set the password for the Kafka Server user in ZooKeeper (DC2)
+- name: Set the password for the Kafka Server user in ZooKeeper (Cluster2)
   shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
   when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
@@ -258,11 +258,11 @@
     set_fact:
       kafka_admin_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-admin-user-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Set the password for the Kafka admin user in ZooKeeper (DC1)
+  - name: Set the password for the Kafka admin user in ZooKeeper (Cluster1)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
     when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
-  - name: Set the password for the Kafka admin user in ZooKeeper (DC2)
+  - name: Set the password for the Kafka admin user in ZooKeeper (Cluster2)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_admin_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_admin_user_password }}]'
     when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
@@ -281,11 +281,11 @@
     set_fact:
       kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC1)
+  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (Cluster1)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster1_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
     when: (((kafka_server_cluster1_actual_hosts|length) > 0) and (kafka_server_cluster1_actual_hosts[((kafka_server_cluster1_actual_hosts|length) - 1)] == inventory_hostname))
-  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (DC2)
+  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper (Cluster2)
     shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_mirrormaker_user_password }}]'
     when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))

@@ -4,7 +4,7 @@
 - debug:
     msg: Applying the CentOS-specific ZooKeeper configuration
 
-- name: Allow the other ZooKeeper hosts access to tcp port 2888 (DC1)
+- name: Allow the other ZooKeeper hosts access to tcp port 2888 (Cluster1)
   firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=2888 protocol=tcp accept'
     state: enabled
@@ -13,7 +13,7 @@
   loop: "{{ kafka_zookeeper_cluster1_actual_hosts }}"
   when: ((inventory_hostname in kafka_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow the other ZooKeeper hosts access to tcp port 2888 (DC2)
+- name: Allow the other ZooKeeper hosts access to tcp port 2888 (Cluster2)
   firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=2888 protocol=tcp accept'
     state: enabled
@@ -22,7 +22,7 @@
   loop: "{{ kafka_zookeeper_cluster2_actual_hosts }}"
   when: ((inventory_hostname in kafka_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow the other ZooKeeper hosts access to tcp port 3888 (DC1)
+- name: Allow the other ZooKeeper hosts access to tcp port 3888 (Cluster1)
   firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=3888 protocol=tcp accept'
     state: enabled
@@ -31,7 +31,7 @@
   loop: "{{ kafka_zookeeper_cluster1_actual_hosts }}"
   when: ((inventory_hostname in kafka_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow the other ZooKeeper hosts access to tcp port 3888 (DC2)
+- name: Allow the other ZooKeeper hosts access to tcp port 3888 (Cluster2)
   firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=3888 protocol=tcp accept'
     state: enabled
@@ -40,7 +40,7 @@
   loop: "{{ kafka_zookeeper_cluster2_actual_hosts }}"
   when: ((inventory_hostname in kafka_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
 
-- name: Allow all the Kafka Server hosts access to tcp port {{ zookeeper_secure_client_port }} (DC1)
+- name: Allow all the Kafka Server hosts access to tcp port {{ zookeeper_secure_client_port }} (Cluster1)
   firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port={{ zookeeper_secure_client_port }} protocol=tcp accept'
     state: enabled
@@ -49,7 +49,7 @@
   loop: "{{ kafka_server_cluster1_actual_hosts | default([]) }}"
   when: (inventory_hostname in kafka_zookeeper_cluster1_actual_hosts)
 
-- name: Allow all the Kafka Server hosts access to tcp port {{ zookeeper_secure_client_port }} (DC2)
+- name: Allow all the Kafka Server hosts access to tcp port {{ zookeeper_secure_client_port }} (Cluster2)
   firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port={{ zookeeper_secure_client_port }} protocol=tcp accept'
     state: enabled

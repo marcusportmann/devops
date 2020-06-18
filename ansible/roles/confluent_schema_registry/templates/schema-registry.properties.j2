@@ -13,7 +13,15 @@ kafkastore.bootstrap.servers = {{ kafka_bootstrap_servers_cluster1 | join(',') }
 kafkastore.bootstrap.servers = {{ kafka_bootstrap_servers_cluster2 | join(',') }}
 {% endif %}
 
+kafkastore.topic.replication.factor=3
 
+host.name={{ inventory_hostname }}
+
+listeners=https://0.0.0.0:443
+
+inter.instance.protocol=https
+
+master.eligibility=true
 
 kafkastore.security.protocol=SASL_SSL
 kafkastore.ssl.protocol=TLS
@@ -25,5 +33,17 @@ kafkastore.ssl.truststore.location={{ schema_registry_etc_directory }}/pki/ca.p1
 kafkastore.ssl.truststore.password={{ ca_truststore_password }}
 kafkastore.sasl.mechanism=SCRAM-SHA-256
 kafkastore.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ kafka_schema_registry_user_username }}" password="{{ kafka_schema_registry_user_password }}";
+
+ssl.protocol=TLS
+ssl.keystore.type=PKCS12
+ssl.keystore.location={{ schema_registry_etc_directory }}/pki/schema-registry.p12
+ssl.keystore.password={{ schema_registry_keystore_password }}
+ssl.key.password={{ schema_registry_keystore_password }}
+ssl.truststore.type=PKCS12
+ssl.truststore.location={{ schema_registry_etc_directory }}/pki/ca.p12
+ssl.truststore.password={{ ca_truststore_password }}
+
+
+
 
 
