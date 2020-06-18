@@ -66,9 +66,15 @@
     dest: /var/lib/grafana/dashboards/kubernetes.json
   when: ('k8s_master' in groups)
 
-- name: Restart the Grafana systemd service
+- name: Restart the grafana-server service
   systemd:
     name: grafana-server.service
     state: restarted
     enabled: yes
     daemon_reload: yes
+
+- name: Ensure that the grafana-server service is started
+  systemd:
+    name: grafana-server.service
+    state: started
+    enabled: yes

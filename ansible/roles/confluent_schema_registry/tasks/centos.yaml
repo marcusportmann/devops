@@ -4,9 +4,9 @@
 - debug:
     msg: Applying the CentOS-specific Confluent Schema Registry configuration
 
-- name: Allow all access to tcp port 443 (Confluent Schema Registry HTTPS)
+- name: Allow all access to tcp port 8443 (Confluent Schema Registry HTTPS)
   firewalld:
-    port: '443/tcp'
+    port: '8443/tcp'
     permanent: yes
     state: enabled
     immediate: yes

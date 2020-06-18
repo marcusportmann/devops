@@ -233,22 +233,22 @@
       regexp: '^%alias zookeeper-shell'
       line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf" /opt/confluent/bin/zookeeper-shell -zk-tls-config-file {{ zookeeper_etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ zookeeper_secure_client_port }}'
 
-- name: Configure the ZooKeeper service
+- name: Configure the zookeeper service
   template:
     src: zookeeper.service.j2
     dest: /lib/systemd/system/zookeeper.service
   register: zookeeper_service_template_result
 
-- name: Enable and start the ZooKeeper service
-  systemd:
-    name: zookeeper.service
-    state: started
-    enabled: yes
-
-- name: Restart the ZooKeeper service if required
+- name: Restart the zookeeper service if required
   systemd:
     name: zookeeper.service
     state: restarted
     enabled: yes
     daemon_reload: yes
   when: ((zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True) or (zookeeper_configuration_template_result.changed == True) or (zookeeper_service_template_result.changed == True))
+
+- name: Ensure that the zookeeper service is started
+  systemd:
+    name: zookeeper.service
+    state: started
+    enabled: yes

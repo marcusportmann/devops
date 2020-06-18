@@ -9,8 +9,8 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 443 (Confluent Schema Registry HTTPS)
+- name: Allow all access to tcp port 8443 (Confluent Schema Registry HTTPS)
   ufw:
     rule: allow
-    port: 443
+    port: 8443
     proto: tcp

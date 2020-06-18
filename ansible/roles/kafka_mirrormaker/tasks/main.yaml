@@ -163,16 +163,23 @@
     mode: '0440'
   register: kafka_mirrormaker_configuration_template_result
 
-- name: Configure the Kafka MirrorMaker service
+- name: Configure the mirrormaker service
   template:
     src: mirrormaker.service.j2
     dest: /lib/systemd/system/mirrormaker.service
   register: kafka_mirrormaker_service_file_template_result
 
-- name: Restart the Kafka MirrorMaker service if required
+- name: Restart the mirrormaker service if required
   systemd:
     name: mirrormaker.service
     state: restarted
     enabled: yes
     daemon_reload: yes
   when: ((ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True) or (kafka_mirrormaker_configuration_template_result.changed == True) or (kafka_mirrormaker_service_file_template_result.changed == True))
+
+- name: Ensure that the mirrormaker service is started
+  systemd:
+    name: mirrormaker.service
+    state: started
+    enabled: yes
+

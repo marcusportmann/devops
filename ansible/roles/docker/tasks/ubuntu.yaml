@@ -3,7 +3,7 @@
 
 - debug:
     msg: Applying the Ubuntu-specific Docker configuration
-        
+
 - name: Add the Docker GPG apt key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
@@ -65,6 +65,12 @@
       state: restarted
       enabled: yes
       daemon_reload: yes
+
+  - name: Ensure that the docker service is started
+    systemd:
+      name: docker.service
+      state: started
+      enabled: yes
 
   when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_ubuntu_package_version))
 

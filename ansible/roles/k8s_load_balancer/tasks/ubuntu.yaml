@@ -18,3 +18,9 @@
     name: haproxy.service
     state: restarted
     enabled: yes
+
+- name: Ensure that the haproxy service is started
+  systemd:
+    name: haproxy.service
+    state: started
+    enabled: yes

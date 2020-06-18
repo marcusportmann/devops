@@ -201,17 +201,11 @@
     mode: '0440'
   register: kafka_server_jaas_configuration_template_result
 
-- name: Configure the Kafka Server service
+- name: Configure the kafka service
   template:
     src: kafka.service.j2
     dest: /lib/systemd/system/kafka.service
   register: kafka_server_service_file_template_result
-
-#- name: Enable and start the Kafka service
-#  systemd:
-#    name: kafka.service
-#    state: started
-#    enabled: yes
 
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
 - name: Set the password for the Kafka Server user in ZooKeeper (Cluster1)
@@ -224,6 +218,20 @@
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_server_etc_directory }}/conf/server.properties --zookeeper {{ kafka_zookeeper_cluster2_actual_hosts[0] }}:{{ kafka_server_zookeeper_secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_user_password }}]'
   when: (((kafka_server_cluster2_actual_hosts|length) > 0) and (kafka_server_cluster2_actual_hosts[((kafka_server_cluster2_actual_hosts|length) - 1)] == inventory_hostname))
   register: set_password_for_kafka_server_user_in_zookeeper_cluster2_result
+
+- name: Restart the kafka service if required
+  systemd:
+    name: kafka.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
+
+- name: Ensure that the kafka service is started
+  systemd:
+    name: kafka.service
+    state: started
+    enabled: yes
 
 - name: Setup the Kafka admin user
   block:
@@ -373,11 +381,3 @@
       state: present
       regexp: '^%alias kafka-topics'
       line: alias kafka-topics='/opt/kafka/bin/kafka-topics.sh --command-config {{ kafka_server_etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_secure_broker_port }}'
-
-- name: Restart the Kafka service if required
-  systemd:
-    name: kafka.service
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
-  when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))

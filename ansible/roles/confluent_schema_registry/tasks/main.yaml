@@ -180,16 +180,22 @@
     mode: '0440'
   register: schema_registry_configuration_template_result
 
-- name: Configure the Schema Registry service
+- name: Configure the schema-registry service
   template:
     src: schema-registry.service.j2
     dest: /lib/systemd/system/schema-registry.service
   register: schema_registry_service_file_template_result
 
-- name: Restart the Schema Registry service if required
+- name: Restart the schema-registry service if required
   systemd:
     name: schema-registry.service
     state: restarted
     enabled: yes
     daemon_reload: yes
   when: ((ca_copy_result.changed == True) or (schema_registry_private_key_copy_result.changed == True) or (schema_registry_certificate_copy_result.changed == True) or (schema_registry_configuration_template_result.changed == True) or (schema_registry_service_file_template_result.changed == True))
+
+- name: Ensure that the schema-registry service is started
+  systemd:
+    name: schema-registry.service
+    state: started
+    enabled: yes

@@ -82,6 +82,12 @@
         enabled: yes
         daemon_reload: yes
 
+    - name: Ensure that the lvmd service is started
+      systemd:
+        name: kafka.service
+        state: started
+        enabled: yes
+
     when: (topolvm_lvmd_installed_version != k8s_topolvm_lvmd_version)
 
   when: ((('k8s_worker' not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))

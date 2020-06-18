@@ -1,11 +1,11 @@
 {
   "signing": {
     "default": {
-      "expiry": "87600h"
+      "expiry": "19776h"
     },
   "profiles": {
       "client": {
-        "expiry": "87600h",
+        "expiry": "19776h",
         "usages": [
           "signing",
           "key encipherment",
@@ -13,7 +13,7 @@
         ]
       },
       "client_server": {
-        "expiry": "87600h",
+        "expiry": "19776h",
         "usages": [
           "signing",
           "key encipherment",
@@ -27,7 +27,7 @@
           "max_path_len": 0,
           "max_path_len_zero": true
         },
-        "expiry": "87600h",
+        "expiry": "19776h",
         "usages": [
           "signing",
           "digital signature",
@@ -36,7 +36,7 @@
         ]
       },
       "server": {
-        "expiry": "87600h",
+        "expiry": "19776h",
         "usages": [
           "signing",
           "key encipherment",

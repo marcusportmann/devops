@@ -188,10 +188,15 @@
 
   when: ("k8s_master" in groups.keys())
 
-- name: Restart the Prometheus service
+- name: Restart the prometheus service
   systemd:
     name: prometheus.service
     state: restarted
     enabled: yes
     daemon_reload: yes
 
+- name: Ensure that the prometheus service is started
+  systemd:
+    name: prometheus.service
+    state: started
+    enabled: yes

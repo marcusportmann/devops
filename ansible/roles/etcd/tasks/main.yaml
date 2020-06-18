@@ -186,6 +186,12 @@
         daemon_reload: yes
         no_block: yes
 
+    - name: Ensure that the etcd service is started
+      systemd:
+        name: etcd.service
+        state: started
+        enabled: yes
+
     when: (etcd_installed_version != etcd_version)
 
 
