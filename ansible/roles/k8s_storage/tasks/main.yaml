@@ -84,7 +84,7 @@
 
     - name: Ensure that the lvmd service is started
       systemd:
-        name: kafka.service
+        name: lvmd.service
         state: started
         enabled: yes
 

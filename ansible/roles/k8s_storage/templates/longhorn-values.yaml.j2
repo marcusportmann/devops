@@ -11,12 +11,12 @@ persistence:
 
 {% if (('k8s_worker' in groups) and ((groups['k8s_worker'] | length) > 3)) %}
 csi:
-  attacherReplicaCount: 1
-  provisionerReplicaCount: 1
-  resizerReplicaCount: 1
-{% else %}
-csi:
   attacherReplicaCount: 3
   provisionerReplicaCount: 3
   resizerReplicaCount: 3
+{% else %}
+csi:
+  attacherReplicaCount: 1
+  provisionerReplicaCount: 1
+  resizerReplicaCount: 1
 {% endif %}
