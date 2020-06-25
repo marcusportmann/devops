@@ -119,14 +119,14 @@ variables:
 
 - name: k8s_longhorn_enabled
   values:
-  - true
+  - false
 - name: k8s_topolvm_enabled
   values:
-  - true
+  - false
 
 - name: k8s_monitoring_enabled
   values:
-  - true
+  - false
 - name: k8s_monitoring_elasticsearch_cluster_type
   values:
   - standalone
@@ -148,7 +148,7 @@ variables:
 
 - name: k8s_istio_enabled
   values:
-  - true
+  - false
 - name: k8s_istio_demo_configuration_enabled
   values:
   - false
@@ -214,6 +214,14 @@ profiles:
   - k8s-local-dev-m-01.local
   - k8s-local-dev-m-02.local
   - k8s-local-dev-m-03.local
+
+- name: k8s-single-master
+  hosts:
+  - k8s-local-dev-api.local
+  - k8s-local-dev-m-01.local
+  - k8s-local-dev-w-01.local
+  - k8s-local-dev-w-02.local
+  - k8s-local-dev-w-03.local
 
 - name: k8s-full
   hosts:
@@ -556,7 +564,7 @@ hosts:
   ansible_groups:     k8s_master
   virtualbox:
     cpus:             4
-    memory:           6144
+    memory:           8192
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.60/24
@@ -564,7 +572,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             4
-    memory:           6144
+    memory:           8192
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.60/24
@@ -572,7 +580,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             4
-    memory:           6144
+    memory:           8192
     fqdn:             devops.local
     domain:           local
     ip:               192.168.0.60/24
