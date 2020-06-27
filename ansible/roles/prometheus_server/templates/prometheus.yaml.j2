@@ -1,23 +1,51 @@
-{% set monitored_hosts = [] -%}
-{% for host in groups["monitored"] -%}
-  {% set _ = monitored_hosts.append("'%s:9100'" % (hostvars[host]['inventory_hostname'])) -%}
-{% endfor -%}
-
 global:
   scrape_interval:     15s
   evaluation_interval: 15s
 
 scrape_configs:
-- job_name: 'prometheus'
-  scrape_interval: 5s
-  scrape_timeout: 5s
-  static_configs:
-  - targets: ['{{ inventory_hostname }}:9090']
 
-- job_name: node
-  static_configs:
-  - targets: [{{ monitored_hosts | join(',') }}]
 
+#    ____ ___  _   _ _____ _    _   _ _____ _   _ _____
+#   / ___/ _ \| \ | |  ___| |  | | | | ____| \ | |_   _|
+#  | |  | | | |  \| | |_  | |  | | | |  _| |  \| | | |
+#  | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |
+#   \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|
+#
+{% if ('confluent_kafka_mirrormaker' in groups) %}
+
+{% endif %}
+
+{% if ('confluent_kafka_server' in groups) %}
+
+{% endif %}
+
+{% if ('confluent_schema_registry' in groups) %}
+
+{% endif %}
+
+
+
+#   _  __    _    _____ _  __    _
+#  | |/ /   / \  |  ___| |/ /   / \
+#  | ' /   / _ \ | |_  | ' /   / _ \
+#  | . \  / ___ \|  _| | . \  / ___ \
+#  |_|\_\/_/   \_\_|   |_|\_\/_/   \_\
+#
+{% if ('kafka_mirrormaker' in groups) %}
+
+{% endif %}
+
+{% if ('kafka_server' in groups) %}
+
+{% endif %}
+
+
+#   _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____
+#  | |/ / | | | __ )| ____|  _ \| \ | | ____|_   _| ____/ ___|
+#  | ' /| | | |  _ \|  _| | |_) |  \| |  _|   | | |  _| \___ \
+#  | . \| |_| | |_) | |___|  _ <| |\  | |___  | | | |___ ___) |
+#  |_|\_\\___/|____/|_____|_| \_\_| \_|_____| |_| |_____|____/
+#
 {% if ('k8s_master' in groups) %}
 
 - job_name: 'kubernetes-apiservers'
@@ -160,12 +188,75 @@ scrape_configs:
 
 {% endif %}
 
-{% if ('kafka_server' in groups) %}
+
+#   _   _  ___  ____  _____ ____
+#  | \ | |/ _ \|  _ \| ____/ ___|
+#  |  \| | | | | | | |  _| \___ \
+#  | |\  | |_| | |_| | |___ ___) |
+#  |_| \_|\___/|____/|_____|____/
+#
+{% if ('monitored' in groups) -%}
+{% set monitored_hosts = [] -%}
+{% for host in groups['monitored'] -%}
+  {% set _ = monitored_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_node_exporter_port)) -%}
+{% endfor -%}
+{% endif -%}
+
+- job_name: nodes
+  static_configs:
+  - targets: [{{ monitored_hosts | join(',') }}]
+
+
+#   ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____
+#  |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|
+#  | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \
+#  |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) |
+#  |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/
+#
+- job_name: 'prometheus'
+  scrape_interval: 5s
+  scrape_timeout: 5s
+  static_configs:
+  - targets: ['{{ inventory_hostname }}:9090']
+
+
+
+#   ________   ___  _  _______ _____ ____  _____ ____
+#  |__  / _ \ / _ \| |/ / ____| ____|  _ \| ____|  _ \
+#    / / | | | | | | ' /|  _| |  _| | |_) |  _| | |_) |
+#   / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
+#  /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
+#
+{% set zookeeper_hosts = [] -%}
+{% set zookeeper_jmx_hosts = [] -%}
+
+{% if ('confluent_zookeeper' in groups) -%}
+{% for host in groups['confluent_zookeeper'] -%}
+  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_exporter_port)) -%}
+  {% set _ = zookeeper_jmx_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
+{% endfor -%}
+{% endif -%}
+
+{% if ('kafka_zookeeper' in groups) -%}
+{% for host in groups['kafka_zookeeper'] -%}
+  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_exporter_port)) -%}
+  {% set _ = zookeeper_jmx_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
+{% endfor -%}
+{% endif -%}
+
+{% if ((zookeeper_hosts | length) > 0) %}
+
+- job_name: 'zookeeper'
+  static_configs:
+  - targets: [{{ zookeeper_hosts | join(',') }}]
 
 {% endif %}
 
-{% if ('kafka_zookeeper' in groups) %}
+{% if ((zookeeper_jmx_hosts | length) > 0) %}
+
+- job_name: 'zookeeper-jmx'
+  static_configs:
+  - targets: [{{ zookeeper_jmx_hosts | join(',') }}]
 
 {% endif %}
-
 

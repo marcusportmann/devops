@@ -37,3 +37,13 @@ zookeeper_autopurge_snap_retain_count: 10
 zookeeper_kafka_user_username: kafka
 
 zookeeper_admin_user_username: admin
+
+zookeeper_enable_remote_jmx: true
+
+prometheus_jmx_exporter_enabled: true
+prometheus_jmx_exporter_version: 0.13.0
+prometheus_zookeeper_jmx_exporter_port: 9150
+prometheus_zookeeper_exporter_port: 9151
+
+
+

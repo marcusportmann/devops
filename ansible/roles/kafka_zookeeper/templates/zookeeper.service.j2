@@ -10,8 +10,8 @@ After=network.target remote-fs.target
 Type=simple
 User={{ zookeeper_user }}
 Group={{ zookeeper_group }}
-Environment=LOG_DIR={{ zookeeper_log_directory }}
-Environment="EXTRA_ARGS=-Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf -Dzookeeper.superUser=admin"
+Environment="LOG_DIR={{ zookeeper_log_directory }}"
+Environment="EXTRA_ARGS={% if prometheus_jmx_exporter_enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar={{ prometheus_zookeeper_jmx_exporter_port }}:{{ zookeeper_etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ zookeeper_etc_directory }}/conf/zookeeper-jaas.conf -Dzookeeper.superUser=admin {% if zookeeper_enable_remote_jmx|bool %}-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname={{ inventory_hostname }} -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.rmi.port=9998{% endif %}"
 ExecStart=/opt/kafka/bin/zookeeper-server-start.sh {{ zookeeper_etc_directory }}/conf/zookeeper.properties
 ExecStop=/opt/kafka/bin/zookeeper-server-stop.sh {{ zookeeper_etc_directory }}/conf/zookeeper.properties
 Restart=always

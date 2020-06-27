@@ -10,3 +10,12 @@
     permanent: yes
     state: enabled
     immediate: yes
+
+- name: Allow all access to tcp port {{ prometheus_kafka_server_jmx_exporter_port }} (Prometheus JMX Exporter Port)
+  firewalld:
+    port: '{{ prometheus_kafka_server_jmx_exporter_port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+

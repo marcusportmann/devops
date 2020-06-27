@@ -20,3 +20,9 @@ kafka_server_zookeeper_user_username: kafka
 kafka_admin_user_username: admin
 kafka_mirrormaker_user_username: mirrormaker
 kafka_schema_registry_user_username: schema-registry
+
+prometheus_jmx_exporter_enabled: true
+prometheus_jmx_exporter_version: 0.13.0
+prometheus_kafka_server_jmx_exporter_port: 9131
+
+

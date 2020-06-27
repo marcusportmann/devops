@@ -1,8 +1,8 @@
 ---
-# file: roles/prometheus/tasks/ubuntu.yaml
+# file: roles/prometheus_server/tasks/ubuntu.yaml
 
 - debug:
-    msg: Applying the Ubuntu-specific Prometheus configuration
+    msg: Applying the Ubuntu-specific Prometheus Server configuration
 
 - name: Allow all access to tcp port 9090
   ufw:

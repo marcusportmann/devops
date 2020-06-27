@@ -64,3 +64,50 @@
 
     when: ((confluent_installed_stat_result.stat.exists == False) or (confluent_installed_stat_result.stat.lnk_target != ('/opt/confluent-' + confluent_version)))
 
+
+#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____        _ __  ____  __  _______  ______   ___  ____ _____ _____ ____
+# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|      | |  \/  \ \/ / | ____\ \/ /  _ \ / _ \|  _ \_   _| ____|  _ \
+# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \   _  | | |\/| |\  /  |  _|  \  /| |_) | | | | |_) || | |  _| | |_) |
+# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) | | |_| | |  | |/  \  | |___ /  \|  __/| |_| |  _ < | | | |___|  _ <
+# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/   \___/|_|  |_/_/\_\ |_____/_/\_\_|    \___/|_| \_\|_| |_____|_| \_\
+#
+- name: Install the Prometheus JMX Exporter library
+  block:
+  - name: Create the /opt/prometheus/lib directory
+    file:
+      path: /opt/prometheus/lib
+      owner: root
+      group: root
+      mode: '0755'
+      state: directory
+
+  - debug:
+      msg: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library has been installed
+
+  - stat:
+      path: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
+    register: prometheus_jmx_exporter_installed_stat_result
+
+  - block:
+    - debug:
+        msg: Install the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library
+
+    - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} has been downloaded
+      become: no
+      local_action: stat path=packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
+      register: prometheus_jmx_exporter_package_stat_result
+
+    - name: Download the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library
+      become: no
+      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar' dest='packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar'
+      when: (prometheus_jmx_exporter_package_stat_result.stat.exists == False)
+
+    - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library
+      copy:
+        src: packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
+        dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
+
+    when: (prometheus_jmx_exporter_installed_stat_result.stat.exists == False)
+
+  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+

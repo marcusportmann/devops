@@ -180,12 +180,14 @@ profiles:
 - name: confluent-single-cluster-minimal
   hosts:
   - confluent-local-dev-01.local
+  - monitor.local
 
 - name: confluent-single-cluster-full
   hosts:
   - confluent-local-dev-01.local
   - confluent-local-dev-03.local
   - confluent-local-dev-05.local
+  - monitor.local
 
 - name: devops
   hosts:
@@ -253,12 +255,14 @@ profiles:
 - name: kafka-single-cluster-minimal
   hosts:
   - kafka-local-dev-01.local
+  - monitor.local
 
 - name: kafka-single-cluster-full
   hosts:
   - kafka-local-dev-01.local
   - kafka-local-dev-03.local
   - kafka-local-dev-05.local
+  - monitor.local
 
 - name: monitor
   hosts:
@@ -304,7 +308,7 @@ hosts:
 - name:               confluent-local-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_zookeeper,confluent_kafka_server,confluent_schema_registry
+  ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server,confluent_schema_registry
   virtualbox:
     cpus:             2
     memory:           1536
@@ -336,7 +340,7 @@ hosts:
 - name:               confluent-local-dev-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_zookeeper,confluent_kafka_server
+  ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -368,7 +372,7 @@ hosts:
 - name:               confluent-local-dev-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_zookeeper,confluent_kafka_server
+  ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -400,7 +404,7 @@ hosts:
 - name:               confluent-local-dev-04.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_zookeeper,confluent_kafka_server
+  ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -432,7 +436,7 @@ hosts:
 - name:               confluent-local-dev-05.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_zookeeper,confluent_kafka_server
+  ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -464,7 +468,7 @@ hosts:
 - name:               confluent-local-dev-06.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_zookeeper,confluent_kafka_server
+  ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -496,7 +500,7 @@ hosts:
 - name:               confluent-local-dev-07.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_kafka_mirrormaker
+  ansible_groups:     monitored,confluent_kafka_mirrormaker
   virtualbox:
     cpus:             2
     memory:           1536
@@ -528,7 +532,7 @@ hosts:
 - name:               confluent-local-dev-08.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     confluent_kafka_mirrormaker
+  ansible_groups:     monitored,confluent_kafka_mirrormaker
   virtualbox:
     cpus:             2
     memory:           1536
@@ -891,7 +895,7 @@ hosts:
 - name:               kafka-local-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -923,7 +927,7 @@ hosts:
 - name:               kafka-local-dev-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -955,7 +959,7 @@ hosts:
 - name:               kafka-local-dev-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -987,7 +991,7 @@ hosts:
 - name:               kafka-local-dev-04.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1019,7 +1023,7 @@ hosts:
 - name:               kafka-local-dev-05.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1051,7 +1055,7 @@ hosts:
 - name:               kafka-local-dev-06.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_zookeeper,kafka_server
+  ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1083,7 +1087,7 @@ hosts:
 - name:               kafka-local-dev-07.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_mirrormaker
+  ansible_groups:     monitored,kafka_mirrormaker
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1115,7 +1119,7 @@ hosts:
 - name:               kafka-local-dev-08.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     kafka_mirrormaker
+  ansible_groups:     monitored,kafka_mirrormaker
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1148,7 +1152,7 @@ hosts:
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus,grafana
+  ansible_groups:     monitored,prometheus_server,grafana
   virtualbox:
     cpus:             1
     memory:           1024
@@ -1277,7 +1281,7 @@ hosts:
   domain:             local
   type:               ubuntu2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus,grafana
+  ansible_groups:     monitored,prometheus_server,grafana
   virtualbox:
     cpus:             2
     memory:           1024

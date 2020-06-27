@@ -5,8 +5,8 @@ dataDir={{ zookeeper_data_directory }}
 dataLogDir={{ zookeeper_data_log_directory }}
 {% endif %}
 
-# The port at which the clients will connect
-clientPort={{ zookeeper_client_port }}
+# The port at which the clients will connect (Disabled)
+# clientPort={{ zookeeper_client_port }}
 
 # The per-ip limit on the number of connections
 maxClientCnxns={{ zookeeper_max_client_connections }}
@@ -67,14 +67,17 @@ enforcedAuthenticationScheme=sasl
 requireClientAuthScheme=sasl
 
 # The cluster hosts
-{% if (inventory_hostname in confluent_zookeeper_cluster1_actual_hosts)  %}
+{% if ((inventory_hostname in confluent_zookeeper_cluster1_actual_hosts) and ((confluent_zookeeper_cluster1_actual_hosts|length) > 1)) %}
 {% for zookeeper_host in confluent_zookeeper_cluster1_actual_hosts -%}
 server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
 {% endfor -%}
-{% elif (inventory_hostname in confluent_zookeeper_cluster2_actual_hosts)  %}
+{% elif ((inventory_hostname in confluent_zookeeper_cluster2_actual_hosts) and and ((confluent_zookeeper_cluster2_actual_hosts|length) > 1)) %}
 {% for zookeeper_host in confluent_zookeeper_cluster2_actual_hosts -%}
 server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
 {% endfor -%}
 {% endif %}
 
+# Metrics configuration (3.6+ ONLY)
+metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
+metricsProvider.httpPort={{ prometheus_zookeeper_exporter_port }}
 

@@ -1,5 +1,5 @@
 ---
-# file: roles/prometheus/tasks/main.yaml
+# file: roles/prometheus_server/tasks/main.yaml
 
 - set_fact:
     prometheus_data_directory: "{{ prometheus_data_directory if ((prometheus_data_directory is defined) and (prometheus_data_directory != None)) else '/var/lib/prometheus' }}"

@@ -190,6 +190,12 @@
     mode: '0440'
   register: zookeeper_configuration_template_result
 
+- name: Copy the Prometheus JMX Exporter configuration file
+  copy:
+    src: files/prometheus_jmx_exporter.yaml
+    dest: '{{ zookeeper_etc_directory }}/conf/prometheus_jmx_exporter.yaml'
+  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+
 - name: Generate or retrieve the password for the ZooKeeper admin user
   set_fact:
     zookeeper_admin_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_platform_name }}/zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"

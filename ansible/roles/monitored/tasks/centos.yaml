@@ -4,9 +4,9 @@
 - debug:
     msg: Applying the CentOS-specific monitored configuration
 
-- name: Allow all access to tcp port 9100
+- name: Allow all access to tcp port {{ prometheus_node_exporter_port }}
   firewalld:
-    port: 9100/tcp
+    port: '{{ prometheus_node_exporter_port }}/tcp'
     permanent: yes
     state: enabled
     immediate: yes

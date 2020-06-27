@@ -13,3 +13,8 @@ kafka_mirrormaker_group_id: 330
 
 kafka_mirrormaker_user_username: mirrormaker
 
+prometheus_jmx_exporter_enabled: true
+prometheus_jmx_exporter_version: 0.13.0
+prometheus_kafka_mirrormaker_jmx_exporter_port: 9130
+
+

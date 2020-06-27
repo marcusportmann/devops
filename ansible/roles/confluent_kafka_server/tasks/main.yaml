@@ -289,6 +289,12 @@
       group: '{{ kafka_server_group }}'
       mode: '0440'
 
+  - name: Copy the Prometheus JMX Exporter configuration file
+    copy:
+      src: files/prometheus_jmx_exporter.yaml
+      dest: '{{ kafka_server_etc_directory }}/prometheus_jmx_exporter.yaml'
+    when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+
 - name: Setup the Kafka MirrorMaker user
   block:
   - name: Generate or retrieve the password for the Kafka MirrorMaker user

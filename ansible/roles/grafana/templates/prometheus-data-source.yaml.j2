@@ -6,7 +6,7 @@ datasources:
   type: prometheus
   access: proxy
   orgId: 1
-  url: http://{{ groups['prometheus'][0] }}:9090
+  url: http://{{ groups['prometheus_server'][0] }}:9090
   isDefault: true
   version: 1
   editable: false

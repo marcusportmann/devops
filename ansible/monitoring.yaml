@@ -7,12 +7,12 @@
   roles:
   - monitored
 
-- name: Configure a Prometheus host
-  hosts: prometheus
+- name: Configure a Prometheus Server host
+  hosts: prometheus_server
   become: yes
   become_user: root
   roles:
-  - prometheus
+  - prometheus_server
 
 - name: Configure a Grafana host
   hosts: grafana

@@ -4,8 +4,8 @@
 - debug:
     msg: Applying the Ubuntu-specific monitored configuration
 
-- name: Allow all access to tcp port 9100
+- name: Allow all access to tcp port {{ prometheus_node_exporter_port }}
   ufw:
     rule: allow
-    port: '9100'
+    port: '{{ prometheus_node_exporter_port }}'
     proto: tcp
