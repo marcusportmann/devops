@@ -1,0 +1,18 @@
+---
+# file: roles/confluent_kafka_mirrormaker/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Kafka MirrorMaker configuration
+
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
+- name: Allow all access to tcp port {{ prometheus_kafka_mirrormaker_jmx_exporter_port }} (Prometheus JMX Exporter Port)
+  ufw:
+    rule: allow
+    port: '{{ prometheus_kafka_mirrormaker_jmx_exporter_port }}'
+    proto: tcp
+  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+
