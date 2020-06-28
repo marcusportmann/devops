@@ -228,19 +228,16 @@ scrape_configs:
 #  /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
 {% set zookeeper_hosts = [] -%}
-{% set zookeeper_jmx_hosts = [] -%}
 
 {% if ('confluent_zookeeper' in groups) -%}
 {% for host in groups['confluent_zookeeper'] -%}
-  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_exporter_port)) -%}
-  {% set _ = zookeeper_jmx_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
+  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
 {% endfor -%}
 {% endif -%}
 
 {% if ('kafka_zookeeper' in groups) -%}
 {% for host in groups['kafka_zookeeper'] -%}
-  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_exporter_port)) -%}
-  {% set _ = zookeeper_jmx_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
+  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
 {% endfor -%}
 {% endif -%}
 
@@ -249,14 +246,6 @@ scrape_configs:
 - job_name: 'zookeeper'
   static_configs:
   - targets: [{{ zookeeper_hosts | join(',') }}]
-
-{% endif %}
-
-{% if ((zookeeper_jmx_hosts | length) > 0) %}
-
-- job_name: 'zookeeper-jmx'
-  static_configs:
-  - targets: [{{ zookeeper_jmx_hosts | join(',') }}]
 
 {% endif %}
 

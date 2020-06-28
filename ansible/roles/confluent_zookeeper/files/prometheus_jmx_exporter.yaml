@@ -1,8 +1,5 @@
----
-lowercaseOutputName: true
-lowercaseOutputLabelNames: true
 rules:
-  # replicated Zookeeper
+  # Replicated Zookeeper
   - pattern: "org.apache.ZooKeeperService<name0=ReplicatedServer_id(\\d+)><>(\\w+)"
     name: "zookeeper_$2"
     type: GAUGE
@@ -29,7 +26,7 @@ rules:
     labels:
       replicaId: "$2"
       memberType: "$3"
-  # standalone Zookeeper
+  # Standalone Zookeeper
   - pattern: "org.apache.ZooKeeperService<name0=StandaloneServer_port-(\\d+)><>(\\w+)"
     type: GAUGE
     name: "zookeeper_$2"

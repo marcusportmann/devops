@@ -66,6 +66,12 @@
     dest: /var/lib/grafana/dashboards/kubernetes.json
   when: ('k8s_master' in groups)
 
+- name: Copy the zookeeper.json dashboard file
+  template:
+    src: dashboards/zookeeper.json.j2
+    dest: /var/lib/grafana/dashboards/zookeeper.json
+  when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
+
 - name: Restart the grafana-server service
   systemd:
     name: grafana-server.service
@@ -78,3 +84,24 @@
     name: grafana-server.service
     state: started
     enabled: yes
+
+
+- name: Retrieve the currently installed version of the Grafana pie chart panel plug-in
+  shell:
+    cmd: grafana-cli plugins ls | grep grafana-piechart-panel | awk  {'print $3'}
+  register: grafana_pie_chart_panel_plugin_installed_version_output
+
+- name: Install the Grafana pie chart panel plug-in {{ grafana_pie_chart_panel_plugin_version }}
+  shell:
+    cmd: grafana-cli plugins install grafana-piechart-panel {{ grafana_pie_chart_panel_plugin_version }}
+  when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_pie_chart_panel_plugin_version)
+
+- name: Restart the grafana-server service
+  systemd:
+    name: grafana-server.service
+    state: restarted
+  when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_pie_chart_panel_plugin_version)
+
+
+
+

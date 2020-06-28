@@ -77,7 +77,8 @@ server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
 {% endfor -%}
 {% endif %}
 
-# Metrics configuration (3.6+ ONLY)
+{% if ((prometheus_exporter_enabled is defined) and (prometheus_exporter_enabled != None) and (prometheus_exporter_enabled == true)) %}
+# Metrics configuration (ZooKeeper > 3.6 only)
 metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
 metricsProvider.httpPort={{ prometheus_zookeeper_exporter_port }}
-
+{% endif %}

@@ -38,13 +38,16 @@ zookeeper_kafka_user_username: kafka
 
 zookeeper_admin_user_username: admin
 
-zookeeper_enable_remote_jmx: true
+zookeeper_enable_remote_jmx: false
 
+# JMX EXPORTER REQUIRED FOR ZOOKEEPER <3.6
 prometheus_jmx_exporter_enabled: true
 prometheus_jmx_exporter_version: 0.13.0
 prometheus_zookeeper_jmx_exporter_port: 9150
-prometheus_zookeeper_exporter_port: 9151
 
+# REQUIRES ZOOKEEPER >=3.6 (https://zookeeper.apache.org/doc/current/zookeeperMonitor.html)
+prometheus_exporter_enabled: false
+prometheus_zookeeper_exporter_port: 9151
 
 
 
