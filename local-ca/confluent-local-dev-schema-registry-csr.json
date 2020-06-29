@@ -13,11 +13,6 @@
     "confluent-local-dev-schema-registry.local",
     "confluent-local-dev-01.local",
     "confluent-local-dev-02.local",
-    "confluent-local-dev-03.local",
-    "confluent-local-dev-04.local",
-    "confluent-local-dev-05.local",
-    "confluent-local-dev-06.local",
-    "confluent-local-dev-07.local",
-    "confluent-local-dev-08.local"
+    "confluent-local-dev-03.local"
   ]
 }

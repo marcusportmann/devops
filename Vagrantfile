@@ -233,25 +233,27 @@ puts "ansible_groups: %s" % $ansible_groups
 # ------------------------------------------------------------------------------------
 # Build the Ansible variables
 # ------------------------------------------------------------------------------------
-$ansible_vars = Hash.new
+# $ansible_vars = Hash.new
 
 # Add the variables in the config.yml file to the Ansible variables
-variables = $config_file['variables']
+# variables = $config_file['variables']
+#
+# variables.each do |variable|
+#
+#   if variable['values'].length == 1
+#   $ansible_vars[variable['name']] = variable['values'][0]
+#   end
+#
+#   if variable['values'].length > 1
+#   $ansible_vars[variable['name']] = []
+#
+#   variable['values'].each do |value|
+#     $ansible_vars[variable['name']] += [value]
+#   end
+#   end
+# end
 
-variables.each do |variable|
-
-  if variable['values'].length == 1
-  $ansible_vars[variable['name']] = variable['values'][0]
-  end
-
-  if variable['values'].length > 1
-  $ansible_vars[variable['name']] = []
-
-  variable['values'].each do |value|
-    $ansible_vars[variable['name']] += [value]
-  end
-  end
-end
+$ansible_vars = $config_file['variables']
 
 puts "ansible_vars: %s" % $ansible_vars
 

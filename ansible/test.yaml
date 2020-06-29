@@ -1,0 +1,18 @@
+- name: Gather facts from all test hosts
+  hosts: test
+  become: yes
+  become_user: root
+  pre_tasks:
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ groups['test'] }}"
+  tasks: []
+
+- name: Configure the test hosts
+  hosts: test
+  become: yes
+  become_user: root
+  roles:
+  - test

@@ -66,13 +66,9 @@ authenticationEnforced=true
 enforcedAuthenticationScheme=sasl
 requireClientAuthScheme=sasl
 
+{% if ((zookeeper_hosts|length) > 1) %}
 # The cluster hosts
-{% if ((inventory_hostname in kafka_zookeeper_cluster1_actual_hosts) and ((kafka_zookeeper_cluster1_actual_hosts|length) > 1)) %}
-{% for zookeeper_host in kafka_zookeeper_cluster1_actual_hosts -%}
-server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
-{% endfor -%}
-{% elif ((inventory_hostname in kafka_zookeeper_cluster2_actual_hosts) and and ((kafka_zookeeper_cluster2_actual_hosts|length) > 1)) %}
-{% for zookeeper_host in kafka_zookeeper_cluster2_actual_hosts -%}
+{% for zookeeper_host in zookeeper_hosts -%}
 server.{{ loop.index }}={{ zookeeper_host }}:{{ zookeeper_cluster_ports }}
 {% endfor -%}
 {% endif %}

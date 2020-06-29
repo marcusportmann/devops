@@ -1,35 +1,5 @@
 {% raw %}
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "5.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": "5.0.0"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "prometheus",
-      "version": "5.0.0"
-    }
-  ],
   "annotations": {
     "enable": false,
     "list": [
@@ -48,12 +18,12 @@
   "editable": true,
   "gnetId": 10607,
   "graphTooltip": 1,
-  "id": 3,
-  "iteration": 1564021318214,
+  "iteration": 1593339534247,
   "links": [],
   "panels": [
     {
       "collapsed": false,
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -76,6 +46,12 @@
       ],
       "datasource": "prometheus",
       "description": "Quorum formed by zk nodes",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -107,7 +83,6 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
-      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -187,6 +162,12 @@
       ],
       "datasource": "prometheus",
       "description": "number of followers within the ensemble. You can deduce the number of servers from the MBeam Quorum Size.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -218,7 +199,6 @@
       "maxDataPoints": 100,
       "nullPointMode": "connected",
       "nullText": null,
-      "options": {},
       "postfix": "",
       "postfixFontSize": "50%",
       "prefix": "",
@@ -287,78 +267,73 @@
       "valueName": "avg"
     },
     {
-      "aliasColors": {},
-      "breakPoint": "100%",
-      "cacheTimeout": null,
-      "combine": {
-        "label": "Others",
-        "threshold": 0
-      },
       "datasource": "prometheus",
-      "description": "Leader otrFollowers",
-      "fontSize": "80%",
-      "format": "short",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "gridPos": {
         "h": 5,
         "w": 16,
         "x": 6,
         "y": 1
       },
-      "id": 55,
-      "interval": null,
-      "legend": {
-        "show": true,
-        "sideWidth": null,
-        "values": false
+      "id": 58,
+      "options": {
+        "showHeader": false
       },
-      "legendType": "Right side",
-      "links": [],
-      "maxDataPoints": 3,
-      "nullPointMode": "connected",
-      "options": {},
-      "pieType": "pie",
-      "strokeWidth": 1,
+      "pluginVersion": "7.0.4",
       "targets": [
         {
-          "WOW": [
-            {
-              "checked": false,
-              "label": "-1W",
-              "offset": 604800000
-            },
-            {
-              "checked": false,
-              "label": "-2W",
-              "offset": 1209600000
-            },
-            {
-              "checked": false,
-              "label": "-3W",
-              "offset": 1814400000
-            }
-          ],
-          "aggregator": "COUNT",
-          "dataNames": [],
-          "dataTableColumns": [],
-          "dataType": "METRICS",
-          "dimensions": [],
-          "expr": "zookeeper_AvgRequestLatency{ instance=~\"[[instance]]\", job=\"$namespace\"} ",
-          "format": "time_series",
-          "funcBy": "",
-          "funcByType": "dimension",
-          "groupByDimensions": [],
-          "groupByValues": [],
+          "expr": "zookeeper_AvgRequestLatency{ instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "format": "table",
+          "instant": true,
           "interval": "",
-          "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
-          "refId": "A",
-          "search": [],
-          "values": []
+          "legendFormat": "",
+          "refId": "A"
         }
       ],
-      "title": "Member Type",
-      "type": "grafana-piechart-panel",
-      "valueName": "total"
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Member Types",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "job": true,
+              "replicaId": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Time": "",
+              "instance": ""
+            }
+          }
+        }
+      ],
+      "type": "table"
     },
     {
       "aliasColors": {},
@@ -370,7 +345,14 @@
       "dashes": false,
       "datasource": "prometheus",
       "description": "the length of a single tick, which is the basic time unit used by ZooKeeper, as measured in milliseconds. It is used to regulate heartbeats, and timeouts. For example, the minimum session timeout will be two ticks.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {
         "max": null,
         "min": null
@@ -382,6 +364,7 @@
         "y": 6
       },
       "height": "160px",
+      "hiddenSeries": false,
       "hideTimeOverride": false,
       "id": 56,
       "interactive": true,
@@ -404,7 +387,9 @@
       "linewidth": 5,
       "links": [],
       "nullPointMode": "null",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -473,6 +458,7 @@
     },
     {
       "collapsed": false,
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -494,7 +480,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {
         "max": null,
         "min": null
@@ -506,6 +499,7 @@
         "y": 12
       },
       "height": "160px",
+      "hiddenSeries": false,
       "id": 34,
       "interactive": true,
       "legend": {
@@ -526,7 +520,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -601,7 +597,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {
         "max": null,
         "min": null
@@ -613,6 +616,7 @@
         "y": 12
       },
       "height": "160px",
+      "hiddenSeries": false,
       "id": 42,
       "interactive": true,
       "legend": {
@@ -633,7 +637,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -707,7 +713,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {
         "max": null,
         "min": null
@@ -719,6 +732,7 @@
         "y": 16
       },
       "height": "160px",
+      "hiddenSeries": false,
       "id": 6,
       "interactive": true,
       "legend": {
@@ -739,7 +753,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -820,7 +836,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {
         "max": null,
         "min": null
@@ -832,6 +855,7 @@
         "y": 16
       },
       "height": "160px",
+      "hiddenSeries": false,
       "id": 41,
       "interactive": true,
       "legend": {
@@ -850,7 +874,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -924,7 +950,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {
         "max": null,
         "min": null
@@ -936,6 +969,7 @@
         "y": 20
       },
       "height": "160px",
+      "hiddenSeries": false,
       "id": 35,
       "interactive": true,
       "legend": {
@@ -956,7 +990,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1030,7 +1066,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {
         "max": null,
         "min": null
@@ -1042,6 +1085,7 @@
         "y": 20
       },
       "height": "160px",
+      "hiddenSeries": false,
       "id": 43,
       "interactive": true,
       "legend": {
@@ -1060,7 +1104,9 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1127,6 +1173,7 @@
     },
     {
       "collapsed": false,
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1147,7 +1194,14 @@
       "datasource": "prometheus",
       "editable": true,
       "error": false,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {},
       "gridPos": {
         "h": 7,
@@ -1155,6 +1209,7 @@
         "x": 0,
         "y": 25
       },
+      "hiddenSeries": false,
       "id": 36,
       "legend": {
         "avg": false,
@@ -1171,7 +1226,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1240,7 +1297,14 @@
       "datasource": "prometheus",
       "editable": true,
       "error": false,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {},
       "gridPos": {
         "h": 7,
@@ -1248,6 +1312,7 @@
         "x": 12,
         "y": 25
       },
+      "hiddenSeries": false,
       "id": 39,
       "legend": {
         "avg": false,
@@ -1264,7 +1329,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1333,7 +1400,14 @@
       "datasource": "prometheus",
       "editable": true,
       "error": false,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
       "fill": 0,
+      "fillGradient": 0,
       "grid": {},
       "gridPos": {
         "h": 7,
@@ -1341,6 +1415,7 @@
         "x": 0,
         "y": 32
       },
+      "hiddenSeries": false,
       "id": 40,
       "legend": {
         "avg": false,
@@ -1357,7 +1432,9 @@
       "linewidth": 2,
       "links": [],
       "nullPointMode": "connected",
-      "options": {},
+      "options": {
+        "dataLinks": []
+      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1428,7 +1505,7 @@
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 18,
+  "schemaVersion": 25,
   "style": "light",
   "tags": [],
   "templating": {
@@ -1437,8 +1514,11 @@
         "allFormat": "glob",
         "allValue": "",
         "current": {
+          "selected": true,
           "text": "All",
-          "value": "$__all"
+          "value": [
+            "$__all"
+          ]
         },
         "datasource": "prometheus",
         "definition": "label_values(process_start_time_seconds{job=\"$namespace\"}, instance)",
@@ -1452,7 +1532,7 @@
         "query": "label_values(process_start_time_seconds{job=\"$namespace\"}, instance)",
         "refresh": 2,
         "refresh_on_load": false,
-        "regex": "/[^:]+:[\\d+]/",
+        "regex": "/[^:]/",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": null,
@@ -1487,6 +1567,7 @@
         "allValue": null,
         "current": {
           "isNone": true,
+          "selected": false,
           "text": "None",
           "value": ""
         },
@@ -1512,8 +1593,11 @@
       {
         "allValue": "",
         "current": {
+          "selected": true,
           "text": "All",
-          "value": "$__all"
+          "value": [
+            "$__all"
+          ]
         },
         "datasource": "prometheus",
         "definition": "query_result(process_start_time_seconds{_namespace_=\"$namespace\", application=\"$application\"})",
@@ -1537,7 +1621,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
@@ -1568,6 +1652,6 @@
   "timezone": "utc",
   "title": "Zookeeper",
   "uid": "000000261",
-  "version": 21
+  "version": 1
 }
 {% endraw %}

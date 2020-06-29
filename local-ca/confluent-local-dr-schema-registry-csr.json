@@ -1,0 +1,18 @@
+{
+  "CN": "confluent-local-dr-schema-registry",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-local-dr-schema-registry"
+    }
+  ],
+  "hosts": [
+    "confluent-local-dr-schema-registry.local",
+    "confluent-local-dr-01.local",
+    "confluent-local-dr-02.local",
+    "confluent-local-dr-03.local"
+  ]
+}

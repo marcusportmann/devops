@@ -10,8 +10,8 @@ After=network.target remote-fs.target
 Type=simple
 User={{ kafka_server_user }}
 Group={{ kafka_server_group }}
-Environment=LOG_DIR={{ kafka_server_log_directory }}
-Environment=EXTRA_ARGS=-Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf
+Environment="LOG_DIR={{ kafka_server_log_directory }}"
+Environment="EXTRA_ARGS={% if prometheus_jmx_exporter_enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar={{ prometheus_kafka_server_jmx_exporter_port }}:{{ kafka_server_etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf"
 ExecStart=/opt/kafka/bin/kafka-server-start.sh {{ kafka_server_etc_directory }}/conf/server.properties
 ExecStop=/opt/kafka/bin/kafka-server-stop.sh {{ kafka_server_etc_directory }}/conf/server.properties
 Restart=always

@@ -12,4 +12,4 @@ grafana_ubuntu_package_version: 7.0.4
 grafana_user_id: 425
 grafana_group_id: 425
 
-grafana_pie_chart_panel_plugin_version: 1.4.0
+grafana_pie_chart_panel_plugin_version: 1.5.0

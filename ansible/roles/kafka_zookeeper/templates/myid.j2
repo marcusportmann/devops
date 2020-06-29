@@ -1,5 +1,1 @@
-{% if (inventory_hostname in kafka_zookeeper_cluster1_actual_hosts)  %}
-{{ (kafka_zookeeper_cluster1_actual_hosts.index(inventory_hostname) + 1) }}
-{% elif (inventory_hostname in kafka_zookeeper_cluster2_actual_hosts)  %}
-{{ (kafka_zookeeper_cluster2_actual_hosts.index(inventory_hostname) + 1) }}
-{% endif %}
+{{ (zookeeper_hosts.index(inventory_hostname) + 1) }}

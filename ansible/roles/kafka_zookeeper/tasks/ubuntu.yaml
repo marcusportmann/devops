@@ -9,59 +9,29 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 2888 to other ZooKeeper hosts (Cluster1)
+- name: Allow all access to tcp port 2888 to other ZooKeeper hosts
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '2888'
     proto: tcp
-  loop: "{{ kafka_zookeeper_cluster1_actual_hosts }}"
-  when: ((inventory_hostname in kafka_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
+  loop: "{{ zookeeper_hosts }}"
 
-- name: Allow all access to tcp port 2888 to other ZooKeeper hosts (Cluster2)
-  ufw:
-    rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-    port: '2888'
-    proto: tcp
-  loop: "{{ kafka_zookeeper_cluster2_actual_hosts }}"
-  when: ((inventory_hostname in kafka_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
-
-- name: Allow all access to tcp port 3888 to other ZooKeeper hosts (Cluster1)
+- name: Allow all access to tcp port 3888 to other ZooKeeper hosts
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '3888'
     proto: tcp
-  loop: "{{ kafka_zookeeper_cluster1_actual_hosts }}"
-  when: ((inventory_hostname in kafka_zookeeper_cluster1_actual_hosts) and (item != inventory_hostname))
+  loop: "{{ zookeeper_hosts }}"
 
-- name: Allow all access to tcp port 3888 to other ZooKeeper hosts (Cluster2)
-  ufw:
-    rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-    port: '3888'
-    proto: tcp
-  loop: "{{ kafka_zookeeper_cluster2_actual_hosts }}"
-  when: ((inventory_hostname in kafka_zookeeper_cluster2_actual_hosts) and (item != inventory_hostname))
-
-- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Kafka Server hosts (Cluster1)
+- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Kafka Server hosts
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '{{ zookeeper_secure_client_port }}'
     proto: tcp
-  loop: "{{ kafka_server_cluster1_actual_hosts | default([]) }}"
-  when: (inventory_hostname in kafka_zookeeper_cluster1_actual_hosts)
-
-- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Kafka Server hosts (Cluster2)
-  ufw:
-    rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-    port: '{{ zookeeper_secure_client_port }}'
-    proto: tcp
-  loop: "{{ kafka_server_cluster2_actual_hosts | default([]) }}"
-  when: (inventory_hostname in kafka_zookeeper_cluster2_actual_hosts)
+  loop: "{{ kafka_server_hosts }}"
 
 - name: Allow all access to tcp port {{ prometheus_zookeeper_jmx_exporter_port }} (Prometheus JMX Exporter Port)
   ufw:
@@ -90,4 +60,5 @@
       proto: tcp
 
   when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+
 

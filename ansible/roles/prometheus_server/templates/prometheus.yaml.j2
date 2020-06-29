@@ -4,38 +4,39 @@ global:
 
 scrape_configs:
 
-
-#    ____ ___  _   _ _____ _    _   _ _____ _   _ _____
-#   / ___/ _ \| \ | |  ___| |  | | | | ____| \ | |_   _|
-#  | |  | | | |  \| | |_  | |  | | | |  _| |  \| | | |
-#  | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |
-#   \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|
-#
-{% if ('confluent_kafka_mirrormaker' in groups) %}
-
-{% endif %}
-
-{% if ('confluent_kafka_server' in groups) %}
-
-{% endif %}
-
-{% if ('confluent_schema_registry' in groups) %}
-
-{% endif %}
-
-
-
 #   _  __    _    _____ _  __    _
 #  | |/ /   / \  |  ___| |/ /   / \
 #  | ' /   / _ \ | |_  | ' /   / _ \
 #  | . \  / ___ \|  _| | . \  / ___ \
 #  |_|\_\/_/   \_\_|   |_|\_\/_/   \_\
 #
-{% if ('kafka_mirrormaker' in groups) %}
+{% set kafka_server_hosts = [] -%}
+
+{% if ('confluent_kafka_server' in groups) -%}
+{% for host in groups['confluent_kafka_server'] -%}
+  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_kafka_server_jmx_exporter_port)) -%}
+{% endfor -%}
+{% endif -%}
+
+{% if ('kafka_server' in groups) -%}
+{% for host in groups['kafka_server'] -%}
+  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_kafka_server_jmx_exporter_port)) -%}
+{% endfor -%}
+{% endif -%}
+
+{% if ((kafka_server_hosts | length) > 0) %}
+
+- job_name: 'kafka-server'
+  static_configs:
+  - targets: [{{ kafka_server_hosts | join(',') }}]
+  relabel_configs:
+  - source_labels: [__address__]
+    regex: "([^:]+):\\d+"
+    target_label: instance
 
 {% endif %}
 
-{% if ('kafka_server' in groups) %}
+{% if ('kafka_mirrormaker' in groups) %}
 
 {% endif %}
 
@@ -220,7 +221,6 @@ scrape_configs:
   - targets: ['{{ inventory_hostname }}:9090']
 
 
-
 #   ________   ___  _  _______ _____ ____  _____ ____
 #  |__  / _ \ / _ \| |/ / ____| ____|  _ \| ____|  _ \
 #    / / | | | | | | ' /|  _| |  _| | |_) |  _| | |_) |
@@ -246,6 +246,10 @@ scrape_configs:
 - job_name: 'zookeeper'
   static_configs:
   - targets: [{{ zookeeper_hosts | join(',') }}]
+  relabel_configs:
+  - source_labels: [__address__]
+    regex: "([^:]+):\\d+"
+    target_label: instance
 
 {% endif %}
 

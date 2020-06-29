@@ -1,0 +1,17 @@
+{
+  "CN": "confluent-local-dr-kafka-server",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-local-dr-kafka-server"
+    }
+  ],
+  "hosts": [
+    "confluent-local-dr-01.local",
+    "confluent-local-dr-02.local",
+    "confluent-local-dr-03.local"
+  ]
+}

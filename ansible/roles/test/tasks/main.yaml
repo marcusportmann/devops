@@ -1,0 +1,20 @@
+
+- set_fact:
+    cluster_name: '{{ item }}'
+  when: (inventory_hostname in test.clusters[item].test_hosts)
+  loop: '{{ test.clusters | flatten(1) }}'
+
+- set_fact:
+    cluster_actual_hosts: "{{ test.clusters[cluster_name].test_hosts | intersect(groups['test']) }}"
+
+- debug:
+    msg: 'test_name = {{ test.test_name }}'
+
+- debug:
+   msg: 'cluster_name = {{ cluster_name }}'
+
+- debug:
+   msg: 'cluster_actual_hosts = {{ cluster_actual_hosts }}'
+
+
+

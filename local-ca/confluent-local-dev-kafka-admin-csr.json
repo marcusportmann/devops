@@ -6,7 +6,7 @@
   },
   "names": [
     {
-      "CN": "confluent-kafka-local-dev-kafka-admin"
+      "CN": "confluent-local-dev-kafka-admin"
     }
   ]
 }

@@ -1,5 +1,1 @@
-{% if (inventory_hostname in confluent_zookeeper_cluster1_actual_hosts)  %}
-{{ (confluent_zookeeper_cluster1_actual_hosts.index(inventory_hostname) + 1) }}
-{% elif (inventory_hostname in confluent_zookeeper_cluster2_actual_hosts)  %}
-{{ (confluent_zookeeper_cluster2_actual_hosts.index(inventory_hostname) + 1) }}
-{% endif %}
+{{ (zookeeper_hosts.index(inventory_hostname) + 1) }}
