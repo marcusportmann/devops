@@ -9,7 +9,7 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 2888 to other ZooKeeper hosts
+- name: Allow all ZooKeeper hosts access to tcp port 2888
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -17,7 +17,7 @@
     proto: tcp
   loop: "{{ zookeeper_hosts }}"
 
-- name: Allow all access to tcp port 3888 to other ZooKeeper hosts
+- name: Allow all ZooKeeper hosts access to tcp port 3888
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -25,27 +25,27 @@
     proto: tcp
   loop: "{{ zookeeper_hosts }}"
 
-- name: Allow all access to tcp port {{ zookeeper_secure_client_port}} (Secure ZooKeeper Client Port) for Kafka Server hosts
+- name: Allow all hosts access to tcp port {{ kafka_config.zookeeper.secure_client_port}} (Secure ZooKeeper Client Port) for Kafka Server hosts
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
-    port: '{{ zookeeper_secure_client_port }}'
+    port: '{{ kafka_config.zookeeper.secure_client_port }}'
     proto: tcp
   loop: "{{ kafka_server_hosts }}"
 
-- name: Allow all access to tcp port {{ prometheus_zookeeper_jmx_exporter_port }} (Prometheus JMX Exporter Port)
+- name: Allow all hosts access to tcp port {{ kafka_config.zookeeper.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
   ufw:
     rule: allow
-    port: '{{ prometheus_zookeeper_jmx_exporter_port }}'
+    port: '{{ kafka_config.zookeeper.prometheus_jmx_exporter.port }}'
     proto: tcp
-  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+  when: ((kafka_config.zookeeper.prometheus_jmx_exporter.enabled is defined) and (kafka_config.zookeeper.prometheus_jmx_exporter.enabled != None) and (kafka_config.zookeeper.prometheus_jmx_exporter.enabled == true))
 
-- name: Allow all access to tcp port {{ prometheus_zookeeper_exporter_port }} (Prometheus ZooKeeper Exporter Port)
+- name: Allow all hosts access to tcp port {{ kafka_config.zookeeper.prometheus_exporter.port }} (ZooKeeper Prometheus Exporter Port)
   ufw:
     rule: allow
-    port: '{{ prometheus_zookeeper_exporter_port }}'
+    port: '{{ kafka_config.zookeeper.prometheus_exporter.port }}'
     proto: tcp
-  when: ((prometheus_exporter_enabled is defined) and (prometheus_exporter_enabled != None) and (prometheus_exporter_enabled == true))
+  when: ((kafka_config.zookeeper.prometheus_exporter.enabled is defined) and (kafka_config.zookeeper.prometheus_exporter.enabled != None) and (kafka_config.zookeeper.prometheus_exporter.enabled == true))
 
 - name: Allow access to the remote JMX tcp ports
   block:
@@ -53,12 +53,8 @@
       rule: allow
       port: '9998'
       proto: tcp
-
   - ufw:
       rule: allow
       port: '9999'
       proto: tcp
-
-  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
-
-
+  when: ((kafka_config.zookeeper.enable_remote_jmx is defined) and (kafka_config.zookeeper.enable_remote_jmx != None) and (kafka_config.zookeeper.enable_remote_jmx == true))

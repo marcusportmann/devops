@@ -18,7 +18,8 @@
   "editable": true,
   "gnetId": 10607,
   "graphTooltip": 1,
-  "iteration": 1593339534247,
+  "id": 3,
+  "iteration": 1593639890588,
   "links": [],
   "panels": [
     {
@@ -125,7 +126,7 @@
           "dataTableColumns": [],
           "dataType": "METRICS",
           "dimensions": [],
-          "expr": "avg(zookeeper_QuorumSize{ instance=~\"[[instance]]\", job=\"$namespace\"})",
+          "expr": "avg(zookeeper_QuorumSize{ instance=~\"[[instance]]\", cluster=\"$cluster\"})",
           "format": "time_series",
           "funcBy": "",
           "funcByType": "dimension",
@@ -241,7 +242,7 @@
           "dataTableColumns": [],
           "dataType": "METRICS",
           "dimensions": [],
-          "expr": "avg(zookeeper_QuorumSize{instance=~\"[[instance]]\", job=\"$namespace\"}) -1 ",
+          "expr": "avg(zookeeper_QuorumSize{instance=~\"[[instance]]\", cluster=\"$cluster\"}) -1 ",
           "format": "time_series",
           "funcBy": "",
           "funcByType": "dimension",
@@ -303,7 +304,7 @@
       "pluginVersion": "7.0.4",
       "targets": [
         {
-          "expr": "zookeeper_AvgRequestLatency{ instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "expr": "zookeeper_AvgRequestLatency{ instance=~\"[[instance]]\", cluster=\"$cluster\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -322,6 +323,7 @@
               "Time": true,
               "Value": true,
               "__name__": true,
+              "cluster": true,
               "job": true,
               "replicaId": true
             },
@@ -403,7 +405,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(zookeeper_TickTime{instance=~\"[[instance]]\", job=\"$namespace\"}) by (instance)",
+          "expr": "avg(zookeeper_TickTime{instance=~\"[[instance]]\", cluster=\"$cluster\"}) by (instance)",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -536,7 +538,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_AvgRequestLatency{instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "expr": "zookeeper_AvgRequestLatency{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -653,7 +655,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_InMemoryDataTree_NodeCount{instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "expr": "zookeeper_InMemoryDataTree_NodeCount{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -776,7 +778,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_NumAliveConnections{instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "expr": "zookeeper_NumAliveConnections{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -890,7 +892,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_PendingRevalidationCount{instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "expr": "zookeeper_PendingRevalidationCount{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -1006,7 +1008,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_OutstandingRequests{instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "expr": "zookeeper_OutstandingRequests{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -1120,7 +1122,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_InMemoryDataTree_WatchCount{instance=~\"[[instance]]\", job=\"$namespace\"}",
+          "expr": "zookeeper_InMemoryDataTree_WatchCount{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}}",
@@ -1239,7 +1241,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(jvm_gc_collection_seconds_sum{instance=~\"[[instance]]\", job=\"$namespace\"}[5m])",
+          "expr": "increase(jvm_gc_collection_seconds_sum{instance=~\"[[instance]]\", cluster=\"$cluster\"}[5m])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} {{gc}}",
@@ -1342,7 +1344,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(jvm_gc_collection_seconds_count{instance=~\"[[instance]]\", job=\"$namespace\"}[5m])",
+          "expr": "increase(jvm_gc_collection_seconds_count{instance=~\"[[instance]]\", cluster=\"$cluster\"}[5m])",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} {{gc}}",
@@ -1445,7 +1447,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "jvm_memory_bytes_used{instance=~\"[[instance]]\", job=\"$namespace\", area=\"heap\"}",
+          "expr": "jvm_memory_bytes_used{instance=~\"[[instance]]\", cluster=\"$cluster\", area=\"heap\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} used",
@@ -1453,7 +1455,7 @@
           "target": "aliasByNode(zookeeper.cluster.$cluster.jvm_memory.$zookeeper_hosts.memory.HeapMemoryUsage_used.upper, 4, 6)"
         },
         {
-          "expr": "jvm_memory_bytes_max{instance=~\"[[instance]]\", job=\"$namespace\", area=\"heap\"}",
+          "expr": "jvm_memory_bytes_max{instance=~\"[[instance]]\", cluster=\"$cluster\", area=\"heap\"}",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{instance}} max",
@@ -1511,17 +1513,44 @@
   "templating": {
     "list": [
       {
+        "allValue": "",
+        "current": {
+          "selected": false,
+          "text": "local_dev",
+          "value": "local_dev"
+        },
+        "datasource": "prometheus",
+        "definition": "query_result(zookeeper_AvgRequestLatency{job=\"zookeeper\"})",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Cluster",
+        "multi": false,
+        "name": "cluster",
+        "options": [],
+        "query": "query_result(zookeeper_AvgRequestLatency{job=\"zookeeper\"})",
+        "refresh": 2,
+        "regex": ".*cluster=\\\"([^\\\"]+)\\\".*",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
         "allFormat": "glob",
         "allValue": "",
         "current": {
           "selected": true,
+          "tags": [],
           "text": "All",
           "value": [
             "$__all"
           ]
         },
         "datasource": "prometheus",
-        "definition": "label_values(process_start_time_seconds{job=\"$namespace\"}, instance)",
+        "definition": "label_values(process_start_time_seconds{cluster=\"$cluster\"}, instance)",
         "hide": 0,
         "includeAll": true,
         "label": "Instance",
@@ -1529,7 +1558,7 @@
         "multiFormat": "glob",
         "name": "instance",
         "options": [],
-        "query": "label_values(process_start_time_seconds{job=\"$namespace\"}, instance)",
+        "query": "label_values(process_start_time_seconds{cluster=\"$cluster\"}, instance)",
         "refresh": 2,
         "refresh_on_load": false,
         "regex": "/[^:]/",
@@ -1538,83 +1567,6 @@
         "tagValuesQuery": null,
         "tags": [],
         "tagsQuery": null,
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": null,
-        "current": {
-          "text": "zookeeper",
-          "value": "zookeeper"
-        },
-        "hide": 0,
-        "includeAll": false,
-        "label": "Namespace",
-        "multi": false,
-        "name": "namespace",
-        "options": [
-          {
-            "selected": true,
-            "text": "zookeeper",
-            "value": "zookeeper"
-          }
-        ],
-        "query": "zookeeper",
-        "skipUrlSync": false,
-        "type": "custom"
-      },
-      {
-        "allValue": null,
-        "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
-        },
-        "datasource": "prometheus",
-        "definition": "query_result(process_start_time_seconds{_namespace_=\"$namespace\"})",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Application Name",
-        "multi": false,
-        "name": "application",
-        "options": [],
-        "query": "query_result(process_start_time_seconds{_namespace_=\"$namespace\"})",
-        "refresh": 2,
-        "regex": "/.*/",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": "",
-        "current": {
-          "selected": true,
-          "text": "All",
-          "value": [
-            "$__all"
-          ]
-        },
-        "datasource": "prometheus",
-        "definition": "query_result(process_start_time_seconds{_namespace_=\"$namespace\", application=\"$application\"})",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Cluster",
-        "multi": true,
-        "name": "cluster",
-        "options": [],
-        "query": "query_result(process_start_time_seconds{_namespace_=\"$namespace\", application=\"$application\"})",
-        "refresh": 2,
-        "regex": "/.*cluster=\\\"([^\\\"]+)\\\".*/",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
         "type": "query",
         "useTags": false
       }

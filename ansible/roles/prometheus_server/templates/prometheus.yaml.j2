@@ -14,13 +14,13 @@ scrape_configs:
 
 {% if ('confluent_kafka_server' in groups) -%}
 {% for host in groups['confluent_kafka_server'] -%}
-  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_kafka_server_jmx_exporter_port)) -%}
+  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.confluent.kafka_server.jmx_exporter_port)) -%}
 {% endfor -%}
 {% endif -%}
 
 {% if ('kafka_server' in groups) -%}
 {% for host in groups['kafka_server'] -%}
-  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_kafka_server_jmx_exporter_port)) -%}
+  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.kafka.kafka_server.jmx_exporter_port)) -%}
 {% endfor -%}
 {% endif -%}
 
@@ -199,7 +199,7 @@ scrape_configs:
 {% if ('monitored' in groups) -%}
 {% set monitored_hosts = [] -%}
 {% for host in groups['monitored'] -%}
-  {% set _ = monitored_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_node_exporter_port)) -%}
+  {% set _ = monitored_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.node_exporter.port)) -%}
 {% endfor -%}
 {% endif -%}
 
@@ -227,25 +227,31 @@ scrape_configs:
 #   / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
 #  /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
-{% set zookeeper_hosts = [] -%}
-
-{% if ('confluent_zookeeper' in groups) -%}
-{% for host in groups['confluent_zookeeper'] -%}
-  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
-{% endfor -%}
-{% endif -%}
-
-{% if ('kafka_zookeeper' in groups) -%}
-{% for host in groups['kafka_zookeeper'] -%}
-  {% set _ = zookeeper_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_zookeeper_jmx_exporter_port)) -%}
-{% endfor -%}
-{% endif -%}
-
-{% if ((zookeeper_hosts | length) > 0) %}
-
+{% if (('confluent_zookeeper' in groups) or ('kafka_zookeeper' in groups)) %}
 - job_name: 'zookeeper'
   static_configs:
-  - targets: [{{ zookeeper_hosts | join(',') }}]
+{% if ('confluent_zookeeper' in groups) %}
+{% for host in groups['confluent_zookeeper'] %}
+  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.confluent.zookeeper.jmx_exporter_port) }}]
+    labels:
+{% for cluster_name in confluent.clusters -%}
+{% if (host in confluent.clusters[cluster_name].zookeeper_hosts) %}
+      cluster: {{ cluster_name }}
+{% endif %}
+{% endfor -%}
+{% endfor %}
+{% endif %}
+{% if ('kafka_zookeeper' in groups) %}
+{% for host in groups['kafka_zookeeper'] %}
+  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.kafka.zookeeper.jmx_exporter_port) }}]
+    labels:
+{% for cluster_name in kafka.clusters -%}
+{% if (host in kafka.clusters[cluster_name].zookeeper_hosts) %}
+      cluster: {{ cluster_name }}
+{% endif %}
+{% endfor -%}
+{% endfor %}
+{% endif %}
   relabel_configs:
   - source_labels: [__address__]
     regex: "([^:]+):\\d+"

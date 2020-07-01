@@ -1,15 +1,20 @@
 ---
-# file: roles/grafana/vars/main.yaml
+# file: roles/grafana/defaults/main.yaml
 
-grafana_centos_package: grafana-7.0.4-1.x86_64.rpm
-grafana_centos_package_checksum: sha256:7872f69412fab775d57625e87302bb44d8a60f2e94dadb0b5e0a5c69e160f45b
-grafana_centos_package_version: 7.0.4
+grafana_defaults:
+  centos_package: grafana-7.0.4-1.x86_64.rpm
+  centos_package_checksum: sha256:7872f69412fab775d57625e87302bb44d8a60f2e94dadb0b5e0a5c69e160f45b
+  centos_package_version: 7.0.4
 
-grafana_ubuntu_package: grafana_7.0.4_amd64.deb
-grafana_ubuntu_package_checksum: sha256:bb4c4b2763f1653f19828dab28f919f6c0b3a365b9509c0910555609f90850c1
-grafana_ubuntu_package_version: 7.0.4
+  ubuntu_package: grafana_7.0.4_amd64.deb
+  ubuntu_package_checksum: sha256:bb4c4b2763f1653f19828dab28f919f6c0b3a365b9509c0910555609f90850c1
+  ubuntu_package_version: 7.0.4
 
-grafana_user_id: 425
-grafana_group_id: 425
+  user: grafana
+  user_id: 425
+  group: grafana
+  group_id: 425
 
-grafana_pie_chart_panel_plugin_version: 1.5.0
+  pie_chart_panel_plugin_version: 1.5.0
+
+grafana_config: "{{ grafana_defaults | combine(grafana | default({})) }}"

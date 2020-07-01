@@ -8,11 +8,11 @@ After=network.target remote-fs.target
 
 [Service]
 Type=simple
-User={{ kafka_mirrormaker_user }}
-Group={{ kafka_mirrormaker_group }}
-Environment=LOG_DIR={{ kafka_mirrormaker_log_directory }}
-ExecStart=/opt/kafka/bin/connect-mirror-maker.sh {{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties
-ExecStop=/opt/kafka/bin/connect-mirror-maker.sh {{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties
+User={{ kafka.kafka_mirrormaker.user }}
+Group={{ kafka.kafka_mirrormaker.group }}
+Environment=LOG_DIR={{ kafka.kafka_mirrormaker.log_directory }}
+ExecStart=/opt/kafka/bin/connect-mirror-maker.sh {{ kafka.kafka_mirrormaker.etc_directory }}/conf/mirrormaker.properties
+ExecStop=/opt/kafka/bin/connect-mirror-maker.sh {{ kafka.kafka_mirrormaker.etc_directory }}/conf/mirrormaker.properties
 Restart=always
 
 [Install]

@@ -2,19 +2,22 @@
 
 [Unit]
 Description=Confluent Kafka Server Service
-Documentation=https://confluent.io
+Documentation=https://confluent_config.io
 Requires=network.target remote-fs.target
 After=network.target remote-fs.target
+StartLimitBurst=360
+StartLimitIntervalSec=3600
 
 [Service]
 Type=simple
-User={{ kafka_server_user }}
-Group={{ kafka_server_group }}
-Environment="LOG_DIR={{ kafka_server_log_directory }}"
-Environment="EXTRA_ARGS={% if prometheus_jmx_exporter_enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar={{ prometheus_kafka_server_jmx_exporter_port }}:{{ kafka_server_etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ kafka_server_etc_directory }}/conf/server-jaas.conf"
-ExecStart=/opt/confluent/bin/kafka-server-start {{ kafka_server_etc_directory }}/conf/server.properties
-ExecStop=/opt/confluent/bin/kafka-server-stop {{ kafka_server_etc_directory }}/conf/server.properties
+User={{ confluent_config.kafka_server.user }}
+Group={{ confluent_config.kafka_server.group }}
+Environment="LOG_DIR={{ confluent_config.kafka_server.log_directory }}"
+Environment="EXTRA_ARGS={% if confluent_config.kafka_server.prometheus_jmx_exporter.enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent.jar={{ confluent_config.kafka_server.prometheus_jmx_exporter.port }}:{{ confluent_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf"
+ExecStart=/opt/confluent/bin/kafka-server-start {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties
+ExecStop=/opt/confluent/bin/kafka-server-stop {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

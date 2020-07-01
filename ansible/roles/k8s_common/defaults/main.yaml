@@ -1,5 +1,5 @@
 ---
-# file: roles/k8s_common/vars/main.yaml
+# file: roles/k8s_common/defaults/main.yaml
 
 k8s_centos_package_version: 1.18.4
 k8s_helm_version: 3.2.3

@@ -4,7 +4,7 @@
 - debug:
     msg: Applying the Ubuntu-specific monitored configuration
 
-- name: Allow all access to tcp port {{ prometheus_node_exporter_port }}
+- name: Allow all hosts access to tcp port {{ prometheus_node_exporter_port }}
   ufw:
     rule: allow
     port: '{{ prometheus_node_exporter_port }}'

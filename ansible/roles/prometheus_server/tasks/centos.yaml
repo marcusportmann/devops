@@ -4,35 +4,35 @@
 - debug:
     msg: Applying the CentOS-specific Prometheus Server configuration
 
-- name: Allow all access to tcp port 9090
+- name: Allow all hosts access to tcp port 9090
   firewalld:
     port: 9090/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 9091
+- name: Allow all hosts access to tcp port 9091
   firewalld:
     port: 9091/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 9092
+- name: Allow all hosts access to tcp port 9092
   firewalld:
     port: 9092/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 9093
+- name: Allow all hosts access to tcp port 9093
   firewalld:
     port: 9093/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 9094
+- name: Allow all hosts access to tcp port 9094
   firewalld:
     port: 9094/tcp
     permanent: yes

@@ -1,28 +1,34 @@
 ---
-#file: roles/confluent_kafka_server/vars/main.yaml
+#file: roles/confluent_kafka_server/defaults/main.yaml
 
-kafka_secure_broker_port: 9093
+confluent_defaults:
+  kafka_server:
+    secure_broker_port: 9093
+    etc_directory: /etc/kafka
+    log_directory: /var/log/kafka
+    data_directory: /data/kafka
 
-kafka_server_etc_directory: /etc/kafka
-kafka_server_log_directory: /var/log/kafka
-kafka_server_data_directory: /data/kafka
+    user: cp-kafka
+    user_id: 311
+    group: cp-kafka
+    group_id: 311
 
-kafka_server_user: cp-kafka
-kafka_server_user_id: 311
-kafka_server_group: cp-kafka
-kafka_server_group_id: 311
+    zookeeper:
+      secure_client_port: 2182
+      username: kafka
 
-kafka_server_user_username: kafka
+    users:
+      broker:
+        username: kafka
+      admin:
+        username: admin
+      mirrormaker:
+        username: mirrormaker
+      schema_registry:
+        username: schema-registry
 
-kafka_server_zookeeper_secure_client_port: 2182
-kafka_server_zookeeper_user_username: kafka
+    prometheus_jmx_exporter:
+      enabled: true
+      port: 9131
 
-kafka_admin_user_username: admin
-kafka_mirrormaker_user_username: mirrormaker
-kafka_schema_registry_user_username: schema-registry
-
-prometheus_jmx_exporter_enabled: true
-prometheus_jmx_exporter_version: 0.13.0
-prometheus_kafka_server_jmx_exporter_port: 9131
-
-
+confluent_config: "{{ confluent_defaults | combine(confluent | default({})) }}"

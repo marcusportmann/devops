@@ -2,30 +2,24 @@
 #file: roles/confluent_schema_registry/tasks/main.yaml
 
 - set_fact:
-    schema_registry_cluster1_actual_hosts: "{{ confluent_cluster1_possible_hosts | intersect(groups['confluent_schema_registry']) }}"
-- set_fact:
-    schema_registry_cluster2_actual_hosts: "{{ confluent_cluster2_possible_hosts | intersect(groups['confluent_schema_registry']) }}"
-
-- set_fact:
-    kafka_server_cluster1_actual_hosts: "{{ confluent_cluster1_possible_hosts | intersect(groups['confluent_kafka_server']) }}"
-- set_fact:
-    kafka_server_cluster2_actual_hosts: "{{ confluent_cluster2_possible_hosts | intersect(groups['confluent_kafka_server']) }}"
+    cluster_name: '{{ item }}'
+  when: (inventory_hostname in confluent_config.clusters[item].schema_registry_hosts)
+  loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - debug:
-    msg: 'Schema Registry Cluster1 hosts: {{ schema_registry_cluster1_actual_hosts }}'
-- debug:
-    msg: 'Schema Registry Cluster2 hosts: {{ schema_registry_cluster2_actual_hosts }}'
-- debug:
-    msg: 'Kafka Server Cluster1 hosts: {{ kafka_server_cluster1_actual_hosts }}'
-- debug:
-    msg: 'Kafka Server Cluster2 hosts: {{ kafka_server_cluster2_actual_hosts }}'
+    msg: 'Cluster Name: {{ cluster_name }}'
+
+- set_fact:
+    schema_registry_hosts: "{{ confluent_config.clusters[cluster_name].schema_registry_hosts | intersect(groups['confluent_schema_registry']|default([])) }}"
 
 - debug:
-    msg: "Schema Registry host {{ inventory_hostname }} is in DC1"
-  when: (inventory_hostname in schema_registry_cluster1_actual_hosts)
+    msg: 'Schema Registry hosts: {{ schema_registry_hosts }}'
+
+- set_fact:
+    kafka_server_hosts: "{{ confluent_config.clusters[cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
+
 - debug:
-    msg: "Schema Registry host {{ inventory_hostname }} is in DC2"
-  when: (inventory_hostname in schema_registry_cluster2_actual_hosts)
+    msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
 
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -51,17 +45,17 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |    ___) | |___|  _  | |___| |  | |/ ___ \  |  _ <| |__| |_| || | ___) || | |  _ < | |
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |____/ \____|_| |_|_____|_|  |_/_/   \_\ |_| \_\_____\____|___|____/ |_| |_| \_\|_|
 #
-- name: Add the {{ schema_registry_group }} group
+- name: Add the {{ confluent_config.schema_registry.group }} group
   group:
-    name: '{{ schema_registry_group }}'
-    gid: '{{ schema_registry_group_id }}'
+    name: '{{ confluent_config.schema_registry.group }}'
+    gid: '{{ confluent_config.schema_registry.group_id }}'
     state: present
 
-- name: Add the {{ schema_registry_user }} user
+- name: Add the {{ confluent_config.schema_registry.user }} user
   user:
-    name: '{{ schema_registry_user }}'
-    uid: '{{ schema_registry_user_id }}'
-    group: '{{ schema_registry_group }}'
+    name: '{{ confluent_config.schema_registry.user }}'
+    uid: '{{ confluent_config.schema_registry.user_id }}'
+    group: '{{ confluent_config.schema_registry.group }}'
     create_home: yes
     state: present
 
@@ -73,110 +67,110 @@
     mode: '0700'
     state: directory
 
-- name: Create the {{ schema_registry_etc_directory }} directory
+- name: Create the {{ confluent_config.schema_registry.etc_directory }} directory
   file:
-    path: '{{ schema_registry_etc_directory }}'
-    owner: '{{ schema_registry_user }}'
-    group: '{{ schema_registry_group }}'
+    path: '{{ confluent_config.schema_registry.etc_directory }}'
+    owner: '{{ confluent_config.schema_registry.user }}'
+    group: '{{ confluent_config.schema_registry.group }}'
     mode: '0550'
     state: directory
 
-- name: Create the {{ schema_registry_etc_directory }}/conf directory
+- name: Create the {{ confluent_config.schema_registry.etc_directory }}/conf directory
   file:
-    path: '{{ schema_registry_etc_directory }}/conf'
-    owner: '{{ schema_registry_user }}'
-    group: '{{ schema_registry_group }}'
+    path: '{{ confluent_config.schema_registry.etc_directory }}/conf'
+    owner: '{{ confluent_config.schema_registry.user }}'
+    group: '{{ confluent_config.schema_registry.group }}'
     mode: '0550'
     state: directory
 
 - name: Setup the Schema Registry keystore and CA truststore
   block:
-  - name: Create the {{ schema_registry_etc_directory }}/pki directory
+  - name: Create the {{ confluent_config.schema_registry.etc_directory }}/pki directory
     file:
-      path: '{{ schema_registry_etc_directory }}/pki'
-      owner: '{{ schema_registry_user }}'
-      group: '{{ schema_registry_group }}'
+      path: '{{ confluent_config.schema_registry.etc_directory }}/pki'
+      owner: '{{ confluent_config.schema_registry.user }}'
+      group: '{{ confluent_config.schema_registry.group }}'
       mode: '0550'
       state: directory
 
   - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ confluent_platform_name }}/ca.crt
+      src: pki/{{ cluster_name }}/ca.crt
       dest: /var/tmp/ansible/kafka/ca.crt
     register: ca_copy_result
 
-  - name: Copy the Schema Registry private key (confluent-{{ confluent_platform_name }}-schema-registry.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Schema Registry private key (confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ confluent_platform_name }}/confluent-{{ confluent_platform_name }}-schema-registry.key
-      dest: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-schema-registry.key
+      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key
+      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key
     register: schema_registry_private_key_copy_result
 
-  - name: Copy the Schema Registry certificate (confluent-{{ confluent_platform_name }}-schema-registry.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Schema Registry certificate (confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ confluent_platform_name }}/confluent-{{ confluent_platform_name }}-schema-registry.crt
-      dest: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-schema-registry.crt
+      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt
+      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt
     register: schema_registry_certificate_copy_result
 
   - name: Generate or retrieve the password for the Schema Registry keystore
     set_fact:
-      schema_registry_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/schema-registry-keystore-password chars=ascii_letters,digits length=16') }}"
+      schema_registry_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/schema-registry-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Schema Registry keystore and CA truststore
     block:
     - name: Generate the Schema Registry PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ schema_registry_etc_directory }}/pki/schema-registry.p12'
-        friendly_name: 'confluent-{{ confluent_platform_name }}-schema-registry'
-        privatekey_path: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-schema-registry.key
-        certificate_path: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-schema-registry.crt
+        path: '{{ confluent_config.schema_registry.etc_directory }}/pki/schema-registry.p12'
+        friendly_name: "confluent-{{ cluster_name.replace('_', '-') }}-schema-registry"
+        privatekey_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key
+        certificate_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt
         passphrase: '{{ schema_registry_keystore_password }}'
-        owner: '{{ schema_registry_user }}'
-        group: '{{ schema_registry_group }}'
+        owner: '{{ confluent_config.schema_registry.user }}'
+        group: '{{ confluent_config.schema_registry.group }}'
         mode: '0440'
         state: present
 
     - name: Remove the CA PKCS12 truststore if it already exists
       file:
-        path: '{{ schema_registry_etc_directory }}/pki/ca.p12'
+        path: '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ schema_registry_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the CA PKCS12 truststore
       file:
-        path: '{{ schema_registry_etc_directory }}/pki/ca.p12'
-        owner: '{{ schema_registry_user }}'
-        group: '{{ schema_registry_group }}'
+        path: '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12'
+        owner: '{{ confluent_config.schema_registry.user }}'
+        group: '{{ confluent_config.schema_registry.group }}'
         mode: '0440'
 
     when: ((ca_copy_result.changed == True) or (schema_registry_private_key_copy_result.changed == True) or (schema_registry_certificate_copy_result.changed == True))
 
-- name: Create the {{ schema_registry_log_directory }} directory
+- name: Create the {{ confluent_config.schema_registry.log_directory }} directory
   file:
-    path: '{{ schema_registry_log_directory }}'
-    owner: '{{ schema_registry_user }}'
-    group: '{{ schema_registry_group }}'
+    path: '{{ confluent_config.schema_registry.log_directory }}'
+    owner: '{{ confluent_config.schema_registry.user }}'
+    group: '{{ confluent_config.schema_registry.group }}'
     mode: '0750'
     state: directory
 
 # NOTE: This is the password Schema Registry uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Schema Registry user
   set_fact:
-    kafka_schema_registry_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/kafka-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_confluent_config.schema_registry.user_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Schema Registry configuration file
   template:
     src: schema-registry.properties.j2
-    dest: '{{ schema_registry_etc_directory }}/conf/schema-registry.properties'
-    owner: '{{ schema_registry_user }}'
-    group: '{{ schema_registry_group }}'
+    dest: '{{ confluent_config.schema_registry.etc_directory }}/conf/schema-registry.properties'
+    owner: '{{ confluent_config.schema_registry.user }}'
+    group: '{{ confluent_config.schema_registry.group }}'
     mode: '0440'
   register: schema_registry_configuration_template_result
 

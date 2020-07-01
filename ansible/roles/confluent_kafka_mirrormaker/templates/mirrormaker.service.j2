@@ -2,18 +2,18 @@
 
 [Unit]
 Description=Confluent Kafka MirrorMaker Service
-Documentation=https://confluent.io
+Documentation=https://confluent_config.io
 Requires=network.target remote-fs.target
 After=network.target remote-fs.target
 
 [Service]
 Type=simple
-User={{ kafka_mirrormaker_user }}
-Group={{ kafka_mirrormaker_group }}
-Environment=LOG_DIR={{ kafka_mirrormaker_log_directory }}
+User={{ confluent_config.kafka_mirrormaker.user }}
+Group={{ confluent_config.kafka_mirrormaker.group }}
+Environment=LOG_DIR={{ confluent_config.kafka_mirrormaker.log_directory }}
 Environment=KAFKA_LOG4J_OPTS=-Dlog4j.configuration=file:/opt/confluent/etc/kafka/connect-log4j.properties
-ExecStart=/opt/confluent/bin/connect-mirror-maker {{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties
-ExecStop=/opt/confluent/bin/connect-mirror-maker {{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties
+ExecStart=/opt/confluent/bin/connect-mirror-maker {{ confluent_config.kafka_mirrormaker.etc_directory }}/conf/mirrormaker.properties
+ExecStop=/opt/confluent/bin/connect-mirror-maker {{ confluent_config.kafka_mirrormaker.etc_directory }}/conf/mirrormaker.properties
 Restart=always
 
 [Install]

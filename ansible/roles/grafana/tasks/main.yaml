@@ -4,13 +4,13 @@
 - name: Add the grafana group
   group:
     name: grafana
-    gid: '{{ grafana_group_id }}'
+    gid: '{{ grafana_config.group_id }}'
     state: present
 
 - name: Add the grafana user
   user:
     name: grafana
-    uid: '{{ grafana_user_id }}'
+    uid: '{{ grafana_config.user_id }}'
     group: grafana
     home: /var/lib/grafana
     create_home: no
@@ -91,16 +91,16 @@
     cmd: grafana-cli plugins ls | grep grafana-piechart-panel | awk  {'print $3'}
   register: grafana_pie_chart_panel_plugin_installed_version_output
 
-- name: Install the Grafana pie chart panel plug-in {{ grafana_pie_chart_panel_plugin_version }}
+- name: Install the Grafana pie chart panel plug-in {{ grafana_config.pie_chart_panel_plugin_version }}
   shell:
-    cmd: grafana-cli plugins install grafana-piechart-panel {{ grafana_pie_chart_panel_plugin_version }}
-  when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_pie_chart_panel_plugin_version)
+    cmd: grafana-cli plugins install grafana-piechart-panel {{ grafana_config.pie_chart_panel_plugin_version }}
+  when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_config.pie_chart_panel_plugin_version)
 
 - name: Restart the grafana-server service
   systemd:
     name: grafana-server.service
     state: restarted
-  when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_pie_chart_panel_plugin_version)
+  when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_config.pie_chart_panel_plugin_version)
 
 
 

@@ -1,8 +1,12 @@
 ---
-#file: roles/confluent_common/vars/main.yaml
+#file: roles/confluent_common/defaults/main.yaml
 
-confluent_major_version: 5.5
-confluent_version: 5.5.0
+confluent_defaults:
+  major_version: 5.5
+  package_version: 5.5.0
 
+prometheus_jmx_exporter:
+  enabled: true
+  package_version: 0.13.0
 
-
+confluent_config: "{{ confluent_defaults | combine(confluent | default({})) }}"

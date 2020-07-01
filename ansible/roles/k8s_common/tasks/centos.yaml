@@ -72,91 +72,91 @@
 # |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
 # |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
 #
-- name: Allow all access to tcp port 22 (SSH)
+- name: Allow all hosts access to tcp port 22 (SSH)
   firewalld:
     port: 22/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 2379
+- name: Allow all hosts access to tcp port 2379
   firewalld:
     port: 2379/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 2380
+- name: Allow all hosts access to tcp port 2380
   firewalld:
     port: 2380/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 4149
+- name: Allow all hosts access to tcp port 4149
   firewalld:
     port: 4149/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 6443 (Kubernetes API)
+- name: Allow all hosts access to tcp port 6443 (Kubernetes API)
   firewalld:
     port: 6443/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 4149 (Default cAdvisor port used to query container metrics)
+- name: Allow all hosts access to tcp port 4149 (Default cAdvisor port used to query container metrics)
   firewalld:
     port: 4149/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 9099 (Health check server for Calico)
+- name: Allow all hosts access to tcp port 9099 (Health check server for Calico)
   firewalld:
     port: 9099/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 9100 (Prometheus Node Exporter)
+- name: Allow all hosts access to tcp port 9100 (Prometheus Node Exporter)
   firewalld:
     port: 9100/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 10256 (Health check server for Kube Proxy)
+- name: Allow all hosts access to tcp port 10256 (Health check server for Kube Proxy)
   firewalld:
     port: 10256/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 10257 (Kube Controller Manager Port)
+- name: Allow all hosts access to tcp port 10257 (Kube Controller Manager Port)
   firewalld:
     port: 10257/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 10250 (API which allows full node access)
+- name: Allow all hosts access to tcp port 10250 (API which allows full node access)
   firewalld:
     port: 10250/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
+- name: Allow all hosts access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
   firewalld:
     port: 10255/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp ports 30000-32767 (Nodeport)
+- name: Allow all hosts access to tcp ports 30000-32767 (Nodeport)
   firewalld:
     port: 30000-32767/tcp
     permanent: yes
@@ -165,7 +165,7 @@
 
 - name: Open TCP and UDP pprts for the Weave CNI provider
   block:
-  - name: Allow all access to tcp port 6783 for the Weave CNI provider
+  - name: Allow all hosts access to tcp port 6783 for the Weave CNI provider
     firewalld:
       port: 6783/tcp
       permanent: yes

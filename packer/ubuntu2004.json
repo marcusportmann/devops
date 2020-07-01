@@ -1,19 +1,6 @@
 {
-  "variables": {
-    "headless": "false",
-    "iso_url": "http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/20.04/release/ubuntu-20.04-legacy-server-amd64.iso",
-    "iso_checksum_type": "sha256",
-    "iso_checksum": "36f15879bd9dfd061cd588620a164a82972663fdd148cce1f70d57d314c21b73",
-    "ssh_username": "cloud-user",
-    "ssh_password": "cloud",
-    "ssh_port": "22",
-    "ssh_timeout": "10000s",
-    "build_directory": "build"
-  },
   "builders": [
     {
-      "name": "ubuntu2004-virtualbox",
-      "type": "virtualbox-iso",
       "boot_command": [
         "<esc><wait>",
         "<esc><wait>",
@@ -42,16 +29,16 @@
       "guest_os_type": "Ubuntu_64",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "ubuntu2004-virtualbox",
       "output_directory": "{{ user `build_directory` }}/virtualbox/ubuntu2004/",
       "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_port": "{{ user `ssh_port` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
-      "vm_name": "ubuntu2004",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "type": "virtualbox-iso",
       "vboxmanage": [
         [
           "modifyvm",
@@ -65,11 +52,10 @@
           "--cpus",
           "1"
         ]
-      ]
+      ],
+      "vm_name": "ubuntu2004"
     },
     {
-      "name": "ubuntu2004-vmware",
-      "type": "vmware-iso",
       "boot_command": [
         "<esc><wait>",
         "<esc><wait>",
@@ -97,28 +83,27 @@
       "guest_os_type": "ubuntu-64",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "ubuntu2004-vmware",
       "output_directory": "{{ user `build_directory` }}/vmware/ubuntu2004/",
       "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_port": "{{ user `ssh_port` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "type": "vmware-iso",
       "vm_name": "ubuntu2004",
       "vmdk_name": "ubuntu2004",
       "vmx_data": {
-        "memsize": "1024",
-        "numvcpus": "1",
         "ethernet0.connectiontype": "nat",
         "ethernet0.virtualDev": "vmxnet3",
+        "memsize": "1024",
+        "numvcpus": "1",
         "rtc.diffFromUTC": "0"
       }
     },
     {
-      "name": "ubuntu2004-hyperv",
-      "type": "hyperv-iso",
       "boot_command": [
         "<esc><wait10><esc><esc><enter><wait>",
         "set gfxpayload=1024x768<enter>",
@@ -134,45 +119,54 @@
         "boot<enter>"
       ],
       "boot_wait": "5s",
+      "cpus": "1",
+      "disk_block_size": "1",
       "disk_size": "51200",
+      "generation": 2,
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "keep_registered": "false",
+      "memory": "1024",
+      "name": "ubuntu2004-hyperv",
       "output_directory": "{{ user `build_directory` }}/hyperv/ubuntu2004/",
       "shutdown_command": "echo 'cloud' | sudo -S shutdown -P now",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_port": "{{ user `ssh_port` }}",
-      "ssh_timeout" : "4h",
-      "vm_name": "ubuntu2004",
-      "memory": "1024",
-      "disk_block_size": "1",
-      "cpus": "1",
-      "generation": 2,
-      "keep_registered": "false",
-      "switch_name": "Default Switch"
+      "ssh_timeout": "4h",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "switch_name": "Default Switch",
+      "type": "hyperv-iso",
+      "vm_name": "ubuntu2004"
     }
+  ],
+  "post-processors": [
+    [
+      {
+        "keep_input_artifact": true,
+        "output": "{{ user `build_directory` }}/boxes/ubuntu2004-{{.Provider}}.box",
+        "type": "vagrant"
+      }
+    ]
   ],
   "provisioners": [
     {
-      "type": "file",
+      "destination": "/tmp/configure-network",
       "source": "files/ubuntu2004/configure-network",
-      "destination": "/tmp/configure-network"
+      "type": "file"
     },
     {
-      "type": "file",
+      "destination": "/tmp/resize-root-partition",
       "source": "files/ubuntu2004/resize-root-partition",
-      "destination": "/tmp/resize-root-partition"
+      "type": "file"
     },
     {
-      "type": "file",
+      "destination": "/tmp/ssh-keygen.service",
       "source": "files/ubuntu2004/ssh-keygen.service",
-      "destination": "/tmp/ssh-keygen.service"
+      "type": "file"
     },
     {
-      "type": "shell",
       "execute_command": "echo 'cloud' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
       "expect_disconnect": true,
       "only": [
@@ -187,18 +181,24 @@
         "scripts/ubuntu2004/vagrant.sh",
         "scripts/ubuntu2004/cleanup.sh",
         "scripts/ubuntu2004/zerodisk.sh"
-      ]
+      ],
+      "type": "shell"
     }
   ],
- "push": {
+  "push": {
     "name": "{{user `atlas_username`}}/{{user `atlas_name`}}",
     "vcs": true
   },
-  "post-processors": [
-    [{
-    "type": "vagrant",
-    "keep_input_artifact": true,
-    "output": "{{ user `build_directory` }}/boxes/ubuntu2004-{{.Provider}}.box"
-    }]
-  ]
+  "variables": {
+    "build_directory": "build",
+    "headless": "false",
+    "iso_checksum": "36f15879bd9dfd061cd588620a164a82972663fdd148cce1f70d57d314c21b73",
+    "iso_checksum_type": "sha256",
+    "iso_url": "http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/20.04/release/ubuntu-20.04-legacy-server-amd64.iso",
+    "ssh_password": "cloud",
+    "ssh_port": "22",
+    "ssh_timeout": "10000s",
+    "ssh_username": "cloud-user"
+  }
 }
+

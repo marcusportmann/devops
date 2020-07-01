@@ -74,73 +74,73 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 22 (SSH)
+- name: Allow all hosts access to tcp port 22 (SSH)
   ufw:
     rule: allow
     port: '22'
     proto: tcp
 
-- name: Allow all access to tcp port 2379
+- name: Allow all hosts access to tcp port 2379
   ufw:
     rule: allow
     port: '2379'
     proto: tcp
 
-- name: Allow all access to tcp port 2380
+- name: Allow all hosts access to tcp port 2380
   ufw:
     rule: allow
     port: '2380'
     proto: tcp
 #
-#- name: Allow all access to tcp port 4149 (Default cAdvisor port used to query container metrics)
+#- name: Allow all hosts access to tcp port 4149 (Default cAdvisor port used to query container metrics)
 #  ufw:
 #    rule: allow
 #    port: '4149'
 #    proto: tcp
 #
-- name: Allow all access to tcp port 6443 (Kubernetes API)
+- name: Allow all hosts access to tcp port 6443 (Kubernetes API)
   ufw:
     rule: allow
     port: '6443'
     proto: tcp
 #
-#- name: Allow all access to tcp port 9099 (Health check server for Calico)
+#- name: Allow all hosts access to tcp port 9099 (Health check server for Calico)
 #  ufw:
 #    rule: allow
 #    port: '9099'
 #    proto: tcp
 #
-- name: Allow all access to tcp port 9100 (Prometheus Node Exporter)
+- name: Allow all hosts access to tcp port 9100 (Prometheus Node Exporter)
   ufw:
     rule: allow
     port: '9100'
     proto: tcp
 
-- name: Allow all access to tcp port 10256 (Health check server for Kube Proxy)
+- name: Allow all hosts access to tcp port 10256 (Health check server for Kube Proxy)
   ufw:
     rule: allow
     port: '10256'
     proto: tcp
 
-- name: Allow all access to tcp port 10257 (Kube Controller Manager Port)
+- name: Allow all hosts access to tcp port 10257 (Kube Controller Manager Port)
   ufw:
     rule: allow
     port: '10257'
     proto: tcp
 
-- name: Allow all access to tcp port 10250 (API which allows full node access)
+- name: Allow all hosts access to tcp port 10250 (API which allows full node access)
   ufw:
     rule: allow
     port: '10250'
     proto: tcp
 #
-#- name: Allow all access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
+#- name: Allow all hosts access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
 #  ufw:
 #    rule: allow
 #    port: '10255'
 #    proto: tcp
 #
-- name: Allow all access to tcp ports 30000-32767 (Nodeport)
+- name: Allow all hosts access to tcp ports 30000-32767 (Nodeport)
   ufw:
     rule: allow
     port: 30000:32767
@@ -148,7 +148,7 @@
 
 - name: Open TCP and UDP pprts for the Weave CNI provider
   block:
-  - name: Allow all access to tcp port 6783 for the Weave CNI provider
+  - name: Allow all hosts access to tcp port 6783 for the Weave CNI provider
     ufw:
       rule: allow
       port: '6783'

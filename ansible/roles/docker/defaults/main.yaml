@@ -1,5 +1,5 @@
 ---
-# file: roles/docker/vars/main.yaml
+# file: roles/docker/defaults/main.yaml
 
 containerd_centos_package: containerd.io-1.2.13-3.1.el7.x86_64.rpm
 containerd_centos_package_version: 1.2.13

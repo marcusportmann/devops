@@ -4,31 +4,31 @@
 - debug:
     msg: Applying the Ubuntu-specific Prometheus Server configuration
 
-- name: Allow all access to tcp port 9090
+- name: Allow all hosts access to tcp port 9090
   ufw:
     rule: allow
     port: '9090'
     proto: tcp
 
-- name: Allow all access to tcp port 9091
+- name: Allow all hosts access to tcp port 9091
   ufw:
     rule: allow
     port: '9091'
     proto: tcp
 
-- name: Allow all access to tcp port 9092
+- name: Allow all hosts access to tcp port 9092
   ufw:
     rule: allow
     port: '9092'
     proto: tcp
 
-- name: Allow all access to tcp port 9093
+- name: Allow all hosts access to tcp port 9093
   ufw:
     rule: allow
     port: '9093'
     proto: tcp
 
-- name: Allow all access to tcp port 9094
+- name: Allow all hosts access to tcp port 9094
   ufw:
     rule: allow
     port: '9094'

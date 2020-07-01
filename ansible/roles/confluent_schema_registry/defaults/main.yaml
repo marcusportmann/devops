@@ -1,19 +1,23 @@
 ---
-#file: roles/confluent_schema_registry/vars/main.yaml
+#file: roles/confluent_schema_registry/defaults/main.yaml
 
-kafka_secure_broker_port: 9093
+confluent_defaults:
+  schema_registry:
+    etc_directory: /etc/schema-registry
+    log_directory: /var/log/schema-registry
 
-schema_registry_etc_directory: /etc/schema-registry
-schema_registry_log_directory: /var/log/schema-registry
+    user: cp-schema-registry
+    user_id: 315
 
-schema_registry_user: cp-schema-registry
-schema_registry_user_id: 315
-schema_registry_group: cp-schema-registry
-schema_registry_group_id: 315
+    group: cp-schema-registry
+    group_id: 315
 
-kafka_schema_registry_user_username: schema-registry
+    kafka_server:
+      secure_broker_port: 9093
+      username: schema-registry
 
-prometheus_jmx_exporter_enabled: true
-prometheus_jmx_exporter_version: 0.13.0
-prometheus_confluent_schema_registry_jmx_exporter_port: 9110
+    prometheus_jmx_exporter:
+      enabled: true
+      port: 9110
 
+confluent_config: "{{ confluent_defaults | combine(confluent | default({})) }}"

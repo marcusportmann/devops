@@ -1,8 +1,8 @@
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
 zookeeper.ssl.client.enable=true
 zookeeper.ssl.keystore.type=PKCS12
-zookeeper.ssl.keystore.location={{ zookeeper_etc_directory }}/pki/{{ inventory_hostname_short }}.p12
+zookeeper.ssl.keystore.location={{ kafka.zookeeper.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 zookeeper.ssl.keystore.password={{ zookeeper_keystore_password }}
 zookeeper.ssl.truststore.type=PKCS12
-zookeeper.ssl.truststore.location={{ zookeeper_etc_directory }}/pki/ca.p12
+zookeeper.ssl.truststore.location={{ kafka.zookeeper.etc_directory }}/pki/ca.p12
 zookeeper.ssl.truststore.password={{ zookeeper_ca_truststore_password }}

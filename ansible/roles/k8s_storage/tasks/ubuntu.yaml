@@ -4,7 +4,7 @@
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes storage configuration
 
-- name: Allow all access to tcp port 3260 (iSCSI)
+- name: Allow all hosts access to tcp port 3260 (iSCSI)
   ufw:
     rule: allow
     port: '3260'

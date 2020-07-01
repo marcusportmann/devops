@@ -1,18 +1,6 @@
 {
-  "variables": {
-    "headless": "false",
-    "iso_url": "http://ftp.is.co.za/mirror/centos/8.1.1911/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso",
-    "iso_checksum_type": "sha256",
-    "iso_checksum": "3ee3f4ea1538e026fff763e2b284a6f20b259d91d1ad5688f5783a67d279423b",
-    "ssh_username": "root",
-    "ssh_password": "root",
-    "ssh_timeout": "1200s",
-    "build_directory": "build"
-  },
   "builders": [
     {
-      "name": "centos8-virtualbox",
-      "type": "virtualbox-iso",
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8.cfg<enter><wait>"
       ],
@@ -22,14 +10,15 @@
       "guest_os_type": "RedHat_64",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "centos8-virtualbox",
       "output_directory": "{{ user `build_directory` }}/virtualbox/centos8/",
       "shutdown_command": "/sbin/halt -p",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "type": "virtualbox-iso",
       "vboxmanage": [
         [
           "modifyvm",
@@ -46,8 +35,6 @@
       ]
     },
     {
-      "name": "centos8-vmware",
-      "type": "vmware-iso",
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8.cfg<enter><wait>"
       ],
@@ -56,79 +43,86 @@
       "guest_os_type": "centos-64",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "centos8-vmware",
       "output_directory": "{{ user `build_directory` }}/vmware/centos8/",
       "shutdown_command": "/sbin/halt -p",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "type": "vmware-iso",
       "vm_name": "centos8",
       "vmdk_name": "centos8",
       "vmx_data": {
-        "memsize": "1024",
-        "numvcpus": "1",
         "ethernet0.connectiontype": "nat",
-        "ethernet0.virtualDev": "vmxnet3"
+        "ethernet0.virtualDev": "vmxnet3",
+        "memsize": "1024",
+        "numvcpus": "1"
       }
     },
     {
-      "name": "centos8-hyperv",
-      "type": "hyperv-iso",
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8.cfg<enter><wait>"
       ],
+      "cpus": "1",
+      "disk_block_size": "1",
       "disk_size": "51200",
+      "generation": 1,
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "keep_registered": "false",
+      "memory": "1024",
+      "name": "centos8-hyperv",
       "output_directory": "{{ user `build_directory` }}/hyperv/centos8/",
       "shutdown_command": "/sbin/halt -p",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "4h",
-      "vm_name": "centos8",
-      "memory": "1024",
-      "disk_block_size": "1",
-      "cpus": "1",
-      "generation": 1,
-      "keep_registered": "false",
-      "switch_name": "Default Switch"
+      "ssh_username": "{{ user `ssh_username` }}",
+      "switch_name": "Default Switch",
+      "type": "hyperv-iso",
+      "vm_name": "centos8"
     }
+  ],
+  "post-processors": [
+    [
+      {
+        "keep_input_artifact": true,
+        "output": "{{ user `build_directory` }}/boxes/centos8-{{.Provider}}.box",
+        "type": "vagrant"
+      }
+    ]
   ],
   "provisioners": [
     {
-      "type": "file",
+      "destination": "/tmp/configure-network",
       "source": "files/centos8/configure-network",
-      "destination": "/tmp/configure-network"
+      "type": "file"
     },
     {
-      "type": "file",
+      "destination": "/tmp/create-swap-file",
       "source": "files/centos8/create-swap-file",
-      "destination": "/tmp/create-swap-file"
+      "type": "file"
     },
     {
-      "type": "file",
+      "destination": "/tmp/resize-root-partition",
       "source": "files/centos8/resize-root-partition",
-      "destination": "/tmp/resize-root-partition"
+      "type": "file"
     },
     {
-      "type": "shell",
-      "inline":
-      [
+      "inline": [
         "sudo cp /tmp/configure-network /usr/bin/",
         "sudo chmod a+x /usr/bin/configure-network",
         "sudo cp /tmp/create-swap-file /usr/bin/",
         "sudo chmod a+x /usr/bin/create-swap-file",
         "sudo cp /tmp/resize-root-partition /usr/bin/",
         "sudo chmod a+x /usr/bin/resize-root-partition"
-      ]
+      ],
+      "type": "shell"
     },
     {
-      "type": "shell",
       "execute_command": "{{.Vars}} sh {{.Path}}",
       "expect_disconnect": true,
       "only": [
@@ -143,18 +137,23 @@
         "scripts/centos8/vagrant.sh",
         "scripts/centos8/cleanup.sh",
         "scripts/centos8/zerodisk.sh"
-      ]
+      ],
+      "type": "shell"
     }
   ],
- "push": {
+  "push": {
     "name": "{{user `atlas_username`}}/{{user `atlas_name`}}",
     "vcs": true
   },
-  "post-processors": [
-    [{
-    "type": "vagrant",
-    "keep_input_artifact": true,
-    "output": "{{ user `build_directory` }}/boxes/centos8-{{.Provider}}.box"
-    }]
-  ]
+  "variables": {
+    "build_directory": "build",
+    "headless": "false",
+    "iso_checksum": "3ee3f4ea1538e026fff763e2b284a6f20b259d91d1ad5688f5783a67d279423b",
+    "iso_checksum_type": "sha256",
+    "iso_url": "http://ftp.is.co.za/mirror/centos/8.1.1911/isos/x86_64/CentOS-8.1.1911-x86_64-dvd1.iso",
+    "ssh_password": "root",
+    "ssh_timeout": "1200s",
+    "ssh_username": "root"
+  }
 }
+

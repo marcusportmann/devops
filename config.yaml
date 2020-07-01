@@ -35,27 +35,29 @@ variables:
   confluent:
     clusters:
       local_dev:
+        replicate_to_cluster: local_dr
         kafka_mirrormaker_hosts:
-        - confluent-local-dr-01.local
+        - confluent-local-dev-05.local
         kafka_server_hosts:
         - confluent-local-dev-01.local
         - confluent-local-dev-02.local
         - confluent-local-dev-03.local
         schema_registry_hosts:
-        - confluent-local-dev-01.local
+        - confluent-local-dev-04.local
         zookeeper_hosts:
         - confluent-local-dev-01.local
         - confluent-local-dev-02.local
         - confluent-local-dev-03.local
       local_dr:
+        replicate_to_cluster: local_dev
         kafka_mirrormaker_hosts:
-        - confluent-local-dr-04.local
+        - confluent-local-dr-05.local
         kafka_server_hosts:
         - confluent-local-dr-01.local
         - confluent-local-dr-02.local
         - confluent-local-dr-03.local
         schema_registry_hosts:
-        - confluent-local-dr-01.local
+        - confluent-local-dr-04.local
         zookeeper_hosts:
         - confluent-local-dr-01.local
         - confluent-local-dr-02.local
@@ -64,27 +66,28 @@ variables:
   kafka:
     clusters:
       local_dev:
+        replicate_to_cluster: local_dr
         kafka_mirrormaker_hosts:
-        - kafka-local-dev-04.local
+        - kafka-local-dev-05.local
         kafka_server_hosts:
         - kafka-local-dev-01.local
         - kafka-local-dev-02.local
         - kafka-local-dev-03.local
         schema_registry_hosts:
-        - kafka-local-dev-01.local
+        - kafka-local-dev-04.local
         zookeeper_hosts:
         - kafka-local-dev-01.local
         - kafka-local-dev-02.local
         - kafka-local-dev-03.local
       local_dr:
         kafka_mirrormaker_hosts:
-        - kafka-local-dr-04.local
+        - kafka-local-dr-05.local
         kafka_server_hosts:
         - kafka-local-dr-01.local
         - kafka-local-dr-02.local
         - kafka-local-dr-03.local
         schema_registry_hosts:
-        - kafka-local-dr-01.local
+        - kafka-local-dr-04.local
         zookeeper_hosts:
         - kafka-local-dr-01.local
         - kafka-local-dr-02.local
@@ -94,36 +97,6 @@ xxx:
 # ----------------------------------------------------------------------------------------
 # Mandatory Configuration
 # ----------------------------------------------------------------------------------------
-#- name: confluent_platform_name
-#  values:
-#  - local-dev
-#- name: confluent_cluster1_name
-#  values:
-#  - local-dev-1
-#- name: confluent_cluster1_possible_hosts
-#  values:
-#
-#
-#
-#
-#- name: confluent_cluster2_name
-#  values:
-#  - local-dev-2
-#- name: confluent_cluster2_possible_hosts
-#  values:
-#  - confluent-local-dev-02.local
-#  - confluent-local-dr-01.local
-#  - confluent-local-dr-03.local
-#
-#- name: confluent_kafka_server_hosts_rack_ids
-#  values:
-#  - confluent-local-dev-01.local:1
-#  - confluent-local-dev-02.local:1
-#  - confluent-local-dev-03.local:2
-#  - confluent-local-dr-01.local:2
-#  - confluent-local-dr-02.local:3
-#  - confluent-local-dr-03.local:3
-
 - name: etcd_cluster_name
   values:
   - local-dev
@@ -134,36 +107,6 @@ xxx:
 - name: k8s_cluster_name
   values:
   - local-dev
-
-#- name: kafka_platform_name
-#  values:
-#  - local-dev
-#- name: kafka_cluster1_name
-#  values:
-#  - local-dev-1
-#- name: kafka_cluster1_possible_hosts
-#  values:
-#  - kafka-local-dev-01.local
-#  - kafka-local-dev-03.local
-#  - kafka-local-dr-01.local
-#  - kafka-local-dr-03.local
-#- name: kafka_cluster2_name
-#  values:
-#  - local-dev-2
-#- name: kafka_cluster2_possible_hosts
-#  values:
-#  - kafka-local-dev-02.local
-#  - kafka-local-dev-04.local
-#  - kafka-local-dr-02.local
-#  - kafka-local-dr-04.local
-#- name: kafka_server_hosts_rack_ids
-#  values:
-#  - kafka-local-dev-01.local:1
-#  - kafka-local-dev-02.local:1
-#  - kafka-local-dev-03.local:2
-#  - kafka-local-dev-04.local:2
-#  - kafka-local-dr-01.local:3
-#  - kafka-local-dr-02.local:3
 
 
 # ----------------------------------------------------------------------------------------
@@ -233,28 +176,30 @@ profiles:
   hosts:
   - confluent-local-dev-01.local
   - confluent-local-dr-01.local
-  - confluent-local-dev-04.local
+  - confluent-local-dev-05.local
+  - monitor.local
 
 - name: confluent-multi-cluster-full
   hosts:
   - confluent-local-dev-01.local
   - confluent-local-dev-02.local
   - confluent-local-dev-03.local
-  - confluent-local-dev-04.local
   - confluent-local-dr-01.local
   - confluent-local-dr-02.local
   - confluent-local-dr-03.local
-  - confluent-local-dr-04.local
 
 - name: confluent-single-cluster-minimal
   hosts:
   - confluent-local-dev-01.local
+  - confluent-local-dev-04.local
+  - monitor.local
 
 - name: confluent-single-cluster-full
   hosts:
   - confluent-local-dev-01.local
   - confluent-local-dev-02.local
   - confluent-local-dev-03.local
+  - confluent-local-dev-04.local
   - monitor.local
 
 - name: devops
@@ -307,22 +252,21 @@ profiles:
   hosts:
   - kafka-local-dev-01.local
   - kafka-local-dr-01.local
-  - kafka-local-dev-04.local
+  - kafka-local-dev-05.local
 
 - name: kafka-multi-cluster-full
   hosts:
   - kafka-local-dev-01.local
   - kafka-local-dev-02.local
   - kafka-local-dev-03.local
-  - kafka-local-dev-04.local
   - kafka-local-dr-01.local
   - kafka-local-dr-02.local
   - kafka-local-dr-03.local
-  - kafka-local-dr-04.local
 
 - name: kafka-single-cluster-minimal
   hosts:
   - kafka-local-dev-01.local
+  - kafka-local-dev-04.local
   - monitor.local
 
 - name: kafka-single-cluster-full
@@ -330,6 +274,7 @@ profiles:
   - kafka-local-dev-01.local
   - kafka-local-dev-02.local
   - kafka-local-dev-03.local
+  - kafka-local-dev-04.local
   - monitor.local
 
 - name: monitor
@@ -472,7 +417,7 @@ hosts:
 - name:               confluent-local-dev-04.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,confluent_kafka_mirrormaker
+  ansible_groups:     monitored,confluent_schema_registry
   virtualbox:
     cpus:             2
     memory:           1536
@@ -501,6 +446,38 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
+- name:               confluent-local-dev-05.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     monitored,confluent_kafka_mirrormaker
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-local-dev-05.local
+    domain:           local
+    ip:               192.168.184.79/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-local-dev-05.local
+    domain:           local
+    ip:               192.168.184.79/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             confluent-local-dev-05.local
+    domain:           local
+    ip:               192.168.0.79/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
 - name:               confluent-local-dr-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
@@ -511,7 +488,7 @@ hosts:
     data_disk:        10240
     fqdn:             confluent-local-dr-01.local
     domain:           local
-    ip:               192.168.184.79/24
+    ip:               192.168.184.80/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_desktop:
@@ -520,7 +497,7 @@ hosts:
     data_disk:        10240
     fqdn:             confluent-local-dr-01.local
     domain:           local
-    ip:               192.168.184.79/24
+    ip:               192.168.184.80/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_esxi:
@@ -529,7 +506,7 @@ hosts:
     data_disk:        40960
     fqdn:             confluent-local-dr-01.local
     domain:           local
-    ip:               192.168.0.79/24
+    ip:               192.168.0.80/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
@@ -543,7 +520,7 @@ hosts:
     data_disk:        10240
     fqdn:             confluent-local-dr-02.local
     domain:           local
-    ip:               192.168.184.80/24
+    ip:               192.168.184.81/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_desktop:
@@ -552,7 +529,7 @@ hosts:
     data_disk:        10240
     fqdn:             confluent-local-dr-02.local
     domain:           local
-    ip:               192.168.184.80/24
+    ip:               192.168.184.81/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_esxi:
@@ -561,7 +538,7 @@ hosts:
     data_disk:        40960
     fqdn:             confluent-local-dr-02.local
     domain:           local
-    ip:               192.168.0.80/24
+    ip:               192.168.0.81/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
@@ -575,7 +552,7 @@ hosts:
     data_disk:        10240
     fqdn:             confluent-local-dr-03.local
     domain:           local
-    ip:               192.168.184.81/24
+    ip:               192.168.184.82/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_desktop:
@@ -584,7 +561,7 @@ hosts:
     data_disk:        10240
     fqdn:             confluent-local-dr-03.local
     domain:           local
-    ip:               192.168.184.81/24
+    ip:               192.168.184.82/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_esxi:
@@ -593,11 +570,43 @@ hosts:
     data_disk:        40960
     fqdn:             confluent-local-dr-03.local
     domain:           local
-    ip:               192.168.0.81/24
+    ip:               192.168.0.82/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
 - name:               confluent-local-dr-04.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     monitored,confluent_schema_registry
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-local-dr-04.local
+    domain:           local
+    ip:               192.168.184.83/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-local-dr-04.local
+    domain:           local
+    ip:               192.168.184.83/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             confluent-local-dr-04.local
+    domain:           local
+    ip:               192.168.0.83/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               confluent-local-dr-05.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_kafka_mirrormaker
@@ -605,27 +614,27 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-local-dr-04.local
+    fqdn:             confluent-local-dr-05.local
     domain:           local
-    ip:               192.168.184.82/24
+    ip:               192.168.184.84/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-local-dr-04.local
+    fqdn:             confluent-local-dr-05.local
     domain:           local
-    ip:               192.168.184.82/24
+    ip:               192.168.184.84/24
     gateway:          192.168.184.2
     dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-local-dr-04.local
+    fqdn:             confluent-local-dr-05.local
     domain:           local
-    ip:               192.168.0.82/24
+    ip:               192.168.0.84/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 

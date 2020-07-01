@@ -1,20 +1,23 @@
 ---
-#file: roles/kafka_mirrormaker/vars/main.yaml
+#file: roles/kafka_mirrormaker/defaults/main.yaml
 
-kafka_secure_broker_port: 9093
+kafka_defaults:
+  kafka_mirrormaker:
+    etc_directory: /etc/kafka
+    log_directory: /var/log/kafka
 
-kafka_mirrormaker_etc_directory: /etc/kafka
-kafka_mirrormaker_log_directory: /var/log/kafka
+    user: kafka
+    user_id: 330
 
-kafka_mirrormaker_user: kafka
-kafka_mirrormaker_user_id: 330
-kafka_mirrormaker_group: kafka
-kafka_mirrormaker_group_id: 330
+    group: kafka
+    group_id: 330
 
-kafka_mirrormaker_user_username: mirrormaker
+    kafka_broker:
+      secure_broker_port: 9093
+      username: mirrormaker
 
-prometheus_jmx_exporter_enabled: true
-prometheus_jmx_exporter_version: 0.13.0
-prometheus_kafka_mirrormaker_jmx_exporter_port: 9130
+    prometheus_jmx_exporter:
+      enabled: true
+      port: 9130
 
-
+kafka_config: "{{ kafka_defaults | combine(kafka | default({})) }}"

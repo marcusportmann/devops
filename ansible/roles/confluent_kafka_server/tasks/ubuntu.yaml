@@ -9,15 +9,15 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port {{ kafka_secure_broker_port }} (Kafka Secure Broker Port)
+- name: Allow all hosts access to tcp port {{ confluent_config.kafka_server.secure_broker_port }} (Kafka Secure Broker Port)
   ufw:
     rule: allow
-    port: '{{ kafka_secure_broker_port }}'
+    port: '{{ confluent_config.kafka_server.secure_broker_port }}'
     proto: tcp
 
-- name: Allow all access to tcp port {{ prometheus_kafka_server_jmx_exporter_port }} (Prometheus JMX Exporter Port)
+- name: Allow all hosts access to tcp port {{ confluent_config.kafka_server.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
   ufw:
     rule: allow
-    port: '{{ prometheus_kafka_server_jmx_exporter_port }}'
+    port: '{{ confluent_config.kafka_server.prometheus_jmx_exporter.port }}'
     proto: tcp
-  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+  when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))

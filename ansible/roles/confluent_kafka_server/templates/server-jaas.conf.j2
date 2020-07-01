@@ -1,11 +1,11 @@
 Client {
   org.apache.zookeeper.server.auth.DigestLoginModule required
-  username="{{ kafka_server_zookeeper_user_username }}"
-  password="{{ kafka_server_zookeeper_user_password }}";
+  username="{{ confluent_config.kafka_server.zookeeper.username }}"
+  password="{{ kafka_server_zookeeper_password }}";
 };
 
 KafkaServer {
   org.apache.kafka.common.security.scram.ScramLoginModule required
-  username="{{ kafka_server_user_username }}"
-  password="{{ kafka_server_user_password }}";
+  username="{{ confluent_config.kafka_server.users.broker.username }}"
+  password="{{ kafka_server_broker_user_password }}";
 };

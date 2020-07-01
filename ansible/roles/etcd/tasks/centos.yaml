@@ -10,14 +10,14 @@
 # |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
 # |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
 #
-- name: Allow all access to tcp port 2379
+- name: Allow all hosts access to tcp port 2379
   firewalld:
     port: 2379/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
-- name: Allow all access to tcp port 2380
+- name: Allow all hosts access to tcp port 2380
   firewalld:
     port: 2380/tcp
     permanent: yes

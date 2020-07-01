@@ -9,15 +9,15 @@
     state: enabled
     policy: deny
 
-- name: Allow all access to tcp port 8443 (Confluent Schema Registry HTTPS)
+- name: Allow all hosts access to tcp port 8443 (Confluent Schema Registry HTTPS)
   ufw:
     rule: allow
     port: 8443
     proto: tcp
 
-- name: Allow all access to tcp port {{ prometheus_confluent_schema_registry_jmx_exporter_port }} (Prometheus JMX Exporter Port)
+- name: Allow all hosts access to tcp port {{ confluent_config.schema_registry.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
   ufw:
     rule: allow
-    port: '{{ prometheus_confluent_schema_registry_jmx_exporter_port }}'
+    port: '{{ confluent_config.schema_registry.prometheus_jmx_exporter.port }}'
     proto: tcp
-  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+  when: ((confluent_config.schema_registry.prometheus_jmx_exporter.enabled is defined) and (confluent_config.schema_registry.prometheus_jmx_exporter.enabled != None) and (confluent_config.schema_registry.prometheus_jmx_exporter.enabled == true))

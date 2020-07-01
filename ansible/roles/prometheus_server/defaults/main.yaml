@@ -1,17 +1,41 @@
 ---
-# file: roles/prometheus_server/vars/main.yaml
+# file: roles/prometheus_server/defaults/main.yaml
 
-prometheus_data_directory: /var/lib/prometheus
-prometheus_version: 2.19.1
-prometheus_package_checksum: sha256:c341566bcf1d645b0561e1296bf18b694a283dd83a304f14a288aa284fc2019a
+prometheus_defaults:
+  etc_directory: /etc/prometheus
+  data_directory: /var/lib/prometheus
 
-prometheus_user_id: 455
-prometheus_group_id: 455
+  package_checksum: sha256:c341566bcf1d645b0561e1296bf18b694a283dd83a304f14a288aa284fc2019a
+  package_version: 2.19.1
 
-prometheus_node_exporter_port: 9100
+  user: prometheus
+  user_id: 455
+  group: prometheus
+  group_id: 455
 
-prometheus_confluent_schema_registry_jmx_exporter_port: 9110
-prometheus_kafka_mirrormaker_jmx_exporter_port: 9130
-prometheus_kafka_server_jmx_exporter_port: 9131
-prometheus_zookeeper_jmx_exporter_port: 9150
-prometheus_zookeeper_exporter_port: 9151
+  node_exporter:
+    port: 9100
+
+  confluent:
+    kafka_mirrormaker:
+      jmx_exporter_port: 9130
+    kafka_server:
+      jmx_exporter_port: 9131
+    schema_registry:
+      jmx_exporter_port: 9110
+    zookeeper:
+      jmx_exporter_port: 9150
+      exporter_port: 9151
+
+  kafka:
+    kafka_mirrormaker:
+      jmx_exporter_port: 9130
+    kafka_server:
+      jmx_exporter_port: 9131
+    schema_registry:
+      jmx_exporter_port: 9110
+    zookeeper:
+      jmx_exporter_port: 9150
+      exporter_port: 9151
+
+prometheus_config: "{{ prometheus_defaults | combine(prometheus | default({})) }}"

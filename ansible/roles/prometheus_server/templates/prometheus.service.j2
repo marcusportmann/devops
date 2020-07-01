@@ -6,7 +6,7 @@ Documentation=https://prometheus.io/docs/introduction/overview/
 
 [Service]
 Restart=always
-User=prometheus
+User={{ prometheus_config.user }}
 EnvironmentFile=/etc/default/prometheus
 ExecStart=/usr/bin/prometheus $ARGS
 ExecReload=/bin/kill -HUP $MAINPID

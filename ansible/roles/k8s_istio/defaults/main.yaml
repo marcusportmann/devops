@@ -1,5 +1,5 @@
 ---
-# file: roles/k8s_istio/vars/main.yaml
+# file: roles/k8s_istio/defaults/main.yaml
 
 k8s_istio_enabled: false
 k8s_istio_grafana_enabled: false

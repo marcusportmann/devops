@@ -10,12 +10,12 @@ broker.rack={{ (kafka_server_hosts.index(inventory_hostname) + 1) }}
 ############################# Socket Server Settings #############################
 
 # The address the socket server listens on
-listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_secure_broker_port }}
+listeners=SASL_SSL://{{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}
 
 # Hostname and port the broker will advertise to producers and consumers. If not set,
 # it uses the value for "listeners" if configured.  Otherwise, it will use the value
 # returned from java.net.InetAddress.getCanonicalHostName().
-advertised.listeners=SASL_SSL://{{ inventory_hostname }}:{{ kafka_secure_broker_port }}
+advertised.listeners=SASL_SSL://{{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}
 
 # The number of threads that the server uses for receiving requests from the network and sending responses to the network
 num.network.threads=3
@@ -37,7 +37,7 @@ socket.request.max.bytes=104857600
 ############################# Log Basics #############################
 
 # A comma separated list of directories under which to store log files
-log.dirs={{ kafka_server_data_directory }}
+log.dirs={{ confluent_config.kafka_server.data_directory }}
 
 # The default number of log partitions per topic. More partitions allow greater
 # parallelism for consumption, but this will also result in more files across the brokers.
@@ -120,7 +120,7 @@ offsets.retention.minutes=21024000
 # You can also append an optional chroot string to the urls to specify the root directory for all kafka znodes
 {% set kafka_zookeeper_hosts = [] -%}
 {% for kafka_zookeeper_host in zookeeper_hosts %}
-{% set _ = kafka_zookeeper_hosts.append("%s:%d" % (kafka_zookeeper_host, kafka_server_zookeeper_secure_client_port)) %}
+{% set _ = kafka_zookeeper_hosts.append("%s:%d" % (kafka_zookeeper_host, confluent_config.kafka_server.zookeeper.secure_client_port)) %}
 {% endfor %}
 zookeeper.connect={{ kafka_zookeeper_hosts | join(',') }}
 
@@ -128,10 +128,10 @@ zookeeper.connect={{ kafka_zookeeper_hosts | join(',') }}
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
 zookeeper.ssl.client.enable=true
 zookeeper.ssl.keystore.type=PKCS12
-zookeeper.ssl.keystore.location={{ kafka_server_etc_directory }}/pki/server.p12
+zookeeper.ssl.keystore.location={{ confluent_config.kafka_server.etc_directory }}/pki/server.p12
 zookeeper.ssl.keystore.password={{ kafka_server_keystore_password }}
 zookeeper.ssl.truststore.type=PKCS12
-zookeeper.ssl.truststore.location={{ kafka_server_etc_directory }}/pki/ca.p12
+zookeeper.ssl.truststore.location={{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12
 zookeeper.ssl.truststore.password={{ ca_truststore_password }}
 zookeeper.set.acl=true
 
@@ -160,11 +160,11 @@ security.inter.broker.protocol=SASL_SSL
 ssl.client.auth=requested
 
 ssl.keystore.type=PKCS12
-ssl.keystore.location={{ kafka_server_etc_directory }}/pki/server.p12
+ssl.keystore.location={{ confluent_config.kafka_server.etc_directory }}/pki/server.p12
 ssl.keystore.password={{ kafka_server_keystore_password }}
 #ssl.key.password={{ kafka_server_keystore_password }}
 ssl.truststore.type=PKCS12
-ssl.truststore.location={{ kafka_server_etc_directory }}/pki/ca.p12
+ssl.truststore.location={{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12
 ssl.truststore.password={{ ca_truststore_password }}
 
 
@@ -176,7 +176,7 @@ super.users=User:kafka;User:admin;User:mirrormaker
 
 
 # Disable Confluent metrics collection
-confluent.support.metrics.enable=true
+confluent_config.support.metrics.enable=true
 
 
 

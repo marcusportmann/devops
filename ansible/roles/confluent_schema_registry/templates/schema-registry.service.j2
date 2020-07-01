@@ -2,17 +2,17 @@
 
 [Unit]
 Description=Confluent Schema Registry Service
-Documentation=https://confluent.io
+Documentation=https://confluent_config.io
 Requires=network.target remote-fs.target
 After=network.target remote-fs.target
 
 [Service]
 Type=simple
-User={{ schema_registry_user }}
-Group={{ schema_registry_group }}
-Environment=LOG_DIR={{ schema_registry_log_directory }}
-ExecStart=/opt/confluent/bin/schema-registry-start {{ schema_registry_etc_directory }}/conf/schema-registry.properties
-ExecStop=/opt/confluent/bin/schema-registry-stop {{ schema_registry_etc_directory }}/conf/schema-registry.properties
+User={{ confluent_config.schema_registry.user }}
+Group={{ confluent_config.schema_registry.group }}
+Environment=LOG_DIR={{ confluent_config.schema_registry.log_directory }}
+ExecStart=/opt/confluent/bin/schema-registry-start {{ confluent_config.schema_registry.etc_directory }}/conf/schema-registry.properties
+ExecStop=/opt/confluent/bin/schema-registry-stop {{ confluent_config.schema_registry.etc_directory }}/conf/schema-registry.properties
 Restart=always
 
 [Install]

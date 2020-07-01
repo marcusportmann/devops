@@ -27,7 +27,7 @@
 - name: Install Kafka
   block:
   - debug:
-      msg: Check whether the Kafka {{ kafka_version }} package has been installed
+      msg: Check whether the Kafka {{ kafka.package_version }} package has been installed
 
   - stat:
       path: /opt/kafka
@@ -35,26 +35,26 @@
 
   - block:
     - debug:
-        msg: Install the Kafka {{ kafka_version }} package
+        msg: Install the Kafka {{ kafka.package_version }} package
 
-    - name: Check whether the Kafka {{ kafka_version }} package has been downloaded
+    - name: Check whether the Kafka {{ kafka.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/kafka_2.13-{{ kafka_version }}.tgz
+      local_action: stat path=packages/kafka_2.13-{{ kafka.package_version }}.tgz
       register: kafka_package_stat_result
 
-    - name: Download the Kafka {{ kafka_version }} package
+    - name: Download the Kafka {{ kafka.package_version }} package
       become: no
-      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka_version }}/kafka_2.13-{{ kafka_version }}.tgz' dest='packages/kafka_2.13-{{ kafka_version }}.tgz' checksum={{ kafka_package_checksum }}
+      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka.package_version }}/kafka_2.13-{{ kafka.package_version }}.tgz' dest='packages/kafka_2.13-{{ kafka.package_version }}.tgz' checksum={{ kafka.package_checksum }}
       when: (kafka_package_stat_result.stat.exists == False)
 
-    - name: Extract the Kafka {{ kafka_version }} package
+    - name: Extract the Kafka {{ kafka.package_version }} package
       unarchive:
-        src: packages/kafka_2.13-{{ kafka_version }}.tgz
+        src: packages/kafka_2.13-{{ kafka.package_version }}.tgz
         dest: /opt
 
-    - name: Create the symbolic link to the Kafka {{ kafka_version }} package
+    - name: Create the symbolic link to the Kafka {{ kafka.package_version }} package
       file:
-        src: /opt/kafka_2.13-{{ kafka_version }}
+        src: /opt/kafka_2.13-{{ kafka.package_version }}
         dest: /opt/kafka
         owner: root
         group: root
@@ -67,7 +67,7 @@
         owner: root
         group: root
 
-    when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka_version)))
+    when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka.package_version)))
 
 
 #  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____        _ __  ____  __  _______  ______   ___  ____ _____ _____ ____
@@ -87,32 +87,43 @@
       state: directory
 
   - debug:
-      msg: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library has been installed
+      msg: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library has been installed
 
   - stat:
-      path: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
+      path: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
     register: prometheus_jmx_exporter_installed_stat_result
 
   - block:
     - debug:
-        msg: Install the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library
+        msg: Install the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
 
-    - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} has been downloaded
+    - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} has been downloaded
       become: no
-      local_action: stat path=packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
+      local_action: stat path=packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
       register: prometheus_jmx_exporter_package_stat_result
 
-    - name: Download the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library
+    - name: Download the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       become: no
-      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar' dest='packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar'
+      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
       when: (prometheus_jmx_exporter_package_stat_result.stat.exists == False)
 
-    - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter_version }} library
+    - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       copy:
-        src: packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
-        dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter_version }}.jar
+        src: packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
+        dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
 
     when: (prometheus_jmx_exporter_installed_stat_result.stat.exists == False)
 
-  when: ((prometheus_jmx_exporter_enabled is defined) and (prometheus_jmx_exporter_enabled != None) and (prometheus_jmx_exporter_enabled == true))
+  - stat:
+      path: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
+    register: prometheus_jmx_exporter_link_stat_result
 
+  - name: Create the symbolic link to the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
+    file:
+      src: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
+      dest: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
+      owner: root
+      group: root
+      state: link
+
+  when: ((prometheus_jmx_exporter.enabled is defined) and (prometheus_jmx_exporter.enabled != None) and (prometheus_jmx_exporter.enabled == true))

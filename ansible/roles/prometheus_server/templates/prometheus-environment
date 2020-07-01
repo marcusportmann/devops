@@ -1,5 +1,5 @@
 # Set the command-line arguments to pass to the server.
-ARGS="--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path={{ prometheus_data_directory }}/metrics2/"
+ARGS="--config.file={{ prometheus_config.etc_directory }}/prometheus.yml --storage.tsdb.path={{ prometheus_config.data_directory }}/metrics2/"
 
 # Prometheus supports the following options:
 #  --config.file="/etc/prometheus/prometheus.yml"

@@ -2,30 +2,24 @@
 #file: roles/confluent_kafka_mirrormaker/tasks/main.yaml
 
 - set_fact:
-    kafka_mirrormaker_cluster1_actual_hosts: "{{ confluent_cluster1_possible_hosts | intersect(groups['confluent_kafka_mirrormaker']) }}"
-- set_fact:
-    kafka_mirrormaker_cluster2_actual_hosts: "{{ confluent_cluster2_possible_hosts | intersect(groups['confluent_kafka_mirrormaker']) }}"
-
-- set_fact:
-    kafka_server_cluster1_actual_hosts: "{{ confluent_cluster1_possible_hosts | intersect(groups['confluent_kafka_server']) }}"
-- set_fact:
-    kafka_server_cluster2_actual_hosts: "{{ confluent_cluster2_possible_hosts | intersect(groups['confluent_kafka_server']) }}"
+    cluster_name: '{{ item }}'
+  when: (inventory_hostname in confluent_config.clusters[item].kafka_mirrormaker_hosts)
+  loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - debug:
-    msg: 'Kafka MirrorMaker Cluster1 hosts: {{ kafka_mirrormaker_cluster1_actual_hosts }}'
-- debug:
-    msg: 'Kafka MirrorMaker Cluster2 hosts: {{ kafka_mirrormaker_cluster2_actual_hosts }}'
-- debug:
-    msg: 'Kafka Server Cluster1 hosts: {{ kafka_server_cluster1_actual_hosts }}'
-- debug:
-    msg: 'Kafka Server Cluster2 hosts: {{ kafka_server_cluster2_actual_hosts }}'
+    msg: 'Cluster Name: {{ cluster_name }}'
+
+- set_fact:
+    zookeeper_hosts: "{{ confluent_config.clusters[cluster_name].kafka_mirrormaker_hosts | intersect(groups['confluent_kafka_mirrormaker']|default([])) }}"
 
 - debug:
-    msg: "Kafka MirrorMaker host {{ inventory_hostname }} is in DC1"
-  when: (inventory_hostname in kafka_mirrormaker_cluster1_actual_hosts)
+    msg: 'ZooKeeper hosts: {{ zookeeper_hosts }}'
+
+- set_fact:
+    kafka_server_hosts: "{{ confluent_config.clusters[cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
+
 - debug:
-    msg: "Kafka MirrorMaker host {{ inventory_hostname }} is in DC2"
-  when: (inventory_hostname in kafka_mirrormaker_cluster2_actual_hosts)
+    msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
 
 
 #   ____ ___  _   _ _____ _    _   _ _____ _   _ _____   _  __    _    _____ _  __    _      __  __ ___ ____  ____   ___  ____    __  __    _    _  _______ ____
@@ -34,17 +28,17 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |   | . \  / ___ \|  _| | . \  / ___ \  | |  | || ||  _ <|  _ <| |_| |  _ <  | |  | |/ ___ \| . \| |___|  _ <
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |_|  |_|___|_| \_\_| \_\\___/|_| \_\ |_|  |_/_/   \_\_|\_\_____|_| \_\
 #
-- name: Add the {{ kafka_mirrormaker_group }} group
+- name: Add the {{ confluent_config.kafka_mirrormaker.group }} group
   group:
-    name: '{{ kafka_mirrormaker_group }}'
-    gid: '{{ kafka_mirrormaker_group_id }}'
+    name: '{{ confluent_config.kafka_mirrormaker.group }}'
+    gid: '{{ confluent_config.kafka_mirrormaker.group_id }}'
     state: present
 
-- name: Add the {{ kafka_mirrormaker_user }} user
+- name: Add the {{ confluent_config.kafka_mirrormaker.user }} user
   user:
-    name: '{{ kafka_mirrormaker_user }}'
-    uid: '{{ kafka_mirrormaker_user_id }}'
-    group: '{{ kafka_mirrormaker_group }}'
+    name: '{{ confluent_config.kafka_mirrormaker.user }}'
+    uid: '{{ confluent_config.kafka_mirrormaker.user_id }}'
+    group: '{{ confluent_config.kafka_mirrormaker.group }}'
     create_home: yes
     state: present
 
@@ -56,110 +50,110 @@
     mode: '0700'
     state: directory
 
-- name: Create the {{ kafka_mirrormaker_etc_directory }} directory
+- name: Create the {{ confluent_config.kafka_mirrormaker.etc_directory }} directory
   file:
-    path: '{{ kafka_mirrormaker_etc_directory }}'
-    owner: '{{ kafka_mirrormaker_user }}'
-    group: '{{ kafka_mirrormaker_group }}'
+    path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}'
+    owner: '{{ confluent_config.kafka_mirrormaker.user }}'
+    group: '{{ confluent_config.kafka_mirrormaker.group }}'
     mode: '0550'
     state: directory
 
-- name: Create the {{ kafka_mirrormaker_etc_directory }}/conf directory
+- name: Create the {{ confluent_config.kafka_mirrormaker.etc_directory }}/conf directory
   file:
-    path: '{{ kafka_mirrormaker_etc_directory }}/conf'
-    owner: '{{ kafka_mirrormaker_user }}'
-    group: '{{ kafka_mirrormaker_group }}'
+    path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/conf'
+    owner: '{{ confluent_config.kafka_mirrormaker.user }}'
+    group: '{{ confluent_config.kafka_mirrormaker.group }}'
     mode: '0550'
     state: directory
 
 - name: Setup the Kafka MirrorMaker keystore and CA truststore
   block:
-  - name: Create the {{ kafka_mirrormaker_etc_directory }}/pki directory
+  - name: Create the {{ confluent_config.kafka_mirrormaker.etc_directory }}/pki directory
     file:
-      path: '{{ kafka_mirrormaker_etc_directory }}/pki'
-      owner: '{{ kafka_mirrormaker_user }}'
-      group: '{{ kafka_mirrormaker_group }}'
+      path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki'
+      owner: '{{ confluent_config.kafka_mirrormaker.user }}'
+      group: '{{ confluent_config.kafka_mirrormaker.group }}'
       mode: '0550'
       state: directory
 
   - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ confluent_platform_name }}/ca.crt
+      src: pki/{{ cluster_name }}/ca.crt
       dest: /var/tmp/ansible/kafka/ca.crt
     register: ca_copy_result
 
-  - name: Copy the Kafka MirrorMaker private key (confluent-{{ confluent_platform_name }}-kafka-mirrormaker.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker private key (confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ confluent_platform_name }}/confluent-{{ confluent_platform_name }}-kafka-mirrormaker.key
-      dest: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-kafka-mirrormaker.key
+      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.key
+      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.key
     register: kafka_mirrormaker_private_key_copy_result
 
-  - name: Copy the Kafka MirrorMaker certificate (confluent-{{ confluent_platform_name }}-kafka-mirrormaker.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker certificate (confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ confluent_platform_name }}/confluent-{{ confluent_platform_name }}-kafka-mirrormaker.crt
-      dest: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-kafka-mirrormaker.crt
+      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.crt
+      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.crt
     register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
     set_fact:
-      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/kafka-mirrormaker-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/kafka-mirrormaker-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka MirrorMaker keystore and CA truststore
     block:
     - name: Generate the Kafka MirrorMaker PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ kafka_mirrormaker_etc_directory }}/pki/mirrormaker.p12'
-        friendly_name: 'confluent-{{ confluent_platform_name }}-kafka-mirrormaker'
-        privatekey_path: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-kafka-mirrormaker.key
-        certificate_path: /var/tmp/ansible/kafka/confluent-{{ confluent_platform_name }}-kafka-mirrormaker.crt
+        path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/mirrormaker.p12'
+        friendly_name: "confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker"
+        privatekey_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.key
+        certificate_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-mirrormaker.crt
         passphrase: '{{ kafka_mirrormaker_keystore_password }}'
-        owner: '{{ kafka_mirrormaker_user }}'
-        group: '{{ kafka_mirrormaker_group }}'
+        owner: '{{ confluent_config.kafka_mirrormaker.user }}'
+        group: '{{ confluent_config.kafka_mirrormaker.group }}'
         mode: '0440'
         state: present
 
     - name: Remove the CA PKCS12 truststore if it already exists
       file:
-        path: '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12'
+        path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the CA PKCS12 truststore
       file:
-        path: '{{ kafka_mirrormaker_etc_directory }}/pki/ca.p12'
-        owner: '{{ kafka_mirrormaker_user }}'
-        group: '{{ kafka_mirrormaker_group }}'
+        path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12'
+        owner: '{{ confluent_config.kafka_mirrormaker.user }}'
+        group: '{{ confluent_config.kafka_mirrormaker.group }}'
         mode: '0440'
 
     when: ((ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True))
 
-- name: Create the {{ kafka_mirrormaker_log_directory }} directory
+- name: Create the {{ confluent_config.kafka_mirrormaker.log_directory }} directory
   file:
-    path: '{{ kafka_mirrormaker_log_directory }}'
-    owner: '{{ kafka_mirrormaker_user }}'
-    group: '{{ kafka_mirrormaker_group }}'
+    path: '{{ confluent_config.kafka_mirrormaker.log_directory }}'
+    owner: '{{ confluent_config.kafka_mirrormaker.user }}'
+    group: '{{ confluent_config.kafka_mirrormaker.group }}'
     mode: '0750'
     state: directory
 
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_platform_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/shared/kafka-server-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   template:
     src: mirrormaker.properties.j2
-    dest: '{{ kafka_mirrormaker_etc_directory }}/conf/mirrormaker.properties'
-    owner: '{{ kafka_mirrormaker_user }}'
-    group: '{{ kafka_mirrormaker_group }}'
+    dest: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/conf/mirrormaker.properties'
+    owner: '{{ confluent_config.kafka_mirrormaker.user }}'
+    group: '{{ confluent_config.kafka_mirrormaker.group }}'
     mode: '0440'
   register: kafka_mirrormaker_configuration_template_result
 

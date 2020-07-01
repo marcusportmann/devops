@@ -1,18 +1,6 @@
 {
-  "variables": {
-    "headless": "false",
-    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/7.8.2003/isos/x86_64/CentOS-7-x86_64-Minimal-2003.iso",
-    "iso_checksum_type": "sha256",
-    "iso_checksum": "659691c28a0e672558b003d223f83938f254b39875ee7559d1a4a14c79173193",
-    "ssh_username": "root",
-    "ssh_password": "root",
-    "ssh_timeout": "1200s",
-    "build_directory": "build"
-  },
   "builders": [
     {
-      "name": "centos7-virtualbox",
-      "type": "virtualbox-iso",
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.cfg<enter><wait>"
       ],
@@ -22,14 +10,15 @@
       "guest_os_type": "RedHat_64",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "centos7-virtualbox",
       "output_directory": "{{ user `build_directory` }}/virtualbox/centos7/",
       "shutdown_command": "/sbin/halt -p",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "type": "virtualbox-iso",
       "vboxmanage": [
         [
           "modifyvm",
@@ -46,8 +35,6 @@
       ]
     },
     {
-      "name": "centos7-vmware",
-      "type": "vmware-iso",
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.cfg<enter><wait>"
       ],
@@ -56,79 +43,86 @@
       "guest_os_type": "centos-64",
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "name": "centos7-vmware",
       "output_directory": "{{ user `build_directory` }}/vmware/centos7/",
       "shutdown_command": "/sbin/halt -p",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "type": "vmware-iso",
       "vm_name": "centos7",
       "vmdk_name": "centos7",
       "vmx_data": {
-        "memsize": "1024",
-        "numvcpus": "1",
         "ethernet0.connectiontype": "nat",
-        "ethernet0.virtualDev": "vmxnet3"
+        "ethernet0.virtualDev": "vmxnet3",
+        "memsize": "1024",
+        "numvcpus": "1"
       }
     },
     {
-      "name": "centos7-hyperv",
-      "type": "hyperv-iso",
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.cfg<enter><wait>"
       ],
+      "cpus": "1",
+      "disk_block_size": "1",
       "disk_size": "51200",
+      "generation": 1,
       "headless": "{{ user `headless` }}",
       "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "keep_registered": "false",
+      "memory": "1024",
+      "name": "centos7-hyperv",
       "output_directory": "{{ user `build_directory` }}/hyperv/centos7/",
       "shutdown_command": "/sbin/halt -p",
-      "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "4h",
-      "vm_name": "centos7",
-      "memory": "1024",
-      "disk_block_size": "1",
-      "cpus": "1",
-      "generation": 1,
-      "keep_registered": "false",
-      "switch_name": "Default Switch"
+      "ssh_username": "{{ user `ssh_username` }}",
+      "switch_name": "Default Switch",
+      "type": "hyperv-iso",
+      "vm_name": "centos7"
     }
+  ],
+  "post-processors": [
+    [
+      {
+        "keep_input_artifact": true,
+        "output": "{{ user `build_directory` }}/boxes/centos7-{{.Provider}}.box",
+        "type": "vagrant"
+      }
+    ]
   ],
   "provisioners": [
     {
-      "type": "file",
+      "destination": "/tmp/configure-network",
       "source": "files/centos7/configure-network",
-      "destination": "/tmp/configure-network"
+      "type": "file"
     },
     {
-      "type": "file",
+      "destination": "/tmp/create-swap-file",
       "source": "files/centos7/create-swap-file",
-      "destination": "/tmp/create-swap-file"
+      "type": "file"
     },
     {
-      "type": "file",
+      "destination": "/tmp/resize-root-partition",
       "source": "files/centos7/resize-root-partition",
-      "destination": "/tmp/resize-root-partition"
+      "type": "file"
     },
     {
-      "type": "shell",
-      "inline":
-      [
+      "inline": [
         "sudo cp /tmp/configure-network /usr/bin/",
         "sudo chmod a+x /usr/bin/configure-network",
         "sudo cp /tmp/create-swap-file /usr/bin/",
         "sudo chmod a+x /usr/bin/create-swap-file",
         "sudo cp /tmp/resize-root-partition /usr/bin/",
         "sudo chmod a+x /usr/bin/resize-root-partition"
-      ]
+      ],
+      "type": "shell"
     },
     {
-      "type": "shell",
       "execute_command": "{{.Vars}} sh {{.Path}}",
       "expect_disconnect": true,
       "only": [
@@ -143,18 +137,23 @@
         "scripts/centos7/vagrant.sh",
         "scripts/centos7/cleanup.sh",
         "scripts/centos7/zerodisk.sh"
-      ]
+      ],
+      "type": "shell"
     }
   ],
- "push": {
+  "push": {
     "name": "{{user `atlas_username`}}/{{user `atlas_name`}}",
     "vcs": true
   },
-  "post-processors": [
-    [{
-    "type": "vagrant",
-    "keep_input_artifact": true,
-    "output": "{{ user `build_directory` }}/boxes/centos7-{{.Provider}}.box"
-    }]
-  ]
+  "variables": {
+    "build_directory": "build",
+    "headless": "false",
+    "iso_checksum": "659691c28a0e672558b003d223f83938f254b39875ee7559d1a4a14c79173193",
+    "iso_checksum_type": "sha256",
+    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/7.8.2003/isos/x86_64/CentOS-7-x86_64-Minimal-2003.iso",
+    "ssh_password": "root",
+    "ssh_timeout": "1200s",
+    "ssh_username": "root"
+  }
 }
+

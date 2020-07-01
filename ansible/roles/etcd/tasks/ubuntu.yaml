@@ -10,13 +10,13 @@
 # |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
 # |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
 #
-- name: Allow all access to tcp port 2379
+- name: Allow all hosts access to tcp port 2379
   ufw:
     rule: allow
     port: '2379'
     proto: tcp
 
-- name: Allow all access to tcp port 2380
+- name: Allow all hosts access to tcp port 2380
   ufw:
     rule: allow
     port: '2380'
