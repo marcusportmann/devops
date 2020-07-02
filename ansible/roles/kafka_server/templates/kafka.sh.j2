@@ -1,5 +1,5 @@
 kafka-set-user-password() {
 
-KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ kafka.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name $1 --add-config 'SCRAM-SHA-256=[iterations=8192,password=$2],SCRAM-SHA-512=[password=$2]'
+KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ kafka_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name $1 --add-config 'SCRAM-SHA-256=[iterations=8192,password=$2],SCRAM-SHA-512=[password=$2]'
 
 }

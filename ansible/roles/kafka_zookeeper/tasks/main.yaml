@@ -4,19 +4,19 @@
 - set_fact:
     cluster_name: '{{ item }}'
   when: (inventory_hostname in kafka.clusters[item].zookeeper_hosts)
-  loop: '{{ kafka.clusters | flatten(1) }}'
+  loop: '{{ kafka_config.clusters | flatten(1) }}'
 
 - debug:
     msg: 'Cluster Name: {{ cluster_name }}'
 
 - set_fact:
-    zookeeper_hosts: "{{ kafka.clusters[cluster_name].zookeeper_hosts | intersect(groups['kafka_zookeeper']|default([])) }}"
+    zookeeper_hosts: "{{ kafka_config.clusters[cluster_name].zookeeper_hosts | intersect(groups['kafka_zookeeper']|default([])) }}"
 
 - debug:
     msg: 'ZooKeeper hosts: {{ zookeeper_hosts }}'
 
 - set_fact:
-    kafka_server_hosts: "{{ kafka.clusters[cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([])) }}"
+    kafka_server_hosts: "{{ kafka_config.clusters[cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([])) }}"
 
 - debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'

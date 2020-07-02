@@ -4,19 +4,19 @@
 - set_fact:
     cluster_name: '{{ item }}'
   when: (inventory_hostname in kafka.clusters[item].kafka_mirrormaker_hosts)
-  loop: '{{ kafka.clusters | flatten(1) }}'
+  loop: '{{ kafka_config.clusters | flatten(1) }}'
 
 - debug:
     msg: 'Cluster Name: {{ cluster_name }}'
 
 - set_fact:
-    kafka_mirrormaker_hosts: "{{ kafka.clusters[cluster_name].kafka_mirrormaker_hosts | intersect(groups['kafka_mirrormaker']|default([])) }}"
+    kafka_mirrormaker_hosts: "{{ kafka_config.clusters[cluster_name].kafka_mirrormaker_hosts | intersect(groups['kafka_mirrormaker']|default([])) }}"
 
 - debug:
     msg: 'Kafka MirrorMaker hosts: {{ kafka_mirrormaker_hosts }}'
 
 - set_fact:
-    kafka_server_hosts: "{{ kafka.clusters[cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([])) }}"
+    kafka_server_hosts: "{{ kafka_config.clusters[cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([])) }}"
 
 - debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'

@@ -1,5 +1,5 @@
 # Specify the cluster aliases
-clusters = {{ kafka.clusters | flatten(1) | join(',') }}
+clusters = {{ kafka_config.clusters | flatten(1) | join(',') }}
 
 # Connection information for each cluster
 # This is a comma separated list of host:port pairs for each cluster
@@ -11,7 +11,7 @@ clusters = {{ kafka.clusters | flatten(1) | join(',') }}
 {{ cluster_name }}.bootstrap.servers = {{ kafka_bootstrap_servers | join(',') }}
 {{ cluster_name }}.producer.enable.idempotence = true
 {% if ('replicate_to_cluster' in kafka.clusters[cluster_name]) %}
-{{ cluster_name }}->{{ kafka.clusters[cluster_name].replicate_to_cluster }}.enabled = true
+{{ cluster_name }}->{{ kafka_config.clusters[cluster_name].replicate_to_cluster }}.enabled = true
 {% endif %}
 
 {% endfor %}
@@ -52,11 +52,11 @@ refresh.groups.enabled = true
 security.protocol=SASL_SSL
 ssl.protocol=TLS
 ssl.keystore.type=PKCS12
-ssl.keystore.location={{ kafka.kafka_mirrormaker.etc_directory }}/pki/mirrormaker.p12
+ssl.keystore.location={{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/mirrormaker.p12
 ssl.keystore.password={{ kafka_mirrormaker_keystore_password }}
 ssl.truststore.type=PKCS12
-ssl.truststore.location={{ kafka.kafka_mirrormaker.etc_directory }}/pki/ca.p12
+ssl.truststore.location={{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12
 ssl.truststore.password={{ ca_truststore_password }}
 sasl.mechanism=SCRAM-SHA-256
-sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ kafka.kafka_mirrormaker.kafka_broker.username }}" password="{{ kafka.kafka_mirrormaker.user_password }}";
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ kafka_config.kafka_mirrormaker.kafka_broker.username }}" password="{{ kafka_config.kafka_mirrormaker.user_password }}";
 

@@ -163,7 +163,7 @@
 # NOTE: This is the password Schema Registry uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Schema Registry user
   set_fact:
-    kafka_confluent_config.schema_registry.user_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_schema_registry_user_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Schema Registry configuration file
   template:

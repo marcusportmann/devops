@@ -27,7 +27,7 @@ kafkastore.ssl.truststore.type=PKCS12
 kafkastore.ssl.truststore.location={{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12
 kafkastore.ssl.truststore.password={{ ca_truststore_password }}
 kafkastore.sasl.mechanism=SCRAM-SHA-256
-kafkastore.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ confluent_config.schema_registry.kafka_server.username }}" password="{{ kafka_confluent_config.schema_registry.user_password }}";
+kafkastore.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ confluent_config.schema_registry.kafka_server.username }}" password="{{ kafka_server_schema_registry_user_password }}";
 
 ssl.protocol=TLS
 ssl.keystore.type=PKCS12

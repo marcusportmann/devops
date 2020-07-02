@@ -1,38 +1,38 @@
 # The directory where the snapshot is stored.
-dataDir={{ kafka.zookeeper.data_directory }}
+dataDir={{ kafka_config.zookeeper.data_directory }}
 
-{% if ((kafka.zookeeper.data_log_directory is defined) and (kafka.zookeeper.data_log_directory != None)) %}
-dataLogDir={{ kafka.zookeeper.data_log_directory }}
+{% if ((kafka_config.zookeeper.data_log_directory is defined) and (kafka_config.zookeeper.data_log_directory != None)) %}
+dataLogDir={{ kafka_config.zookeeper.data_log_directory }}
 {% endif %}
 
 # The port at which the clients will connect (Disabled)
-# clientPort={{ kafka.zookeeper.client_port }}
+# clientPort={{ kafka_config.zookeeper.client_port }}
 
 # The per-ip limit on the number of connections
-maxClientCnxns={{ kafka.zookeeper.max_client_connections }}
+maxClientCnxns={{ kafka_config.zookeeper.max_client_connections }}
 
 # The admin server configuration
-admin.enableServer={{ kafka.zookeeper.admin_server.enabled }}
-admin.serverPort={{ kafka.zookeeper.admin_server.port }}
+admin.enableServer={{ kafka_config.zookeeper.admin_server.enabled }}
+admin.serverPort={{ kafka_config.zookeeper.admin_server.port }}
 
 # The time in milliseconds used by ZooKeeper to do heartbeats
-tickTime={{ kafka.zookeeper.tick_time }}
+tickTime={{ kafka_config.zookeeper.tick_time }}
 
 # The timeout in ticks that ZooKeeper servers in a quorum have to connect to a leader
-initLimit={{ kafka.zookeeper.init_limit }}
+initLimit={{ kafka_config.zookeeper.init_limit }}
 
 # The timeout in ticks that a ZooKeeper server can be out of date with the leader
-syncLimit={{ kafka.zookeeper.sync_limit }}
+syncLimit={{ kafka_config.zookeeper.sync_limit }}
 
 # Disable dynamic reconfiguration
 reconfigEnabled=false
 
-{% if (kafka.zookeeper.autopurge_purge_interval > 0) %}
+{% if (kafka_config.zookeeper.autopurge_purge_interval > 0) %}
 # The interval in hours between triggers of the autopurge task
-autopurge.purgeInterval={{ kafka.zookeeper.autopurge_purge_interval }}
+autopurge.purgeInterval={{ kafka_config.zookeeper.autopurge_purge_interval }}
 
 # The number of recent Snapshots and corresponding transaction logs in the dataDir and dataLogDir to retain on autopurge. The minimum number is 3.
-autopurge.snapRetainCount={{ kafka.zookeeper.autopurge_snap_retain_count }}
+autopurge.snapRetainCount={{ kafka_config.zookeeper.autopurge_snap_retain_count }}
 {% endif %}
 
 # Set the server connection factory to use for mTLS authentication for ZooKeeper and quorum mTLS authentication
@@ -40,23 +40,23 @@ serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
 
 # Enable secure connections to ZooKeeper using TLS (Not mutual TLS)
 # This supports privacy and not authentication or authorization
-secureClientPort={{ kafka.zookeeper.secure_client_port }}
+secureClientPort={{ kafka_config.zookeeper.secure_client_port }}
 ssl.clientAuth=none
 ssl.keyStore.type=PKCS12
-ssl.keyStore.location={{ kafka.zookeeper.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
+ssl.keyStore.location={{ kafka_config.zookeeper.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 ssl.keyStore.password={{ zookeeper_keystore_password }}
 ssl.trustStore.type=PKCS12
-ssl.trustStore.location={{ kafka.zookeeper.etc_directory }}/pki/ca.p12
+ssl.trustStore.location={{ kafka_config.zookeeper.etc_directory }}/pki/ca.p12
 ssl.trustStore.password={{ zookeeper_ca_truststore_password }}
 
 # Enable ZooKeeper quorum mTLS authentication
 sslQuorum=true
 ssl.quorum.clientAuth=need
 ssl.quorum.keyStore.type=PKCS12
-ssl.quorum.keyStore.location={{ kafka.zookeeper.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
+ssl.quorum.keyStore.location={{ kafka_config.zookeeper.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 ssl.quorum.keyStore.password={{ zookeeper_keystore_password }}
 ssl.quorum.trustStore.type=PKCS12
-ssl.quorum.trustStore.location={{ kafka.zookeeper.etc_directory }}/pki/ca.p12
+ssl.quorum.trustStore.location={{ kafka_config.zookeeper.etc_directory }}/pki/ca.p12
 ssl.quorum.trustStore.password={{ zookeeper_ca_truststore_password }}
 
 # Enable SASL authentication for ZooKeeper
@@ -69,14 +69,14 @@ requireClientAuthScheme=sasl
 {% if ((zookeeper_hosts|length) > 1) %}
 # The cluster hosts
 {% for zookeeper_host in zookeeper_hosts -%}
-server.{{ loop.index }}={{ zookeeper_host }}:{{ kafka.zookeeper.cluster_ports }}
+server.{{ loop.index }}={{ zookeeper_host }}:{{ kafka_config.zookeeper.cluster_ports }}
 {% endfor -%}
 {% endif %}
 
-{% if ((kafka.zookeeper.prometheus_exporter.enabled is defined) and (kafka.zookeeper.prometheus_exporter.enabled != None) and (kafka.zookeeper.prometheus_exporter.enabled == true)) %}
+{% if ((kafka_config.zookeeper.prometheus_exporter.enabled is defined) and (kafka_config.zookeeper.prometheus_exporter.enabled != None) and (kafka_config.zookeeper.prometheus_exporter.enabled == true)) %}
 # Metrics configuration (ZooKeeper > 3.6 only)
 metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
-metricsProvider.httpPort={{ kafka.zookeeper.prometheus_exporter.port }}
+metricsProvider.httpPort={{ kafka_config.zookeeper.prometheus_exporter.port }}
 {% endif %}
 
 

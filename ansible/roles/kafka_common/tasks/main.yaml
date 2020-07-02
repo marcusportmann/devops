@@ -27,7 +27,7 @@
 - name: Install Kafka
   block:
   - debug:
-      msg: Check whether the Kafka {{ kafka.package_version }} package has been installed
+      msg: Check whether the Kafka {{ kafka_config.package_version }} package has been installed
 
   - stat:
       path: /opt/kafka
@@ -35,26 +35,30 @@
 
   - block:
     - debug:
-        msg: Install the Kafka {{ kafka.package_version }} package
+        msg: Install the Kafka {{ kafka_config.package_version }} package
 
-    - name: Check whether the Kafka {{ kafka.package_version }} package has been downloaded
+    - name: Check whether the Kafka {{ kafka_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/kafka_2.13-{{ kafka.package_version }}.tgz
+      local_action: stat path=packages/kafka_2.13-{{ kafka_config.package_version }}.tgz
       register: kafka_package_stat_result
 
-    - name: Download the Kafka {{ kafka.package_version }} package
-      become: no
-      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka.package_version }}/kafka_2.13-{{ kafka.package_version }}.tgz' dest='packages/kafka_2.13-{{ kafka.package_version }}.tgz' checksum={{ kafka.package_checksum }}
+    - debug:
+        msg: 'Downloading the Kafka {{ kafka_config.package_version }} package from http://apache.is.co.za/kafka/{{ kafka_config.package_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
       when: (kafka_package_stat_result.stat.exists == False)
 
-    - name: Extract the Kafka {{ kafka.package_version }} package
+    - name: Download the Kafka {{ kafka_config.package_version }} package
+      become: no
+      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka_config.package_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' dest='packages/kafka_2.13-{{ kafka_config.package_version }}.tgz' checksum={{ kafka_config.package_checksum }}
+      when: (kafka_package_stat_result.stat.exists == False)
+
+    - name: Extract the Kafka {{ kafka_config.package_version }} package
       unarchive:
-        src: packages/kafka_2.13-{{ kafka.package_version }}.tgz
+        src: packages/kafka_2.13-{{ kafka_config.package_version }}.tgz
         dest: /opt
 
-    - name: Create the symbolic link to the Kafka {{ kafka.package_version }} package
+    - name: Create the symbolic link to the Kafka {{ kafka_config.package_version }} package
       file:
-        src: /opt/kafka_2.13-{{ kafka.package_version }}
+        src: /opt/kafka_2.13-{{ kafka_config.package_version }}
         dest: /opt/kafka
         owner: root
         group: root
@@ -67,7 +71,7 @@
         owner: root
         group: root
 
-    when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka.package_version)))
+    when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka_config.package_version)))
 
 
 #  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____        _ __  ____  __  _______  ______   ___  ____ _____ _____ ____
@@ -83,7 +87,7 @@
       path: /opt/prometheus/lib
       owner: root
       group: root
-      mode: '0750'
+      mode: '0755'
       state: directory
 
   - debug:

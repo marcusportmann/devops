@@ -10,12 +10,12 @@ StartLimitIntervalSec=3600
 
 [Service]
 Type=simple
-User={{ kafka.kafka_server.user }}
-Group={{ kafka.kafka_server.group }}
-Environment="LOG_DIR={{ kafka.kafka_server.log_directory }}"
-Environment="EXTRA_ARGS={% if kafka.kafka_server.prometheus_jmx_exporter.enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent.jar={{ kafka.kafka_server.prometheus_jmx_exporter.port }}:{{ kafka.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ kafka.kafka_server.etc_directory }}/conf/server-jaas.conf"
-ExecStart=/opt/kafka/bin/kafka-server-start.sh {{ kafka.kafka_server.etc_directory }}/conf/server.properties
-ExecStop=/opt/kafka/bin/kafka-server-stop.sh {{ kafka.kafka_server.etc_directory }}/conf/server.properties
+User={{ kafka_config.kafka_server.user }}
+Group={{ kafka_config.kafka_server.group }}
+Environment="LOG_DIR={{ kafka_config.kafka_server.log_directory }}"
+Environment="EXTRA_ARGS={% if kafka_config.kafka_server.prometheus_jmx_exporter.enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent.jar={{ kafka_config.kafka_server.prometheus_jmx_exporter.port }}:{{ kafka_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf"
+ExecStart=/opt/kafka/bin/kafka-server-start.sh {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties
+ExecStop=/opt/kafka/bin/kafka-server-stop.sh {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties
 Restart=always
 RestartSec=10
 

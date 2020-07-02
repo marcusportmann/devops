@@ -10,31 +10,38 @@ scrape_configs:
 #  | . \  / ___ \|  _| | . \  / ___ \
 #  |_|\_\/_/   \_\_|   |_|\_\/_/   \_\
 #
-{% set kafka_server_hosts = [] -%}
-
-{% if ('confluent_kafka_server' in groups) -%}
-{% for host in groups['confluent_kafka_server'] -%}
-  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.confluent.kafka_server.jmx_exporter_port)) -%}
-{% endfor -%}
-{% endif -%}
-
-{% if ('kafka_server' in groups) -%}
-{% for host in groups['kafka_server'] -%}
-  {% set _ = kafka_server_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.kafka.kafka_server.jmx_exporter_port)) -%}
-{% endfor -%}
-{% endif -%}
-
-{% if ((kafka_server_hosts | length) > 0) %}
-
+{% if (('confluent_kafka_server' in groups) or ('kafka_server' in groups)) %}
 - job_name: 'kafka-server'
   static_configs:
-  - targets: [{{ kafka_server_hosts | join(',') }}]
+{% if ('confluent_kafka_server' in groups) %}
+{% for host in groups['confluent_kafka_server'] %}
+  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.confluent.kafka_server.jmx_exporter_port) }}]
+    labels:
+{% for cluster_name in confluent.clusters -%}
+{% if (host in confluent.clusters[cluster_name].kafka_server_hosts) %}
+      cluster: {{ cluster_name }}
+{% endif %}
+{% endfor -%}
+{% endfor %}
+{% endif %}
+{% if ('kafka_server' in groups) %}
+{% for host in groups['kafka_server'] %}
+  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.kafka.kafka_server.jmx_exporter_port) }}]
+    labels:
+{% for cluster_name in kafka.clusters -%}
+{% if (host in kafka.clusters[cluster_name].kafka_server_hosts) %}
+      cluster: {{ cluster_name }}
+{% endif %}
+{% endfor -%}
+{% endfor %}
+{% endif %}
   relabel_configs:
   - source_labels: [__address__]
     regex: "([^:]+):\\d+"
     target_label: instance
-
 {% endif %}
+
+
 
 {% if ('kafka_mirrormaker' in groups) %}
 
@@ -256,6 +263,5 @@ scrape_configs:
   - source_labels: [__address__]
     regex: "([^:]+):\\d+"
     target_label: instance
-
 {% endif %}
 
