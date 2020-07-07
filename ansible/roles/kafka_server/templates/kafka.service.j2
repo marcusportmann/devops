@@ -13,7 +13,7 @@ Type=simple
 User={{ kafka_config.kafka_server.user }}
 Group={{ kafka_config.kafka_server.group }}
 Environment="LOG_DIR={{ kafka_config.kafka_server.log_directory }}"
-Environment="EXTRA_ARGS={% if kafka_config.kafka_server.prometheus_jmx_exporter.enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent.jar={{ kafka_config.kafka_server.prometheus_jmx_exporter.port }}:{{ kafka_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf"
+Environment="EXTRA_ARGS={% if kafka_config.kafka_server.prometheus_jmx_exporter.enabled|bool %}-javaagent:/opt/prometheus/lib/jmx_prometheus_javaagent.jar={{ kafka_config.kafka_server.prometheus_jmx_exporter.port }}:{{ kafka_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml{% endif %} -Dzookeeper.jmx.log4j.disable=true -Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf {% if kafka_config.kafka_server.enable_remote_jmx|bool %}-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname={{ inventory_hostname }} -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.rmi.port=9998{% endif %}"
 ExecStart=/opt/kafka/bin/kafka-server-start.sh {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties
 ExecStop=/opt/kafka/bin/kafka-server-stop.sh {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties
 Restart=always

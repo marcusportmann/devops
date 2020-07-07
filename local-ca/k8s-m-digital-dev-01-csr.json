@@ -1,0 +1,15 @@
+{
+  "CN": "k8s-m-digital-dev-01",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "k8s-m-digital-dev-01"
+    }
+  ],
+  "hosts": [
+    "k8s-m-digital-dev-01.local"
+  ]
+}

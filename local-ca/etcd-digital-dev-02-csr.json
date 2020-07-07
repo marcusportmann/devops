@@ -1,0 +1,15 @@
+{
+  "CN": "etcd-digital-dev-02",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "etcd-digital-dev-02"
+    }
+  ],
+  "hosts": [
+    "etcd-digital-dev-02.local"
+  ]
+}

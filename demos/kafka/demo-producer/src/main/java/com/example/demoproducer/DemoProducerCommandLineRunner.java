@@ -18,10 +18,17 @@ public class DemoProducerCommandLineRunner implements CommandLineRunner {
   @Override
   public void run(String... args) throws Exception {
     try {
-      demoProducerKafkaTemplate.send(
-          "test", UUID.randomUUID().toString(), "Test message sent at " + new Date().toString());
+      for (int i = 0; i < 100000; i++) {
+        demoProducerKafkaTemplate.send(
+            "test", UUID.randomUUID().toString(), "Test message " + i + " sent at " + new Date().toString());
 
-      demoProducerKafkaTemplate.flush();
+        demoProducerKafkaTemplate.flush();
+
+        try {
+          Thread.sleep(250L);
+        }
+        catch (Throwable e) {}
+      }
     } catch (Throwable e) {
       System.out.println("[ERROR] " + e.getMessage());
       e.printStackTrace(System.out);

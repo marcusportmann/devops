@@ -3,7 +3,7 @@
 
 - set_fact:
     cluster_name: '{{ item }}'
-  when: (inventory_hostname in kafka.clusters[item].zookeeper_hosts)
+  when: (inventory_hostname in kafka_config.clusters[item].zookeeper_hosts)
   loop: '{{ kafka_config.clusters | flatten(1) }}'
 
 - debug:

@@ -4,6 +4,13 @@
 - set_fact:
     prometheus_data_directory: "{{ prometheus_data_directory if ((prometheus_data_directory is defined) and (prometheus_data_directory != None)) else '/var/lib/prometheus' }}"
 
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == "Ubuntu"
   tags:
@@ -14,6 +21,13 @@
   tags:
   - unbound
 
+
+#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____    ____  _____ ______     _______ ____
+# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|  / ___|| ____|  _ \ \   / / ____|  _ \
+# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \  \___ \|  _| | |_) \ \ / /|  _| | |_) |
+# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) |  ___) | |___|  _ < \ V / | |___|  _ <
+# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/  |____/|_____|_| \_\ \_/  |_____|_| \_\
+#
 - name: Install Prometheus
   block:
   - debug:
@@ -40,17 +54,17 @@
     - debug:
         msg: Install the Prometheus {{ prometheus_config.package_version }} package
 
-    - name: Add the prometheus group
+    - name: Add the {{ prometheus_config.group }} group
       group:
         name: '{{ prometheus_config.group }}'
         gid: '{{ prometheus_config.group_id }}'
         state: present
 
-    - name: Add the prometheus user
+    - name: Add the {{ prometheus_config.user }} user
       user:
         name: '{{ prometheus_config.user }}'
         uid: '{{ prometheus_config.user_id }}'
-        group: prometheus
+        group: '{{ prometheus_config.group }}'
         create_home: no
         shell: /usr/sbin/nologin
         state: present

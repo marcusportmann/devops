@@ -59,9 +59,9 @@
     create_home: yes
     state: present
 
-- name: Create the /var/tmp/ansible/kafka directory
+- name: Create the /var/tmp/ansible/confluent directory
   file:
-    path: /var/tmp/ansible/kafka
+    path: /var/tmp/ansible/confluent
     owner: root
     group: root
     mode: '0700'
@@ -93,27 +93,27 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the CA certificate to the /var/tmp/ansible/confluent directory
     copy:
       src: pki/{{ cluster_name }}/ca.crt
-      dest: /var/tmp/ansible/kafka/ca.crt
+      dest: /var/tmp/ansible/confluent/ca.crt
     register: ca_copy_result
 
-  - name: Copy the Schema Registry private key (confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Schema Registry private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key
-      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.key
     register: schema_registry_private_key_copy_result
 
-  - name: Copy the Schema Registry certificate (confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Schema Registry certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt
-      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.crt
     register: schema_registry_certificate_copy_result
 
   - name: Generate or retrieve the password for the Schema Registry keystore
     set_fact:
-      schema_registry_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/schema-registry-keystore-password chars=ascii_letters,digits length=16') }}"
+      schema_registry_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
@@ -124,10 +124,10 @@
     - name: Generate the Schema Registry PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ confluent_config.schema_registry.etc_directory }}/pki/schema-registry.p12'
-        friendly_name: "confluent-{{ cluster_name.replace('_', '-') }}-schema-registry"
-        privatekey_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.key
-        certificate_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-schema-registry.crt
+        path: '{{ confluent_config.schema_registry.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
+        friendly_name: "{{ inventory_hostname_short }}"
+        privatekey_path: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.crt
         passphrase: '{{ schema_registry_keystore_password }}'
         owner: '{{ confluent_config.schema_registry.user }}'
         group: '{{ confluent_config.schema_registry.group }}'
@@ -141,7 +141,7 @@
 
     - name: Generate the CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/ca.crt -keystore '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the CA PKCS12 truststore
       file:

@@ -74,4 +74,8 @@ dracut --no-hostonly --force
 echo "Install the pyOpenSSL python package"
 pip3 install pyOpenSSL
 
+echo 'LANG=en_US.utf-8' >> /etc/environment
+echo 'LC_ALL=en_US.utf-8' >> /etc/environment
+
+
 

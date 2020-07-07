@@ -21,6 +21,14 @@
 - debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
 
+- set_fact:
+    kafka_server_mirrormaker_users: []
+
+- set_fact:
+    kafka_server_mirrormaker_users: "{{ kafka_server_mirrormaker_users + [ 'mirrormaker-' + item.replace('_', '-') ] }}"
+  loop: '{{ confluent_config.clusters | flatten(1) }}'
+  when: ((confluent_config.clusters[item].replicate_to_cluster is defined) and (confluent_config.clusters[item].replicate_to_cluster != None) and (confluent_config.clusters[item].replicate_to_cluster == cluster_name))
+
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
@@ -59,9 +67,9 @@
     create_home: yes
     state: present
 
-- name: Create the /var/tmp/ansible/kafka directory
+- name: Create the /var/tmp/ansible/confluent directory
   file:
-    path: /var/tmp/ansible/kafka
+    path: /var/tmp/ansible/confluent
     owner: root
     group: root
     mode: '0700'
@@ -93,27 +101,27 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the CA certificate to the /var/tmp/ansible/confluent directory
     copy:
       src: pki/{{ cluster_name }}/ca.crt
-      dest: /var/tmp/ansible/kafka/ca.crt
+      dest: /var/tmp/ansible/confluent/ca.crt
     register: ca_copy_result
 
-  - name: Copy the Kafka Server private key (confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.key
-      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.key
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.key
     register: kafka_server_private_key_copy_result
 
-  - name: Copy the Kafka Server certificate (confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.crt
-      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.crt
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.crt
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
     set_fact:
-      kafka_server_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/kafka-server-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
@@ -124,10 +132,10 @@
     - name: Generate the Kafka Server PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ confluent_config.kafka_server.etc_directory }}/pki/server.p12'
-        friendly_name: "confluent-{{ cluster_name.replace('_', '-') }}-kafka-server"
-        privatekey_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.key
-        certificate_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-server.crt
+        path: '{{ confluent_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
+        friendly_name: "{{ inventory_hostname_short }}"
+        privatekey_path: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.crt
         passphrase: '{{ kafka_server_keystore_password }}'
         owner: '{{ confluent_config.kafka_server.user }}'
         group: '{{ confluent_config.kafka_server.group }}'
@@ -141,7 +149,7 @@
 
     - name: Generate the CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/ca.crt -keystore '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the CA PKCS12 truststore
       file:
@@ -235,23 +243,23 @@
     set_fact:
       kafka_admin_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Copy the Kafka admin private key (confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin private key (confluent-admin-{{ cluster_name.replace('_', '-') }}.key) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.key
-      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.key
+      src: pki/{{ cluster_name }}/confluent-admin-{{ cluster_name.replace('_', '-') }}.key
+      dest: /var/tmp/ansible/confluent/confluent-admin-{{ cluster_name.replace('_', '-') }}.key
 
-  - name: Copy the Kafka admin certificate (confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin certificate (confluent-admin-{{ cluster_name.replace('_', '-') }}.crt) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.crt
-      dest: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.crt
+      src: pki/{{ cluster_name }}/confluent-admin-{{ cluster_name.replace('_', '-') }}.crt
+      dest: /var/tmp/ansible/confluent/confluent-admin-{{ cluster_name.replace('_', '-') }}.crt
 
   - name: Generate the Kafka admin PKCS12 keystore
     openssl_pkcs12:
       action: export
       path: '{{ confluent_config.kafka_server.etc_directory }}/pki/admin.p12'
-      friendly_name: "confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin"
-      privatekey_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.key
-      certificate_path: /var/tmp/ansible/kafka/confluent-{{ cluster_name.replace('_', '-') }}-kafka-admin.crt
+      friendly_name: "confluent-admin-{{ cluster_name.replace('_', '-') }}"
+      privatekey_path: /var/tmp/ansible/confluent/confluent-admin-{{ cluster_name.replace('_', '-') }}.key
+      certificate_path: /var/tmp/ansible/confluent/confluent-admin-{{ cluster_name.replace('_', '-') }}.crt
       passphrase: '{{ kafka_admin_keystore_password }}'
       owner: '{{ confluent_config.kafka_server.user }}'
       group: '{{ confluent_config.kafka_server.group }}'
@@ -281,16 +289,12 @@
       dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml'
     when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
-- name: Setup the Kafka MirrorMaker user
-  block:
-  - name: Generate or retrieve the password for the Kafka MirrorMaker user
-    set_fact:
-      kafka_server_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/shared/kafka-server-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
-
-  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper
-    shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.mirrormaker.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_mirrormaker_user_password }}]'
-    when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+- name: Setup the Kafka MirrorMaker users
+  include_tasks: roles/confluent_kafka_server/tasks/provision_kafka_mirrormaker_user_for_cluster.yaml
+  loop: '{{ confluent_config.clusters | flatten(1) }}'
+  loop_control:
+    loop_var: kafka_mirrormaker_user_cluster_name
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
 
 - name: Create the Kafka profile file
   template:
@@ -406,3 +410,4 @@
       cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --group schema-registry
 
   when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+

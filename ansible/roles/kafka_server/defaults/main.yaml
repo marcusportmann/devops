@@ -22,11 +22,15 @@ kafka_defaults:
         username: kafka
       admin:
         username: admin
-      mirrormaker:
-        username: mirrormaker
+
+    enable_remote_jmx: false
 
     prometheus_jmx_exporter:
       enabled: true
       port: 9131
+
+    kafka_minion:
+      enabled: true
+      package_version: 1.0.1
 
 kafka_config: "{{ kafka_defaults | combine(kafka | default({})) }}"

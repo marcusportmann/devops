@@ -1,0 +1,28 @@
+{
+  "CN": "k8s-istio-ingress-gw-digital-dev",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "k8s-istio-ingress-gw-digital-dev"
+    }
+  ],
+  "hosts": [
+    "devops",
+    "devops.local",
+    "k8s-m-digital-dev-01",
+    "k8s-m-digital-dev-01.local",
+    "k8s-m-digital-dev-02",
+    "k8s-m-digital-dev-02.local",
+    "k8s-m-digital-dev-03",
+    "k8s-m-digital-dev-03.local",
+    "k8s-w-digital-dev-01",
+    "k8s-w-digital-dev-01.local",
+    "k8s-w-digital-dev-02",
+    "k8s-w-digital-dev-02.local",
+    "k8s-w-digital-dev-03",
+    "k8s-w-digital-dev-03.local"
+  ]
+}

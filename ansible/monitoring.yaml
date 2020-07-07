@@ -1,4 +1,4 @@
-# This playbook configures a monitoring server.
+# This playbook configures the monitoring components.
 
 - name: Configure a monitored host
   hosts: monitored

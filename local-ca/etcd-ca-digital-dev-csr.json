@@ -1,0 +1,16 @@
+{
+  "CA": {
+    "expiry": "175200h",
+    "pathlen": 0
+  },
+  "CN": "etcd-ca-digital-dev",
+  "key": {
+    "algo": "rsa",
+    "size": 4096
+  },
+  "names": [
+  {
+    "CN": "etcd-ca-digital-dev"
+  }
+ ]
+}

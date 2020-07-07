@@ -117,17 +117,17 @@ offsets.retention.minutes=21024000
 # This is a comma separated host:port pairs, each corresponding to a zk
 # server. e.g. "127.0.0.1:3000,127.0.0.1:3001,127.0.0.1:3002".
 # You can also append an optional chroot string to the urls to specify the root directory for all kafka znodes
-{% set kafka_zookeeper_hosts = [] -%}
-{% for kafka_zookeeper_host in zookeeper_hosts %}
-{% set _ = kafka_zookeeper_hosts.append("%s:%d" % (kafka_zookeeper_host, kafka_config.kafka_server.zookeeper.secure_client_port)) %}
+{% set kafka_server_zookeeper_hosts = [] -%}
+{% for zookeeper_host in zookeeper_hosts %}
+{% set _ = kafka_server_zookeeper_hosts.append("%s:%d" % (zookeeper_host, kafka_config.kafka_server.zookeeper.secure_client_port)) %}
 {% endfor %}
-zookeeper.connect={{ kafka_zookeeper_hosts | join(',') }}
+zookeeper.connect={{ kafka_server_zookeeper_hosts | join(',') }}
 
 # Enable mTLS authentication when connecting to ZooKeeper
 zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
 zookeeper.ssl.client.enable=true
 zookeeper.ssl.keystore.type=PKCS12
-zookeeper.ssl.keystore.location={{ kafka_config.kafka_server.etc_directory }}/pki/server.p12
+zookeeper.ssl.keystore.location={{ kafka_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 zookeeper.ssl.keystore.password={{ kafka_server_keystore_password }}
 zookeeper.ssl.truststore.type=PKCS12
 zookeeper.ssl.truststore.location={{ kafka_config.kafka_server.etc_directory }}/pki/ca.p12
@@ -159,17 +159,18 @@ security.inter.broker.protocol=SASL_SSL
 ssl.client.auth=requested
 
 ssl.keystore.type=PKCS12
-ssl.keystore.location={{ kafka_config.kafka_server.etc_directory }}/pki/server.p12
+ssl.keystore.location={{ kafka_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 ssl.keystore.password={{ kafka_server_keystore_password }}
 #ssl.key.password={{ kafka_server_keystore_password }}
 ssl.truststore.type=PKCS12
 ssl.truststore.location={{ kafka_config.kafka_server.etc_directory }}/pki/ca.p12
 ssl.truststore.password={{ ca_truststore_password }}
 
-
-
 authorizer.class.name=kafka.security.authorizer.AclAuthorizer
-super.users=User:kafka;User:admin;User:mirrormaker
 
-
+{% set kafka_server_super_users = ['User:kafka', 'User:admin'] -%}
+{% for kafka_server_mirrormaker_user in kafka_server_mirrormaker_users %}
+{% set _ = kafka_server_super_users.append("User:%s" % kafka_server_mirrormaker_user) %}
+{% endfor %}
+super.users={{ kafka_server_super_users | join(';') }}
 

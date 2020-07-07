@@ -1,5 +1,17 @@
 # This playbook configures a Confluent cluster.
 
+- name: Gather facts from all Confluent Kafka Burrow hosts
+  hosts: confluent_kafka_burrow
+  become: yes
+  become_user: root
+  pre_tasks:
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ groups['confluent_kafka_burrow'] }}"
+  tasks: []
+
 - name: Gather facts from all Confluent Kafka MirrorMaker hosts
   hosts: confluent_kafka_mirrorkeeper
   become: yes
@@ -50,6 +62,13 @@
   roles:
   - confluent_kafka_server
 
+- name: Configure the Confluent Kafak Burrow hosts
+  hosts: confluent_kafka_burrow
+  become: yes
+  become_user: root
+  roles:
+  - confluent_kafka_burrow
+
 - name: Configure the Confluent Kafak MirrorMaker hosts
   hosts: confluent_kafka_mirrormaker
   become: yes
@@ -63,4 +82,3 @@
   become_user: root
   roles:
   - confluent_schema_registry
-

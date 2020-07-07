@@ -1,0 +1,15 @@
+{
+  "CN": "kafka-sr-digital-dev-01.local",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "kafka-sr-digital-dev-01.local"
+    }
+  ],
+  "hosts": [
+    "kafka-sr-digital-dev-01.local"
+  ]
+}

@@ -14,7 +14,7 @@
       }
     ]
   },
-  "description": "Metrics was extracted from jmx-exporter that reads JMX data from JVM based applications and exposes it via HTTP in a simple text format that prometheus understand and can scrape. This dashboard was built for Zookeeper 3.5 version deployment in Local Cluster. You can select metrics based on Job & instance. This dashboard gives cross cluster zookeeper nodes information. It provides Quorum Size, Number of Followers, Member Type information, Healthcheck, Zookeeper metrics and JVM metics.",
+  "description": "",
   "editable": true,
   "gnetId": 10607,
   "graphTooltip": 1,
@@ -126,7 +126,7 @@
           "dataTableColumns": [],
           "dataType": "METRICS",
           "dimensions": [],
-          "expr": "avg(zookeeper_QuorumSize{ instance=~\"[[instance]]\", cluster=\"$cluster\"})",
+          "expr": "avg(zookeeper_QuorumSize{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"})",
           "format": "time_series",
           "funcBy": "",
           "funcByType": "dimension",
@@ -162,7 +162,7 @@
         "#d44a3a"
       ],
       "datasource": "prometheus",
-      "description": "number of followers within the ensemble. You can deduce the number of servers from the MBeam Quorum Size.",
+      "description": "Number of followers within the ensemble. You can deduce the number of servers from the MBeam Quorum Size.",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -242,7 +242,7 @@
           "dataTableColumns": [],
           "dataType": "METRICS",
           "dimensions": [],
-          "expr": "avg(zookeeper_QuorumSize{instance=~\"[[instance]]\", cluster=\"$cluster\"}) -1 ",
+          "expr": "avg(zookeeper_QuorumSize{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}) -1 ",
           "format": "time_series",
           "funcBy": "",
           "funcByType": "dimension",
@@ -304,7 +304,7 @@
       "pluginVersion": "7.0.4",
       "targets": [
         {
-          "expr": "zookeeper_AvgRequestLatency{ instance=~\"[[instance]]\", cluster=\"$cluster\"}",
+          "expr": "zookeeper_AvgRequestLatency{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -320,6 +320,7 @@
           "id": "organize",
           "options": {
             "excludeByName": {
+              "instance": true,
               "Time": true,
               "Value": true,
               "__name__": true,
@@ -330,7 +331,7 @@
             "indexByName": {},
             "renameByName": {
               "Time": "",
-              "instance": ""
+              "node": ""
             }
           }
         }
@@ -346,7 +347,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
-      "description": "the length of a single tick, which is the basic time unit used by ZooKeeper, as measured in milliseconds. It is used to regulate heartbeats, and timeouts. For example, the minimum session timeout will be two ticks.",
+      "description": "The length of a single tick, which is the basic time unit used by ZooKeeper, as measured in milliseconds. It is used to regulate heartbeats, and timeouts. For example, the minimum session timeout will be two ticks.",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -405,10 +406,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(zookeeper_TickTime{instance=~\"[[instance]]\", cluster=\"$cluster\"}) by (instance)",
+          "expr": "avg(zookeeper_TickTime{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}) by (node)",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.zookeeper.$zookeeper_hosts.zookeeper.AvgRequestLatency, 4, 6)"
         }
@@ -538,10 +539,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_AvgRequestLatency{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
+          "expr": "zookeeper_AvgRequestLatency{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.zookeeper.$zookeeper_hosts.zookeeper.AvgRequestLatency, 4, 6)"
         }
@@ -655,10 +656,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_InMemoryDataTree_NodeCount{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
+          "expr": "zookeeper_InMemoryDataTree_NodeCount{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.zookeeper.$zookeeper_hosts.zookeeper.OutstandingRequests, 4, 6)"
         }
@@ -778,10 +779,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_NumAliveConnections{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
+          "expr": "zookeeper_NumAliveConnections{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.zookeeper.$zookeeper_hosts.zookeeper.NumAliveConnections, 4, 6)"
         }
@@ -892,10 +893,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_PendingRevalidationCount{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
+          "expr": "zookeeper_PendingRevalidationCount{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.zookeeper.$zookeeper_hosts.zookeeper.OutstandingRequests, 4, 6)"
         }
@@ -1008,10 +1009,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_OutstandingRequests{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
+          "expr": "zookeeper_OutstandingRequests{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.zookeeper.$zookeeper_hosts.zookeeper.OutstandingRequests, 4, 6)"
         }
@@ -1122,10 +1123,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "zookeeper_InMemoryDataTree_WatchCount{instance=~\"[[instance]]\", cluster=\"$cluster\"}",
+          "expr": "zookeeper_InMemoryDataTree_WatchCount{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.zookeeper.$zookeeper_hosts.zookeeper.OutstandingRequests, 4, 6)"
         }
@@ -1241,10 +1242,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(jvm_gc_collection_seconds_sum{instance=~\"[[instance]]\", cluster=\"$cluster\"}[5m])",
+          "expr": "increase(jvm_gc_collection_seconds_sum{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}[5m])",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}} {{gc}}",
+          "legendFormat": "{{node}} {{gc}}",
           "refId": "A",
           "target": "aliasByNode(nonNegativeDerivative(zookeeper.cluster.$cluster.jvm_memory.$zookeeper_hosts.sun_management_GarbageCollectorImpl.PSScavenge.CollectionTime.upper), 4)"
         }
@@ -1344,10 +1345,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(jvm_gc_collection_seconds_count{instance=~\"[[instance]]\", cluster=\"$cluster\"}[5m])",
+          "expr": "increase(jvm_gc_collection_seconds_count{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\"}[5m])",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}} {{gc}}",
+          "legendFormat": "{{node}} {{gc}}",
           "refId": "A",
           "target": "aliasByNode(nonNegativeDerivative(zookeeper.cluster.$cluster.jvm_memory.$zookeeper_hosts.sun_management_GarbageCollectorImpl.PSMarkSweep.CollectionCount.upper), 4)"
         }
@@ -1447,18 +1448,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "jvm_memory_bytes_used{instance=~\"[[instance]]\", cluster=\"$cluster\", area=\"heap\"}",
+          "expr": "jvm_memory_bytes_used{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\", area=\"heap\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}} used",
+          "legendFormat": "{{node}} used",
           "refId": "A",
           "target": "aliasByNode(zookeeper.cluster.$cluster.jvm_memory.$zookeeper_hosts.memory.HeapMemoryUsage_used.upper, 4, 6)"
         },
         {
-          "expr": "jvm_memory_bytes_max{instance=~\"[[instance]]\", cluster=\"$cluster\", area=\"heap\"}",
+          "expr": "jvm_memory_bytes_max{job=\"$job\", cluster=\"$cluster\", node=~\"[[node]]\", area=\"heap\"}",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "{{instance}} max",
+          "legendFormat": "{{node}} max",
           "refId": "C",
           "target": "aliasByNode(zookeeper.cluster.$cluster.jvm_memory.$zookeeper_hosts.memory.HeapMemoryUsage_max.upper, 4, 6)"
         }
@@ -1513,6 +1514,19 @@
   "templating": {
     "list": [
       {
+        "current": {
+          "selected": false,
+          "text": "zookeeper",
+          "value": "zookeeper"
+        },
+        "hide": 2,
+        "label": "Job",
+        "name": "job",
+        "query": "zookeeper",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
         "allValue": "",
         "current": {
           "selected": false,
@@ -1550,15 +1564,15 @@
           ]
         },
         "datasource": "prometheus",
-        "definition": "label_values(process_start_time_seconds{cluster=\"$cluster\"}, instance)",
+        "definition": "label_values(process_start_time_seconds{job=\"$job\", cluster=\"$cluster\"}, node)",
         "hide": 0,
         "includeAll": true,
-        "label": "Instance",
+        "label": "Node",
         "multi": true,
         "multiFormat": "glob",
-        "name": "instance",
+        "name": "node",
         "options": [],
-        "query": "label_values(process_start_time_seconds{cluster=\"$cluster\"}, instance)",
+        "query": "label_values(process_start_time_seconds{job=\"$job\", cluster=\"$cluster\"}, node)",
         "refresh": 2,
         "refresh_on_load": false,
         "regex": "/[^:]/",
@@ -1603,7 +1617,7 @@
   },
   "timezone": "utc",
   "title": "Zookeeper",
-  "uid": "000000261",
+  "uid": "YLEOucMMk",
   "version": 1
 }
 {% endraw %}

@@ -201,21 +201,39 @@ You can connect to a server using SSH with the username **cloud-user** and the p
 
 Hosts in the config.yaml file are named according to one of the following naming convention:
 
-- **platform** - **platform_instance** - **environment** - **platform_component** - **instance_id**
+- **domain** - **environment**
 
-   e.g. kafka-local-dev-mirrormaker-01.local where the *platform* is kafka, the *platform_instance* is local, the *environment* is dev (Development), the *platform_component* is mirrormaker, and the *instance_id* is 01.
+   e.g. monitoring-dev.local where the *domain* is monitoring and the *environment* is dev (Development).
 
-   e.g. k8s-shared-test-m-01.local where the *platform* is k8s (Kubernetes), the *platform_instance* is shared, the *environment* is test (Test), the *platform_component* is m (Master), and the *instance_id* is 01.
+- **application** - **environment**
 
-   e.g. kafka-event-bus-prod-mirrormaker-01.local where the *platform* is kafka, the *platform_instance* is event-bus, the *environment* is prod (Production), the *platform_component* is mirrormaker, and the *instance_id* is 01.
+   e.g. prometheus-server-dev.local where the *application* is Prometheus Server and the *environment* is dev (Development).
+
+   e.g. prometheus-alert-manager-dev.local where the *application* is Prometheus Alert Manager and the *environment* is dev (Development).
+
+   e.g. grafana-dev.local where the *application* is Grafana and the *environment* is dev (Development).
 
 - **platform** - **platform_instance** - **environment** -  **instance_id**
 
-   e.g. kafka-local-dev-01.local where the *platform* is kafka, the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+   e.g. confluent-digital-dev-01.local where the *platform* is confluent, the *platform_instance* is digital, the *environment* is dev (Development), and the *instance_id* is 01.
 
-   e.g. kafka-shared-prod-01.local where the *platform* is kafka, the *platform_instance* is shared, the *environment* is prod (Production), and the *instance_id* is 01.
+   e.g. confluent-shared-prod-01.local where the *platform* is confluent, the *platform_instance* is shared, the *environment* is prod (Production), and the *instance_id* is 01.
 
-   e.g. kafka-event-bus-uat-01.local where the *platform* is kafka, the *platform_instance* is event-bus, the *environment* is uat (User Acceptance Testing), and the *instance_id* is 01.
+   e.g. confluent-event-bus-uat-01.local where the *platform* is confluent, the *platform_instance* is event-bus, the *environment* is uat (User Acceptance Testing), and the *instance_id* is 01.
+
+- **platform** - **platform_component** - **platform_instance** - **environment** - **instance_id**
+
+   e.g. confluent-zk-digital-dev-01.local where the *platform* is confluent, the *platform_component* is zk (ZooKeeper), the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+
+   e.g. confluent-ks-digital-dev-01.local where the *platform* is confluent, the *platform_component* is ks (Kafka Server), the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+
+   e.g. confluent-zks-digital-dev-01.local where the *platform* is confluent, the *platform_component* is zks (ZooKeeper and Kafka Server), the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+
+   e.g. k8s-m-shared-test-01.local where the *platform* is k8s (Kubernetes), the *platform_component* is m (Master), the *platform_instance* is shared, the *environment* is test (Test), and the *instance_id* is 01.
+
+   e.g. confluent-mm-event-bus-prod-01.local where the *platform* is confluent, the *platform_component* is mm (MirrorMaker), the *platform_instance* is event-bus, the *environment* is prod (Production), and the *instance_id* is 01.
+
+   e.g. confluent-sr-event-bus-prod-01.local where the *platform* is confluent, the *platform_component* is sr (Schema Registry), the *platform_instance* is event-bus, the *environment* is prod (Production), and the *instance_id* is 01.
 
 **NOTE:** The following environment indicators are used:
 
@@ -227,6 +245,16 @@ Hosts in the config.yaml file are named according to one of the following naming
 
    e.g. kafka-local-dev-mirrormaker-01.local where the *platform* is kafka, the *platform_instance* is local, the *environment* is dev (Development), the *platform_component* is mirrormaker, and the *instance_id* is 01.
 
+### Cluster Naming Convention
+
+Platform clusters in the config.yaml file, for example a particular Kafka cluster, are named according to the following naming convention:
+
+**platform_instance**_**environment***
+
+e.g. local_dev, digital_prod, digital_dr, local_1_dev, local_2_dev, etc.
+
+The benefit of this approach is that clusters associated with different environments can be referenced in the same file in order to connect them, e.g. production and DR clusters where replication needs to be configured between these clusters.
+
 
 ## Ports
 
@@ -234,61 +262,73 @@ The following ports are used by the components that form part of the DevOps stac
 
 <table>
   <tr>
-    <th>Port</th>
+    <th>Standard Port</th>
+    <th>Kubernetes Port</th>
     <th>Service</th>
     <th>Protocol</th>
   </tr>
   <tr>
+    <td>N/A</td>
     <td>30080</td>
     <td>Istio Ingress Gateway (HTTP)</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td>N/A</td>
     <td>30443</td>
     <td>Istio Ingress Gateway (HTTPS)</td>
     <td>HTTPS</td>
   </tr>
   <tr>
+    <td>3000</td>
     <td>32500</td>
     <td>Grafana</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td></td>
     <td>32501</td>
     <td>Jaeger</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td>N/A</td>
     <td>32502</td>
     <td>Kiali</td>
     <td>HTTPS</td>
   </tr>
   <tr>
+    <td>9090</td>
     <td>32503</td>
-    <td>Prometheus</td>
+    <td>Prometheus Server</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td>9091</td>
     <td>32504</td>
-    <td>Alert Manager</td>
+    <td>Prometheus Alert Manager</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td></td>
     <td>32505</td>
     <td>Elasticsearch</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td></td>
     <td>32506</td>
     <td>Kibana</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td>N/A</td>
     <td>32520</td>
     <td>Longhorn UI</td>
     <td>HTTP</td>
   </tr>
   <tr>
+    <td>N/A</td>
     <td>32521</td>
     <td>Postgres Operator UI</td>
     <td>HTTP</td>
@@ -312,6 +352,7 @@ The following users and groups are provisioned by the various Ansible scripts:
   * cp-ksql (314)
   * cp-schema-registry (315)
   * cp-zookeeper (316)
+  * burrow (318)
   * etcd (320)
   * kafka (330)
   * zookeeper (340)
@@ -344,6 +385,7 @@ The following users and groups are provisioned by the various Ansible scripts:
   * cp-ksql (314)
   * cp-schema-registry (315)
   * cp-zookeeper (316)
+  * burrow (318)
   * etcd (320)
   * kafka (330)
   * zookeeper(340)

@@ -3,7 +3,7 @@
 
 - set_fact:
     cluster_name: '{{ item }}'
-  when: (inventory_hostname in kafka.clusters[item].zookeeper_hosts)
+  when: (inventory_hostname in kafka_config.clusters[item].zookeeper_hosts)
   loop: '{{ kafka_config.clusters | flatten(1) }}'
 
 - debug:
@@ -20,6 +20,14 @@
 
 - debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
+
+- set_fact:
+    kafka_server_mirrormaker_users: []
+
+- set_fact:
+    kafka_server_mirrormaker_users: "{{ kafka_server_mirrormaker_users + [ 'mirrormaker-' + item.replace('_', '-') ] }}"
+  loop: '{{ kafka_config.clusters | flatten(1) }}'
+  when: ((kafka_config.clusters[item].replicate_to_cluster is defined) and (kafka_config.clusters[item].replicate_to_cluster != None) and (kafka_config.clusters[item].replicate_to_cluster == cluster_name))
 
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -99,21 +107,21 @@
       dest: /var/tmp/ansible/kafka/ca.crt
     register: ca_copy_result
 
-  - name: Copy the Kafka Server private key (kafka-{{ cluster_name.replace('_', '-') }}-server.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ cluster_name }}/kafka-{{ cluster_name.replace('_', '-') }}-server.key
-      dest: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-server.key
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
     register: kafka_server_private_key_copy_result
 
-  - name: Copy the Kafka Server certificate (kafka-{{ cluster_name.replace('_', '-') }}-server.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ cluster_name }}/kafka-{{ cluster_name.replace('_', '-') }}-server.crt
-      dest: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-server.crt
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
     set_fact:
-      kafka_server_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ cluster_name }}/kafka-server-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
@@ -124,10 +132,10 @@
     - name: Generate the Kafka Server PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ kafka_config.kafka_server.etc_directory }}/pki/server.p12'
-        friendly_name: "kafka-{{ cluster_name.replace('_', '-') }}-server"
-        privatekey_path: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-server.key
-        certificate_path: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-server.crt
+        path: '{{ kafka_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
+        friendly_name: "{{ inventory_hostname_short }}"
+        privatekey_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
         passphrase: '{{ kafka_server_keystore_password }}'
         owner: '{{ kafka_config.kafka_server.user }}'
         group: '{{ kafka_config.kafka_server.group }}'
@@ -229,23 +237,23 @@
     set_fact:
       kafka_admin_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Copy the Kafka admin private key (kafka-{{ cluster_name.replace('_', '-') }}-admin.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin private key (kafka-admin-{{ cluster_name.replace('_', '-') }}.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ cluster_name }}/kafka-{{ cluster_name.replace('_', '-') }}-admin.key
-      dest: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-admin.key
+      src: pki/{{ cluster_name }}/kafka-admin-{{ cluster_name.replace('_', '-') }}.key
+      dest: /var/tmp/ansible/kafka/kafka-admin-{{ cluster_name.replace('_', '-') }}.key
 
-  - name: Copy the Kafka admin certificate (kafka-{{ cluster_name.replace('_', '-') }}-admin.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin certificate (kafka-admin-{{ cluster_name.replace('_', '-') }}.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ cluster_name }}/kafka-{{ cluster_name.replace('_', '-') }}-admin.crt
-      dest: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-admin.crt
+      src: pki/{{ cluster_name }}/kafka-admin-{{ cluster_name.replace('_', '-') }}.crt
+      dest: /var/tmp/ansible/kafka/kafka-admin-{{ cluster_name.replace('_', '-') }}.crt
 
   - name: Generate the Kafka admin PKCS12 keystore
     openssl_pkcs12:
       action: export
       path: '{{ kafka_config.kafka_server.etc_directory }}/pki/admin.p12'
-      friendly_name: "kafka-{{ cluster_name.replace('_', '-') }}-admin"
-      privatekey_path: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-admin.key
-      certificate_path: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-admin.crt
+      friendly_name: "kafka-admin-{{ cluster_name.replace('_', '-') }}"
+      privatekey_path: /var/tmp/ansible/kafka/kafka-admin-{{ cluster_name.replace('_', '-') }}.key
+      certificate_path: /var/tmp/ansible/kafka/kafka-admin-{{ cluster_name.replace('_', '-') }}.crt
       passphrase: '{{ kafka_admin_keystore_password }}'
       owner: '{{ kafka_config.kafka_server.user }}'
       group: '{{ kafka_config.kafka_server.group }}'
@@ -275,16 +283,12 @@
       dest: '{{ kafka_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml'
     when: ((kafka_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (kafka_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (kafka_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
-- name: Setup the Kafka MirrorMaker user
-  block:
-  - name: Generate or retrieve the password for the Kafka MirrorMaker user
-    set_fact:
-      kafka_server_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/shared/kafka-server-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
-
-  - name: Set the password for the Kafka MirrorMaker user in ZooKeeper
-    shell:
-      cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ kafka_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ kafka_config.kafka_server.users.mirrormaker.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_mirrormaker_user_password }}]'
-    when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+- name: Setup the Kafka MirrorMaker users
+  include_tasks: roles/kafka_server/tasks/provision_kafka_mirrormaker_user_for_cluster.yaml
+  loop: '{{ kafka_config.clusters | flatten(1) }}'
+  loop_control:
+    loop_var: kafka_mirrormaker_user_cluster_name
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
 
 - name: Create the Kafka profile file
   template:

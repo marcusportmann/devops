@@ -22,3 +22,14 @@
     proto: tcp
   when: ((kafka_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (kafka_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (kafka_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
+- name: Allow access to the remote JMX tcp ports
+  block:
+  - ufw:
+      rule: allow
+      port: '9998'
+      proto: tcp
+  - ufw:
+      rule: allow
+      port: '9999'
+      proto: tcp
+  when: ((kafka_config.kafka_server.enable_remote_jmx is defined) and (kafka_config.kafka_server.enable_remote_jmx != None) and (kafka_config.kafka_server.enable_remote_jmx == true))

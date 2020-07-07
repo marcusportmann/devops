@@ -55,10 +55,10 @@
     src: dashboards/prometheus-2-0-overview_rev2.json.j2
     dest: /var/lib/grafana/dashboards/prometheus-2-0-overview_rev2.json
 
-- name: Copy the node-exporter-full_rev16.json dashboard file
+- name: Copy the nodes.json dashboard file
   template:
-    src: dashboards/node-exporter-full_rev16.json.j2
-    dest: /var/lib/grafana/dashboards/node-exporter-full_rev16.json
+    src: dashboards/nodes.json.j2
+    dest: /var/lib/grafana/dashboards/nodes.json
 
 - name: Copy the kubernetes.json dashboard file
   template:
@@ -70,6 +70,12 @@
   template:
     src: dashboards/zookeeper.json.j2
     dest: /var/lib/grafana/dashboards/zookeeper.json
+  when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
+
+- name: Copy the kafka.json dashboard file
+  template:
+    src: dashboards/kafka.json.j2
+    dest: /var/lib/grafana/dashboards/kafka.json
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Restart the grafana-server service

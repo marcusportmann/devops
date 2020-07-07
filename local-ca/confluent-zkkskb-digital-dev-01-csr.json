@@ -1,0 +1,15 @@
+{
+  "CN": "confluent-zkkskb-digital-dev-01.local",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-zkkskb-digital-dev-01.local"
+    }
+  ],
+  "hosts": [
+    "confluent-zkkskb-digital-dev-01.local"
+  ]
+}

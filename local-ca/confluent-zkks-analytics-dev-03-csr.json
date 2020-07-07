@@ -1,0 +1,15 @@
+{
+  "CN": "confluent-zkks-analytics-dev-03.local",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-zkks-analytics-dev-03.local"
+    }
+  ],
+  "hosts": [
+    "confluent-zkks-analytics-dev-03.local"
+  ]
+}

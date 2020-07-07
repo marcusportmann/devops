@@ -3,7 +3,7 @@
 
 - set_fact:
     cluster_name: '{{ item }}'
-  when: (inventory_hostname in kafka.clusters[item].kafka_mirrormaker_hosts)
+  when: (inventory_hostname in kafka_config.clusters[item].kafka_mirrormaker_hosts)
   loop: '{{ kafka_config.clusters | flatten(1) }}'
 
 - debug:
@@ -82,21 +82,21 @@
       dest: /var/tmp/ansible/kafka/ca.crt
     register: ca_copy_result
 
-  - name: Copy the Kafka MirrorMaker private key (kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ cluster_name }}/kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.key
-      dest: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.key
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
     register: kafka_mirrormaker_private_key_copy_result
 
-  - name: Copy the Kafka MirrorMaker certificate (kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/kafka directory
     copy:
-      src: pki/{{ cluster_name }}/kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.crt
-      dest: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.crt
+      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
     register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
     set_fact:
-      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ cluster_name }}/kafka-mirrormaker-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
@@ -107,10 +107,10 @@
     - name: Generate the Kafka MirrorMaker PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/mirrormaker.p12'
-        friendly_name: "kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker"
-        privatekey_path: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.key
-        certificate_path: /var/tmp/ansible/kafka/kafka-{{ cluster_name.replace('_', '-') }}-mirrormaker.crt
+        path: '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
+        friendly_name: "{{ inventory_hostname_short }}"
+        privatekey_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
         passphrase: '{{ kafka_mirrormaker_keystore_password }}'
         owner: '{{ kafka_config.kafka_mirrormaker.user }}'
         group: '{{ kafka_config.kafka_mirrormaker.group }}'
@@ -146,7 +146,7 @@
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_config.kafka_mirrormaker.user_password: "{{ lookup('password', 'credentials/kafka/shared/kafka-server-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   template:

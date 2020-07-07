@@ -1,0 +1,12 @@
+{
+  "CN": "kafka-admin-analytics-dev",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "kafka-admin-analytics-dev"
+    }
+  ]
+}

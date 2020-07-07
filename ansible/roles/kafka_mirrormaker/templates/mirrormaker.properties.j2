@@ -3,14 +3,14 @@ clusters = {{ kafka_config.clusters | flatten(1) | join(',') }}
 
 # Connection information for each cluster
 # This is a comma separated list of host:port pairs for each cluster
-{% for cluster_name in (kafka.clusters | flatten(1)) %}
+{% for cluster_name in (kafka_config.clusters | flatten(1)) %}
 {% set kafka_bootstrap_servers = [] -%}
-{% for kafka_server_host in (kafka.clusters[cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) %}
+{% for kafka_server_host in (kafka_config.clusters[cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) %}
 {% set _ = kafka_bootstrap_servers.append("%s:%d" % (kafka_server_host, kafka.kafka_mirrormaker.kafka_broker.secure_broker_port)) %}
 {% endfor %}
 {{ cluster_name }}.bootstrap.servers = {{ kafka_bootstrap_servers | join(',') }}
 {{ cluster_name }}.producer.enable.idempotence = true
-{% if ('replicate_to_cluster' in kafka.clusters[cluster_name]) %}
+{% if ('replicate_to_cluster' in kafka_config.clusters[cluster_name]) %}
 {{ cluster_name }}->{{ kafka_config.clusters[cluster_name].replicate_to_cluster }}.enabled = true
 {% endif %}
 
@@ -52,11 +52,11 @@ refresh.groups.enabled = true
 security.protocol=SASL_SSL
 ssl.protocol=TLS
 ssl.keystore.type=PKCS12
-ssl.keystore.location={{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/mirrormaker.p12
+ssl.keystore.location={{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
 ssl.keystore.password={{ kafka_mirrormaker_keystore_password }}
 ssl.truststore.type=PKCS12
 ssl.truststore.location={{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12
 ssl.truststore.password={{ ca_truststore_password }}
 sasl.mechanism=SCRAM-SHA-256
-sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ kafka_config.kafka_mirrormaker.kafka_broker.username }}" password="{{ kafka_config.kafka_mirrormaker.user_password }}";
+sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username="{{ 'mirrormaker-' + kafka_mirrormaker_user_cluster_name.replace('_', '-') }}" password="{{ kafka_mirrormaker_user_password }}";
 
