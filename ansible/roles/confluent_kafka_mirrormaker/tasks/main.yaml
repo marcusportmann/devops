@@ -3,7 +3,7 @@
 
 - set_fact:
     confluent_cluster_name: '{{ item }}'
-  when: (inventory_hostname in confluent_config.clusters[item].kafka_mirrormaker_hosts)
+  when: (('kafka_mirrormaker_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].kafka_mirrormaker_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - debug:

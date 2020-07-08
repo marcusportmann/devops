@@ -28,8 +28,8 @@ scrape_configs:
 {% for host in groups['kafka_server'] %}
   - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.kafka.kafka_server.jmx_exporter_port) }}]
     labels:
-{% for cluster_name in kafka_config.clusters -%}
-{% if (host in kafka_config.clusters[cluster_name].kafka_server_hosts) %}
+{% for cluster_name in kafka.clusters -%}
+{% if (host in kafka.clusters[cluster_name].kafka_server_hosts) %}
       cluster: {{ cluster_name }}
 {% endif %}
 {% endfor -%}
@@ -256,8 +256,8 @@ scrape_configs:
 {% for host in groups['kafka_zookeeper'] %}
   - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.kafka.zookeeper.jmx_exporter_port) }}]
     labels:
-{% for cluster_name in kafka_config.clusters -%}
-{% if (host in kafka_config.clusters[cluster_name].zookeeper_hosts) %}
+{% for cluster_name in kafka.clusters -%}
+{% if (host in kafka.clusters[cluster_name].zookeeper_hosts) %}
       cluster: {{ cluster_name }}
 {% endif %}
 {% endfor -%}

@@ -7,7 +7,7 @@ clusters = {{ kafka_cluster_name }}{% if ('replicate_to_cluster' in kafka_config
 
 # The source cluster
 {% set kafka_bootstrap_servers = [] -%}
-{% for kafka_server_host in (kafka_config.clusters[kafka_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['confluent_kafka_server']|default([]))) %}
+{% for kafka_server_host in (kafka_config.clusters[kafka_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) %}
 {% set _ = kafka_bootstrap_servers.append("%s:%d" % (kafka_server_host, kafka_config.kafka_mirrormaker.kafka_broker.secure_broker_port)) %}
 {% endfor %}
 {{ kafka_cluster_name }}.bootstrap.servers = {{ kafka_bootstrap_servers | join(',') }}
@@ -15,7 +15,7 @@ clusters = {{ kafka_cluster_name }}{% if ('replicate_to_cluster' in kafka_config
 # The target cluster
 {% if (('replicate_to_cluster' in kafka_config.clusters[kafka_cluster_name]) and (kafka_config.clusters[kafka_cluster_name].replicate_to_cluster in kafka_config.clusters)) %}
 {% set kafka_bootstrap_servers = [] -%}
-{% for kafka_server_host in (kafka_config.clusters[kafka_config.clusters[kafka_cluster_name].replicate_to_cluster].kafka_server_hosts | flatten(1) | intersect(groups['confluent_kafka_server']|default([]))) %}
+{% for kafka_server_host in (kafka_config.clusters[kafka_config.clusters[kafka_cluster_name].replicate_to_cluster].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) %}
 {% set _ = kafka_bootstrap_servers.append("%s:%d" % (kafka_server_host, kafka_config.kafka_mirrormaker.kafka_broker.secure_broker_port)) %}
 {% endfor %}
 {{ kafka_config.clusters[kafka_cluster_name].replicate_to_cluster }}.bootstrap.servers = {{ kafka_bootstrap_servers | join(',') }}

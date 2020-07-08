@@ -26,6 +26,11 @@
 # to this cluster.
 - set_fact:
     kafka_server_mirrormaker_users: [ "{{ 'mirrormaker-' + confluent_cluster_name.replace('_', '-') }}" ]
+  when: ('kafka_mirrormaker_hosts' in confluent_config.clusters[confluent_cluster_name])
+
+- set_fact:
+    kafka_server_mirrormaker_users: [ ]
+  when: ('kafka_mirrormaker_hosts' not in confluent_config.clusters[confluent_cluster_name])
 
 - set_fact:
     kafka_server_mirrormaker_users: "{{ kafka_server_mirrormaker_users + [ 'mirrormaker-' + item.replace('_', '-') ] }}"

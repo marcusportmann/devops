@@ -3,7 +3,7 @@
 
 - set_fact:
     confluent_cluster_name: '{{ item }}'
-  when: (inventory_hostname in confluent_config.clusters[item].schema_registry_hosts)
+  when: (('schema_registry_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].schema_registry_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - debug:

@@ -24,8 +24,6 @@ variables:
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
       analytics_dev:
-        kafka_mirrormaker_hosts:
-        - confluent-mm-analytics-dev-01.local
         kafka_server_hosts:
         - confluent-zkkskb-analytics-dev-01.local
         - confluent-zkks-analytics-dev-02.local
@@ -36,6 +34,14 @@ variables:
         - confluent-zkkskb-analytics-dev-01.local
         - confluent-zkks-analytics-dev-02.local
         - confluent-zkks-analytics-dev-03.local
+
+  etcd:
+    clusters:
+      digital_dev:
+        hosts:
+          etcd-digital-dev-01.local
+          etcd-digital-dev-02.local
+          etcd-digital-dev-03.local
 
   kafka:
     clusters:
@@ -52,8 +58,6 @@ variables:
         - kafka-zkks-digital-dev-02.local
         - kafka-zkks-digital-dev-03.local
       analytics_dev:
-        kafka_mirrormaker_hosts:
-        - kafka-mm-analytics-dev-01.local
         kafka_server_hosts:
         - kafka-zkkskb-analytics-dev-01.local
         - kafka-zkks-analytics-dev-02.local
@@ -80,9 +84,6 @@ xxx:
 # ----------------------------------------------------------------------------------------
 # Mandatory Configuration
 # ----------------------------------------------------------------------------------------
-- name: etcd_cluster_name
-  values:
-  - local-dev
 
 - name: k8s_cluster_domain
   values:
@@ -245,6 +246,7 @@ profiles:
   - kafka-zkkskb-digital-dev-01.local
   - kafka-zkkskb-analytics-dev-01.local
   - kafka-mm-digital-dev-01.local
+  - monitoring-dev.local
 
 - name: kafka-multi-cluster-full
   hosts:
@@ -594,35 +596,6 @@ hosts:
     fqdn:             confluent-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.0.83/24
-    gateway:          192.168.0.1
-    dns_server:       192.168.0.1
-
-- name:               confluent-mm-analytics-dev-01.local
-  type:               centos7
-  ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,confluent_kafka_mirrormaker
-  virtualbox:
-    cpus:             1
-    memory:           1024
-    fqdn:             confluent-mm-analytics-dev-01.local
-    domain:           local
-    ip:               192.168.184.84/24
-    gateway:          192.168.184.2
-    dns_server:       192.168.184.2
-  vmware_desktop:
-    cpus:             1
-    memory:           1024
-    fqdn:             confluent-mm-analytics-dev-01.local
-    domain:           local
-    ip:               192.168.184.84/24
-    gateway:          192.168.184.2
-    dns_server:       192.168.184.2
-  vmware_esxi:
-    cpus:             1
-    memory:           1024
-    fqdn:             confluent-mm-analytics-dev-01.local
-    domain:           local
-    ip:               192.168.0.84/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
@@ -1212,38 +1185,6 @@ hosts:
     fqdn:             kafka-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.0.73/24
-    gateway:          192.168.0.1
-    dns_server:       192.168.0.1
-
-- name:               kafka-mm-analytics-dev-01.local
-  type:               centos7
-  ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,kafka_mirrormaker
-  virtualbox:
-    cpus:             2
-    memory:           1536
-    data_disk:        10240
-    fqdn:             kafka-mm-analytics-dev-01.local
-    domain:           local
-    ip:               192.168.184.74/24
-    gateway:          192.168.184.2
-    dns_server:       192.168.184.2
-  vmware_desktop:
-    cpus:             2
-    memory:           1536
-    data_disk:        10240
-    fqdn:             kafka-mm-analytics-dev-01.local
-    domain:           local
-    ip:               192.168.184.74/24
-    gateway:          192.168.184.2
-    dns_server:       192.168.184.2
-  vmware_esxi:
-    cpus:             2
-    memory:           2560
-    data_disk:        40960
-    fqdn:             kafka-mm-analytics-dev-01.local
-    domain:           local
-    ip:               192.168.0.74/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 

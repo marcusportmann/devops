@@ -184,7 +184,7 @@ The file is broken up into the following sections:
 
 - Variables
 - Profiles
--
+- Hosts
 
 ### Profiles
 The **profiles** section at the top of the **config.yaml** file defines collections of

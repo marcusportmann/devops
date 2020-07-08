@@ -1,6 +1,12 @@
 ---
 # file: roles/etcd/tasks/main.yaml
 
+- set_fact:
+    etcd_cluster_name: '{{ item }}'
+  when: (inventory_hostname in etcd_config.clusters[item].hosts)
+  loop: '{{ etcd_config.clusters | flatten(1) }}'
+
+
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
@@ -23,17 +29,17 @@
 # | |___  | || |___| |_| |
 # |_____| |_| \____|____/
 #
-- name: Add the etcd group
+- name: Add the {{ etcd_config.group }} group
   group:
-    name: etcd
-    gid: '{{ etcd_group_id }}'
+    name: '{{ etcd_config.group }}'
+    gid: '{{ etcd_config.group_id }}'
     state: present
 
-- name: Add the etcd user
+- name: Add the {{ etcd_config.user }} user
   user:
-    name: etcd
-    uid: '{{ etcd_user_id }}'
-    group: etcd
+    name: '{{ etcd_config.user }}'
+    uid: '{{ etcd_config.user_id }}'
+    group: '{{ etcd_config.group }}'
     home: /var/lib/etcd
     create_home: no
     shell: /usr/sbin/nologin
@@ -41,66 +47,66 @@
 
 - name: Copy the keys and certificates for the etcd cluster
   block:
-  - name: Create the /etc/etcd/pki directory
+  - name: Create the {{ etcd_config.etc_directory }}/pki directory
     file:
-      path: /etc/etcd/pki
-      owner: etcd
-      group: etcd
+      path: '{{ etcd_config.etc_directory }}/pki'
+      owner: '{{ etcd_config.user }}'
+      group: '{{ etcd_config.group }}'
       mode: 0770
       state: directory
 
-  - name: Copy the CA certificate to the /etc/etcd/pki directory
+  - name: Copy the CA certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/ca.crt
-      dest: /etc/etcd/pki/ca.crt
+      src: 'pki/{{ etcd_cluster_name }}/ca.crt'
+      dest: '{{ etcd_config.etc_directory }}/pki/ca.crt'
 
-  - name: Copy the Etcd intermediate CA certificate certificate to the /etc/etcd/pki directory
+  - name: Copy the Etcd intermediate CA certificate certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-ca.crt
-      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}-ca.crt
+      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-ca.crt'
+      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}-ca.crt'
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}.key private key to the /etc/etcd/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.key
-      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}.key
+      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.key'
+      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}.key'
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.crt
-      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}.crt
+      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.crt'
+      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}.crt'
 
-  - name: Copy the {{ inventory_hostname_short }}.key private key to the /etc/etcd/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key
-      dest: /etc/etcd/pki/{{ inventory_hostname_short }}.key
+      src: 'pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key'
+      dest: '{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
 
-  - name: Copy the {{ inventory_hostname_short }}.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt
-      dest: /etc/etcd/pki/{{ inventory_hostname_short }}.crt
+      src: 'pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt'
+      dest: '{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt'
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key to the /etc/etcd/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.key
-      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}-client.key
+      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.key'
+      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}-client.key'
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate to the /etc/etcd/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.crt
-      dest: /etc/etcd/pki/etcd-{{ etcd_cluster_name }}-client.crt
+      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.crt'
+      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}-client.crt'
 
 - name: Create the /var/lib/etcd directory
   file:
     path: /var/lib/etcd
-    owner: etcd
-    group: etcd
+    owner: '{{ etcd_config.user }}'
+    group: '{{ etcd_config.group }}'
     mode: '0770'
     state: directory
 
 - name: Install etcd
   block:
   - debug:
-      msg: Check whether the etcd {{ etcd_version }} package has been installed
+      msg: Check whether the etcd {{ etcd_config.package_version }} package has been installed
 
   - stat:
       path: /bin/etcd
@@ -121,16 +127,16 @@
 
   - block:
     - debug:
-        msg: Install the etcd {{ etcd_version }} package
+        msg: Install the etcd {{ etcd_config.package_version }} package
 
-    - name: Check whether the etcd {{ etcd_version }} package has been downloaded
+    - name: Check whether the etcd {{ etcd_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/etcd-v{{ etcd_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz
       register: etcd_package_stat_result
 
-    - name: Download the etcd {{ etcd_version }} package
+    - name: Download the etcd {{ etcd_config.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/etcd-io/etcd/releases/download/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz' dest='packages/etcd-v{{ etcd_version }}-linux-amd64.tar.gz' checksum={{ etcd_package_checksum }}
+      local_action: get_url url='https://github.com/etcd-io/etcd/releases/download/v{{ etcd_config.package_version }}/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz' dest='packages/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz' checksum={{ etcd_config.package_checksum }}
       when: (etcd_package_stat_result.stat.exists == False)
 
     - name: Remove the existing etcd binary
@@ -143,15 +149,15 @@
         path: /bin/etcd
         state: absent
 
-    - name: Extract the etcd binary from the etcd {{ etcd_version }} package
+    - name: Extract the etcd binary from the etcd {{ etcd_config.package_version }} package
       unarchive:
-        src: packages/etcd-v{{ etcd_version }}-linux-amd64.tar.gz
+        src: packages/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz
         dest: /var/tmp/ansible
-        creates: /var/tmp/ansible/etcd-v{{ etcd_version }}-linux-amd64
+        creates: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64
 
     - name: Copy the etcd binary to the /bin directory
       copy:
-        src: /var/tmp/ansible/etcd-v{{ etcd_version }}-linux-amd64/etcd
+        src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcd
         dest: /usr/bin/etcd
         owner: root
         group: root
@@ -160,7 +166,7 @@
 
     - name: Copy the etcdctl binary to the /bin directory
       copy:
-        src: /var/tmp/ansible/etcd-v{{ etcd_version }}-linux-amd64/etcdctl
+        src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcdctl
         dest: /usr/bin/etcdctl
         owner: root
         group: root
@@ -192,7 +198,7 @@
         state: started
         enabled: yes
 
-    when: (etcd_installed_version != etcd_version)
+    when: (etcd_installed_version != etcd_config.package_version)
 
 
 
