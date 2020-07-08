@@ -57,43 +57,43 @@
 
   - name: Copy the CA certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/ca.crt'
-      dest: '{{ etcd_config.etc_directory }}/pki/ca.crt'
+      src: "pki/{{ etcd_cluster_name }}/ca.crt"
+      dest: "{{ etcd_config.etc_directory }}/pki/ca.crt"
 
   - name: Copy the Etcd intermediate CA certificate certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-ca.crt'
-      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}-ca.crt'
+      src: "pki/{{ etcd_cluster_name }}/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
+      dest: "{{ etcd_config.etc_directory }}/pki/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.key'
-      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}.key'
+      src: "pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
+      dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}.crt'
-      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}.crt'
+      src: "pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
+      dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
   - name: Copy the {{ inventory_hostname_short }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key'
-      dest: '{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
+      src: "pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key"
+      dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key"
 
   - name: Copy the {{ inventory_hostname_short }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt'
-      dest: '{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt'
+      src: "pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt"
+      dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt"
 
   - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.key'
-      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}-client.key'
+      src: "pki/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
+      dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
   - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
-      src: 'pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name }}-client.crt'
-      dest: '{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name }}-client.crt'
+      src: "pki/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
+      dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
 - name: Create the /var/lib/etcd directory
   file:
@@ -173,32 +173,33 @@
         mode: 0755
         remote_src: yes
 
-    - name: Reconfigure the etcd service to apply the cluster and security settings
-      block:
-      - template:
-          src: etcd.service.j2
-          dest: /lib/systemd/system/etcd.service
-
-    # NOTE: The restart of the etcd service MUST be non-blocking to handle the initial cluster
-    #       bootstrapping process where the first node in the cluster will block and wait for
-    #       the second node in the cluster to join, in the case of a 3 node cluster, before
-    #       completing the startup process. If the initial startup was blocking the subsequent
-    #       nodes would never be provisioned and the deployment of the cluster would hang.
-    - name: Restart the etcd service
-      systemd:
-        name: etcd.service
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
-        no_block: yes
-
-    - name: Ensure that the etcd service is started
-      systemd:
-        name: etcd.service
-        state: started
-        enabled: yes
-
     when: (etcd_installed_version != etcd_config.package_version)
+
+- name: Create the etcd service file
+  template:
+    src: etcd.service.j2
+    dest: /lib/systemd/system/etcd.service
+  register: etcd_service_file_template_result
+
+# NOTE: The restart of the etcd service MUST be non-blocking to handle the initial cluster
+#       bootstrapping process where the first node in the cluster will block and wait for
+#       the second node in the cluster to join, in the case of a 3 node cluster, before
+#       completing the startup process. If the initial startup was blocking the subsequent
+#       nodes would never be provisioned and the deployment of the cluster would hang.
+- name: Restart the etcd service
+  systemd:
+    name: etcd.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    no_block: yes
+  when: (etcd_service_file_template_result.changed == True)
+
+- name: Ensure that the etcd service is started
+  systemd:
+    name: etcd.service
+    state: started
+    enabled: yes
 
 
 
