@@ -25,7 +25,7 @@ confluent_defaults:
       schema_registry:
         username: schema-registry
 
-    enable_remote_jmx: true
+    enable_remote_jmx: false
 
     prometheus_jmx_exporter:
       enabled: true

@@ -2,25 +2,25 @@
 
 - name: Determine the username for the Kafka MirrorMaker user
   set_fact:
-    kafka_server_mirrormaker_user_username: "{{ 'mirrormaker-' + kafka_mirrormaker_user_cluster_name.replace('_', '-') }}"
+    kafka_server_mirrormaker_user_username: "{{ 'mirrormaker-' + kafka_mirrormaker_user_confluent_cluster_name.replace('_', '-') }}"
 
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_server_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/{{ kafka_mirrormaker_user_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/{{ kafka_mirrormaker_user_confluent_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 #- debug:
-#    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' with password '{{ kafka_server_mirrormaker_user_password }}' for the Confluent cluster '{{ cluster_name }}'"
-#  when: ((confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster == cluster_name))
+#    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' with password '{{ kafka_server_mirrormaker_user_password }}' for the Confluent cluster '{{ confluent_cluster_name }}'"
+#  when: ((confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster == confluent_cluster_name))
 
 - debug:
-    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' for the Confluent cluster '{{ cluster_name }}'"
-  when: ((confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster == cluster_name))
+    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' for the Confluent cluster '{{ confluent_cluster_name }}'"
+  when: ((confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster == confluent_cluster_name))
 
 - name: Set the password for the Kafka MirrorMaker user in ZooKeeper
   shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_mirrormaker_user_password }}]'
-  when: ((confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster == cluster_name))
+  when:  ((kafka_mirrormaker_user_confluent_cluster_name == confluent_cluster_name) or ((confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster == confluent_cluster_name)))
 
 #- set_fact:
 #    kafka_server_mirrormaker_users: "{{ kafka_server_mirrormaker_users + [ kafka_server_mirrormaker_user_username ] }}"
-#  when: ((confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_cluster_name].replicate_to_cluster == cluster_name))
+#  when: ((confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster is defined) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster != None) and (confluent_config.clusters[kafka_mirrormaker_user_confluent_cluster_name].replicate_to_cluster == confluent_cluster_name))

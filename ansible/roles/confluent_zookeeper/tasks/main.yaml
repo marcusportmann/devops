@@ -2,21 +2,21 @@
 #file: roles/confluent_zookeeper/tasks/main.yaml
 
 - set_fact:
-    cluster_name: '{{ item }}'
+    confluent_cluster_name: '{{ item }}'
   when: (inventory_hostname in confluent_config.clusters[item].zookeeper_hosts)
   loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - debug:
-    msg: 'Cluster Name: {{ cluster_name }}'
+    msg: 'Confluent Cluster Name: {{ confluent_cluster_name }}'
 
 - set_fact:
-    zookeeper_hosts: "{{ confluent_config.clusters[cluster_name].zookeeper_hosts | intersect(groups['confluent_zookeeper']|default([])) }}"
+    zookeeper_hosts: "{{ confluent_config.clusters[confluent_cluster_name].zookeeper_hosts | intersect(groups['confluent_zookeeper']|default([])) }}"
 
 - debug:
     msg: 'ZooKeeper hosts: {{ zookeeper_hosts }}'
 
 - set_fact:
-    kafka_server_hosts: "{{ confluent_config.clusters[cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
+    kafka_server_hosts: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
 
 - debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
@@ -95,29 +95,29 @@
 
   - name: Copy the ZooKeeper CA certificate to the /var/tmp/ansible/zookeeper directory
     copy:
-      src: pki/{{ cluster_name }}/ca.crt
+      src: pki/{{ confluent_cluster_name }}/ca.crt
       dest: /var/tmp/ansible/zookeeper/ca.crt
     register: zookeeper_ca_copy_result
 
   - name: Copy the host-specific ZooKeeper private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
     copy:
-      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.key
+      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key
       dest: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.key
     register: zookeeper_private_key_copy_result
 
   - name: Copy the host-specific ZooKeeper certificate ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
     copy:
-      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.crt
+      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt
       dest: /var/tmp/ansible/zookeeper/{{ inventory_hostname_short }}.crt
     register: zookeeper_certificate_copy_result
 
   - name: Generate or retrieve the password for the ZooKeeper keystore
     set_fact:
-      zookeeper_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/zookeeper-{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      zookeeper_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the ZooKeeper truststore
     set_fact:
-      zookeeper_ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      zookeeper_ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the ZooKeeper keystore and ZooKeeper CA truststore
     block:
@@ -193,11 +193,11 @@
 
 - name: Generate or retrieve the password for the ZooKeeper admin user
   set_fact:
-    zookeeper_admin_user_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"
+    zookeeper_admin_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Generate or retrieve the password for the ZooKeeper confluent user
   set_fact:
-    zookeeper_kafka_user_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+    zookeeper_kafka_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the ZooKeeper JAAS configuration file
   template:

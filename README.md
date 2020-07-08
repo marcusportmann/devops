@@ -178,10 +178,18 @@ e.g. ./build.sh -p vmware_desktop -o ubuntu1804
 ## Configuration
 
 The config.yaml file defines all the hosts that make up the DevOps platform and the
-Ansible configuration that should be applied to these hosts. The **profiles** section
-at the top of the **config.yaml** file defines collections of hosts that should be
-provisioned together as a set. This allows a portion of the DevOps platform to be
-deployed using commands similar to the following:
+Ansible configuration that should be applied to these hosts.
+
+The file is broken up into the following sections:
+
+- Variables
+- Profiles
+-
+
+### Profiles
+The **profiles** section at the top of the **config.yaml** file defines collections of
+hosts that should be provisioned together as a set. This allows a portion of the DevOps
+platform to be deployed using commands similar to the following:
 
 ```
 devops.sh -p <PROVIDER> <ACTION> <PROFILE>
@@ -217,19 +225,19 @@ Hosts in the config.yaml file are named according to one of the following naming
 
    e.g. confluent-digital-dev-01.local where the *platform* is confluent, the *platform_instance* is digital, the *environment* is dev (Development), and the *instance_id* is 01.
 
-   e.g. confluent-shared-prod-01.local where the *platform* is confluent, the *platform_instance* is shared, the *environment* is prod (Production), and the *instance_id* is 01.
+   e.g. confluent-analytics-prod-01.local where the *platform* is confluent, the *platform_instance* is analytics, the *environment* is prod (Production), and the *instance_id* is 01.
 
    e.g. confluent-event-bus-uat-01.local where the *platform* is confluent, the *platform_instance* is event-bus, the *environment* is uat (User Acceptance Testing), and the *instance_id* is 01.
 
 - **platform** - **platform_component** - **platform_instance** - **environment** - **instance_id**
 
-   e.g. confluent-zk-digital-dev-01.local where the *platform* is confluent, the *platform_component* is zk (ZooKeeper), the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+   e.g. confluent-zk-digital-dev-01.local where the *platform* is confluent, the *platform_component* is zk (ZooKeeper), the *platform_instance* is digital, the *environment* is dev (Development), and the *instance_id* is 01.
 
-   e.g. confluent-ks-digital-dev-01.local where the *platform* is confluent, the *platform_component* is ks (Kafka Server), the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+   e.g. confluent-ks-digital-dev-01.local where the *platform* is confluent, the *platform_component* is ks (Kafka Server), the *platform_instance* is digital, the *environment* is dev (Development), and the *instance_id* is 01.
 
-   e.g. confluent-zks-digital-dev-01.local where the *platform* is confluent, the *platform_component* is zks (ZooKeeper and Kafka Server), the *platform_instance* is local, the *environment* is dev (Development), and the *instance_id* is 01.
+   e.g. confluent-zks-digital-dev-01.local where the *platform* is confluent, the *platform_component* is zks (ZooKeeper and Kafka Server), the *platform_instance* is digital, the *environment* is dev (Development), and the *instance_id* is 01.
 
-   e.g. k8s-m-shared-test-01.local where the *platform* is k8s (Kubernetes), the *platform_component* is m (Master), the *platform_instance* is shared, the *environment* is test (Test), and the *instance_id* is 01.
+   e.g. k8s-m-analytics-test-01.local where the *platform* is k8s (Kubernetes), the *platform_component* is m (Master), the *platform_instance* is analytics, the *environment* is test (Test), and the *instance_id* is 01.
 
    e.g. confluent-mm-event-bus-prod-01.local where the *platform* is confluent, the *platform_component* is mm (MirrorMaker), the *platform_instance* is event-bus, the *environment* is prod (Production), and the *instance_id* is 01.
 
@@ -251,9 +259,17 @@ Platform clusters in the config.yaml file, for example a particular Kafka cluste
 
 **platform_instance**_**environment***
 
-e.g. local_dev, digital_prod, digital_dr, local_1_dev, local_2_dev, etc.
+e.g. digital_dev, digital_prod, digital_dr, analytics_dev, analytics_uat_, etc.
 
-The benefit of this approach is that clusters associated with different environments can be referenced in the same file in order to connect them, e.g. production and DR clusters where replication needs to be configured between these clusters.
+The benefit of this approach is that clusters associated with different environments can
+be referenced in the same file in order to connect them, e.g. production and DR clusters
+where replication needs to be configured between these clusters.
+
+
+## Confluent
+
+The **devops** project provides a playbook and an associated set of roles that support the
+deployment of Confluent clusters.
 
 
 ## Ports

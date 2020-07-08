@@ -1,28 +1,4 @@
 ---
-#
-# VARIABLES
-#
-# The following variables influence the deployment and configuration of etcd:
-#   etcd_cluster_name - The name of the etcd cluster, which influences the location and
-#                       names of the private keys and certificates for the cluster.
-#
-# The following variables influence the deployment and configuration of Kubernetes:
-#   k8s_cluster_domain  - The name of the internal domain for the Kubernetes cluster.
-#   k8s_cluster_name    - The name of the Kubernetes cluster, which influences the location
-#                         and names of the private keys and certificates for the cluster.
-#   k8s_etcd_topology   - The etcd topology for the Kubernetes cluster, which can be stacked
-#                         or external, for an external etcd cluster.
-#
-#
-# PROFILES
-#
-# Profiles are used to group a related set of hosts that need to be provisioned together,
-# e.g., the hosts that form part of an etcd cluster, the hosts that form part of a
-# Kubernetes cluster, the hosts that suport a set of integrated development tools, etc.
-#
-
-
-
 # __     ___    ____  ___    _    ____  _     _____ ____
 # \ \   / / \  |  _ \|_ _|  / \  | __ )| |   | ____/ ___|
 #  \ \ / / _ \ | |_) || |  / _ \ |  _ \| |   |  _| \___ \
@@ -48,7 +24,6 @@ variables:
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
       analytics_dev:
-        replicate_to_cluster: digital_dev
         kafka_mirrormaker_hosts:
         - confluent-mm-analytics-dev-01.local
         kafka_server_hosts:
@@ -77,7 +52,6 @@ variables:
         - kafka-zkks-digital-dev-02.local
         - kafka-zkks-digital-dev-03.local
       analytics_dev:
-        replicate_to_cluster: digital_dev
         kafka_mirrormaker_hosts:
         - kafka-mm-analytics-dev-01.local
         kafka_server_hosts:
@@ -181,8 +155,12 @@ xxx:
 # |  __/|  _ <| |_| |  _|  | || |___| |___ ___) |
 # |_|   |_| \_\\___/|_|   |___|_____|_____|____/
 #
+#
+# Profiles are used to group a related set of hosts that need to be provisioned together,
+# e.g., the hosts that form part of an etcd cluster, the hosts that form part of a
+# Kubernetes cluster, the hosts that suport a set of integrated development tools, etc.
+#
 profiles:
-
 
 - name: confluent-multi-cluster-minimal
   hosts:
@@ -326,7 +304,14 @@ profiles:
   - test-ubuntu2004.local
 
 
+#  _   _  ___  ____ _____ ____
+# | | | |/ _ \/ ___|_   _/ ___|
+# | |_| | | | \___ \ | | \___ \
+# |  _  | |_| |___) || |  ___) |
+# |_| |_|\___/|____/ |_| |____/
+#
 hosts:
+
 #  ____  _______     __  _   _  ___  ____ _____ ____
 # |  _ \| ____\ \   / / | | | |/ _ \/ ___|_   _/ ___|
 # | | | |  _|  \ \ / /  | |_| | | | \___ \ | | \___ \

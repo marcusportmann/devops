@@ -2,21 +2,21 @@
 #file: roles/confluent_kafka_mirrormaker/tasks/main.yaml
 
 - set_fact:
-    cluster_name: '{{ item }}'
+    confluent_cluster_name: '{{ item }}'
   when: (inventory_hostname in confluent_config.clusters[item].kafka_mirrormaker_hosts)
   loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - debug:
-    msg: 'Cluster Name: {{ cluster_name }}'
+    msg: 'Cluster Name: {{ confluent_cluster_name }}'
 
 - set_fact:
-    zookeeper_hosts: "{{ confluent_config.clusters[cluster_name].kafka_mirrormaker_hosts | intersect(groups['confluent_kafka_mirrormaker']|default([])) }}"
+    zookeeper_hosts: "{{ confluent_config.clusters[confluent_cluster_name].kafka_mirrormaker_hosts | intersect(groups['confluent_kafka_mirrormaker']|default([])) }}"
 
 - debug:
     msg: 'ZooKeeper hosts: {{ zookeeper_hosts }}'
 
 - set_fact:
-    kafka_server_hosts: "{{ confluent_config.clusters[cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
+    kafka_server_hosts: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
 
 - debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
@@ -78,29 +78,29 @@
 
   - name: Copy the CA certificate to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/ca.crt
+      src: pki/{{ confluent_cluster_name }}/ca.crt
       dest: /var/tmp/ansible/confluent/ca.crt
     register: ca_copy_result
 
   - name: Copy the Kafka MirrorMaker private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.key
+      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key
       dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.key
     register: kafka_mirrormaker_private_key_copy_result
 
   - name: Copy the Kafka MirrorMaker certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/confluent directory
     copy:
-      src: pki/{{ cluster_name }}/{{ inventory_hostname_short }}.crt
+      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt
       dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.crt
     register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
     set_fact:
-      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka MirrorMaker keystore and CA truststore
     block:
@@ -146,7 +146,7 @@
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/{{ cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   template:
