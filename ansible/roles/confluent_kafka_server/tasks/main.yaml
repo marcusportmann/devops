@@ -1,10 +1,21 @@
 ---
-#file: roles/confluent_kafka_server/tasks/main.yaml
+# file: roles/confluent_kafka_server/tasks/main.yaml
+
+- fail:
+    msg: 'No confluent.clusters configuration specified'
+  when: ((confluent is not defined) or (confluent == None) or (confluent.clusters is not defined) or (confluent.clusters == None))
+
+- set_fact:
+    confluent_cluster_name: ''
 
 - set_fact:
     confluent_cluster_name: '{{ item }}'
-  when: (inventory_hostname in confluent_config.clusters[item].zookeeper_hosts)
+  when: (('kafka_server_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].kafka_server_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
+
+- fail:
+    msg: "The Kafka Server host {{ inventory_hostname }} is not associated with a Confluent cluster"
+  when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
 - debug:
     msg: 'Cluster Name: {{ confluent_cluster_name }}'
@@ -109,11 +120,11 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the CA certificate to the /var/tmp/ansible/confluent directory
+  - name: Copy the Kafka Server CA certificate to the /var/tmp/ansible/confluent directory
     copy:
       src: pki/{{ confluent_cluster_name }}/ca.crt
       dest: /var/tmp/ansible/confluent/ca.crt
-    register: ca_copy_result
+    register: ca_certificate_copy_result
 
   - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/confluent directory
     copy:
@@ -150,23 +161,23 @@
         mode: '0440'
         state: present
 
-    - name: Remove the CA PKCS12 truststore if it already exists
+    - name: Remove the Kafka Server CA PKCS12 truststore if it already exists
       file:
         path: '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12'
         state: absent
 
-    - name: Generate the CA PKCS12 truststore
+    - name: Generate the Kafka Server CA PKCS12 truststore
       shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/ca.crt -keystore '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
-    - name: Set the permissions for the CA PKCS12 truststore
+    - name: Set the permissions for the Kafka Server CA PKCS12 truststore
       file:
         path: '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12'
         owner: '{{ confluent_config.kafka_server.user }}'
         group: '{{ confluent_config.kafka_server.group }}'
         mode: '0440'
 
-    when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
+    when: ((ca_certificate_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
 
 - name: Create the {{ confluent_config.kafka_server.log_directory }} directory
   file:
@@ -237,7 +248,7 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
+  when: ((ca_certificate_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
 
 - name: Ensure that the kafka service is started
   systemd:
@@ -419,3 +430,15 @@
 
   when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
 
+- name: Generate or retrieve the password for the Burrow user
+  set_fact:
+    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+
+- debug:
+    msg: 'Burrow user password: {{ kafka_server_burrow_user_password }}'
+
+- name: Set the password for the Burrow user in ZooKeeper
+  shell:
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.burrow.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_burrow_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_burrow_user_password }}]'
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+  register: set_kafka_server_burrow_user_password_in_zookeeper_result

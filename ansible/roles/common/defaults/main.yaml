@@ -1,4 +1,4 @@
 ---
-#file: roles/common/defaults/main.yaml
+# file: roles/common/defaults/main.yaml
 
 common_initialise_data_directory: false

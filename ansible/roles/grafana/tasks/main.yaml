@@ -31,6 +31,7 @@
   template:
     src: grafana.ini.j2
     dest: /etc/grafana/grafana.ini
+  register: grafana_configuration_template_result
 
 - name: Create the Prometheus data source provisioning file
   template:
@@ -84,13 +85,13 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
+  when: (grafana_configuration_template_result.changed == True)
 
 - name: Ensure that the grafana-server service is started
   systemd:
     name: grafana-server.service
     state: started
     enabled: yes
-
 
 - name: Retrieve the currently installed version of the Grafana pie chart panel plug-in
   shell:

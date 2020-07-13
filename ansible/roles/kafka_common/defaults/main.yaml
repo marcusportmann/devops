@@ -1,5 +1,5 @@
 ---
-#file: roles/kafka_common/defaults/main.yaml
+# file: roles/kafka_common/defaults/main.yaml
 
 kafka_defaults:
   package_version: 2.5.0

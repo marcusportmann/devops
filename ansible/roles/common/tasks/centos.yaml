@@ -1,5 +1,5 @@
 ---
-#file: roles/common/tasks/centos.yaml
+# file: roles/common/tasks/centos.yaml
 
 - debug:
     msg: Applying the CentOS-specific common configuration

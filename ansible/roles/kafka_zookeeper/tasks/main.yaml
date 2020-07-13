@@ -1,10 +1,21 @@
 ---
-#file: roles/kafka_zookeeper/tasks/main.yaml
+# file: roles/kafka_zookeeper/tasks/main.yaml
+
+- fail:
+    msg: 'No kafka.clusters configuration specified'
+  when: ((kafka is not defined) or (kafka == None) or (kafka.clusters is not defined) or (kafka.clusters == None))
+
+- set_fact:
+    kafka_cluster_name: ''
 
 - set_fact:
     kafka_cluster_name: '{{ item }}'
-  when: (inventory_hostname in kafka_config.clusters[item].zookeeper_hosts)
+  when: (('zookeeper_hosts' in kafka_config.clusters[item]) and (inventory_hostname in kafka_config.clusters[item].zookeeper_hosts))
   loop: '{{ kafka_config.clusters | flatten(1) }}'
+
+- fail:
+    msg: "The ZooKeeper host {{ inventory_hostname }} is not associated with a Kafka cluster"
+  when: ((kafka_cluster_name is not defined) or (kafka_cluster_name == None) or (kafka_cluster_name == ''))
 
 - debug:
     msg: 'Kafka Cluster Name: {{ kafka_cluster_name }}'
@@ -97,7 +108,7 @@
     copy:
       src: pki/{{ kafka_cluster_name }}/ca.crt
       dest: /var/tmp/ansible/zookeeper/ca.crt
-    register: zookeeper_ca_copy_result
+    register: ca_certificate_copy_result
 
   - name: Copy the host-specific ZooKeeper private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
     copy:
@@ -117,7 +128,7 @@
 
   - name: Generate or retrieve the password for the ZooKeeper truststore
     set_fact:
-      zookeeper_ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the ZooKeeper keystore and ZooKeeper CA truststore
     block:
@@ -141,7 +152,7 @@
 
     - name: Generate the ZooKeeper CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/zookeeper/ca.crt -keystore '{{ kafka_config.zookeeper.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ zookeeper_ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/zookeeper/ca.crt -keystore '{{ kafka_config.zookeeper.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
       file:
@@ -150,7 +161,7 @@
         group: '{{ kafka_config.zookeeper.group }}'
         mode: '0440'
 
-    when: (True or (zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
+    when: ((ca_certificate_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
 
 - name: Create the {{ kafka_config.zookeeper.log_directory }} directory
   file:
@@ -234,11 +245,11 @@
       regexp: '^%alias zookeeper-shell'
       line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_config.zookeeper.etc_directory }}/conf/zookeeper-jaas.conf" /opt/kafka/bin/zookeeper-shell.sh -zk-tls-config-file {{ kafka_config.zookeeper.etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ kafka_config.zookeeper.secure_client_port }}'
 
-- name: Configure the ZooKeeper service
+- name: Configure the ZooKeeper systemd unit
   template:
     src: zookeeper.service.j2
     dest: /lib/systemd/system/zookeeper.service
-  register: zookeeper_service_template_result
+  register: zookeeper_systemd_unit_template_result
 
 - name: Enable and start the ZooKeeper service
   systemd:
@@ -252,4 +263,4 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True) or (zookeeper_configuration_template_result.changed == True) or (zookeeper_service_template_result.changed == True))
+  when: ((ca_certificate_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True) or (zookeeper_configuration_template_result.changed == True) or (zookeeper_systemd_unit_template_result.changed == True))

@@ -1,5 +1,5 @@
 ---
-# file: roles/kafka_zookeeper/tasks/ubuntu.yaml
+# file: roles/confluent_zookeeper/tasks/ubuntu.yaml
 
 - debug:
     msg: Applying the Ubuntu-specific ZooKeeper configuration
@@ -9,7 +9,7 @@
     state: enabled
     policy: deny
 
-- name: Allow all ZooKeeper hosts access to tcp port 2888
+- name: Allow ZooKeeper hosts access to tcp port 2888
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -17,7 +17,7 @@
     proto: tcp
   loop: "{{ zookeeper_hosts }}"
 
-- name: Allow all ZooKeeper hosts access to tcp port 3888
+- name: Allow ZooKeeper hosts access to tcp port 3888
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -25,7 +25,7 @@
     proto: tcp
   loop: "{{ zookeeper_hosts }}"
 
-- name: Allow all hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port}} (Secure ZooKeeper Client Port) for Kafka Server hosts
+- name: Allow Kafka Server hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port}}
   ufw:
     rule: allow
     source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
@@ -33,18 +33,20 @@
     proto: tcp
   loop: "{{ kafka_server_hosts }}"
 
-- name: Allow all hosts access to tcp port {{ confluent_config.zookeeper.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
+- name: Allow Prometheus Server hosts access to tcp port {{ confluent_config.zookeeper.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
   ufw:
     rule: allow
     port: '{{ confluent_config.zookeeper.prometheus_jmx_exporter.port }}'
     proto: tcp
+  loop: "{{ (groups['prometheus_server'] | default([])) }}"
   when: ((confluent_config.zookeeper.prometheus_jmx_exporter.enabled is defined) and (confluent_config.zookeeper.prometheus_jmx_exporter.enabled != None) and (confluent_config.zookeeper.prometheus_jmx_exporter.enabled == true))
 
-- name: Allow all hosts access to tcp port {{ confluent_config.zookeeper.prometheus_exporter.port }} (ZooKeeper Prometheus Exporter Port)
+- name: Allow Prometheus Server hosts access to tcp port {{ confluent_config.zookeeper.prometheus_exporter.port }} (ZooKeeper Prometheus Exporter Port)
   ufw:
     rule: allow
     port: '{{ confluent_config.zookeeper.prometheus_exporter.port }}'
     proto: tcp
+  loop: "{{ (groups['prometheus_server'] | default([])) }}"
   when: ((confluent_config.zookeeper.prometheus_exporter.enabled is defined) and (confluent_config.zookeeper.prometheus_exporter.enabled != None) and (confluent_config.zookeeper.prometheus_exporter.enabled == true))
 
 - name: Allow access to the remote JMX tcp ports
@@ -58,3 +60,11 @@
       port: '9999'
       proto: tcp
   when: ((confluent_config.zookeeper.enable_remote_jmx is defined) and (confluent_config.zookeeper.enable_remote_jmx != None) and (confluent_config.zookeeper.enable_remote_jmx == true))
+
+- name: Allow Burrow hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port}}
+  ufw:
+    rule: allow
+    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    port: '{{ confluent_config.zookeeper.secure_client_port }}'
+    proto: tcp
+  loop: "{{ (groups['burrow'] | default([])) }}"

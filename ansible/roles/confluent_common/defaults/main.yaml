@@ -1,5 +1,5 @@
 ---
-#file: roles/confluent_common/defaults/main.yaml
+# file: roles/confluent_common/defaults/main.yaml
 
 confluent_defaults:
   major_version: 5.5

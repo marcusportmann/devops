@@ -1,19 +1,24 @@
 ---
-#file: roles/kafka_mirrormaker/tasks/main.yaml
+# file: roles/kafka_mirrormaker/tasks/main.yaml
+
+- fail:
+    msg: 'No kafka.clusters configuration specified'
+  when: ((kafka is not defined) or (kafka == None) or (kafka.clusters is not defined) or (kafka.clusters == None))
+
+- set_fact:
+    kafka_cluster_name: ''
 
 - set_fact:
     kafka_cluster_name: '{{ item }}'
   when: (('kafka_mirrormaker_hosts' in kafka_config.clusters[item]) and (inventory_hostname in kafka_config.clusters[item].kafka_mirrormaker_hosts))
   loop: '{{ kafka_config.clusters | flatten(1) }}'
 
+- fail:
+    msg: "The Kafka MirrorMaker host {{ inventory_hostname }} is not associated with a Kafka cluster"
+  when: ((kafka_cluster_name is not defined) or (kafka_cluster_name == None) or (kafka_cluster_name == ''))
+
 - debug:
     msg: 'Cluster Name: {{ kafka_cluster_name }}'
-
-- set_fact:
-    kafka_mirrormaker_hosts: "{{ kafka_config.clusters[kafka_cluster_name].kafka_mirrormaker_hosts | intersect(groups['kafka_mirrormaker']|default([])) }}"
-
-- debug:
-    msg: 'Kafka MirrorMaker hosts: {{ kafka_mirrormaker_hosts }}'
 
 - set_fact:
     kafka_server_hosts: "{{ kafka_config.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([])) }}"
@@ -76,11 +81,11 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker CA certificate to the /var/tmp/ansible/kafka directory
     copy:
       src: pki/{{ kafka_cluster_name }}/ca.crt
       dest: /var/tmp/ansible/kafka/ca.crt
-    register: ca_copy_result
+    register: ca_certificate_copy_result
 
   - name: Copy the Kafka MirrorMaker private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka directory
     copy:
@@ -117,23 +122,23 @@
         mode: '0440'
         state: present
 
-    - name: Remove the CA PKCS12 truststore if it already exists
+    - name: Remove the Kafka MirrorMaker CA PKCS12 truststore if it already exists
       file:
         path: '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12'
         state: absent
 
-    - name: Generate the CA PKCS12 truststore
+    - name: Generate the Kafka MirrorMaker CA PKCS12 truststore
       shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
-    - name: Set the permissions for the CA PKCS12 truststore
+    - name: Set the permissions for the Kafka MirrorMaker CA PKCS12 truststore
       file:
         path: '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12'
         owner: '{{ kafka_config.kafka_mirrormaker.user }}'
         group: '{{ kafka_config.kafka_mirrormaker.group }}'
         mode: '0440'
 
-    when: ((ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True))
+    when: ((ca_certificate_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True))
 
 - name: Create the {{ kafka_config.kafka_mirrormaker.log_directory }} directory
   file:
@@ -169,7 +174,7 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((ca_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True) or (kafka_mirrormaker_configuration_template_result.changed == True) or (kafka_mirrormaker_service_file_template_result.changed == True))
+  when: ((ca_certificate_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True) or (kafka_mirrormaker_configuration_template_result.changed == True) or (kafka_mirrormaker_service_file_template_result.changed == True))
 
 - name: Ensure that the mirrormaker service is started
   systemd:

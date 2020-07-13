@@ -153,18 +153,20 @@
   template:
     src: prometheus.yaml.j2
     dest: /etc/prometheus/prometheus.yml
+  register: prometheus_configuration_template_result
 
 - name: Generate the Prometheus environment
   template:
     src: prometheus-environment
     dest: /etc/default/prometheus
 
-- name: Create the Prometheus systemd unit
+- name: Configure the Prometheus systemd unit
   template:
     src: prometheus.service.j2
     dest: /lib/systemd/system/prometheus.service
+  register: prometheus_systemd_unit_template_result
 
-- name: Setup the Prometheus monitoring configuration
+- name: Setup the Prometheus Kubernetes monitoring configuration
   block:
   - name: Create the /etc/prometheus/k8s directory
     file:
@@ -202,14 +204,15 @@
 
   when: ("k8s_master" in groups.keys())
 
-- name: Restart the prometheus service
+- name: Restart the Prometheus service
   systemd:
     name: prometheus.service
     state: restarted
     enabled: yes
     daemon_reload: yes
+  when: ((prometheus_configuration_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
 
-- name: Ensure that the prometheus service is started
+- name: Ensure that the Prometheus service is started
   systemd:
     name: prometheus.service
     state: started

@@ -1,18 +1,6 @@
 # This playbook configures a Confluent cluster.
 
-- name: Gather facts from all Confluent Kafka Burrow hosts
-  hosts: confluent_kafka_burrow
-  become: yes
-  become_user: root
-  pre_tasks:
-  - setup:
-    delegate_to: "{{ item }}"
-    delegate_facts: True
-    when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['confluent_kafka_burrow'] }}"
-  tasks: []
-
-- name: Gather facts from all Confluent Kafka MirrorMaker hosts
+- name: Gather facts from all Confluent Kafka MirrorMaker related hosts
   hosts: confluent_kafka_mirrorkeeper
   become: yes
   become_user: root
@@ -21,10 +9,15 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['confluent_kafka_mirrorkeeper'] }}"
+    with_items: "{{ (groups['confluent_kafka_mirrorkeeper'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus-server'] | default([])) }}"
   tasks: []
 
-- name: Gather facts from all Confluent Kafka Server hosts
+- name: Gather facts from all Confluent Kafka Server related hosts
   hosts: confluent_kafka_server
   become: yes
   become_user: root
@@ -33,10 +26,32 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['confluent_kafka_server'] }}"
+    with_items: "{{ (groups['burrow'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['confluent_kafka_server'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus-server'] | default([])) }}"
   tasks: []
 
-- name: Gather facts from all Confluent ZooKeeper hosts
+- name: Gather facts from all Confluent Schema Registry related hosts
+  hosts: confluent_schema_registry
+  become: yes
+  become_user: root
+  pre_tasks:
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus-server'] | default([])) }}"
+  tasks: []
+
+- name: Gather facts from all Confluent ZooKeeper related hosts
   hosts: confluent_zookeeper
   become: yes
   become_user: root
@@ -45,7 +60,22 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['confluent_zookeeper'] }}"
+    with_items: "{{ (groups['burrow'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['confluent_kafka_server'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['confluent_zookeeper'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus-server'] | default([])) }}"
   tasks: []
 
 - name: Configure the Confluent ZooKeeper hosts
@@ -62,13 +92,6 @@
   roles:
   - confluent_kafka_server
 
-- name: Configure the Confluent Kafak Burrow hosts
-  hosts: confluent_kafka_burrow
-  become: yes
-  become_user: root
-  roles:
-  - confluent_kafka_burrow
-
 - name: Configure the Confluent Kafak MirrorMaker hosts
   hosts: confluent_kafka_mirrormaker
   become: yes
@@ -82,3 +105,4 @@
   become_user: root
   roles:
   - confluent_schema_registry
+

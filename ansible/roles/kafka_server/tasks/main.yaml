@@ -1,10 +1,21 @@
 ---
-#file: roles/kafka_server/tasks/main.yaml
+# file: roles/kafka_server/tasks/main.yaml
+
+- fail:
+    msg: 'No kafka.clusters configuration specified'
+  when: ((kafka is not defined) or (kafka == None) or (kafka.clusters is not defined) or (kafka.clusters == None))
+
+- set_fact:
+    kafka_cluster_name: ''
 
 - set_fact:
     kafka_cluster_name: '{{ item }}'
-  when: (inventory_hostname in kafka_config.clusters[item].zookeeper_hosts)
+  when: (('kafka_server_hosts' in kafka_config.clusters[item]) and (inventory_hostname in kafka_config.clusters[item].kafka_server_hosts))
   loop: '{{ kafka_config.clusters | flatten(1) }}'
+
+- fail:
+    msg: "The Kafka Server host {{ inventory_hostname }} is not associated with a Kafka cluster"
+  when: ((kafka_cluster_name is not defined) or (kafka_cluster_name == None) or (kafka_cluster_name == ''))
 
 - debug:
     msg: 'Cluster Name: {{ kafka_cluster_name }}'
@@ -109,11 +120,11 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server CA certificate to the /var/tmp/ansible/kafka directory
     copy:
       src: pki/{{ kafka_cluster_name }}/ca.crt
       dest: /var/tmp/ansible/kafka/ca.crt
-    register: ca_copy_result
+    register: ca_certificate_copy_result
 
   - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka directory
     copy:
@@ -150,23 +161,23 @@
         mode: '0440'
         state: present
 
-    - name: Remove the CA PKCS12 truststore if it already exists
+    - name: Remove the Kafka Server CA PKCS12 truststore if it already exists
       file:
         path: '{{ kafka_config.kafka_server.etc_directory }}/pki/ca.p12'
         state: absent
 
-    - name: Generate the CA PKCS12 truststore
+    - name: Generate the Kafka Server CA PKCS12 truststore
       shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
-    - name: Set the permissions for the CA PKCS12 truststore
+    - name: Set the permissions for the Kafka Server CA PKCS12 truststore
       file:
         path: '{{ kafka_config.kafka_server.etc_directory }}/pki/ca.p12'
         owner: '{{ kafka_config.kafka_server.user }}'
         group: '{{ kafka_config.kafka_server.group }}'
         mode: '0440'
 
-    when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
+    when: ((ca_certificate_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
 
 - name: Create the {{ kafka_config.kafka_server.log_directory }} directory
   file:
@@ -231,7 +242,7 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((ca_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
+  when: ((ca_certificate_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True) or (kafka_server_configuration_template_result.changed == True) or (kafka_server_service_file_template_result.changed == True))
 
 - name: Ensure that the kafka service is started
   systemd:
@@ -381,3 +392,21 @@
       state: present
       regexp: '^%alias kafka-topics'
       line: alias kafka-topics='/opt/kafka/bin/kafka-topics.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+
+- name: Generate or retrieve the password for the Burrow ZooKeeper user
+  set_fact:
+    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+
+- debug:
+    msg: 'Burrow user password: {{ kafka_server_burrow_user_password }}'
+
+- name: Set the password for the Burrow user in ZooKeeper
+  shell:
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ kafka_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ kafka_config.kafka_server.users.burrow.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_burrow_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_burrow_user_password }}]'
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+  register: set_kafka_server_burrow_user_password_in_zookeeper_result
+
+
+
+
+

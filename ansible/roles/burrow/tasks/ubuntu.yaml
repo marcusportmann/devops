@@ -1,0 +1,11 @@
+---
+# file: roles/burrow/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Burrow configuration
+
+- name: Allow all hosts access to tcp port {{ burrow_config.http_port }}
+  ufw:
+    rule: allow
+    port: '{{ burrow_config.http_port }}'
+    proto: tcp

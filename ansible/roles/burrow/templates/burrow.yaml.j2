@@ -1,0 +1,188 @@
+general:
+  pidfile: {{ burrow_config.run_directory }}/barrow.pid
+
+logging:
+  filename: {{ burrow_config.log_directory }}/burrow.log
+  level: "info"
+  maxsize: 100
+  maxbackups: 30
+  maxage: 10
+  use-localtime: false
+  use-compression: true
+
+
+{% set burrow_zookeeper_hosts = [] -%}
+{% for zookeeper_host in zookeeper_hosts %}
+{% set _ = burrow_zookeeper_hosts.append("\"%s:%d\"" % (zookeeper_host, burrow_config.zookeeper.secure_client_port)) %}
+{% endfor %}
+zookeeper:
+  servers: [{{ burrow_zookeeper_hosts | join(',') }}]
+  timeout: 6
+  root-path: /burrow/notifier
+  tls: zookeeper
+
+
+client-profile:
+{% if ((confluent is defined) and (confluent != None) and (confluent.clusters is defined) and (confluent.clusters != None) and ((confluent.clusters|length) > 0)) %}
+{% for confluent_cluster_name in confluent.clusters %}
+{% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
+  {{ confluent_cluster_name }}:
+    kafka-version: 2.5.0
+    client-id: {{ 'burrow-' + confluent_cluster_name.replace('_', '-') }}
+    tls: {{ confluent_cluster_name }}
+    sasl: {{ confluent_cluster_name }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if ((kafka is defined) and (kafka != None) and (kafka.clusters is defined) and (kafka.clusters != None) and ((kafka.clusters|length) > 0)) %}
+{% for kafka_cluster_name in kafka.clusters %}
+{% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
+  {{ kafka_cluster_name }}:
+    kafka-version: 2.5.0
+    client-id: {{ 'burrow-' + kafka_cluster_name.replace('_', '-') }}
+    tls: {{ kafka_cluster_name }}
+    sasl: {{ kafka_cluster_name }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
+tls:
+  zookeeper:
+    keyfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key
+    certfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt
+    cafile: {{ burrow_config.etc_directory }}/pki/ca.crt
+    noverify: false
+{% if ((confluent is defined) and (confluent != None) and (confluent.clusters is defined) and (confluent.clusters != None) and ((confluent.clusters|length) > 0)) %}
+{% for confluent_cluster_name in confluent.clusters %}
+{% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
+  {{ confluent_cluster_name }}:
+    keyfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key
+    certfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt
+    cafile: {{ burrow_config.etc_directory }}/pki/ca.crt
+    noverify: false
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if ((kafka is defined) and (kafka != None) and (kafka.clusters is defined) and (kafka.clusters != None) and ((kafka.clusters|length) > 0)) %}
+{% for kafka_cluster_name in kafka.clusters %}
+{% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
+  {{ kafka_cluster_name }}:
+    keyfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key
+    certfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt
+    cafile: {{ burrow_config.etc_directory }}/pki/ca.crt
+    noverify: false
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
+sasl:
+{% if ((confluent is defined) and (confluent != None) and (confluent.clusters is defined) and (confluent.clusters != None) and ((confluent.clusters|length) > 0)) %}
+{% for confluent_cluster_name in confluent.clusters %}
+{% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
+  {{ confluent_cluster_name }}:
+    username: {{ burrow_config.kafka_server.username }}
+    password: {{ lookup('file', 'credentials/confluent/' + confluent_cluster_name + '/kafka-server-burrow-user-password') }}
+    handshake-first: true
+    mechanism: SCRAM-SHA-256
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if ((kafka is defined) and (kafka != None) and (kafka.clusters is defined) and (kafka.clusters != None) and ((kafka.clusters|length) > 0)) %}
+{% for kafka_cluster_name in kafka.clusters %}
+{% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
+  {{ kafka_cluster_name }}:
+    username: {{ burrow_config.kafka_server.username }}
+    password: {{ lookup('file', 'credentials/kafka/' + kafka_cluster_name + '/kafka-server-burrow-user-password') }}
+    handshake-first: true
+    mechanism: SCRAM-SHA-256
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
+cluster:
+{% if ((confluent is defined) and (confluent != None) and (confluent.clusters is defined) and (confluent.clusters != None) and ((confluent.clusters|length) > 0)) %}
+{% for confluent_cluster_name in confluent.clusters %}
+{% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
+{% set servers = [] -%}
+{% for kafka_server_host in (confluent.clusters[confluent_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['confluent_kafka_server']|default([]))) %}
+{% set _ = servers.append("\"%s:%d\"" % (kafka_server_host, burrow_config.kafka_server.secure_broker_port)) %}
+{% endfor %}
+  {{ confluent_cluster_name }}:
+    class-name: kafka
+    client-profile: {{ confluent_cluster_name }}
+    servers: [ {{ servers | join(',') }} ]
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if ((kafka is defined) and (kafka != None) and (kafka.clusters is defined) and (kafka.clusters != None) and ((kafka.clusters|length) > 0)) %}
+{% for kafka_cluster_name in kafka.clusters %}
+{% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
+{% set servers = [] -%}
+{% for kafka_server_host in (kafka.clusters[kafka_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) %}
+{% set _ = servers.append("\"%s:%d\"" % (kafka_server_host, burrow_config.kafka_server.secure_broker_port)) %}
+{% endfor %}
+  {{ kafka_cluster_name }}:
+    class-name: kafka
+    client-profile: {{ kafka_cluster_name }}
+    servers: [ {{ servers | join(',') }} ]
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
+consumer:
+{% if ((confluent is defined) and (confluent != None) and (confluent.clusters is defined) and (confluent.clusters != None) and ((confluent.clusters|length) > 0)) %}
+{% for confluent_cluster_name in confluent.clusters %}
+{% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
+{% set servers = [] -%}
+{% for kafka_server_host in (confluent.clusters[confluent_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['confluent_kafka_server']|default([]))) %}
+{% set _ = servers.append("\"%s:%d\"" % (kafka_server_host, burrow_config.kafka_server.secure_broker_port)) %}
+{% endfor %}
+  {{ confluent_cluster_name }}:
+    class-name: kafka
+    cluster: {{ confluent_cluster_name }}
+    servers: [ {{ servers | join(',') }} ]
+    client-profile: {{ confluent_cluster_name }}
+    offsets-topic: __consumer_offsets
+    group-blacklist: ^(console-consumer-|python-kafka-consumer-).*$
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if ((kafka is defined) and (kafka != None) and (kafka.clusters is defined) and (kafka.clusters != None) and ((kafka.clusters|length) > 0)) %}
+{% for kafka_cluster_name in kafka.clusters %}
+{% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
+{% set servers = [] -%}
+{% for kafka_server_host in (kafka.clusters[kafka_cluster_name].kafka_server_hosts | flatten(1) | intersect(groups['kafka_server']|default([]))) %}
+{% set _ = servers.append("\"%s:%d\"" % (kafka_server_host, burrow_config.kafka_server.secure_broker_port)) %}
+{% endfor %}
+  {{ kafka_cluster_name }}:
+    class-name: kafka
+    cluster: {{ kafka_cluster_name }}
+    servers: [ {{ servers | join(',') }} ]
+    client-profile: {{ kafka_cluster_name }}
+    offsets-topic: __consumer_offsets
+    group-blacklist: ^(console-consumer-|python-kafka-consumer-).*$
+{% endif %}
+{% endfor %}
+{% endif %}
+
+httpserver:
+  listener:
+    address: :{{ burrow_config.http_port }}
+    timeout: 300
+#    tls: tls_profile_name
+
+
+
+
+
+
+
+
+
+
+
+

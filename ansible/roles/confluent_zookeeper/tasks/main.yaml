@@ -1,10 +1,21 @@
 ---
-#file: roles/confluent_zookeeper/tasks/main.yaml
+# file: roles/confluent_zookeeper/tasks/main.yaml
+
+- fail:
+    msg: 'No confluent.clusters configuration specified'
+  when: ((confluent is not defined) or (confluent == None) or (confluent.clusters is not defined) or (confluent.clusters == None))
+
+- set_fact:
+    confluent_cluster_name: ''
 
 - set_fact:
     confluent_cluster_name: '{{ item }}'
-  when: (inventory_hostname in confluent_config.clusters[item].zookeeper_hosts)
+  when: (('zookeeper_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].zookeeper_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
+
+- fail:
+    msg: "The ZooKeeper host {{ inventory_hostname }} is not associated with a Confluent cluster"
+  when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
 - debug:
     msg: 'Confluent Cluster Name: {{ confluent_cluster_name }}'
@@ -97,7 +108,7 @@
     copy:
       src: pki/{{ confluent_cluster_name }}/ca.crt
       dest: /var/tmp/ansible/zookeeper/ca.crt
-    register: zookeeper_ca_copy_result
+    register: ca_certificate_copy_result
 
   - name: Copy the host-specific ZooKeeper private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/zookeeper directory
     copy:
@@ -117,7 +128,7 @@
 
   - name: Generate or retrieve the password for the ZooKeeper truststore
     set_fact:
-      zookeeper_ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the ZooKeeper keystore and ZooKeeper CA truststore
     block:
@@ -141,7 +152,7 @@
 
     - name: Generate the ZooKeeper CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/zookeeper/ca.crt -keystore '{{ confluent_config.zookeeper.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ zookeeper_ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/zookeeper/ca.crt -keystore '{{ confluent_config.zookeeper.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
       file:
@@ -150,7 +161,7 @@
         group: '{{ confluent_config.zookeeper.group }}'
         mode: '0440'
 
-    when: (True or (zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
+    when: ((ca_certificate_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
 
 - name: Create the {{ confluent_config.zookeeper.log_directory }} directory
   file:
@@ -234,21 +245,21 @@
       regexp: '^%alias zookeeper-shell'
       line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.zookeeper.etc_directory }}/conf/zookeeper-jaas.conf" /opt/confluent/bin/zookeeper-shell -zk-tls-config-file {{ confluent_config.zookeeper.etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ confluent_config.zookeeper.secure_client_port }}'
 
-- name: Configure the zookeeper service
+- name: Configure the Zookeeper systemd unit
   template:
     src: zookeeper.service.j2
     dest: /lib/systemd/system/zookeeper.service
-  register: zookeeper_service_template_result
+  register: zookeeper_systemd_unit_template_result
 
-- name: Restart the zookeeper service if required
+- name: Restart the ZooKeeper service if required
   systemd:
     name: zookeeper.service
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((zookeeper_ca_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True) or (zookeeper_configuration_template_result.changed == True) or (zookeeper_service_template_result.changed == True))
+  when: ((ca_certificate_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True) or (zookeeper_configuration_template_result.changed == True) or (zookeeper_systemd_unit_template_result.changed == True))
 
-- name: Ensure that the zookeeper service is started
+- name: Ensure that the ZooKeeper service is started
   systemd:
     name: zookeeper.service
     state: started

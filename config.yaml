@@ -7,6 +7,15 @@
 #
 variables:
 
+  burrow:
+    clusters:
+      dev:
+        hosts:
+        - monitoring-dev.local
+        # One of confluent, kafka, or standalone
+        zookeeper_cluster_type: kafka
+        zookeeper_cluster_name: digital_dev
+
   confluent:
     clusters:
       digital_dev:
@@ -1192,7 +1201,7 @@ hosts:
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,grafana
+  ansible_groups:     monitored,prometheus_server,grafana,burrow
   virtualbox:
     cpus:             1
     memory:           1024

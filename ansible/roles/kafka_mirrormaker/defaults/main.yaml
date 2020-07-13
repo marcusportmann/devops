@@ -1,5 +1,5 @@
 ---
-#file: roles/kafka_mirrormaker/defaults/main.yaml
+# file: roles/kafka_mirrormaker/defaults/main.yaml
 
 kafka_defaults:
   kafka_mirrormaker:

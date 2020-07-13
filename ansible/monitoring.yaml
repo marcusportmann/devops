@@ -1,5 +1,12 @@
 # This playbook configures the monitoring components.
 
+- name: Configure a Burrow host
+  hosts: burrow
+  become: yes
+  become_user: root
+  roles:
+  - burrow
+
 - name: Configure a monitored host
   hosts: monitored
   become: yes
@@ -20,4 +27,3 @@
   become_user: root
   roles:
   - grafana
-

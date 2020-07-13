@@ -168,7 +168,7 @@ ssl.truststore.password={{ ca_truststore_password }}
 
 authorizer.class.name=kafka.security.authorizer.AclAuthorizer
 
-{% set kafka_server_super_users = ['User:kafka', 'User:admin'] -%}
+{% set kafka_server_super_users = ['User:kafka', 'User:admin', 'User:burrow'] -%}
 {% for kafka_server_mirrormaker_user in kafka_server_mirrormaker_users %}
 {% set _ = kafka_server_super_users.append("User:%s" % kafka_server_mirrormaker_user) %}
 {% endfor %}

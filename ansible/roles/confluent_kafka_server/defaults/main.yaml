@@ -1,5 +1,5 @@
 ---
-#file: roles/confluent_kafka_server/defaults/main.yaml
+# file: roles/confluent_kafka_server/defaults/main.yaml
 
 confluent_defaults:
   kafka_server:
@@ -18,10 +18,12 @@ confluent_defaults:
       username: kafka
 
     users:
-      broker:
-        username: kafka
       admin:
         username: admin
+      broker:
+        username: kafka
+      burrow:
+        username: burrow
       schema_registry:
         username: schema-registry
 

@@ -1,5 +1,5 @@
 ---
-#file: roles/kafka_zookeeper/defaults/main.yaml
+# file: roles/kafka_zookeeper/defaults/main.yaml
 
 kafka_defaults:
   zookeeper:

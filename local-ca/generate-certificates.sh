@@ -37,7 +37,7 @@
 #                   is dev, the <instance_id> is 01, and the <purpose> is etcd-peer
 
 
-mkdir -p ../ansible/roles/confluent_kafka_burrow/files/pki/digital_dev
+mkdir -p ../ansible/roles/burrow/files/pki/dev
 mkdir -p ../ansible/roles/confluent_kafka_mirrormaker/files/pki/digital_dev
 mkdir -p ../ansible/roles/confluent_kafka_server/files/pki/digital_dev
 mkdir -p ../ansible/roles/confluent_schema_registry/files/pki/digital_dev
@@ -66,8 +66,10 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 mv -f ca.pem ca.crt
 mv -f ca-key.pem ca.key
 rm -f ca.p12
-keytool -importcert -noprompt -trustcacerts -alias "Local Root Certificate Authority (1)" -file ca.crt -keystore ca.p12 -storetype PKCS12 -storepass "ulLdVI9hUP46gaQj"
-cp ca.crt ../ansible/roles/confluent_kafka_burrow/files/pki/digital_dev/ca.crt
+keytool -importcert -noprompt -trustcacerts -alias "Local Root Certificate Authority (1)" -file ca.crt -keystore ca.p12 -storetype PKCS12 -storepass ulLdVI9hUP46gaQj
+# keytool -list -keystore ca.p12 -storetype PKCS12 -storepass ulLdVI9hUP46gaQj
+# openssl pkcs12 -info -in ca.p12 -passin pass:ulLdVI9hUP46gaQj
+cp ca.crt ../ansible/roles/burrow/files/pki/dev/ca.crt
 cp ca.crt ../ansible/roles/confluent_kafka_mirrormaker/files/pki/digital_dev/ca.crt
 cp ca.crt ../ansible/roles/confluent_kafka_server/files/pki/digital_dev/ca.crt
 cp ca.crt ../ansible/roles/confluent_schema_registry/files/pki/digital_dev/ca.crt
@@ -193,54 +195,6 @@ mv -f confluent-admin-analytics-dev-key.pem confluent-admin-analytics-dev.key
 mv -f confluent-admin-analytics-dev.pem confluent-admin-analytics-dev.crt
 cp confluent-admin-analytics-dev.key ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
 cp confluent-admin-analytics-dev.crt ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
-
-
-# Generate the Confluent Kafka MirrorMaker certificates
-# cfssl genkey confluent-zkks-digital-dev-kafka-mirrormaker-csr.json | cfssljson -bare confluent-zkks-digital-dev-kafka-mirrormaker
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkks-digital-dev-kafka-mirrormaker.csr | cfssljson -bare confluent-zkks-digital-dev-kafka-mirrormaker
-# mv -f confluent-zkks-digital-dev-kafka-mirrormaker-key.pem confluent-zkks-digital-dev-kafka-mirrormaker.key
-# mv -f confluent-zkks-digital-dev-kafka-mirrormaker.pem confluent-zkks-digital-dev-kafka-mirrormaker.crt
-# cp confluent-zkks-digital-dev-kafka-mirrormaker.key ../ansible/roles/confluent_kafka_mirrormaker/files/pki/digital_dev
-# cp confluent-zkks-digital-dev-kafka-mirrormaker.crt ../ansible/roles/confluent_kafka_mirrormaker/files/pki/digital_dev
-#
-# cfssl genkey confluent-digital-dr-kafka-mirrormaker-csr.json | cfssljson -bare confluent-digital-dr-kafka-mirrormaker
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-digital-dr-kafka-mirrormaker.csr | cfssljson -bare confluent-digital-dr-kafka-mirrormaker
-# mv -f confluent-digital-dr-kafka-mirrormaker-key.pem confluent-digital-dr-kafka-mirrormaker.key
-# mv -f confluent-digital-dr-kafka-mirrormaker.pem confluent-digital-dr-kafka-mirrormaker.crt
-# cp confluent-digital-dr-kafka-mirrormaker.key ../ansible/roles/confluent_kafka_mirrormaker/files/pki/analytics_dev
-# cp confluent-digital-dr-kafka-mirrormaker.crt ../ansible/roles/confluent_kafka_mirrormaker/files/pki/analytics_dev
-
-
-# Generate the Confluent Schema Registry certificates
-# cfssl genkey confluent-zkks-digital-dev-schema-registry-csr.json | cfssljson -bare confluent-zkks-digital-dev-schema-registry
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkks-digital-dev-schema-registry.csr | cfssljson -bare confluent-zkks-digital-dev-schema-registry
-# mv -f confluent-zkks-digital-dev-schema-registry-key.pem confluent-zkks-digital-dev-schema-registry.key
-# mv -f confluent-zkks-digital-dev-schema-registry.pem confluent-zkks-digital-dev-schema-registry.crt
-# cp confluent-zkks-digital-dev-schema-registry.key ../ansible/roles/confluent_schema_registry/files/pki/digital_dev
-# cp confluent-zkks-digital-dev-schema-registry.crt ../ansible/roles/confluent_schema_registry/files/pki/digital_dev
-#
-# cfssl genkey confluent-digital-dr-schema-registry-csr.json | cfssljson -bare confluent-digital-dr-schema-registry
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-digital-dr-schema-registry.csr | cfssljson -bare confluent-digital-dr-schema-registry
-# mv -f confluent-digital-dr-schema-registry-key.pem confluent-digital-dr-schema-registry.key
-# mv -f confluent-digital-dr-schema-registry.pem confluent-digital-dr-schema-registry.crt
-# cp confluent-digital-dr-schema-registry.key ../ansible/roles/confluent_schema_registry/files/pki/analytics_dev
-# cp confluent-digital-dr-schema-registry.crt ../ansible/roles/confluent_schema_registry/files/pki/analytics_dev
-
-
-# Generate the Confluent Kafka Server certificates
-# cfssl genkey confluent-zkks-digital-dev-kafka-server-csr.json | cfssljson -bare confluent-zkks-digital-dev-kafka-server
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkks-digital-dev-kafka-server.csr | cfssljson -bare confluent-zkks-digital-dev-kafka-server
-# mv -f confluent-zkks-digital-dev-kafka-server-key.pem confluent-zkks-digital-dev-kafka-server.key
-# mv -f confluent-zkks-digital-dev-kafka-server.pem confluent-zkks-digital-dev-kafka-server.crt
-# cp confluent-zkks-digital-dev-kafka-server.key ../ansible/roles/confluent_kafka_server/files/pki/digital_dev
-# cp confluent-zkks-digital-dev-kafka-server.crt ../ansible/roles/confluent_kafka_server/files/pki/digital_dev
-#
-# cfssl genkey confluent-digital-dr-kafka-server-csr.json | cfssljson -bare confluent-digital-dr-kafka-server
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-digital-dr-kafka-server.csr | cfssljson -bare confluent-digital-dr-kafka-server
-# mv -f confluent-digital-dr-kafka-server-key.pem confluent-digital-dr-kafka-server.key
-# mv -f confluent-digital-dr-kafka-server.pem confluent-digital-dr-kafka-server.crt
-# cp confluent-digital-dr-kafka-server.key ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
-# cp confluent-digital-dr-kafka-server.crt ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
 
 
 # Generate the etcd intermediate CA private key and certificates
@@ -488,52 +442,13 @@ cp kafka-admin-analytics-dev.key ../ansible/roles/kafka_server/files/pki/analyti
 cp kafka-admin-analytics-dev.crt ../ansible/roles/kafka_server/files/pki/analytics_dev
 
 
-# Generate the Confluent Kafka MirrorMaker certificates
-# cfssl genkey kafka-zkks-digital-dev-kafka-mirrormaker-csr.json | cfssljson -bare kafka-zkks-digital-dev-kafka-mirrormaker
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkks-digital-dev-kafka-mirrormaker.csr | cfssljson -bare kafka-zkks-digital-dev-kafka-mirrormaker
-# mv -f kafka-zkks-digital-dev-kafka-mirrormaker-key.pem kafka-zkks-digital-dev-kafka-mirrormaker.key
-# mv -f kafka-zkks-digital-dev-kafka-mirrormaker.pem kafka-zkks-digital-dev-kafka-mirrormaker.crt
-# cp kafka-zkks-digital-dev-kafka-mirrormaker.key ../ansible/roles/kafka_mirrormaker/files/pki/digital_dev
-# cp kafka-zkks-digital-dev-kafka-mirrormaker.crt ../ansible/roles/kafka_mirrormaker/files/pki/digital_dev
-#
-# cfssl genkey kafka-digital-dr-kafka-mirrormaker-csr.json | cfssljson -bare kafka-digital-dr-kafka-mirrormaker
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-digital-dr-kafka-mirrormaker.csr | cfssljson -bare kafka-digital-dr-kafka-mirrormaker
-# mv -f kafka-digital-dr-kafka-mirrormaker-key.pem kafka-digital-dr-kafka-mirrormaker.key
-# mv -f kafka-digital-dr-kafka-mirrormaker.pem kafka-digital-dr-kafka-mirrormaker.crt
-# cp kafka-digital-dr-kafka-mirrormaker.key ../ansible/roles/kafka_mirrormaker/files/pki/analytics_dev
-# cp kafka-digital-dr-kafka-mirrormaker.crt ../ansible/roles/kafka_mirrormaker/files/pki/analytics_dev
-
-
-# Generate the Confluent Schema Registry certificates
-# cfssl genkey kafka-zkks-digital-dev-schema-registry-csr.json | cfssljson -bare kafka-zkks-digital-dev-schema-registry
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkks-digital-dev-schema-registry.csr | cfssljson -bare kafka-zkks-digital-dev-schema-registry
-# mv -f kafka-zkks-digital-dev-schema-registry-key.pem kafka-zkks-digital-dev-schema-registry.key
-# mv -f kafka-zkks-digital-dev-schema-registry.pem kafka-zkks-digital-dev-schema-registry.crt
-# cp kafka-zkks-digital-dev-schema-registry.key ../ansible/roles/kafka_schema_registry/files/pki/digital_dev
-# cp kafka-zkks-digital-dev-schema-registry.crt ../ansible/roles/kafka_schema_registry/files/pki/digital_dev
-#
-# cfssl genkey kafka-digital-dr-schema-registry-csr.json | cfssljson -bare kafka-digital-dr-schema-registry
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-digital-dr-schema-registry.csr | cfssljson -bare kafka-digital-dr-schema-registry
-# mv -f kafka-digital-dr-schema-registry-key.pem kafka-digital-dr-schema-registry.key
-# mv -f kafka-digital-dr-schema-registry.pem kafka-digital-dr-schema-registry.crt
-# cp kafka-digital-dr-schema-registry.key ../ansible/roles/kafka_schema_registry/files/pki/analytics_dev
-# cp kafka-digital-dr-schema-registry.crt ../ansible/roles/kafka_schema_registry/files/pki/analytics_dev
-
-
-# Generate the Confluent Kafka Server certificates
-# cfssl genkey kafka-zkks-digital-dev-kafka-server-csr.json | cfssljson -bare kafka-zkks-digital-dev-kafka-server
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkks-digital-dev-kafka-server.csr | cfssljson -bare kafka-zkks-digital-dev-kafka-server
-# mv -f kafka-zkks-digital-dev-kafka-server-key.pem kafka-zkks-digital-dev-kafka-server.key
-# mv -f kafka-zkks-digital-dev-kafka-server.pem kafka-zkks-digital-dev-kafka-server.crt
-# cp kafka-zkks-digital-dev-kafka-server.key ../ansible/roles/kafka_server/files/pki/digital_dev
-# cp kafka-zkks-digital-dev-kafka-server.crt ../ansible/roles/kafka_server/files/pki/digital_dev
-#
-# cfssl genkey kafka-digital-dr-kafka-server-csr.json | cfssljson -bare kafka-digital-dr-kafka-server
-# cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-digital-dr-kafka-server.csr | cfssljson -bare kafka-digital-dr-kafka-server
-# mv -f kafka-digital-dr-kafka-server-key.pem kafka-digital-dr-kafka-server.key
-# mv -f kafka-digital-dr-kafka-server.pem kafka-digital-dr-kafka-server.crt
-# cp kafka-digital-dr-kafka-server.key ../ansible/roles/kafka_server/files/pki/analytics_dev
-# cp kafka-digital-dr-kafka-server.crt ../ansible/roles/kafka_server/files/pki/analytics_dev
+# Generate the monitoring hosts private keys and certificates
+cfssl genkey monitoring-dev-csr.json | cfssljson -bare monitoring-dev
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server monitoring-dev.csr | cfssljson -bare monitoring-dev
+mv -f monitoring-dev-key.pem monitoring-dev.key
+mv -f monitoring-dev.pem monitoring-dev.crt
+cp monitoring-dev.key ../ansible/roles/burrow/files/pki/dev
+cp monitoring-dev.crt ../ansible/roles/burrow/files/pki/dev
 
 
 # Generate the Kafka demo-producer certificate

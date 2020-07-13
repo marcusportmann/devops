@@ -55,7 +55,7 @@
       mode: 0770
       state: directory
 
-  - name: Copy the CA certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the Etcd CA certificate to the {{ etcd_config.etc_directory }}/pki directory
     copy:
       src: "pki/{{ etcd_cluster_name }}/ca.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/ca.crt"

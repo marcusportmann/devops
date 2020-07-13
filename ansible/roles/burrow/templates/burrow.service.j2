@@ -1,0 +1,20 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=Burrow Service
+Documentation=https://github.com/linkedin/Burrow
+Requires=network.target remote-fs.target
+After=network.target remote-fs.target
+StartLimitBurst=360
+StartLimitIntervalSec=3600
+
+[Service]
+Type=simple
+User={{ burrow_config.user }}
+Group={{ burrow_config.group }}
+ExecStart=/usr/bin/burrow-{{ burrow_config.package_version }} -config-dir {{ burrow_config.etc_directory }}/conf
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

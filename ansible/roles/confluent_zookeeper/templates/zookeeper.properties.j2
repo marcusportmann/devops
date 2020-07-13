@@ -47,7 +47,7 @@ ssl.keyStore.location={{ confluent_config.zookeeper.etc_directory }}/pki/{{ inve
 ssl.keyStore.password={{ zookeeper_keystore_password }}
 ssl.trustStore.type=PKCS12
 ssl.trustStore.location={{ confluent_config.zookeeper.etc_directory }}/pki/ca.p12
-ssl.trustStore.password={{ zookeeper_ca_truststore_password }}
+ssl.trustStore.password={{ ca_truststore_password }}
 
 # Enable ZooKeeper quorum mTLS authentication
 sslQuorum=true
@@ -57,7 +57,7 @@ ssl.quorum.keyStore.location={{ confluent_config.zookeeper.etc_directory }}/pki/
 ssl.quorum.keyStore.password={{ zookeeper_keystore_password }}
 ssl.quorum.trustStore.type=PKCS12
 ssl.quorum.trustStore.location={{ confluent_config.zookeeper.etc_directory }}/pki/ca.p12
-ssl.quorum.trustStore.password={{ zookeeper_ca_truststore_password }}
+ssl.quorum.trustStore.password={{ ca_truststore_password }}
 
 # Enable SASL authentication for ZooKeeper
 authProvider.sasl=org.apache.zookeeper.server.auth.SASLAuthenticationProvider

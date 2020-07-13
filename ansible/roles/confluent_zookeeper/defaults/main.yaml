@@ -1,5 +1,5 @@
 ---
-#file: roles/confluent_zookeeper/defaults/main.yaml
+# file: roles/confluent_zookeeper/defaults/main.yaml
 
 confluent_defaults:
   zookeeper:

@@ -1,6 +1,6 @@
 # This playbook configures a Kafka cluster.
 
-- name: Gather facts from all Kafka MirrorMaker hosts
+- name: Gather facts from all Kafka MirrorMaker related hosts
   hosts: kafka_mirrorkeeper
   become: yes
   become_user: root
@@ -9,10 +9,15 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['kafka_mirrorkeeper'] }}"
+    with_items: "{{ (groups['kafka_mirrorkeeper'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus-server'] | default([])) }}"
   tasks: []
 
-- name: Gather facts from all Kafka Server hosts
+- name: Gather facts from all Kafka Server related hosts
   hosts: kafka_server
   become: yes
   become_user: root
@@ -21,10 +26,20 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['kafka_server'] }}"
+    with_items: "{{ (groups['burrow'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['kafka_server'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus-server'] | default([])) }}"
   tasks: []
 
-- name: Gather facts from all Kafka ZooKeeper hosts
+- name: Gather facts from all Kafka ZooKeeper related hosts
   hosts: kafka_zookeeper
   become: yes
   become_user: root
@@ -33,7 +48,22 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
-    with_items: "{{ groups['kafka_zookeeper'] }}"
+    with_items: "{{ (groups['burrow'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['kafka_server'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['kafka_zookeeper'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus-server'] | default([])) }}"
   tasks: []
 
 - name: Configure the Kafka ZooKeeper hosts

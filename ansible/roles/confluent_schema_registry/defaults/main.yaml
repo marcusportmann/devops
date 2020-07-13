@@ -1,5 +1,5 @@
 ---
-#file: roles/confluent_schema_registry/defaults/main.yaml
+# file: roles/confluent_schema_registry/defaults/main.yaml
 
 confluent_defaults:
   schema_registry:

@@ -1,0 +1,295 @@
+---
+# file: roles/burrow/tasks/main.yaml
+
+- fail:
+    msg: 'No burrow configuration specified'
+  when: ((burrow is not defined) or (burrow == None))
+
+- fail:
+    msg: 'No burrow.clusters configuration specified'
+  when: ((burrow_config.clusters is not defined) or (burrow_config.clusters == None))
+
+- set_fact:
+    burrow_cluster_name: ''
+
+- set_fact:
+    burrow_cluster_name: '{{ item }}'
+  when: (('hosts' in burrow_config.clusters[item]) and (inventory_hostname in burrow_config.clusters[item].hosts))
+  loop: '{{ burrow_config.clusters | flatten(1) }}'
+
+- fail:
+    msg: 'Failed to determine the Burrow cluster name for the host ({{ inventory_hostname }})'
+  when: (burrow_cluster_name == '')
+
+- fail:
+    msg: 'No burrow.zookeeper_cluster_type configuration specified'
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type is not defined) or (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == None))
+
+- fail:
+    msg: 'The burrow.zookeeper_cluster_type configuration value ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }}) is invalid'
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type != "confluent") and (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type != "kafka") and (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type != "standalone"))
+
+- fail:
+    msg: 'No burrow.zookeeper_cluster_name configuration specified'
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name is not defined) or (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name == None))
+
+- fail:
+    msg: 'No confluent.clusters configuration specified'
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "confluent") and  ((confluent is not defined) or (confluent == None) or (confluent.clusters is not defined) or (confluent.clusters == None)))
+
+- fail:
+    msg: 'No kafka.clusters configuration specified'
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "kafka") and ((kafka is not defined) or (kafka == None) or (kafka.clusters is not defined) or (kafka.clusters == None)))
+
+- fail:
+    msg: 'The Confluent cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}) is invalid'
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "confluent") and (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name not in confluent.clusters))
+
+- fail:
+    msg: 'The Kafka cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}) is invalid'
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "kafka") and (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name not in kafka.clusters))
+
+- set_fact:
+    burrow_zookeeper_cluster_type: '{{ item }}'
+  when: (('hosts' in burrow_config.clusters[item]) and (inventory_hostname in burrow_config.clusters[item].hosts))
+  loop: '{{ burrow_config.clusters | flatten(1) }}'
+
+- set_fact:
+    burrow_zookeeper_cluster_type: '{{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }}'
+
+- set_fact:
+    burrow_zookeeper_cluster_name: '{{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}'
+
+- debug:
+   msg: 'Using Confluent ZooKeeper cluster: {{ burrow_zookeeper_cluster_name }}'
+  when: (burrow_zookeeper_cluster_type == "confluent")
+
+- debug:
+   msg: 'Using Kafka ZooKeeper cluster: {{ burrow_zookeeper_cluster_name }}'
+  when: (burrow_zookeeper_cluster_type == "kafka")
+
+- set_fact:
+    zookeeper_hosts: []
+
+- set_fact:
+   zookeeper_hosts: "{{ confluent.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name].zookeeper_hosts | intersect(groups['confluent_zookeeper']|default([])) }}"
+  when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "confluent") and ('zookeeper_hosts' in confluent.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name]))
+
+- set_fact:
+   zookeeper_hosts: "{{ kafka.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name].zookeeper_hosts | intersect(groups['kafka_zookeeper']|default([])) }}"
+  when: (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "kafka") and ('zookeeper_hosts' in kafka.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name])
+
+- fail:
+    msg: 'No ZooKeeper hosts found using cluster type ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }} and cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}))'
+  when: ((zookeeper_hosts | length) == 0)
+
+- debug:
+    msg: 'Found {{ (zookeeper_hosts | length) }} ZooKeeper hosts using cluster type ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }}) and cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}))'
+
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == "Ubuntu"
+  tags:
+  - unbound
+
+- include_tasks: centos.yaml
+  when: ansible_distribution == "CentOS"
+  tags:
+  - unbound
+
+
+#  ____  _   _ ____  ____   _____        __
+# | __ )| | | |  _ \|  _ \ / _ \ \      / /
+# |  _ \| | | | |_) | |_) | | | \ \ /\ / /
+# | |_) | |_| |  _ <|  _ <| |_| |\ V  V /
+# |____/ \___/|_| \_\_| \_\\___/  \_/\_/
+- name: Install Burrow
+  block:
+  - debug:
+      msg: Check whether the Burrow {{ burrow_config.package_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/burrow-{{ burrow_config.package_version }}
+    register: burrow_installed_stat_result
+
+  - block:
+    - debug:
+        msg: Install the Burrow {{ burrow_config.package_version }} package
+
+    - name: Check whether the Burrow service exists
+      stat:
+        path: /lib/systemd/system/burrow.service
+      register: burrow_service_stat_result
+
+    - name: Stop the Burrow service
+      service:
+        name: burrow.service
+        state: stopped
+      when: burrow_service_stat_result.stat.exists == True
+      register: burrow_service_stopped
+
+    - name: Check whether the Burrow {{ burrow_config.package_version }} package has been downloaded
+      become: no
+      local_action: stat path=packages/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz
+      register: burrow_package_stat_result
+
+    - name: Download the Burrow {{ burrow_config.package_version }} package
+      become: no
+      local_action: get_url url='https://github.com/linkedin/Burrow/releases/download/v{{ burrow_config.package_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' dest='packages/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' checksum={{ burrow_config.package_checksum }}
+      when: (burrow_package_stat_result.stat.exists == False)
+
+    - name: Extract the burrow binary from the Burrow {{ burrow_config.package_version }} package
+      unarchive:
+        src: packages/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz
+        dest: /usr/bin
+        extra_opts:
+        - burrow
+        creates: /usr/bin/burrow
+
+    - name: Rename the burrow binary to include the version number
+      shell:
+        cmd: mv /usr/bin/burrow /usr/bin/burrow-{{ burrow_config.package_version }}
+
+    when: (burrow_installed_stat_result.stat.exists == False)
+
+- name: Add the {{ burrow_config.group }} group
+  group:
+    name: '{{ burrow_config.group }}'
+    gid: '{{ burrow_config.group_id }}'
+    state: present
+
+- name: Add the {{ burrow_config.user }} user
+  user:
+    name: '{{ burrow_config.user }}'
+    uid: '{{ burrow_config.user_id }}'
+    group: '{{ burrow_config.group }}'
+    create_home: no
+    shell: /usr/sbin/nologin
+    state: present
+
+- name: Create the /var/tmp/ansible/burrow directory
+  file:
+    path: /var/tmp/ansible/burrow
+    owner: root
+    group: root
+    mode: '0700'
+    state: directory
+
+- name: Create the {{ burrow_config.etc_directory }} directory
+  file:
+    path: '{{ burrow_config.etc_directory }}'
+    owner: '{{ burrow_config.user }}'
+    group: '{{ burrow_config.group }}'
+    mode: '0550'
+    state: directory
+
+- name: Create the {{ burrow_config.etc_directory }}/conf directory
+  file:
+    path: '{{ burrow_config.etc_directory }}/conf'
+    owner: '{{ burrow_config.user }}'
+    group: '{{ burrow_config.group }}'
+    mode: '0550'
+    state: directory
+
+- name: Create the {{ burrow_config.run_directory }} directory
+  file:
+    path: '{{ burrow_config.run_directory }}'
+    owner: '{{ burrow_config.user }}'
+    group: '{{ burrow_config.group }}'
+    mode: '0750'
+    state: directory
+
+- name: Setup the Burrow keystore and CA truststore
+  block:
+  - name: Create the {{ burrow_config.etc_directory }}/pki directory
+    file:
+      path: '{{ burrow_config.etc_directory }}/pki'
+      owner: '{{ burrow_config.user }}'
+      group: '{{ burrow_config.group }}'
+      mode: '0550'
+      state: directory
+
+  - name: Copy the Burrow CA certificate to the {{ burrow_config.etc_directory }}/pki directory
+    copy:
+      src: pki/{{ burrow_cluster_name }}/ca.crt
+      dest: '{{ burrow_config.etc_directory }}/pki/ca.crt'
+      owner: '{{ burrow_config.user }}'
+      group: '{{ burrow_config.group }}'
+      mode: '0440'
+    register: ca_certificate_copy_result
+
+  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/burrow directory
+    copy:
+      src: pki/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.key
+      dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
+      owner: '{{ burrow_config.user }}'
+      group: '{{ burrow_config.group }}'
+      mode: '0440'
+    register: burrow_private_key_copy_result
+
+  - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/burrow directory
+    copy:
+      src: pki/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.crt
+      dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt'
+      owner: '{{ burrow_config.user }}'
+      group: '{{ burrow_config.group }}'
+      mode: '0440'
+    register: burrow_certificate_copy_result
+
+# NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
+- name: Generate or retrieve the password for the Burrow user when using a Confluent ZooKeeper cluster
+  set_fact:
+    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/confluent/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+  when: (burrow_zookeeper_cluster_type == "confluent")
+
+# NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
+- name: Generate or retrieve the password for the Burrow user when using a Kafka ZooKeeper cluster
+  set_fact:
+    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/kafka/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+  when: (burrow_zookeeper_cluster_type == "kafka")
+
+- name: Create the {{ burrow_config.log_directory }} directory
+  file:
+    path: '{{ burrow_config.log_directory }}'
+    owner: '{{ burrow_config.user }}'
+    group: '{{ burrow_config.group }}'
+    mode: '0750'
+    state: directory
+
+- name: Generate the Burrow configuration
+  template:
+    src: burrow.yaml.j2
+    dest: /etc/burrow/conf/burrow.yaml
+    owner: '{{ burrow_config.user }}'
+    group: '{{ burrow_config.group }}'
+    mode: '0440'
+  register: burrow_configuration_template_result
+
+- name: Create the Burrow systemd unit
+  template:
+    src: burrow.service.j2
+    dest: /lib/systemd/system/burrow.service
+  register: burrow_systemd_unit_template_result
+
+- name: Restart the Burrow service
+  systemd:
+    name: burrow.service
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  when: ((burrow_configuration_template_result.changed == True) or (burrow_systemd_unit_template_result.changed == True))
+
+- name: Ensure that the Prometheus service is started
+  systemd:
+    name: burrow.service
+    state: started
+    enabled: yes
+
+
+

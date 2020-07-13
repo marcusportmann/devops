@@ -16,6 +16,9 @@ prometheus_defaults:
   node_exporter:
     port: 9100
 
+  burrow:
+    exporter_port: 9105
+
   confluent:
     kafka_mirrormaker:
       jmx_exporter_port: 9130

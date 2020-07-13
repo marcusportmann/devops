@@ -1,0 +1,31 @@
+---
+# file: roles/burrow/defaults/main.yaml
+
+burrow_defaults:
+  package_version: 1.3.4
+  package_checksum: sha256:9f89c053806dfd37e8568b3cfc5fd224d3e758825cf153c5b16539051cf67f2b
+
+  etc_directory: /etc/burrow
+  log_directory: /var/log/burrow
+  run_directory: /var/run/burrow
+
+  user: burrow
+  user_id: 318
+
+  group: burrow
+  group_id: 318
+
+  http_port: 9105
+
+  kafka_server:
+    username: burrow
+    secure_broker_port: 9093
+
+  zookeeper:
+    secure_client_port: 2182
+    username: burrow
+
+burrow_config: "{{ burrow_defaults | combine(burrow | default({})) }}"
+
+
+

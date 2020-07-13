@@ -257,9 +257,9 @@ Hosts in the config.yaml file are named according to one of the following naming
 
 Platform clusters in the config.yaml file, for example a particular Kafka cluster, are named according to the following naming convention:
 
-**platform_instance**_**environment***
+**platform_instance**_**environment**
 
-e.g. digital_dev, digital_prod, digital_dr, analytics_dev, analytics_uat_, etc.
+e.g. digital_dev, digital_prod, digital_dr, analytics_dev, analytics_uat_, event_bus_prod, etc.
 
 The benefit of this approach is that clusters associated with different environments can
 be referenced in the same file in order to connect them, e.g. production and DR clusters
