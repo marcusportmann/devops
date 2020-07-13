@@ -73,10 +73,16 @@
     dest: /var/lib/grafana/dashboards/zookeeper.json
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
-- name: Copy the kafka.json dashboard file
+- name: Copy the kafka-overview.json dashboard file
   template:
-    src: dashboards/kafka.json.j2
-    dest: /var/lib/grafana/dashboards/kafka.json
+    src: dashboards/kafka-overview.json.j2
+    dest: /var/lib/grafana/dashboards/kafka-overview.json
+  when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
+
+- name: Copy the kafka-producers-consumers.json dashboard file
+  template:
+    src: dashboards/kafka-producers-consumers.json.j2
+    dest: /var/lib/grafana/dashboards/kafka-producers-consumers.json
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Restart the grafana-server service

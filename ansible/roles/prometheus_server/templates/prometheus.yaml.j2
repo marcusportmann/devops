@@ -4,6 +4,28 @@ global:
 
 scrape_configs:
 
+
+#   ____  _   _ ____  ____   _____        __
+#  | __ )| | | |  _ \|  _ \ / _ \ \      / /
+#  |  _ \| | | | |_) | |_) | | | \ \ /\ / /
+#  | |_) | |_| |  _ <|  _ <| |_| |\ V  V /
+#  |____/ \___/|_| \_\_| \_\\___/  \_/\_/
+#
+{% if ('burrow' in groups) -%}
+{% set burrow_hosts = [] -%}
+{% for host in groups['burrow'] -%}
+  {% set _ = burrow_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.burrow.exporter_port)) -%}
+{% endfor -%}
+- job_name: burrow
+  static_configs:
+  - targets: [{{ burrow_hosts | join(',') }}]
+  relabel_configs:
+  - source_labels: [__address__]
+    regex: "([^:]+):\\d+"
+    target_label: node
+{% endif -%}
+
+
 #   _  __    _    _____ _  __    _
 #  | |/ /   / \  |  ___| |/ /   / \
 #  | ' /   / _ \ | |_  | ' /   / _ \
@@ -40,7 +62,6 @@ scrape_configs:
     regex: "([^:]+):\\d+"
     target_label: node
 {% endif %}
-
 
 
 {% if ('kafka_mirrormaker' in groups) %}
@@ -193,7 +214,6 @@ scrape_configs:
   - source_labels: [__meta_kubernetes_pod_node_name]
     action: replace
     target_label: instance
-
 {% endif %}
 
 
@@ -208,8 +228,6 @@ scrape_configs:
 {% for host in groups['monitored'] -%}
   {% set _ = monitored_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_config.node_exporter.port)) -%}
 {% endfor -%}
-{% endif -%}
-
 - job_name: nodes
   static_configs:
   - targets: [{{ monitored_hosts | join(',') }}]
@@ -217,6 +235,7 @@ scrape_configs:
   - source_labels: [__address__]
     regex: "([^:]+):\\d+"
     target_label: node
+{% endif -%}
 
 
 #   ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____
