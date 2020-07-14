@@ -22,24 +22,24 @@ spring:
 spring:
   profiles: kafka-digital
   kafka:
-    bootstrap-servers: kafka-zkkskb-digital-dev-01.local:9093
+    bootstrap-servers: kafka-zkks-digital-dev-01.local:9093
 
 ---
 spring:
   profiles: kafka-analytics
   kafka:
-    bootstrap-servers: kafka-zkkskb-analytics-dev-01.local:9093
+    bootstrap-servers: kafka-zkks-analytics-dev-01.local:9093
 
 ---
 spring:
   profiles: confluent-digital
   kafka:
-    bootstrap-servers: confluent-zkkskb-digital-dev-01.local:9093
+    bootstrap-servers: confluent-zkks-digital-dev-01.local:9093
 
 ---
 spring:
   profiles: confluent-analytics
   kafka:
-    bootstrap-servers: confluent-zkkskb-analytics-dev-01.local:9093
+    bootstrap-servers: confluent-zkks-analytics-dev-01.local:9093
 
 

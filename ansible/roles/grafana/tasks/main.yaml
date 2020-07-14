@@ -75,15 +75,15 @@
 
 - name: Copy the kafka-overview.json dashboard file
   template:
-    src: dashboards/kafka-overview.json.j2
-    dest: /var/lib/grafana/dashboards/kafka-overview.json
+    src: dashboards/kafka.json.j2
+    dest: /var/lib/grafana/dashboards/kafka.json
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Copy the kafka-producers-consumers.json dashboard file
   template:
     src: dashboards/kafka-producers-consumers.json.j2
     dest: /var/lib/grafana/dashboards/kafka-producers-consumers.json
-  when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
+  when: ((grafana_config.dashboards.kafka_producers_and_consumers.enabled) and (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups)))
 
 - name: Restart the grafana-server service
   systemd:

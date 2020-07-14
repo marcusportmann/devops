@@ -13,7 +13,7 @@ variables:
         hosts:
         - monitoring-dev.local
         # One of confluent, kafka, or standalone
-        zookeeper_cluster_type: kafka
+        zookeeper_cluster_type: confluent
         zookeeper_cluster_name: digital_dev
 
   confluent:
@@ -23,24 +23,24 @@ variables:
         kafka_mirrormaker_hosts:
         - confluent-mm-digital-dev-01.local
         kafka_server_hosts:
-        - confluent-zkkskb-digital-dev-01.local
+        - confluent-zkks-digital-dev-01.local
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
         schema_registry_hosts:
         - confluent-sr-digital-dev-01.local
         zookeeper_hosts:
-        - confluent-zkkskb-digital-dev-01.local
+        - confluent-zkks-digital-dev-01.local
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
       analytics_dev:
         kafka_server_hosts:
-        - confluent-zkkskb-analytics-dev-01.local
+        - confluent-zkks-analytics-dev-01.local
         - confluent-zkks-analytics-dev-02.local
         - confluent-zkks-analytics-dev-03.local
         schema_registry_hosts:
         - confluent-sr-analytics-dev-01.local
         zookeeper_hosts:
-        - confluent-zkkskb-analytics-dev-01.local
+        - confluent-zkks-analytics-dev-01.local
         - confluent-zkks-analytics-dev-02.local
         - confluent-zkks-analytics-dev-03.local
 
@@ -59,22 +59,22 @@ variables:
         kafka_mirrormaker_hosts:
         - kafka-mm-digital-dev-01.local
         kafka_server_hosts:
-        - kafka-zkkskb-digital-dev-01.local
+        - kafka-zkks-digital-dev-01.local
         - kafka-zkks-digital-dev-02.local
         - kafka-zkks-digital-dev-03.local
         zookeeper_hosts:
-        - kafka-zkkskb-digital-dev-01.local
+        - kafka-zkks-digital-dev-01.local
         - kafka-zkks-digital-dev-02.local
         - kafka-zkks-digital-dev-03.local
       analytics_dev:
         kafka_server_hosts:
-        - kafka-zkkskb-analytics-dev-01.local
+        - kafka-zkks-analytics-dev-01.local
         - kafka-zkks-analytics-dev-02.local
         - kafka-zkks-analytics-dev-03.local
         schema_registry_hosts:
         - kafka-sr-analytics-dev-01.local
         zookeeper_hosts:
-        - kafka-zkkskb-analytics-dev-01.local
+        - kafka-zkks-analytics-dev-01.local
         - kafka-zkks-analytics-dev-02.local
         - kafka-zkks-analytics-dev-03.local
 
@@ -174,31 +174,31 @@ profiles:
 
 - name: confluent-multi-cluster-minimal
   hosts:
-  - confluent-zkkskb-digital-dev-01.local
+  - confluent-zkks-digital-dev-01.local
   - confluent-sr-digital-dev-01.local
-  - confluent-zkkskb-analytics-dev-01.local
+  - confluent-zkks-analytics-dev-01.local
   - confluent-sr-analytics-dev-01.local
   - confluent-mm-digital-dev-01.local
   - monitoring-dev.local
 
 - name: confluent-multi-cluster-full
   hosts:
-  - confluent-zkkskb-digital-dev-01.local
+  - confluent-zkks-digital-dev-01.local
   - confluent-zkks-digital-dev-02.local
   - confluent-zkks-digital-dev-03.local
-  - confluent-zkkskb-analytics-dev-01.local
+  - confluent-zkks-analytics-dev-01.local
   - confluent-zkks-analytics-dev-02.local
   - confluent-zkks-analytics-dev-03.local
 
 - name: confluent-single-cluster-minimal
   hosts:
-  - confluent-zkkskb-digital-dev-01.local
+  - confluent-zkks-digital-dev-01.local
   - confluent-sr-digital-dev-01.local
   - monitoring-dev.local
 
 - name: confluent-single-cluster-full
   hosts:
-  - confluent-zkkskb-digital-dev-01.local
+  - confluent-zkks-digital-dev-01.local
   - confluent-zkks-digital-dev-02.local
   - confluent-zkks-digital-dev-03.local
   - confluent-sr-digital-dev-01.local
@@ -252,28 +252,28 @@ profiles:
 
 - name: kafka-multi-cluster-minimal
   hosts:
-  - kafka-zkkskb-digital-dev-01.local
-  - kafka-zkkskb-analytics-dev-01.local
+  - kafka-zkks-digital-dev-01.local
+  - kafka-zkks-analytics-dev-01.local
   - kafka-mm-digital-dev-01.local
   - monitoring-dev.local
 
 - name: kafka-multi-cluster-full
   hosts:
-  - kafka-zkkskb-digital-dev-01.local
+  - kafka-zkks-digital-dev-01.local
   - kafka-zkks-digital-dev-02.local
   - kafka-zkks-digital-dev-03.local
-  - kafka-zkkskb-analytics-dev-01.local
+  - kafka-zkks-analytics-dev-01.local
   - kafka-zkks-analytics-dev-02.local
   - kafka-zkks-analytics-dev-03.local
 
 - name: kafka-single-cluster-minimal
   hosts:
-  - kafka-zkkskb-digital-dev-01.local
+  - kafka-zkks-digital-dev-01.local
   - monitoring-dev.local
 
 - name: kafka-single-cluster-full
   hosts:
-  - kafka-zkkskb-digital-dev-01.local
+  - kafka-zkks-digital-dev-01.local
   - kafka-zkks-digital-dev-02.local
   - kafka-zkks-digital-dev-03.local
   - monitoring-dev.local
@@ -329,7 +329,7 @@ hosts:
 # | |_| | |___  \ V /   |  _  | |_| |___) || |  ___) |
 # |____/|_____|  \_/    |_| |_|\___/|____/ |_| |____/
 #
-- name:               confluent-zkkskb-digital-dev-01.local
+- name:               confluent-zkks-digital-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
@@ -337,7 +337,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        10240
-    fqdn:             confluent-zkkskb-digital-dev-01.local
+    fqdn:             confluent-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.75/24
     gateway:          192.168.184.2
@@ -346,7 +346,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        10240
-    fqdn:             confluent-zkkskb-digital-dev-01.local
+    fqdn:             confluent-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.75/24
     gateway:          192.168.184.2
@@ -355,7 +355,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-zkkskb-digital-dev-01.local
+    fqdn:             confluent-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.0.75/24
     gateway:          192.168.0.1
@@ -483,7 +483,7 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               confluent-zkkskb-analytics-dev-01.local
+- name:               confluent-zkks-analytics-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
@@ -491,7 +491,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        10240
-    fqdn:             confluent-zkkskb-analytics-dev-01.local
+    fqdn:             confluent-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.80/24
     gateway:          192.168.184.2
@@ -500,7 +500,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        10240
-    fqdn:             confluent-zkkskb-analytics-dev-01.local
+    fqdn:             confluent-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.80/24
     gateway:          192.168.184.2
@@ -509,7 +509,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-zkkskb-analytics-dev-01.local
+    fqdn:             confluent-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.0.80/24
     gateway:          192.168.0.1
@@ -909,7 +909,7 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               kafka-zkkskb-digital-dev-01.local
+- name:               kafka-zkks-digital-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
@@ -917,7 +917,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-zkkskb-digital-dev-01.local
+    fqdn:             kafka-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.65/24
     gateway:          192.168.184.2
@@ -926,7 +926,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-zkkskb-digital-dev-01.local
+    fqdn:             kafka-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.65/24
     gateway:          192.168.184.2
@@ -935,7 +935,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             kafka-zkkskb-digital-dev-01.local
+    fqdn:             kafka-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.0.65/24
     gateway:          192.168.0.1
@@ -1069,7 +1069,7 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               kafka-zkkskb-analytics-dev-01.local
+- name:               kafka-zkks-analytics-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
@@ -1077,7 +1077,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-zkkskb-analytics-dev-01.local
+    fqdn:             kafka-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.70/24
     gateway:          192.168.184.2
@@ -1086,7 +1086,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             kafka-zkkskb-analytics-dev-01.local
+    fqdn:             kafka-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.70/24
     gateway:          192.168.184.2
@@ -1095,7 +1095,7 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             kafka-zkkskb-analytics-dev-01.local
+    fqdn:             kafka-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.0.70/24
     gateway:          192.168.0.1

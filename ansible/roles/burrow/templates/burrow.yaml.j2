@@ -28,7 +28,7 @@ client-profile:
 {% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
   {{ confluent_cluster_name }}:
     kafka-version: 2.5.0
-    client-id: {{ 'burrow-' + confluent_cluster_name.replace('_', '-') }}
+    client-id: {{ ('burrow-' + confluent_cluster_name.replace('_', '-')) }}
     tls: {{ confluent_cluster_name }}
     sasl: {{ confluent_cluster_name }}
 {% endif %}
@@ -39,7 +39,7 @@ client-profile:
 {% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
   {{ kafka_cluster_name }}:
     kafka-version: 2.5.0
-    client-id: {{ 'burrow-' + kafka_cluster_name.replace('_', '-') }}
+    client-id: {{ ('burrow-' + kafka_cluster_name.replace('_', '-')) }}
     tls: {{ kafka_cluster_name }}
     sasl: {{ kafka_cluster_name }}
 {% endif %}

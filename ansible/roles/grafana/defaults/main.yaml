@@ -17,4 +17,8 @@ grafana_defaults:
 
   pie_chart_panel_plugin_version: 1.5.0
 
+  dashboards:
+    kafka_producers_and_consumers:
+      enabled: false
+
 grafana_config: "{{ grafana_defaults | combine(grafana | default({})) }}"
