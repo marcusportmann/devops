@@ -52,6 +52,18 @@ variables:
           etcd-digital-dev-02.local
           etcd-digital-dev-03.local
 
+  k8s:
+    clusters:
+      digital_dev:
+        master_hosts:
+        - k8s-m-digital-dev-01.local
+        - k8s-m-digital-dev-02.local
+        - k8s-m-digital-dev-03.local
+        worker_hosts:
+        - k8s-w-digital-dev-01.local
+        - k8s-w-digital-dev-02.local
+        - k8s-w-digital-dev-03.local
+
   kafka:
     clusters:
       digital_dev:

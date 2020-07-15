@@ -98,14 +98,14 @@ cp ca.p12 ../demos/kafka/demo-consumer/pki/ca.p12
 
 
 # Generate the Confluent hosts private keys and certificates
-cfssl genkey confluent-zkkskb-digital-dev-01-csr.json | cfssljson -bare confluent-zkkskb-digital-dev-01
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkkskb-digital-dev-01.csr | cfssljson -bare confluent-zkkskb-digital-dev-01
-mv -f confluent-zkkskb-digital-dev-01-key.pem confluent-zkkskb-digital-dev-01.key
-mv -f confluent-zkkskb-digital-dev-01.pem confluent-zkkskb-digital-dev-01.crt
-cp confluent-zkkskb-digital-dev-01.key ../ansible/roles/confluent_kafka_server/files/pki/digital_dev
-cp confluent-zkkskb-digital-dev-01.crt ../ansible/roles/confluent_kafka_server/files/pki/digital_dev
-cp confluent-zkkskb-digital-dev-01.key ../ansible/roles/confluent_zookeeper/files/pki/digital_dev
-cp confluent-zkkskb-digital-dev-01.crt ../ansible/roles/confluent_zookeeper/files/pki/digital_dev
+cfssl genkey confluent-zkks-digital-dev-01-csr.json | cfssljson -bare confluent-zkks-digital-dev-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkks-digital-dev-01.csr | cfssljson -bare confluent-zkks-digital-dev-01
+mv -f confluent-zkks-digital-dev-01-key.pem confluent-zkks-digital-dev-01.key
+mv -f confluent-zkks-digital-dev-01.pem confluent-zkks-digital-dev-01.crt
+cp confluent-zkks-digital-dev-01.key ../ansible/roles/confluent_kafka_server/files/pki/digital_dev
+cp confluent-zkks-digital-dev-01.crt ../ansible/roles/confluent_kafka_server/files/pki/digital_dev
+cp confluent-zkks-digital-dev-01.key ../ansible/roles/confluent_zookeeper/files/pki/digital_dev
+cp confluent-zkks-digital-dev-01.crt ../ansible/roles/confluent_zookeeper/files/pki/digital_dev
 
 cfssl genkey confluent-zkks-digital-dev-02-csr.json | cfssljson -bare confluent-zkks-digital-dev-02
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkks-digital-dev-02.csr | cfssljson -bare confluent-zkks-digital-dev-02
@@ -139,14 +139,14 @@ mv -f confluent-mm-digital-dev-01.pem confluent-mm-digital-dev-01.crt
 cp confluent-mm-digital-dev-01.key ../ansible/roles/confluent_kafka_mirrormaker/files/pki/digital_dev
 cp confluent-mm-digital-dev-01.crt ../ansible/roles/confluent_kafka_mirrormaker/files/pki/digital_dev
 
-cfssl genkey confluent-zkkskb-analytics-dev-01-csr.json | cfssljson -bare confluent-zkkskb-analytics-dev-01
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkkskb-analytics-dev-01.csr | cfssljson -bare confluent-zkkskb-analytics-dev-01
-mv -f confluent-zkkskb-analytics-dev-01-key.pem confluent-zkkskb-analytics-dev-01.key
-mv -f confluent-zkkskb-analytics-dev-01.pem confluent-zkkskb-analytics-dev-01.crt
-cp confluent-zkkskb-analytics-dev-01.key ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
-cp confluent-zkkskb-analytics-dev-01.crt ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
-cp confluent-zkkskb-analytics-dev-01.key ../ansible/roles/confluent_zookeeper/files/pki/analytics_dev
-cp confluent-zkkskb-analytics-dev-01.crt ../ansible/roles/confluent_zookeeper/files/pki/analytics_dev
+cfssl genkey confluent-zkks-analytics-dev-01-csr.json | cfssljson -bare confluent-zkks-analytics-dev-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkks-analytics-dev-01.csr | cfssljson -bare confluent-zkks-analytics-dev-01
+mv -f confluent-zkks-analytics-dev-01-key.pem confluent-zkks-analytics-dev-01.key
+mv -f confluent-zkks-analytics-dev-01.pem confluent-zkks-analytics-dev-01.crt
+cp confluent-zkks-analytics-dev-01.key ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
+cp confluent-zkks-analytics-dev-01.crt ../ansible/roles/confluent_kafka_server/files/pki/analytics_dev
+cp confluent-zkks-analytics-dev-01.key ../ansible/roles/confluent_zookeeper/files/pki/analytics_dev
+cp confluent-zkks-analytics-dev-01.crt ../ansible/roles/confluent_zookeeper/files/pki/analytics_dev
 
 cfssl genkey confluent-zkks-analytics-dev-02-csr.json | cfssljson -bare confluent-zkks-analytics-dev-02
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zkks-analytics-dev-02.csr | cfssljson -bare confluent-zkks-analytics-dev-02
@@ -357,14 +357,14 @@ cp k8s-jaeger-digital-dev.crt ../ansible/roles/k8s_monitoring/files/pki/digital_
 
 
 # Generate the Confluent hosts private keys and certificates
-cfssl genkey kafka-zkkskb-digital-dev-01-csr.json | cfssljson -bare kafka-zkkskb-digital-dev-01
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkkskb-digital-dev-01.csr | cfssljson -bare kafka-zkkskb-digital-dev-01
-mv -f kafka-zkkskb-digital-dev-01-key.pem kafka-zkkskb-digital-dev-01.key
-mv -f kafka-zkkskb-digital-dev-01.pem kafka-zkkskb-digital-dev-01.crt
-cp kafka-zkkskb-digital-dev-01.key ../ansible/roles/kafka_server/files/pki/digital_dev
-cp kafka-zkkskb-digital-dev-01.crt ../ansible/roles/kafka_server/files/pki/digital_dev
-cp kafka-zkkskb-digital-dev-01.key ../ansible/roles/kafka_zookeeper/files/pki/digital_dev
-cp kafka-zkkskb-digital-dev-01.crt ../ansible/roles/kafka_zookeeper/files/pki/digital_dev
+cfssl genkey kafka-zkks-digital-dev-01-csr.json | cfssljson -bare kafka-zkks-digital-dev-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkks-digital-dev-01.csr | cfssljson -bare kafka-zkks-digital-dev-01
+mv -f kafka-zkks-digital-dev-01-key.pem kafka-zkks-digital-dev-01.key
+mv -f kafka-zkks-digital-dev-01.pem kafka-zkks-digital-dev-01.crt
+cp kafka-zkks-digital-dev-01.key ../ansible/roles/kafka_server/files/pki/digital_dev
+cp kafka-zkks-digital-dev-01.crt ../ansible/roles/kafka_server/files/pki/digital_dev
+cp kafka-zkks-digital-dev-01.key ../ansible/roles/kafka_zookeeper/files/pki/digital_dev
+cp kafka-zkks-digital-dev-01.crt ../ansible/roles/kafka_zookeeper/files/pki/digital_dev
 
 cfssl genkey kafka-zkks-digital-dev-02-csr.json | cfssljson -bare kafka-zkks-digital-dev-02
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkks-digital-dev-02.csr | cfssljson -bare kafka-zkks-digital-dev-02
@@ -391,14 +391,14 @@ mv -f kafka-mm-digital-dev-01.pem kafka-mm-digital-dev-01.crt
 cp kafka-mm-digital-dev-01.key ../ansible/roles/kafka_mirrormaker/files/pki/digital_dev
 cp kafka-mm-digital-dev-01.crt ../ansible/roles/kafka_mirrormaker/files/pki/digital_dev
 
-cfssl genkey kafka-zkkskb-analytics-dev-01-csr.json | cfssljson -bare kafka-zkkskb-analytics-dev-01
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkkskb-analytics-dev-01.csr | cfssljson -bare kafka-zkkskb-analytics-dev-01
-mv -f kafka-zkkskb-analytics-dev-01-key.pem kafka-zkkskb-analytics-dev-01.key
-mv -f kafka-zkkskb-analytics-dev-01.pem kafka-zkkskb-analytics-dev-01.crt
-cp kafka-zkkskb-analytics-dev-01.key ../ansible/roles/kafka_server/files/pki/analytics_dev
-cp kafka-zkkskb-analytics-dev-01.crt ../ansible/roles/kafka_server/files/pki/analytics_dev
-cp kafka-zkkskb-analytics-dev-01.key ../ansible/roles/kafka_zookeeper/files/pki/analytics_dev
-cp kafka-zkkskb-analytics-dev-01.crt ../ansible/roles/kafka_zookeeper/files/pki/analytics_dev
+cfssl genkey kafka-zkks-analytics-dev-01-csr.json | cfssljson -bare kafka-zkks-analytics-dev-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkks-analytics-dev-01.csr | cfssljson -bare kafka-zkks-analytics-dev-01
+mv -f kafka-zkks-analytics-dev-01-key.pem kafka-zkks-analytics-dev-01.key
+mv -f kafka-zkks-analytics-dev-01.pem kafka-zkks-analytics-dev-01.crt
+cp kafka-zkks-analytics-dev-01.key ../ansible/roles/kafka_server/files/pki/analytics_dev
+cp kafka-zkks-analytics-dev-01.crt ../ansible/roles/kafka_server/files/pki/analytics_dev
+cp kafka-zkks-analytics-dev-01.key ../ansible/roles/kafka_zookeeper/files/pki/analytics_dev
+cp kafka-zkks-analytics-dev-01.crt ../ansible/roles/kafka_zookeeper/files/pki/analytics_dev
 
 cfssl genkey kafka-zkks-analytics-dev-02-csr.json | cfssljson -bare kafka-zkks-analytics-dev-02
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server kafka-zkks-analytics-dev-02.csr | cfssljson -bare kafka-zkks-analytics-dev-02
