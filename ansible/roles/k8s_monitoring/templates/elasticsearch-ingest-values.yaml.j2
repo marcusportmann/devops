@@ -9,7 +9,7 @@ roles:
 
 masterService: "elasticsearch-master"
 
-{% if (k8s_monitoring_elasticsearch_cluster_type == 'minimal')  %}
+{% if (k8s_config.monitoring.elasticsearch.cluster_type == 'minimal')  %}
 replicas: 1
 
 esJavaOpts: "-Xmx320m -Xms320m"
@@ -41,7 +41,7 @@ sidecarResources:
 antiAffinity: "soft"    
 {% endif %}
 
-{% if (k8s_monitoring_elasticsearch_cluster_type == 'full')  %}
+{% if (k8s_config.monitoring.elasticsearch.cluster_type == 'full')  %}
 replicas: 2
 minimumMasterNodes: 2
 

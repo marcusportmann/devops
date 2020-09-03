@@ -10,7 +10,7 @@ Type=simple
 Restart=on-failure
 RestartForceExitStatus=SIGPIPE
 ExecStartPre=/bin/mkdir -p /run/topolvm
-ExecStart=/usr/bin/lvmd --volume-group={{ k8s_topolvm_volume_group }} --listen=/run/topolvm/lvmd.sock
+ExecStart=/usr/bin/lvmd --volume-group={{ k8s_config.storage.topolvm.volume_group }} --listen=/run/topolvm/lvmd.sock
 
 [Install]
 WantedBy=multi-user.target

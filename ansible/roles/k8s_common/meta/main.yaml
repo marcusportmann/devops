@@ -16,28 +16,8 @@ galaxy_info:
       - breezy
       - focal
   categories:
-  #- cloud
-  #- cloud:ec2
-  #- cloud:gce
-  #- cloud:rax
-  #- database
-  #- database:nosql
-  #- database:sql
-  #- development
-  #- monitoring
-  #- networking
-  #- packaging
-  #- system
-  #- web
   - platform
 
 # NOTE: The docker dependency overrides the default values for variables for the role to ensure a compatible version of Docker is installed
 dependencies:
-  - { role: docker, containerd_centos_package: containerd.io-1.2.13-3.1.el7.x86_64.rpm, containerd_centos_package_version: 1.2.13, docker_ce_centos_package: docker-ce-19.03.8-3.el7.x86_64.rpm, docker_ce_centos_package_version: 19.03.8, docker_ce_cli_centos_package: docker-ce-cli-19.03.8-3.el7.x86_64.rpm, docker_ce_cli_centos_package_version: 19.03.8, docker_ce_ubuntu_package_version: 5:19.03.6~3-0~ubuntu-bionic }
-
-
-
-
-
-
-
+  - { role: docker, docker: { centos: { containerd: { package: containerd.io-1.2.13-3.1.el7.x86_64.rpm, package_version: 1.2.13 }, docker_ce: { package: docker-ce-19.03.8-3.el7.x86_64.rpm, package_version: 19.03.8 }, docker_ce_cli: { package: docker-ce-cli-19.03.8-3.el7.x86_64.rpm, package_version: 19.03.8 } }, ubuntu: { docker_ce: { package_version: 5:19.03.6~3-0~ubuntu-bionic } } } }

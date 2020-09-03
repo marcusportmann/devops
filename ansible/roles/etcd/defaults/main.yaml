@@ -12,4 +12,4 @@ etcd_defaults:
   group: etdd
   group_id: 320
 
-etcd_config: "{{ etcd_defaults | combine(etcd | default({})) }}"
+etcd_config: "{{ etcd_defaults | combine(etcd | default({}), recursive=True) }}"

@@ -23,13 +23,13 @@
   block:
   - name: Copy the root CA certificate for the Kubernetes cluster to the /etc/pki/ca-trust/source/anchors directory
     copy:
-      src: pki/{{ k8s_cluster_name }}/ca.crt
+      src: pki/{{ k8s_config.cluster_name }}/ca.crt
       dest: /etc/pki/ca-trust/source/anchors/ca.crt
 
-  - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+  - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /etc/pki/ca-trust/source/anchors directory
     copy:
-      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
-      dest: /etc/pki/ca-trust/source/anchors/k8s-{{ k8s_cluster_name }}-ca.crt
+      src: pki/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
+      dest: /etc/pki/ca-trust/source/anchors/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
 
   - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
     shell:
@@ -186,7 +186,7 @@
       state: enabled
       immediate: yes
 
-  when: (k8s_cni_provider == 'weave')
+  when: (k8s_config.cni_provider == 'weave')
 
 
 #  ____  _   _ ____  ____   ___  ____ _____ ___ _   _  ____   ____   _    ____ _  __    _    ____ _____ ____
@@ -233,12 +233,12 @@
 
 - name: Install the kubectl package
   block:
-  - name: Install the kubectl package ({{ k8s_centos_package_version }})
+  - name: Install the kubectl package ({{ k8s_config.centos_package_version }})
     yum:
-      name: kubectl-{{k8s_centos_package_version}}*
+      name: kubectl-{{k8s_config.centos_package_version}}*
       state: present
 
-  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_centos_package_version))
+  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.centos_package_version))
 
 - name: Retrieve the version of the installed kubelet package
   debug:
@@ -247,12 +247,12 @@
 
 - name: Install the kubelet package
   block:
-  - name: Install the kubelet package ({{ k8s_centos_package_version }})
+  - name: Install the kubelet package ({{ k8s_config.centos_package_version }})
     yum:
-      name: kubelet-{{k8s_centos_package_version}}*
+      name: kubelet-{{k8s_config.centos_package_version}}*
       state: present
 
-  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_centos_package_version))
+  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.centos_package_version))
 
 - name: Retrieve the version of the installed kubeadm package
   debug:
@@ -261,12 +261,12 @@
 
 - name: Install the kubeadm package
   block:
-  - name: Install the kubeadm package ({{ k8s_centos_package_version }})
+  - name: Install the kubeadm package ({{ k8s_config.centos_package_version }})
     yum:
-      name: kubeadm-{{k8s_centos_package_version}}*
+      name: kubeadm-{{k8s_config.centos_package_version}}*
       state: present
 
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_centos_package_version))
+  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.centos_package_version))
 
 
 #  _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____    ______   ______   ____ _____ _       ____  _____ _____ _____ ___ _   _  ____ ____

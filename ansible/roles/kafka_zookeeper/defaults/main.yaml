@@ -51,4 +51,4 @@ kafka_defaults:
       enabled: true
       port: 9150
 
-kafka_config: "{{ kafka_defaults | combine(kafka | default({})) }}"
+kafka_config: "{{ kafka_defaults | combine(kafka | default({}), recursive=True) }}"

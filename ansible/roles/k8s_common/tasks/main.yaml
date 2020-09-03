@@ -26,16 +26,16 @@
 #
 - name: Add the k8s-admin group
   group:
-    name: k8s-admin
-    gid: '{{ k8s_k8s_admin_group_id}}'
+    name: '{{ k8s_config.admin_group}}'
+    gid: '{{ k8s_config.admin_group_id}}'
     state: present
 
 - name: Add the k8s-admin user with a specific uid and a primary group of 'k8s-admin'
   user:
-    name: k8s-admin
+    name: '{{ k8s_config.admin_user }}'
     comment: Kubernetes Administrator
-    uid: '{{ k8s_k8s_admin_user_id }}'
-    group: k8s-admin
+    uid: '{{ k8s_config.admin_user_id }}'
+    group: '{{ k8s_config.admin_group}}'
     groups:
     - k8s-admin
     - docker
@@ -60,7 +60,7 @@
 - name: Install Helm
   block:
   - debug:
-      msg: Check whether the helm {{ k8s_helm_version }} package has been installed
+      msg: Check whether the helm {{ k8s_config.helm_version }} package has been installed
 
   - stat:
       path: /usr/bin/helm
@@ -81,16 +81,16 @@
 
   - block:
     - debug:
-        msg: Install the helm {{ k8s_helm_version }} package
+        msg: Install the helm {{ k8s_config.helm_version }} package
 
-    - name: Check whether the helm {{ k8s_helm_version }} package has been downloaded
+    - name: Check whether the helm {{ k8s_config.helm_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz
       register: helm_package_stat_result
 
-    - name: Download the helm {{ k8s_helm_version }} package
+    - name: Download the helm {{ k8s_config.helm_version }} package
       become: no
-      local_action: get_url url='https://get.helm.sh/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz' dest='packages/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz' checksum={{ k8s_helm_package_checksum }}
+      local_action: get_url url='https://get.helm.sh/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' dest='packages/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.helm_package_checksum }}
       when: (helm_package_stat_result.stat.exists == False)
 
     - name: Remove the existing helm binary
@@ -98,16 +98,16 @@
         path: /usr/bin/helm
         state: absent
 
-    - name: Extract the helm binary from the helm {{ k8s_helm_version }} package
+    - name: Extract the helm binary from the helm {{ k8s_config.helm_version }} package
       unarchive:
-        src: packages/helm-v{{ k8s_helm_version }}-linux-amd64.tar.gz
+        src: packages/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz
         dest: /usr/bin
         extra_opts:
         - --strip-components=1
         - linux-amd64/helm
         creates: /usr/bin/helm
 
-    when: (helm_installed_version != k8s_helm_version)
+    when: (helm_installed_version != k8s_config.helm_version)
 
 
 #  _   _ _____ _     __  __   ____  _____ ____   ___  ____
@@ -150,4 +150,4 @@
         cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
       when: helm_jaegertracing_repo_added_output.stdout == '0'
 
-    when: ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == true))
+    when: ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == true))

@@ -15,27 +15,27 @@
 
 - name: Install the containerd package
   block:
-  - name: Check whether the {{ containerd_centos_package }} package has been downloaded
+  - name: Check whether the {{ docker_config.centos.containerd.package }} package has been downloaded
     become: no
-    local_action: stat path=packages/{{ containerd_centos_package }}
+    local_action: stat path=packages/{{ docker_config.centos.containerd.package }}
     register: containerd_package_stat_result
 
-  - name: Download the {{ containerd_centos_package }} package
+  - name: Download the {{ docker_config.centos.containerd.package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ containerd_centos_package }}' dest='packages/{{ containerd_centos_package }}'
+    local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ docker_config.centos.containerd.package }}' dest='packages/{{ docker_config.centos.containerd.package }}'
     when: (containerd_package_stat_result.stat.exists == False)
 
-  - name: Copy the {{ containerd_centos_package }} package
+  - name: Copy the {{ docker_config.centos.containerd.package }} package
     copy:
-      src: packages/{{ containerd_centos_package }}
-      dest: /var/tmp/ansible/{{ containerd_centos_package }}
+      src: packages/{{ docker_config.centos.containerd.package }}
+      dest: /var/tmp/ansible/{{ docker_config.centos.containerd.package }}
 
-  - name: Install the {{ containerd_centos_package }} package
+  - name: Install the {{ docker_config.centos.containerd.package }} package
     yum:
-      name: /var/tmp/ansible/{{ containerd_centos_package }}
+      name: /var/tmp/ansible/{{ docker_config.centos.containerd.package }}
       state: present
 
-  when: (('containerd.io' not in ansible_facts.packages) or (ansible_facts.packages['containerd.io'][0].version != containerd_centos_package_version))
+  when: (('containerd.io' not in ansible_facts.packages) or (ansible_facts.packages['containerd.io'][0].version != docker_config.centos.containerd.package_version))
 
 
 - name: Retrieve the version of the installed docker-ce-cli package
@@ -45,27 +45,27 @@
 
 - name: Install the docker-ce-cli package
   block:
-  - name: Check whether the {{ docker_ce_cli_centos_package }} package has been downloaded
+  - name: Check whether the {{ docker_config.centos.docker_ce_cli.package }} package has been downloaded
     become: no
-    local_action: stat path=packages/{{ docker_ce_cli_centos_package }}
+    local_action: stat path=packages/{{ docker_config.centos.docker_ce_cli.package }}
     register: docker_ce_cli_package_stat_result
 
-  - name: Download the {{ docker_ce_cli_centos_package }} package
+  - name: Download the {{ docker_config.centos.docker_ce_cli.package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ docker_ce_cli_centos_package }}' dest='packages/{{ docker_ce_cli_centos_package }}'
+    local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ docker_config.centos.docker_ce_cli.package }}' dest='packages/{{ docker_config.centos.docker_ce_cli.package }}'
     when: (docker_ce_cli_package_stat_result.stat.exists == False)
 
-  - name: Copy the {{ docker_ce_cli_centos_package }} package
+  - name: Copy the {{ docker_config.centos.docker_ce_cli.package }} package
     copy:
-      src: packages/{{ docker_ce_cli_centos_package }}
-      dest: /var/tmp/ansible/{{ docker_ce_cli_centos_package }}
+      src: packages/{{ docker_config.centos.docker_ce_cli.package }}
+      dest: /var/tmp/ansible/{{ docker_config.centos.docker_ce_cli.package }}
 
-  - name: Install the {{ docker_ce_cli_centos_package }} package
+  - name: Install the {{ docker_config.centos.docker_ce_cli.package }} package
     yum:
-      name: /var/tmp/ansible/{{ docker_ce_cli_centos_package }}
+      name: /var/tmp/ansible/{{ docker_config.centos.docker_ce_cli.package }}
       state: present
 
-  when: (('docker-ce-cli' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-cli'][0].version != docker_ce_cli_centos_package_version))
+  when: (('docker-ce-cli' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-cli'][0].version != docker_config.centos.docker_ce_cli.package_version))
 
 
 - name: Retrieve the version of the installed docker-ce package
@@ -75,24 +75,24 @@
 
 - name: Install the docker-ce package
   block:
-  - name: Check whether the {{ docker_ce_centos_package }} package has been downloaded
+  - name: Check whether the {{ docker_config.centos.docker_ce.package }} package has been downloaded
     become: no
-    local_action: stat path=packages/{{ docker_ce_centos_package }}
+    local_action: stat path=packages/{{ docker_config.centos.docker_ce.package }}
     register: docker_ce_package_stat_result
 
-  - name: Download the {{ docker_ce_centos_package }} package
+  - name: Download the {{ docker_config.centos.docker_ce.package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ docker_ce_centos_package }}' dest='packages/{{ docker_ce_centos_package }}'
+    local_action: get_url url='https://download.docker.com/linux/centos/7/x86_64/stable/Packages/{{ docker_config.centos.docker_ce.package }}' dest='packages/{{ docker_config.centos.docker_ce.package }}'
     when: (docker_ce_package_stat_result.stat.exists == False)
 
-  - name: Copy the {{ docker_ce_centos_package }} package
+  - name: Copy the {{ docker_config.centos.docker_ce.package }} package
     copy:
-      src: packages/{{ docker_ce_centos_package }}
-      dest: /var/tmp/ansible/{{ docker_ce_centos_package }}
+      src: packages/{{ docker_config.centos.docker_ce.package }}
+      dest: /var/tmp/ansible/{{ docker_config.centos.docker_ce.package }}
 
-  - name: Install the {{ docker_ce_centos_package }} package
+  - name: Install the {{ docker_config.centos.docker_ce.package }} package
     yum:
-      name: /var/tmp/ansible/{{ docker_ce_centos_package }}
+      name: /var/tmp/ansible/{{ docker_config.centos.docker_ce.package }}
       state: present
 
   - name: Create the /etc/docker directory
@@ -118,5 +118,5 @@
       state: started
       enabled: yes
 
-  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_centos_package_version))
+  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_config.centos.docker_ce.package_version))
 

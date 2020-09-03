@@ -1,25 +1,39 @@
 ---
 # file: roles/k8s_monitoring/tasks/main.yaml
 
-k8s_monitoring_enabled: false
+k8s_defaults:
+  monitoring:
+    enabled: false
 
-k8s_monitoring_elasticsearch_cluster_type: standalone
-k8s_monitoring_elasticsearch_enabled: true
-k8s_monitoring_elasticsearch_helm_chart_version: 7.7.1
-k8s_monitoring_elasticsearch_persistent_volume_size: 10Gi
-k8s_monitoring_elasticsearch_persistent_volume_storage_class_name: default-local-storage
+    elasticsearch:
+      cluster_type: standalone
+      enabled: true
+      helm_chart_version: 7.8.0
+      persistent_volume_size: 10Gi
+      persistent_volume_storage_class_name: default-local-storage
 
-k8s_monitoring_grafana_enabled: true
-k8s_monitoring_grafana_helm_chart_version: 5.1.4
+    grafana:
+      enabled: true
+      helm_chart_version: 5.4.1
 
-k8s_monitoring_jaeger_enabled: true
-k8s_monitoring_jaeger_helm_chart_version: 0.32.0
+    jaeger:
+      enabled: true
+      helm_chart_version: 0.33.0
 
-k8s_monitoring_kibana_enabled: true
-k8s_monitoring_kibana_helm_chart_version: 7.7.1
+    kibana:
+      enabled: true
+      helm_chart_version: 7.8.0
 
-k8s_monitoring_prometheus_enabled: true
-k8s_monitoring_prometheus_helm_chart_version: 11.4.0
-k8s_monitoring_prometheus_persistent_volume_storage_class_name: default-local-storage
-k8s_monitoring_prometheus_alert_manager_persistent_volume_size: 2Gi
-k8s_monitoring_prometheus_server_persistent_volume_size: 10Gi
+    prometheus:
+      enabled: true
+      helm_chart_version: 11.7.0
+
+      alert_manager:
+        persistent_volume_storage_class_name: default-local-storage
+        persistent_volume_size: 2Gi
+
+      server:
+        persistent_volume_storage_class_name: default-local-storage
+        persistent_volume_size: 10Gi
+
+k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"

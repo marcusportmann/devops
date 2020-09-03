@@ -9,4 +9,4 @@ prometheus_jmx_exporter:
   enabled: true
   package_version: 0.13.0
 
-confluent_config: "{{ confluent_defaults | combine(confluent | default({})) }}"
+confluent_config: "{{ confluent_defaults | combine(confluent | default({}), recursive=True) }}"

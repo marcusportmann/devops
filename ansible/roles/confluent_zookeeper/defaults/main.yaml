@@ -51,4 +51,4 @@ confluent_defaults:
       enabled: true
       port: 9150
 
-confluent_config: "{{ confluent_defaults | combine(confluent | default({})) }}"
+confluent_config: "{{ confluent_defaults | combine(confluent | default({}), recursive=True) }}"

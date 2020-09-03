@@ -1,10 +1,15 @@
 ---
 # file: roles/k8s_storage/defaults/main.yaml
 
-k8s_longhorn_enabled: false
-k8s_longhorn_helm_chart_version: 1.0.0
-k8s_topolvm_enabled: false
-k8s_topolvm_lvmd_version: 0.4.7
-k8s_topolvm_version: 0.4.7
-k8s_topolvm_volume_group: system
+k8s_defaults:
+  storage:
+    longhorn:
+      enabled: false
+      helm_chart_version: 1.0.0
+    topolvm:
+      enabled: false
+      lvmd_version: 0.4.7
+      version: 0.4.7
+      volume_group: system
 
+k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"

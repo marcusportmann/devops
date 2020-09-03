@@ -37,13 +37,13 @@
     command:
       cmd: apt-mark unhold docker-ce docker-ce-cli
 
-  - name: Install the docker-ce and docker-ce-cli packages ({{ docker_ce_ubuntu_package_version }})
+  - name: Install the docker-ce and docker-ce-cli packages ({{ docker_config.ubuntu.docker_ce.package_version }})
     apt:
       state: present
       policy_rc_d: 101
       name:
-       - docker-ce={{ docker_ce_ubuntu_package_version }}
-       - docker-ce-cli={{ docker_ce_ubuntu_package_version }}
+       - docker-ce={{ docker_config.ubuntu.docker_ce.package_version }}
+       - docker-ce-cli={{ docker_config.ubuntu.docker_ce.package_version }}
 
   - name: Lock the version of the docker-ce and docker-ce-cli packages
     command:
@@ -72,6 +72,6 @@
       state: started
       enabled: yes
 
-  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_ubuntu_package_version))
+  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_config.ubuntu.docker_ce.package_version))
 
 

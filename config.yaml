@@ -13,7 +13,7 @@ variables:
         hosts:
         - monitoring-dev.local
         # One of confluent, kafka, or standalone
-        zookeeper_cluster_type: confluent
+        zookeeper_cluster_type: kafka
         zookeeper_cluster_name: digital_dev
 
   confluent:
@@ -32,6 +32,7 @@ variables:
         - confluent-zkks-digital-dev-01.local
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
+
       analytics_dev:
         kafka_server_hosts:
         - confluent-zkks-analytics-dev-01.local
@@ -53,16 +54,33 @@ variables:
           etcd-digital-dev-03.local
 
   k8s:
-    clusters:
-      digital_dev:
-        master_hosts:
-        - k8s-m-digital-dev-01.local
-        - k8s-m-digital-dev-02.local
-        - k8s-m-digital-dev-03.local
-        worker_hosts:
-        - k8s-w-digital-dev-01.local
-        - k8s-w-digital-dev-02.local
-        - k8s-w-digital-dev-03.local
+    cluster_name: digital_dev
+    cluster_domain: digital-dev.internal
+    # control_plane_endpoint: k8s-lb-digital-dev.local
+    # pod_subnet: 10.255.0.0/16
+    # service_subnet: 10.254.0.0/16
+    istio:
+      enabled: true
+      demo_configuration_enabled: false
+    monitoring:
+      enabled: true
+      elasticsearch:
+        cluster_type: standalone
+        persistent_volume_size: 10Gi
+        persistent_volume_storage_class_name: default-local-storage
+      prometheus:
+        alert_manager:
+          persistent_volume_storage_class_name: default-local-storage
+          persistent_volume_size: 2Gi
+        server:
+          persistent_volume_storage_class_name: default-local-storage
+          persistent_volume_size: 10Gi
+    storage:
+      longhorn:
+        enabled: true
+      topolvm:
+        enabled: true
+        volume_group: system
 
   kafka:
     clusters:
@@ -78,6 +96,7 @@ variables:
         - kafka-zkks-digital-dev-01.local
         - kafka-zkks-digital-dev-02.local
         - kafka-zkks-digital-dev-03.local
+
       analytics_dev:
         kafka_server_hosts:
         - kafka-zkks-analytics-dev-01.local
@@ -102,16 +121,6 @@ variables:
 
 
 xxx:
-# ----------------------------------------------------------------------------------------
-# Mandatory Configuration
-# ----------------------------------------------------------------------------------------
-
-- name: k8s_cluster_domain
-  values:
-  - local-dev.internal
-- name: k8s_cluster_name
-  values:
-  - local-dev
 
 
 # ----------------------------------------------------------------------------------------
@@ -119,13 +128,7 @@ xxx:
 # ----------------------------------------------------------------------------------------
 #- name: k8s_control_plane_endpoint
 #  values:
-#  - k8s-api-digital-dev.local
-#- name: k8s_pod_subnet
-#  values:
-#  - 10.255.0.0/16
-#- name: k8s_service_subnet
-#  values:
-#  - 10.254.0.0/16
+#  -
 
 #- name: k8s_operator_lifecycle_manager_enabled
 #  values:
@@ -134,34 +137,8 @@ xxx:
   values:
   - true
 
-- name: k8s_longhorn_enabled
-  values:
-  - false
-- name: k8s_topolvm_enabled
-  values:
-  - false
 
-- name: k8s_monitoring_enabled
-  values:
-  - false
-- name: k8s_monitoring_elasticsearch_cluster_type
-  values:
-  - standalone
-- name: k8s_monitoring_elasticsearch_persistent_volume_size
-  values:
-  - 10Gi
-- name: k8s_monitoring_elasticsearch_persistent_volume_storage_class_name
-  values:
-  - default-local-storage
-- name: k8s_monitoring_prometheus_persistent_volume_storage_class_name
-  values:
-  - default-local-storage
-- name: k8s_monitoring_prometheus_alert_manager_persistent_volume_size
-  values:
-  - 2Gi
-- name: k8s_monitoring_prometheus_server_persistent_volume_size
-  values:
-  - 10Gi
+
 
 - name: k8s_istio_enabled
   values:
@@ -183,6 +160,10 @@ xxx:
 # Kubernetes cluster, the hosts that suport a set of integrated development tools, etc.
 #
 profiles:
+
+- name: awx
+  hosts:
+  - awx.local
 
 - name: confluent-multi-cluster-minimal
   hosts:
@@ -233,20 +214,20 @@ profiles:
 
 - name: k8s-minimal
   hosts:
-  - k8s-api-digital-dev.local
+  - k8s-lb-digital-dev.local
   - k8s-m-digital-dev-01.local
   - k8s-w-digital-dev-01.local
 
 - name: k8s-only-masters
   hosts:
-  - k8s-api-digital-dev.local
+  - k8s-lb-digital-dev.local
   - k8s-m-digital-dev-01.local
   - k8s-m-digital-dev-02.local
   - k8s-m-digital-dev-03.local
 
 - name: k8s-single-master
   hosts:
-  - k8s-api-digital-dev.local
+  - k8s-lb-digital-dev.local
   - k8s-m-digital-dev-01.local
   - k8s-w-digital-dev-01.local
   - k8s-w-digital-dev-02.local
@@ -254,7 +235,7 @@ profiles:
 
 - name: k8s-full
   hosts:
-  - k8s-api-digital-dev.local
+  - k8s-lb-digital-dev.local
   - k8s-m-digital-dev-01.local
   - k8s-m-digital-dev-02.local
   - k8s-m-digital-dev-03.local
@@ -341,6 +322,38 @@ hosts:
 # | |_| | |___  \ V /   |  _  | |_| |___) || |  ___) |
 # |____/|_____|  \_/    |_| |_|\___/|____/ |_| |____/
 #
+- name:               awx.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     awx
+  virtualbox:
+    cpus:             2
+    memory:           1024
+    data_disk:        10240
+    fqdn:             awx.local
+    domain:           local
+    ip:               192.168.184.70/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1024
+    data_disk:        10240
+    fqdn:             awx.local
+    domain:           local
+    ip:               192.168.184.70/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           1024
+    data_disk:        40960
+    fqdn:             awx.local
+    domain:           local
+    ip:               192.168.0.70/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
 - name:               confluent-zkks-digital-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
@@ -708,7 +721,7 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               k8s-api-digital-dev.local
+- name:               k8s-lb-digital-dev.local
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
@@ -716,7 +729,7 @@ hosts:
   virtualbox:
     cpus:             1
     memory:           512
-    fqdn:             k8s-api-digital-dev.local
+    fqdn:             k8s-lb-digital-dev.local
     domain:           local
     ip:               192.168.184.50/24
     gateway:          192.168.184.2
@@ -724,7 +737,7 @@ hosts:
   vmware_desktop:
     cpus:             1
     memory:           512
-    fqdn:             k8s-api-digital-dev.local
+    fqdn:             k8s-lb-digital-dev.local
     domain:           local
     ip:               192.168.184.50/24
     gateway:          192.168.184.2
@@ -732,7 +745,7 @@ hosts:
   vmware_esxi:
     cpus:             1
     memory:           1024
-    fqdn:             k8s-api-digital-dev.local
+    fqdn:             k8s-lb-digital-dev.local
     domain:           local
     ip:               192.168.0.50/24
     gateway:          192.168.0.1
@@ -835,7 +848,7 @@ hosts:
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
-    memory:           3072
+    memory:           4096
     fqdn:             k8s-w-digital-dev-01.local
     domain:           local
     ip:               192.168.184.54/24
@@ -843,7 +856,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           3072
+    memory:           4096
     fqdn:             k8s-w-digital-dev-01.local
     domain:           local
     ip:               192.168.184.54/24
@@ -866,7 +879,7 @@ hosts:
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
-    memory:           3072
+    memory:           4096
     fqdn:             k8s-w-digital-dev-02.local
     domain:           local
     ip:               192.168.184.55/24
@@ -874,7 +887,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           3072
+    memory:           4096
     fqdn:             k8s-w-digital-dev-02.local
     domain:           local
     ip:               192.168.184.55/24
@@ -897,7 +910,7 @@ hosts:
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
-    memory:           3072
+    memory:           4096
     fqdn:             k8s-w-digital-dev-03.local
     domain:           local
     ip:               192.168.184.56/24
@@ -905,7 +918,7 @@ hosts:
     dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
-    memory:           3072
+    memory:           4096
     fqdn:             k8s-w-digital-dev-03.local
     domain:           local
     ip:               192.168.184.56/24
@@ -1213,7 +1226,7 @@ hosts:
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,grafana,burrow
+  ansible_groups:     monitored,prometheus_server,grafana
   virtualbox:
     cpus:             1
     memory:           1024

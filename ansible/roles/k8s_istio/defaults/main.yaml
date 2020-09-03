@@ -1,14 +1,23 @@
 ---
 # file: roles/k8s_istio/defaults/main.yaml
 
-k8s_istio_enabled: false
-k8s_istio_grafana_enabled: false
-k8s_istio_kiali_enabled: true
-k8s_istio_package_checksum: sha256:9e6c7f5cc52663a4177d6f275c500b4de5c59f075384c7084e3a7412921c310d
-k8s_istio_prometheus_enabled: false
-k8s_istio_tracing_enabled: false
-k8s_istio_version: 1.6.2
-k8s_istioctl_package_checksum: sha256:b2f0eb8188ba35754809980a35ee0a4ab2622c2a644fbe8b96a32d24c6c0a870
-k8s_istio_demo_configuration_enabled: false
+k8s_defaults:
+  istio:
+    enabled: false
+    package_checksum: sha256:9e6c7f5cc52663a4177d6f275c500b4de5c59f075384c7084e3a7412921c310d
+    package_version: 1.6.2
 
+    istioctl_package_checksum: sha256:b2f0eb8188ba35754809980a35ee0a4ab2622c2a644fbe8b96a32d24c6c0a870
 
+    grafana:
+      enabled: false
+    kiali:
+      enabled: true
+    prometheus:
+      enabled: false
+    tracing:
+      enabled: false
+
+    demo_configuration_enabled: false
+
+k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"

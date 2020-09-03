@@ -6,7 +6,7 @@ spec:
   namespace: istio-system
 
   addonComponents:
-{% if ((k8s_istio_grafana_enabled is defined) and (k8s_istio_grafana_enabled != None) and (k8s_istio_grafana_enabled == True))  %}
+{% if ((k8s_config.istio.grafana.enabled is defined) and (k8s_config.istio.grafana.enabled != None) and (k8s_config.istio.grafana.enabled == True))  %}
     grafana:
       enabled: true
 {% else %}
@@ -15,7 +15,7 @@ spec:
 {% endif %}
     istiocoredns:
       enabled: false
-{% if ((k8s_istio_kiali_enabled is defined) and (k8s_istio_kiali_enabled != None) and (k8s_istio_kiali_enabled == True))  %}
+{% if ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == True))  %}
     kiali:
       enabled: true
 {% else %}
@@ -23,7 +23,7 @@ spec:
       enabled: false
 {% endif %}
 
-{% if ((k8s_istio_prometheus_enabled is defined) and (k8s_istio_prometheus_enabled != None) and (k8s_istio_prometheus_enabled == True))  %}
+{% if ((k8s_config.istio.prometheus.enabled is defined) and (k8s_config.istio.prometheus.enabled != None) and (k8s_config.istio.prometheus.enabled == True))  %}
     prometheus:
       enabled: true
 {% else %}
@@ -31,7 +31,7 @@ spec:
       enabled: false
 {% endif %}
 
-{% if ((k8s_istio_tracing_enabled is defined) and (k8s_istio_tracing_enabled != None) and (k8s_istio_tracing_enabled == True))  %}
+{% if ((k8s_config.istio.tracing.enabled is defined) and (k8s_config.istio.tracing.enabled != None) and (k8s_config.istio.tracing.enabled == True))  %}
     tracing:
       enabled: true
 {% else %}
@@ -81,25 +81,25 @@ spec:
           port: 443
           targetPort: 443
           nodePort: 30443
-{% if ((k8s_istio_grafana_enabled is defined) and (k8s_istio_grafana_enabled != None) and (k8s_istio_grafana_enabled == True)) %}
+{% if ((k8s_config.istio.grafana.enabled is defined) and (k8s_config.istio.grafana.enabled != None) and (k8s_config.istio.grafana.enabled == True)) %}
         - name: https-grafana
           port: 3000
           targetPort: 3000
           nodePort: 32500
 {% endif %}
-{% if ((k8s_istio_tracing_enabled is defined) and (k8s_istio_tracing_enabled != None) and (k8s_istio_tracing_enabled == True)) %}
+{% if ((k8s_config.istio.tracing.enabled is defined) and (k8s_config.istio.tracing.enabled != None) and (k8s_config.istio.tracing.enabled == True)) %}
         - name: https-jaeger
           port: 16686
           targetPort: 16686
           nodePort: 32501
 {% endif %}
-{% if ((k8s_istio_kiali_enabled is defined) and (k8s_istio_kiali_enabled != None) and (k8s_istio_kiali_enabled == True))  %}
+{% if ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == True))  %}
         - name: https-kiali
           port: 20001
           targetPort: 20001
           nodePort: 32502
 {% endif %}
-{% if ((k8s_istio_prometheus_enabled is defined) and (k8s_istio_prometheus_enabled != None) and (k8s_istio_prometheus_enabled == True)) %}
+{% if ((k8s_config.istio.prometheus.enabled is defined) and (k8s_config.istio.prometheus.enabled != None) and (k8s_config.istio.prometheus.enabled == True)) %}
         - name: https-prometheus
           port: 9090
           targetPort: 9090
@@ -145,28 +145,28 @@ spec:
 
     global:
       proxy:
-        clusterDomain: {{ k8s_cluster_domain }}
+        clusterDomain: {{ k8s_config.cluster_domain }}
         # logLevel: debug
       sds:
         enabled: true
-{% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True))  %}
+{% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True))  %}
       tracer:
         zipkin:
-          address: jaeger-collector.monitoring-system.svc.{{ k8s_cluster_domain }}:9411
+          address: jaeger-collector.monitoring-system.svc.{{ k8s_config.cluster_domain }}:9411
 {% endif %}
-      trustDomain: {{ k8s_cluster_domain }}
+      trustDomain: {{ k8s_config.cluster_domain }}
     kiali:
-{% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True) and (k8s_monitoring_prometheus_enabled is defined) and (k8s_monitoring_prometheus_enabled != None) and (k8s_monitoring_prometheus_enabled == True)) %}
-      prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_cluster_domain }}:9090
+{% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True)) %}
+      prometheusAddr: http://prometheus-server.monitoring-system.svc.{{ k8s_config.cluster_domain }}:9090
 {% endif %}
       dashboard:
-{% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True) and (k8s_monitoring_grafana_enabled is defined) and (k8s_monitoring_grafana_enabled != None) and (k8s_monitoring_grafana_enabled == True)) %}
+{% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.grafana.enabled is defined) and (k8s_config.monitoring.grafana.enabled != None) and (k8s_config.monitoring.grafana.enabled == True)) %}
         grafanaURL: https://{{ groups['k8s_master'][0] }}:32500/
-        grafanaInClusterURL: http://grafana.monitoring-system.svc.{{ k8s_cluster_domain }}:3000
+        grafanaInClusterURL: http://grafana.monitoring-system.svc.{{ k8s_config.cluster_domain }}:3000
 {% endif %}
-{% if ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True) and (k8s_monitoring_jaeger_enabled is defined) and (k8s_monitoring_jaeger_enabled != None) and (k8s_monitoring_jaeger_enabled == True)) %}
+{% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == True)) %}
         jaegerURL: https://{{ groups['k8s_master'][0] }}:32501/
-        jaegerInClusterURL: http://jaeger-query.monitoring-system.svc.{{ k8s_cluster_domain }}:16686
+        jaegerInClusterURL: http://jaeger-query.monitoring-system.svc.{{ k8s_config.cluster_domain }}:16686
 {% endif %}
 
     # TODO: CONFIRM THE BELOW IS APPLIED AUTOMATICALLY NOW (https://istio.io/docs/tasks/security/cert-management/plugin-ca-cert/)

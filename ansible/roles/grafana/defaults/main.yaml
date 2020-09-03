@@ -21,4 +21,4 @@ grafana_defaults:
     kafka_producers_and_consumers:
       enabled: false
 
-grafana_config: "{{ grafana_defaults | combine(grafana | default({})) }}"
+grafana_config: "{{ grafana_defaults | combine(grafana | default({}), recursive=True) }}"

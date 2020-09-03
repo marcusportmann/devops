@@ -39,7 +39,7 @@
       {
         "datasource": "prometheus",
         "enable": true,
-        "expr": "sum(changes(prometheus_config_last_reload_success_timestamp_seconds{instance=~\"$instance\"}[10m])) by (instance)",
+        "expr": "sum(changes(prometheus_server_config_last_reload_success_timestamp_seconds{instance=~\"$instance\"}[10m])) by (instance)",
         "hide": false,
         "iconColor": "rgb(0, 96, 19)",
         "limit": 100,
@@ -2278,7 +2278,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "(time() - prometheus_config_last_reload_success_timestamp_seconds{job=~\"$job\",instance=~\"$instance\"}) / 60",
+              "expr": "(time() - prometheus_server_config_last_reload_success_timestamp_seconds{job=~\"$job\",instance=~\"$instance\"}) / 60",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",
@@ -2354,7 +2354,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "prometheus_config_last_reload_successful{job=~\"$job\",instance=~\"$instance\"}",
+              "expr": "prometheus_server_config_last_reload_successful{job=~\"$job\",instance=~\"$instance\"}",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",

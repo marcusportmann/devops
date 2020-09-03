@@ -1,4 +1,7 @@
 ---
 # file: roles/common/defaults/main.yaml
 
-common_initialise_data_directory: false
+common_defaults:
+  initialise_data_directory: false
+
+common_config: "{{ common_defaults | combine(common | default({}), recursive=True) }}"

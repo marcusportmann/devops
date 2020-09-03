@@ -1,7 +1,7 @@
 ---
 # file: roles/prometheus_server/defaults/main.yaml
 
-prometheus_defaults:
+prometheus_server_defaults:
   etc_directory: /etc/prometheus
   data_directory: /var/lib/prometheus
 
@@ -41,4 +41,4 @@ prometheus_defaults:
       jmx_exporter_port: 9150
       exporter_port: 9151
 
-prometheus_config: "{{ prometheus_defaults | combine(prometheus | default({})) }}"
+prometheus_server_config: "{{ prometheus_server_defaults | combine(prometheus_server | default({}), recursive=True) }}"

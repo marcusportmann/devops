@@ -1,6 +1,11 @@
 ---
 # file: roles/k8s_storage/tasks/main.yaml
 
+- fail:
+    msg: 'No cluster_name specified for the Kubernetes cluster'
+  when: ((k8s_config.cluster_name is not defined) or (k8s_config.cluster_name == None) or (k8s_config.cluster_name == ''))
+
+
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
@@ -24,10 +29,10 @@
 #   | || |_| |  __/| |_| | |__\ V / | |  | | | |__\ V / | |  | | |_| |
 #   |_| \___/|_|    \___/|_____\_/  |_|  |_| |_____\_/  |_|  |_|____/
 #
-- name: Install the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
+- name: Install the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
   block:
   - debug:
-      msg: Check whether the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package has been installed
+      msg: Check whether the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package has been installed
 
   - stat:
       path: /usr/bin/lvmd
@@ -48,16 +53,16 @@
 
   - block:
     - debug:
-        msg: Install the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package
+        msg: Install the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package
 
-    - name: Check whether the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package has been downloaded
+    - name: Check whether the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz
+      local_action: stat path=packages/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz
       register: topolvm_lvmd_package_stat_result
 
-    - name: Download the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package
+    - name: Download the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package
       become: no
-      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ k8s_topolvm_lvmd_version }}/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz' dest='packages/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz'
+      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ k8s_config.storage.topolvm.lvmd_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz' dest='packages/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
       when: (topolvm_lvmd_package_stat_result.stat.exists == False)
 
     - name: Remove the existing TopoLVM lvmd binary
@@ -65,9 +70,9 @@
         path: /usr/bin/lvmd
         state: absent
 
-    - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ k8s_topolvm_lvmd_version }} package
+    - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package
       unarchive:
-        src: packages/lvmd-{{ k8s_topolvm_lvmd_version }}.tar.gz
+        src: packages/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz
         dest: /usr/bin
         creates: /usr/bin/lvmd
 
@@ -88,9 +93,9 @@
         state: started
         enabled: yes
 
-    when: (topolvm_lvmd_installed_version != k8s_topolvm_lvmd_version)
+    when: (topolvm_lvmd_installed_version != k8s_config.storage.topolvm.lvmd_version)
 
-  when: ((('k8s_worker' not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))
+  when: ((('k8s_worker' not in groups.keys()) or (inventory_hostname in groups['k8s_worker'])) and (k8s_config.storage.topolvm.enabled is defined) and (k8s_config.storage.topolvm.enabled != None) and (k8s_config.storage.topolvm.enabled == true))
 
 
 #  _  _____ ____

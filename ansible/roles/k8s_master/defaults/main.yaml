@@ -1,12 +1,16 @@
 ---
 # file: roles/k8s_master/defaults/main.yaml
 
-k8s_bitnami_labs_sealed_secrets_enabled: true
-k8s_bitnami_labs_sealed_secrets_helm_chart_version: 1.10.1
-k8s_bitnami_labs_sealed_secrets_kubeseal_version: 0.12.4
-k8s_cni_provider: weave
-k8s_etcd_topology: stacked
-k8s_pod_subnet: 10.255.0.0/16
-k8s_service_subnet: 10.254.0.0/16
+k8s_defaults:
+  bitnami_labs_sealed_secrets_enabled: true
+  bitnami_labs_sealed_secrets_helm_chart_version: 1.10.1
+  bitnami_labs_sealed_secrets_kubeseal_version: 0.12.4
 
+  cni_provider: weave
 
+  etcd_topology: stacked
+
+  pod_subnet: 10.255.0.0/16
+  service_subnet: 10.254.0.0/16
+
+k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"

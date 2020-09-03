@@ -30,17 +30,17 @@
 
       - name: Copy the root CA certificate to the /var/tmp/ansible/elasticsearch-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/ca.crt
+          src: pki/{{ k8s_config.cluster_name }}/ca.crt
           dest: /var/tmp/ansible/elasticsearch-pki/ca.pem
 
       - name: Copy the Elasticsearch private key to the /var/tmp/ansible/elasticsearch-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-elasticsearch.key
+          src: pki/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.key
           dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem
 
       - name: Copy the Elasticsearch certificate to the /var/tmp/ansible/elasticsearch-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-elasticsearch.crt
+          src: pki/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
           dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem
 
       - name: Create the secret in the monitoring-system namespace for the Elasticsearch private key and certificates
@@ -85,19 +85,19 @@
 
         - name: Install Elasticsearch using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
+            cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
 
         - name: Wait for 10 seconds for the Elasticsearch initialization to start
           wait_for:
             timeout: 10
 
-        when: elasticsearch_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
+        when: elasticsearch_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
       - name: Wait for the Elasticsearch initialization to complete
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
-      when: (k8s_monitoring_elasticsearch_cluster_type == 'standalone')
+      when: (k8s_config.monitoring.elasticsearch.cluster_type == 'standalone')
 
     - name: Install a multi node Elasticsearch cluster using Helm
       block:
@@ -115,8 +115,8 @@
 
         - name: Install the Elasticsearch master nodes using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch-master elastic/elasticsearch --install --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-master-values.yaml
-        when: elasticsearch_master_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
+            cmd: /usr/bin/helm upgrade elasticsearch-master elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-master-values.yaml
+        when: elasticsearch_master_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
       - name: Check if the Elasticsearch ingest nodes are installed
         shell:
@@ -132,8 +132,8 @@
 
         - name: Install the Elasticsearch ingest nodes using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch-ingest elastic/elasticsearch --install --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-ingest-values.yaml
-        when: elasticsearch_ingest_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
+            cmd: /usr/bin/helm upgrade elasticsearch-ingest elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-ingest-values.yaml
+        when: elasticsearch_ingest_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
       - name: Check if the Elasticsearch data nodes are installed
         shell:
@@ -149,8 +149,8 @@
 
         - name: Install the Elasticsearch data nodes using Helm
           command:
-            cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --version={{ k8s_monitoring_elasticsearch_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
-        when: elasticsearch_data_installed_helm_chart_version_output.stdout != k8s_monitoring_elasticsearch_helm_chart_version
+            cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
+        when: elasticsearch_data_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
       - name: Wait for 10 seconds for the Elasticsearch initialization to start
         wait_for:
@@ -160,9 +160,9 @@
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
-      when: ((k8s_monitoring_elasticsearch_cluster_type == 'minimal') or (k8s_monitoring_elasticsearch_cluster_type == 'full'))
+      when: ((k8s_config.monitoring.elasticsearch.cluster_type == 'minimal') or (k8s_config.monitoring.elasticsearch.cluster_type == 'full'))
 
-    when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true))
+    when: ((k8s_config.monitoring.elasticsearch.enabled is defined) and (k8s_config.monitoring.elasticsearch.enabled != None) and (k8s_config.monitoring.elasticsearch.enabled == true))
 
 
   #  _  _____ ____    _    _   _    _
@@ -182,17 +182,17 @@
 
       - name: Copy the root CA certificate to the /var/tmp/ansible/kibana-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/ca.crt
+          src: pki/{{ k8s_config.cluster_name }}/ca.crt
           dest: /var/tmp/ansible/kibana-pki/ca.pem
 
       - name: Copy the Kibana private key to the /var/tmp/ansible/kibana-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-kibana.key
+          src: pki/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.key
           dest: /var/tmp/ansible/kibana-pki/kibana-key.pem
 
       - name: Copy the Kibana certificate to the /var/tmp/ansible/kibana-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-kibana.crt
+          src: pki/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
           dest: /var/tmp/ansible/kibana-pki/kibana-cert.pem
 
       - name: Create the secret in the monitoring-system namespace for the Kibana private key and certificates
@@ -223,7 +223,7 @@
 
       - name: Install Kibana using Helm
         command:
-          cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --version={{ k8s_monitoring_kibana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
+          cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --version={{ k8s_config.monitoring.kibana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
 
       - name: Wait for 10 seconds for the Kibana initialization to start
         wait_for:
@@ -233,9 +233,9 @@
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
-      when: kibana_installed_helm_chart_version_output.stdout != k8s_monitoring_kibana_helm_chart_version
+      when: kibana_installed_helm_chart_version_output.stdout != k8s_config.monitoring.kibana.helm_chart_version
 
-    when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true) and (k8s_monitoring_kibana_enabled is defined) and (k8s_monitoring_kibana_enabled != None) and (k8s_monitoring_kibana_enabled == true))
+    when: ((k8s_config.monitoring.elasticsearch.enabled is defined) and (k8s_config.monitoring.elasticsearch.enabled != None) and (k8s_config.monitoring.elasticsearch.enabled == true) and (k8s_config.monitoring.kibana.enabled is defined) and (k8s_config.monitoring.kibana.enabled != None) and (k8s_config.monitoring.kibana.enabled == true))
 
 
   #      _   _    _____ ____ _____ ____
@@ -255,17 +255,17 @@
 
       - name: Copy the root CA certificate to the /var/tmp/ansible/jaeger-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/ca.crt
+          src: pki/{{ k8s_config.cluster_name }}/ca.crt
           dest: /var/tmp/ansible/jaeger-pki/ca.pem
 
       - name: Copy the Jaeger private key to the /var/tmp/ansible/jaeger-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-jaeger.key
+          src: pki/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.key
           dest: /var/tmp/ansible/jaeger-pki/jaeger-key.pem
 
       - name: Copy the Jaeger certificate to the /var/tmp/ansible/jaeger-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-jaeger.crt
+          src: pki/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
           dest: /var/tmp/ansible/jaeger-pki/jaeger-cert.pem
 
       - name: Create the secret in the monitoring-system namespace for the Jaeger private key and certificates
@@ -296,7 +296,7 @@
 
       - name: Install Jaeger using Helm
         command:
-          cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --version={{ k8s_monitoring_jaeger_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
+          cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --version={{ k8s_config.monitoring.jaeger.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
 
       - name: Wait for 10 seconds for the Jaeger initialization to start
         wait_for:
@@ -306,9 +306,9 @@
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
-      when: jaeger_installed_helm_chart_version_output.stdout != k8s_monitoring_jaeger_helm_chart_version
+      when: jaeger_installed_helm_chart_version_output.stdout != k8s_config.monitoring.jaeger.helm_chart_version
 
-    when: ((k8s_monitoring_elasticsearch_enabled is defined) and (k8s_monitoring_elasticsearch_enabled != None) and (k8s_monitoring_elasticsearch_enabled == true) and (k8s_monitoring_jaeger_enabled is defined) and (k8s_monitoring_jaeger_enabled != None) and (k8s_monitoring_jaeger_enabled == true))
+    when: ((k8s_config.monitoring.elasticsearch.enabled is defined) and (k8s_config.monitoring.elasticsearch.enabled != None) and (k8s_config.monitoring.elasticsearch.enabled == true) and (k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == true))
 
 
   #  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____
@@ -333,7 +333,7 @@
 
       - name: Install Prometheus using Helm
         command:
-          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ k8s_monitoring_prometheus_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
+          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ k8s_config.monitoring.prometheus.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
 
       - name: Wait for 10 seconds for the Prometheus initialization to start
         wait_for:
@@ -343,7 +343,7 @@
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
-      when: prometheus_installed_helm_chart_version_output.stdout != k8s_monitoring_prometheus_helm_chart_version
+      when: prometheus_installed_helm_chart_version_output.stdout != k8s_config.monitoring.prometheus.helm_chart_version
 
     - name: Generate the Prometheus Server configuration
       template:
@@ -354,7 +354,7 @@
       command:
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-server-config-map.yaml
 
-    when: ((k8s_monitoring_prometheus_enabled is defined) and (k8s_monitoring_prometheus_enabled != None) and (k8s_monitoring_prometheus_enabled == true))
+    when: ((k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == true))
 
 
   #   ____ ____      _    _____ _    _   _    _
@@ -391,7 +391,7 @@
 
       - name: Install Grafana using Helm
         command:
-          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ k8s_monitoring_grafana_helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ k8s_config.monitoring.grafana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
 
       - name: Wait for 10 seconds for the Grafana initialization to start
         wait_for:
@@ -401,7 +401,7 @@
         command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
-      when: grafana_installed_helm_chart_version_output.stdout != k8s_monitoring_grafana_helm_chart_version
+      when: grafana_installed_helm_chart_version_output.stdout != k8s_config.monitoring.grafana.helm_chart_version
 
     - name: Generate and install the Kubernetes Grafana dashboard ConfigMaps
       block:
@@ -425,7 +425,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
 
-      when: ((k8s_istio_enabled is defined) and (k8s_istio_enabled != None) and (k8s_istio_enabled == true))
+      when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))
 
     - name: Retrieve the grafana admin username and password
       block:
@@ -443,7 +443,7 @@
       - debug:
           msg: 'Grafana Admin Password: {{ grafana_admin_password_output.stdout }}'
 
-    when: ((k8s_monitoring_grafana_enabled is defined) and (k8s_monitoring_grafana_enabled != None) and (k8s_monitoring_grafana_enabled == true))
+    when: ((k8s_config.monitoring.grafana.enabled is defined) and (k8s_config.monitoring.grafana.enabled != None) and (k8s_config.monitoring.grafana.enabled == true))
 
-  when: ((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == true))
+  when: ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == true))
 

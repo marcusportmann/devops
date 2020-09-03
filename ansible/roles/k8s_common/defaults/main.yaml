@@ -1,16 +1,21 @@
 ---
 # file: roles/k8s_common/defaults/main.yaml
 
-k8s_centos_package_version: 1.18.4
-k8s_helm_version: 3.2.3
-k8s_helm_package_checksum: sha256:3156e4fe5f034e5b127cf165d61a8a1c48eb7a73b14689b273de5e6117df6fe2
-k8s_ubuntu_package_version: 1.18.4-00
+k8s_defaults:
+  centos_package_version: 1.18.4
+  ubuntu_package_version: 1.18.4-00
 
-k8s_k8s_admin_user_id: 500
-k8s_k8s_admin_group_id: 500
+  admin_user: k8s-admin
+  admin_user_id: 500
+  admin_group: k8s-admin
+  admin_group_id: 500
 
-k8s_cni_provider: weave
+  cni_provider: weave
 
+  helm_package_checksum: sha256:8eb56cbb7d0da6b73cd8884c6607982d0be8087027b8ded01d6b2759a72e34b1
+  helm_version: 3.2.4
+
+k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"
 
 
 

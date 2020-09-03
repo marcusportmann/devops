@@ -9,4 +9,4 @@ prometheus_jmx_exporter:
   enabled: true
   package_version: 0.13.0
 
-kafka_config: "{{ kafka_defaults | combine(kafka | default({})) }}"
+kafka_config: "{{ kafka_defaults | combine(kafka | default({}), recursive=True) }}"

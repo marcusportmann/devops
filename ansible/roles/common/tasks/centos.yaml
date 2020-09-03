@@ -51,4 +51,4 @@
 
     when: ('data' in ansible_lvm.vgs)
 
-  when: (common_initialise_data_directory == True)
+  when: (common_config.initialise_data_directory == True)

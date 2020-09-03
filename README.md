@@ -82,50 +82,46 @@ virtualisation platforms.
    ```
    vagrant plugin license vagrant-vmware-desktop ~/Downloads/license.lic
    ```
-8. Download and install the Vagrant VMware Utility from:
-   ```
-   https://www.vagrantup.com/vmware/downloads
-   ```
-9. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
+8. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
    ```
    https://code.vmware.com/web/tool/4.3.0/ovf
    ```
-10. Create a link to the ovftool binary in /usr/local/bin.
-    ```
-    ln -s /Applications/VMware\ OVF\ Tool/ovftool /usr/local/bin/ovftool
-    ```
-11. OPTIONAL: If required install the Vagrant VMware ESXi plugin.
+9. Create a link to the ovftool binary in /usr/local/bin.
+   ```
+   ln -s /Applications/VMware\ OVF\ Tool/ovftool /usr/local/bin/ovftool
+   ```
+10. OPTIONAL: If required install the Vagrant VMware ESXi plugin.
     ```
     vagrant plugin install vagrant-vmware-esxi
     ```
-12. Install Ansible by executing the following command in a Terminal window:
+11. Install Ansible by executing the following command in a Terminal window:
     ```
     brew install ansible
     ```
-13. Install OpenJDK 11 by executing the following commands in a Terminal window:
+12. Install OpenJDK 11 by executing the following commands in a Terminal window:
     ```
     brew tap AdoptOpenJDK/openjdk
     brew cask install adoptopenjdk11
     ```
-14. Install Apache Maven by executing the following command in a Terminal window:
+13. Install Apache Maven by executing the following command in a Terminal window:
     ```
     brew install maven
     ```
-15. Install jenv by executing the following commands in a Terminal window:
+14. Install jenv by executing the following commands in a Terminal window:
     ```
     brew install jenv
     ```
-16. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
+15. Add the following lines to your .zshrc or .bash_profile file to enable jenv and restart your Terminal:
     ```
     export PATH="$HOME/.jenv/bin:$PATH"
     eval "$(jenv init -)"
     ```
-17. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
+16. Set OpenJDK 11 as the default java verison by executing the following commands in a Terminal window:
     ```
     jenv add /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home
     jenv global 11.0
     ```
-18. Install the maven plugin for jenv by executing the following command in a Terminal window:
+17. Install the maven plugin for jenv by executing the following command in a Terminal window:
     ```
     jenv enable-plugin maven
     ```

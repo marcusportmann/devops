@@ -10,7 +10,7 @@
 - name: Install istioctl
   block:
   - debug:
-      msg: Check whether the istioctl {{ k8s_istio_version }} package has been installed
+      msg: Check whether the istioctl {{ k8s_config.istio.package_version }} package has been installed
 
   - stat:
       path: /usr/bin/istioctl
@@ -31,16 +31,16 @@
 
   - block:
     - debug:
-        msg: Install the istioctl {{ k8s_istio_version }} package
+        msg: Install the istioctl {{ k8s_config.istio.package_version }} package
 
-    - name: Check whether the istioctl {{ k8s_istio_version }} package has been downloaded
+    - name: Check whether the istioctl {{ k8s_config.istio.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/istioctl-{{ k8s_istio_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
       register: istioctl_package_stat_result
 
-    - name: Download the istioctl {{ k8s_istio_version }} package
+    - name: Download the istioctl {{ k8s_config.istio.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_istio_version }}/istioctl-{{ k8s_istio_version }}-linux-amd64.tar.gz' dest='packages/istioctl-{{ k8s_istio_version }}-linux-amd64.tar.gz' checksum={{ k8s_istioctl_package_checksum }}
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='packages/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.istioctl_package_checksum }}
       when: (istioctl_package_stat_result.stat.exists == False)
 
     - name: Remove the existing istioctl binary
@@ -48,35 +48,35 @@
         path: /usr/bin/istioctl
         state: absent
 
-    - name: Extract the istioctl binary from the istioctl {{ k8s_istio_version }} package
+    - name: Extract the istioctl binary from the istioctl {{ k8s_config.istio.package_version }} package
       unarchive:
-        src: packages/istioctl-{{ k8s_istio_version }}-linux-amd64.tar.gz
+        src: packages/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
         dest: /usr/bin
         creates: /usr/bin/istioctl
 
-    when: (istioctl_installed_version != k8s_istio_version)
+    when: (istioctl_installed_version != k8s_config.istio.package_version)
 
-  when: ((k8s_istio_enabled is defined) and (k8s_istio_enabled != None) and (k8s_istio_enabled == true))
+  when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))
 
 - name: Initialize the Istio service mesh
   block:
   - name: Download and extract the Istio package if required
     block:
-    - name: Check whether the istio {{ k8s_istio_version }} package has been downloaded
+    - name: Check whether the istio {{ k8s_config.istio.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/istio-{{ k8s_istio_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
       register: istio_package_stat_result
 
-    - name: Download the istio {{ k8s_istio_version }} package
+    - name: Download the istio {{ k8s_config.istio.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_istio_version }}/istio-{{ k8s_istio_version }}-linux-amd64.tar.gz' dest='packages/istio-{{ k8s_istio_version }}-linux-amd64.tar.gz' checksum={{ k8s_istio_package_checksum }}
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='packages/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.package_checksum }}
       when: (istio_package_stat_result.stat.exists == False)
 
-    - name: Extract the istio {{ k8s_istio_version }} package
+    - name: Extract the istio {{ k8s_config.istio.package_version }} package
       unarchive:
-        src: packages/istio-{{ k8s_istio_version }}-linux-amd64.tar.gz
+        src: packages/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
         dest: /var/tmp/ansible
-        creates: /var/tmp/ansible/istio-{{ k8s_istio_version }}
+        creates: /var/tmp/ansible/istio-{{ k8s_config.istio.package_version }}
 
   - name: Check if the correct version of Istio is installed
     shell:
@@ -102,32 +102,32 @@
 
       - name: Copy the Istio intermediate CA private key to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.key
+          src: pki/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.key
           dest: /var/tmp/ansible/istio-pki/ca-key.pem
 
       - name: Copy the Istio intermediate CA certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca.crt
+          src: pki/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.crt
           dest: /var/tmp/ansible/istio-pki/ca-cert.pem
 
       - name: Copy the Root CA certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/ca.crt
+          src: pki/{{ k8s_config.cluster_name }}/ca.crt
           dest: /var/tmp/ansible/istio-pki/root-cert.pem
 
       - name: Copy the Istio intermediate CA certificate chain to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ca-chain.crt
+          src: pki/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca-chain.crt
           dest: /var/tmp/ansible/istio-pki/cert-chain.pem
 
       - name: Copy the Istio ingress gateway private key to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.key
+          src: pki/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.key
           dest: /var/tmp/ansible/istio-pki/ingressgateway-key.pem
 
       - name: Copy the Istio ingress gateway certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-istio-ingressgateway.crt
+          src: pki/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.crt
           dest: /var/tmp/ansible/istio-pki/ingressgateway-cert.pem
 
     - name: Create the istio-system namespace
@@ -137,7 +137,7 @@
     - name: Disable the TopoLVM mutating webhook for the istio-system namespace
       command:
         cmd: /usr/bin/kubectl label --overwrite ns istio-system topolvm.cybozu.com/webhook=ignore
-      when: ((k8s_topolvm_enabled is defined) and (k8s_topolvm_enabled != None) and (k8s_topolvm_enabled == true))
+      when: ((k8s_config.storage.topolvm.enabled is defined) and (k8s_config.storage.topolvm.enabled != None) and (k8s_config.storage.topolvm.enabled == true))
 
     - name: Create the secret in the istio-system namespace for the Istio intermediate CA private key and certificates
       shell:
@@ -161,7 +161,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-secret.yaml
 
-      when: ((k8s_istio_kiali_enabled is defined) and (k8s_istio_kiali_enabled != None) and (k8s_istio_kiali_enabled == true))
+      when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
 
     - name: Create the Istio configuration file
       template:
@@ -171,12 +171,12 @@
     - name: Initialize the Istio service mesh using the custom profile
       shell:
         cmd: /usr/bin/istioctl manifest apply -f /var/tmp/ansible/istio-config.yaml
-      when: ((k8s_istio_demo_configuration_enabled is not defined) or (k8s_istio_demo_configuration_enabled == None) or (k8s_istio_demo_configuration_enabled == false))
+      when: ((k8s_config.istio.demo_configuration_enabled is not defined) or (k8s_config.istio.demo_configuration_enabled == None) or (k8s_config.istio.demo_configuration_enabled == false))
 
     - name: Initialize the Istio service mesh using the demo profile
       shell:
         cmd: /usr/bin/istioctl install --set profile=demo
-      when: ((k8s_istio_demo_configuration_enabled is defined) and (k8s_istio_demo_configuration_enabled != None) and (k8s_istio_demo_configuration_enabled == true))
+      when: ((k8s_config.istio.demo_configuration_enabled is defined) and (k8s_config.istio.demo_configuration_enabled != None) and (k8s_config.istio.demo_configuration_enabled == true))
 
     - name: Wait for the Istio service mesh initialization to complete
       command:
@@ -193,7 +193,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
 
-      when: ((k8s_istio_tracing_enabled is defined) and (k8s_istio_tracing_enabled != None) and (k8s_istio_tracing_enabled == True))
+      when: ((k8s_config.istio.tracing.enabled is defined) and (k8s_config.istio.tracing.enabled != None) and (k8s_config.istio.tracing.enabled == True))
 
     - name: Enable ingress for Kiali
       block:
@@ -206,7 +206,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-ingress.yaml
 
-      when: ((k8s_istio_kiali_enabled is defined) and (k8s_istio_kiali_enabled != None) and (k8s_istio_kiali_enabled == true))
+      when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
 
     - name: Enable ingress for Grafana
       block:
@@ -219,7 +219,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
 
-      when: ((k8s_istio_grafana_enabled is defined) and (k8s_istio_grafana_enabled != None) and (k8s_istio_grafana_enabled == True))
+      when: ((k8s_config.istio.grafana.enabled is defined) and (k8s_config.istio.grafana.enabled != None) and (k8s_config.istio.grafana.enabled == True))
 
     - name: Enable ingress for Prometheus
       block:
@@ -232,7 +232,7 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress.yaml
 
-      when: ((k8s_istio_prometheus_enabled is defined) and (k8s_istio_prometheus_enabled != None) and (k8s_istio_prometheus_enabled == True))
+      when: ((k8s_config.istio.prometheus.enabled is defined) and (k8s_config.istio.prometheus.enabled != None) and (k8s_config.istio.prometheus.enabled == True))
 
     - name: Enable the Prometheus service reference in the istio-system namespace
       block:
@@ -245,10 +245,10 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-service.yaml
 
-      when: (((k8s_monitoring_enabled is defined) and (k8s_monitoring_enabled != None) and (k8s_monitoring_enabled == True) and (k8s_monitoring_prometheus_enabled is defined) and (k8s_monitoring_prometheus_enabled != None) and (k8s_monitoring_prometheus_enabled == True)))
+      when: (((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True)))
 
-    when: (istio_installed_version != k8s_istio_version)
+    when: (istio_installed_version != k8s_config.istio.package_version)
 
-  when: ((k8s_istio_enabled is defined) and (k8s_istio_enabled != None) and (k8s_istio_enabled == true))
+  when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))
 
 

@@ -24,20 +24,20 @@
 #
 - name: Install the root CA, Kubernetes intermediate CA and Kubernetes etcd intermediate CA certificates
   block:
-  - name: Create the /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+  - name: Create the /usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
     file:
-      path: /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }}
+      path: /usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}
       state: directory
 
-  - name: Copy the root CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+  - name: Copy the root CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
     copy:
-      src: pki/{{ k8s_cluster_name }}/ca.crt
-      dest: /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }}/ca.crt
+      src: pki/{{ k8s_config.cluster_name }}/ca.crt
+      dest: /usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/ca.crt
 
-  - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_cluster_name }} directory
+  - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
     copy:
-      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
-      dest: /usr/local/share/ca-certificates/k8s-{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
+      src: pki/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
+      dest: /usr/local/share/ca-certificates/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
 
   - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
     shell:
@@ -166,7 +166,7 @@
       port: '6784'
       proto: udp
 
-  when: (k8s_cni_provider == 'weave')
+  when: (k8s_config.cni_provider == 'weave')
 
 
 #  ____  _   _ ____  ____   ___  ____ _____ ___ _   _  ____   ____   _    ____ _  __    _    ____ _____ ____
@@ -215,18 +215,18 @@
     command:
       cmd: apt-mark unhold kubelet
 
-  - name: Install the kubelet package ({{ k8s_ubuntu_package_version }})
+  - name: Install the kubelet package ({{ k8s_config.ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
       name:
-       - kubelet={{ k8s_ubuntu_package_version }}
+       - kubelet={{ k8s_config.ubuntu_package_version }}
 
   - name: Lock the version of the kubelet package
     command:
       cmd: apt-mark hold kubelet
 
-  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_ubuntu_package_version))
+  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.ubuntu_package_version))
 
 - name: Retrieve the version of the installed kubectl package
   debug:
@@ -242,18 +242,18 @@
     command:
       cmd: apt-mark unhold kubectl
 
-  - name: Install the kubectl package ({{ k8s_ubuntu_package_version }})
+  - name: Install the kubectl package ({{ k8s_config.ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
       name:
-       - kubectl={{ k8s_ubuntu_package_version }}
+       - kubectl={{ k8s_config.ubuntu_package_version }}
 
   - name: Lock the version of the kubectl package
     command:
       cmd: apt-mark hold kubectl
 
-  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_ubuntu_package_version))
+  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.ubuntu_package_version))
 
 - name: Retrieve the version of the installed kubeadm package
   debug:
@@ -269,16 +269,16 @@
     command:
       cmd: apt-mark unhold kubeadm
 
-  - name: Install the kubeadm package ({{ k8s_ubuntu_package_version }})
+  - name: Install the kubeadm package ({{ k8s_config.ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
       name:
-       - kubeadm={{ k8s_ubuntu_package_version }}
+       - kubeadm={{ k8s_config.ubuntu_package_version }}
 
   - name: Lock the version of the kubeadm package
     command:
       cmd: apt-mark hold kubeadm
 
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_ubuntu_package_version))
+  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.ubuntu_package_version))
 

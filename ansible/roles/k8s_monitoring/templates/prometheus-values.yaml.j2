@@ -9,8 +9,8 @@ alertmanager:
     accessModes:
       - ReadWriteOnce
     mountPath: /data
-    size: {{ k8s_monitoring_prometheus_alert_manager_persistent_volume_size }}
-    storageClass: {{ k8s_monitoring_prometheus_persistent_volume_storage_class_name }}
+    size: {{ k8s_config.monitoring.prometheus.alert_manager.persistent_volume_size }}
+    storageClass: {{ k8s_config.monitoring.prometheus.alert_manager.persistent_volume_storage_class_name }}
 
   service:
     type: NodePort
@@ -34,8 +34,8 @@ server:
     accessModes:
       - ReadWriteOnce
     mountPath: /data
-    size: {{ k8s_monitoring_prometheus_server_persistent_volume_size }}
-    storageClass: {{ k8s_monitoring_prometheus_persistent_volume_storage_class_name }}
+    size: {{ k8s_config.monitoring.prometheus.server.persistent_volume_size }}
+    storageClass: {{ k8s_config.monitoring.prometheus.server.persistent_volume_storage_class_name }}
 
   service:
     type: NodePort
@@ -45,6 +45,12 @@ server:
   env:
   - name: JAEGER_AGENT_PORT
     value: "5755"
+
+nodeExporter:
+  tolerations:
+  - key: "node-role.kubernetes.io/master"
+    effect: "NoSchedule"
+
 
 # alertmanager:
 #   enabled: false

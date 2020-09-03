@@ -56,7 +56,7 @@ configUsers:
 
 configKubernetes:
   # default DNS domain of K8s cluster where operator is running
-  cluster_domain: {{ k8s_cluster_domain }}
+  cluster_domain: {{ k8s_config.cluster_domain }}
   # additional labels assigned to the cluster objects
   cluster_labels:
     application: spilo

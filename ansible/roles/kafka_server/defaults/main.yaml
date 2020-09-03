@@ -35,4 +35,4 @@ kafka_defaults:
       enabled: true
       package_version: 1.0.1
 
-kafka_config: "{{ kafka_defaults | combine(kafka | default({})) }}"
+kafka_config: "{{ kafka_defaults | combine(kafka | default({}), recursive=True) }}"

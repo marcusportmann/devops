@@ -31,7 +31,7 @@
 - name: Install Prometheus
   block:
   - debug:
-      msg: Check whether the Prometheus {{ prometheus_config.package_version }} package has been installed
+      msg: Check whether the Prometheus {{ prometheus_server_config.package_version }} package has been installed
 
   - stat:
       path: /usr/bin/prometheus
@@ -52,19 +52,19 @@
 
   - block:
     - debug:
-        msg: Install the Prometheus {{ prometheus_config.package_version }} package
+        msg: Install the Prometheus {{ prometheus_server_config.package_version }} package
 
-    - name: Add the {{ prometheus_config.group }} group
+    - name: Add the {{ prometheus_server_config.group }} group
       group:
-        name: '{{ prometheus_config.group }}'
-        gid: '{{ prometheus_config.group_id }}'
+        name: '{{ prometheus_server_config.group }}'
+        gid: '{{ prometheus_server_config.group_id }}'
         state: present
 
-    - name: Add the {{ prometheus_config.user }} user
+    - name: Add the {{ prometheus_server_config.user }} user
       user:
-        name: '{{ prometheus_config.user }}'
-        uid: '{{ prometheus_config.user_id }}'
-        group: '{{ prometheus_config.group }}'
+        name: '{{ prometheus_server_config.user }}'
+        uid: '{{ prometheus_server_config.user_id }}'
+        group: '{{ prometheus_server_config.group }}'
         create_home: no
         shell: /usr/sbin/nologin
         state: present
@@ -81,14 +81,14 @@
       when: prometheus_service_stat_result.stat.exists == True
       register: prometheus_service_stopped
 
-    - name: Check whether the Prometheus {{ prometheus_config.package_version }} package has been downloaded
+    - name: Check whether the Prometheus {{ prometheus_server_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/prometheus-{{ prometheus_config.package_version }}.linux-amd64.tar.gz
+      local_action: stat path=packages/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
       register: prometheus_package_stat_result
 
-    - name: Download the Prometheus {{ prometheus_config.package_version }} package
+    - name: Download the Prometheus {{ prometheus_server_config.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_config.package_version }}/prometheus-{{ prometheus_config.package_version }}.linux-amd64.tar.gz' dest='packages/prometheus-{{ prometheus_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_config.package_checksum }}
+      local_action: get_url url='https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_server_config.package_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' dest='packages/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_server_config.package_checksum }}
       when: (prometheus_package_stat_result.stat.exists == False)
 
     - name: Remove the existing prometheus binary
@@ -96,56 +96,56 @@
         path: /usr/bin/prometheus
         state: absent
 
-    - name: Extract the prometheus binary from the Prometheus {{ prometheus_config.package_version }} package
+    - name: Extract the prometheus binary from the Prometheus {{ prometheus_server_config.package_version }} package
       unarchive:
-        src: packages/prometheus-{{ prometheus_config.package_version }}.linux-amd64.tar.gz
+        src: packages/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
         dest: /usr/bin
         extra_opts:
         - --strip-components=1
-        - prometheus-{{ prometheus_config.package_version }}.linux-amd64/prometheus
+        - prometheus-{{ prometheus_server_config.package_version }}.linux-amd64/prometheus
         creates: /usr/bin/prometheus
 
-    - name: Create the {{ prometheus_config.etc_directory }} directory
+    - name: Create the {{ prometheus_server_config.etc_directory }} directory
       file:
-        path: '{{ prometheus_config.etc_directory }}'
-        owner: '{{ prometheus_config.user }}'
-        group: '{{ prometheus_config.group }}'
+        path: '{{ prometheus_server_config.etc_directory }}'
+        owner: '{{ prometheus_server_config.user }}'
+        group: '{{ prometheus_server_config.group }}'
         mode: 0775
         state: directory
 
-    - name: Extract the consoles directory from the Prometheus {{ prometheus_config.package_version }} package
+    - name: Extract the consoles directory from the Prometheus {{ prometheus_server_config.package_version }} package
       unarchive:
-        src: packages/prometheus-{{ prometheus_config.package_version }}.linux-amd64.tar.gz
+        src: packages/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
         dest: /etc/prometheus
         extra_opts:
         - --strip-components=1
-        - prometheus-{{ prometheus_config.package_version }}.linux-amd64/consoles
+        - prometheus-{{ prometheus_server_config.package_version }}.linux-amd64/consoles
         creates: /etc/prometheus/consoles
 
-    - name: Extract the console_libraries directory from the Prometheus {{ prometheus_config.package_version }} package
+    - name: Extract the console_libraries directory from the Prometheus {{ prometheus_server_config.package_version }} package
       unarchive:
-        src: packages/prometheus-{{ prometheus_config.package_version }}.linux-amd64.tar.gz
+        src: packages/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
         dest: /etc/prometheus
         extra_opts:
         - --strip-components=1
-        - prometheus-{{ prometheus_config.package_version }}.linux-amd64/console_libraries
+        - prometheus-{{ prometheus_server_config.package_version }}.linux-amd64/console_libraries
         creates: /etc/prometheus/console_libraries
 
-    when: (prometheus_installed_version != prometheus_config.package_version)
+    when: (prometheus_installed_version != prometheus_server_config.package_version)
 
 - name: Create the {{ prometheus_data_directory }} directory
   file:
     path: '{{ prometheus_data_directory }}'
-    owner: '{{ prometheus_config.user }}'
-    group: '{{ prometheus_config.group }}'
+    owner: '{{ prometheus_server_config.user }}'
+    group: '{{ prometheus_server_config.group }}'
     mode: 0775
     state: directory
 
 - name: Create the {{ prometheus_data_directory }}/metrics2 directory
   file:
     path: '{{ prometheus_data_directory }}/metrics2'
-    owner: '{{ prometheus_config.user }}'
-    group: '{{ prometheus_config.group }}'
+    owner: '{{ prometheus_server_config.user }}'
+    group: '{{ prometheus_server_config.group }}'
     mode: 0775
     state: directory
 
@@ -153,7 +153,7 @@
   template:
     src: prometheus.yaml.j2
     dest: /etc/prometheus/prometheus.yml
-  register: prometheus_configuration_template_result
+  register: prometheus_server_configuration_template_result
 
 - name: Generate the Prometheus environment
   template:
@@ -171,8 +171,8 @@
   - name: Create the /etc/prometheus/k8s directory
     file:
       path: /etc/prometheus/k8s
-      owner: '{{ prometheus_config.user }}'
-      group: '{{ prometheus_config.group }}'
+      owner: '{{ prometheus_server_config.user }}'
+      group: '{{ prometheus_server_config.group }}'
       mode: 0775
       state: directory
 
@@ -210,7 +210,7 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((prometheus_configuration_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
+  when: ((prometheus_server_configuration_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
 
 - name: Ensure that the Prometheus service is started
   systemd:

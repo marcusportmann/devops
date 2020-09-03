@@ -1,6 +1,15 @@
 ---
 # file: roles/k8s_master/tasks/main.yaml
 
+- fail:
+    msg: 'No cluster_name specified for the Kubernetes cluster'
+  when: ((k8s_config.cluster_name is not defined) or (k8s_config.cluster_name == None) or (k8s_config.cluster_name == ''))
+
+- fail:
+    msg: 'No cluster_domain specified for the Kubernetes cluster'
+  when: ((k8s_config.cluster_domain is not defined) or (k8s_config.cluster_domain == None) or (k8s_config.cluster_domain == ''))
+
+
 #  _  _____ ____       _    _     _       __  __    _    ____ _____ _____ ____  ____
 # | |/ ( _ ) ___|     / \  | |   | |     |  \/  |  / \  / ___|_   _| ____|  _ \/ ___|
 # | ' // _ \___ \    / _ \ | |   | |     | |\/| | / _ \ \___ \ | | |  _| | |_) \___ \
@@ -28,12 +37,12 @@
 
   - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki directory
     copy:
-      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.key
+      src: pki/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key
       dest: /etc/kubernetes/pki/ca.key
 
   - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki directory
     copy:
-      src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-ca.crt
+      src: pki/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
       dest: /etc/kubernetes/pki/ca.crt
 
 
@@ -56,34 +65,34 @@
       block:
       - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-etcd-ca.key
+          src: pki/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key
           dest: /etc/kubernetes/pki/etcd/ca.key
 
       - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/k8s-{{ k8s_cluster_name }}-etcd-ca.crt
+          src: pki/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
           dest: /etc/kubernetes/pki/etcd/ca.crt
 
-      when: k8s_etcd_topology == 'stacked'
+      when: k8s_config.etcd_topology == 'stacked'
 
     - name: Copy the keys and certificates for the external etcd topology
       block:
       - name: Copy the etcd-ca.crt certificate to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/etcd-ca.crt
+          src: pki/{{ k8s_config.cluster_name }}/etcd-ca.crt
           dest: /etc/kubernetes/pki/etcd/ca.crt
 
-      - name: Copy the {{ inventory_hostname_short }}-etcd-client.key private key to the /etc/kubernetes/pki/etcd directory
+      - name: Copy the {{ inventory_hostname_short }}.key private key to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/{{ inventory_hostname_short }}-etcd-client.key
-          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.key
+          src: pki/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.key
+          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.key
 
-      - name: Copy the {{ inventory_hostname_short }}-etcd-client.crt certificate to the /etc/kubernetes/pki/etcd directory
+      - name: Copy the {{ inventory_hostname_short }}.crt certificate to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_cluster_name }}/{{ inventory_hostname_short }}-etcd-client.crt
-          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}-etcd-client.crt
+          src: pki/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.crt
+          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.crt
 
-      when: k8s_etcd_topology == 'external'
+      when: k8s_config.etcd_topology == 'external'
 
     - command:
         cmd: hostname -i
@@ -219,7 +228,7 @@
     block:
     - name: Initialize the Weave CNI provider
       shell:
-        cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_pod_subnet}}"
+        cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_config.pod_subnet}}"
 
     - name: Download the Weave script
       get_url:
@@ -242,7 +251,7 @@
       wait_for:
         timeout: 15
 
-    when: ((etc_cni_stat_result.stat.exists == False) and (k8s_cni_provider == 'weave'))
+    when: ((etc_cni_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'weave'))
 
   - name: Wait for Kubernetes node initialization to complete
     command:
@@ -487,7 +496,7 @@
 - name: Install the Bitnami Labs Sealed Secrets Extension
   block:
   - debug:
-      msg: Check whether the kubeseal {{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }} package has been installed
+      msg: Check whether the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package has been installed
 
   - stat:
       path: /usr/bin/kubeseal
@@ -509,16 +518,16 @@
   - name: Install the Bitnami Labs kubeseal package
     block:
     - debug:
-        msg: Install the Bitnami Labs kubeseal {{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }} package
+        msg: Install the Bitnami Labs kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package
 
-    - name: Check whether the kubeseal {{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }} package has been downloaded
+    - name: Check whether the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/kubeseal-linux-amd64-{{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }}
+      local_action: stat path=packages/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}
       register: kubeseal_package_stat_result
 
-    - name: Download the kubeseal {{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }} package
+    - name: Download the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package
       become: no
-      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }}'
+      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='packages/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
       when: (kubeseal_package_stat_result.stat.exists == False)
 
     - name: Remove the existing kubeseal binary
@@ -528,12 +537,12 @@
 
     - name: Copy the kubeseal binary
       copy:
-        src: packages/kubeseal-linux-amd64-{{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }}
+        src: packages/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}
         dest: /usr/bin
 
     - name: Rename the kubeseal binary
       command:
-        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ k8s_bitnami_labs_sealed_secrets_kubeseal_version }} /usr/bin/kubeseal
+        cmd: mv /usr/bin/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} /usr/bin/kubeseal
         creates: /usr/bin/kubeseal
 
     - name: Set the permissions for the kubeseal binary
@@ -544,7 +553,7 @@
         mode: '0770'
         state: file
 
-    when: (kubeseal_installed_version.startswith(k8s_bitnami_labs_sealed_secrets_kubeseal_version) == False)
+    when: (kubeseal_installed_version.startswith(k8s_config.bitnami_labs_sealed_secrets_kubeseal_version) == False)
 
   - name: Check if Bitnami Labs Sealed Secrets is installed
     shell:
@@ -560,10 +569,10 @@
 
     - name: Install Bitnami Labs Sealed Secrets using Helm
       command:
-        cmd: /usr/bin/helm upgrade sealed-secrets stable/sealed-secrets --install --version={{ k8s_bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
+        cmd: /usr/bin/helm upgrade sealed-secrets stable/sealed-secrets --install --version={{ k8s_config.bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
 
-    when: sealed_secrets_installed_helm_chart_version_output.stdout != k8s_bitnami_labs_sealed_secrets_helm_chart_version
+    when: sealed_secrets_installed_helm_chart_version_output.stdout != k8s_config.bitnami_labs_sealed_secrets_helm_chart_version
 
-  when: ((groups['k8s_master'][0] == inventory_hostname) and (k8s_bitnami_labs_sealed_secrets_enabled is defined) and (k8s_bitnami_labs_sealed_secrets_enabled != None) and (k8s_bitnami_labs_sealed_secrets_enabled == true))
+  when: ((groups['k8s_master'][0] == inventory_hostname) and (k8s_config.bitnami_labs_sealed_secrets_enabled is defined) and (k8s_config.bitnami_labs_sealed_secrets_enabled != None) and (k8s_config.bitnami_labs_sealed_secrets_enabled == true))
 
 

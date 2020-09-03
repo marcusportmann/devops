@@ -25,7 +25,7 @@ burrow_defaults:
     secure_client_port: 2182
     username: burrow
 
-burrow_config: "{{ burrow_defaults | combine(burrow | default({})) }}"
+burrow_config: "{{ burrow_defaults | combine(burrow | default({}), recursive=True) }}"
 
 
 
