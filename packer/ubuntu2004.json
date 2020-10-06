@@ -176,8 +176,8 @@
       ],
       "scripts": [
         "scripts/ubuntu2004/base.sh",
-        "scripts/ubuntu2004/cloud-init.sh",
         "scripts/ubuntu2004/vmtools.sh",
+        "scripts/ubuntu2004/cloud-init.sh",        
         "scripts/ubuntu2004/vagrant.sh",
         "scripts/ubuntu2004/cleanup.sh",
         "scripts/ubuntu2004/zerodisk.sh"
