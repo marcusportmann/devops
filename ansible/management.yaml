@@ -1,0 +1,8 @@
+# This playbook configures the management components.
+
+- name: Configure a AWX host
+  hosts: awx
+  become: yes
+  become_user: root
+  roles:
+  - awx
