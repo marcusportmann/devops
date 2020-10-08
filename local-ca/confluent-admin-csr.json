@@ -1,0 +1,12 @@
+{
+  "CN": "confluent-admin",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-admin"
+    }
+  ]
+}

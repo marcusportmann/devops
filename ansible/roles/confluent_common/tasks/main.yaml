@@ -39,17 +39,17 @@
 
     - name: Check whether the Confluent {{ confluent_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/confluent-community-{{ confluent_config.package_version }}-2.12.tar.gz
+      local_action: stat path=packages/confluent-community-{{ confluent_config.package_version }}.tar.gz
       register: confluent_package_stat_result
 
     - name: Download the Confluent {{ confluent_config.package_version }} package
       become: no
-      local_action: get_url url='https://packages.confluent.io/archive/{{ confluent_config.major_version }}/confluent-community-{{ confluent_config.package_version }}-2.12.tar.gz' dest='packages/confluent-community-{{ confluent_config.package_version }}-2.12.tar.gz'
+      local_action: get_url url='https://packages.confluent.io/archive/{{ confluent_config.major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz' dest='packages/confluent-community-{{ confluent_config.package_version }}.tar.gz'
       when: (confluent_package_stat_result.stat.exists == False)
 
     - name: Extract the Confluent {{ confluent_config.package_version }} package
       unarchive:
-        src: packages/confluent-community-{{ confluent_config.package_version }}-2.12.tar.gz
+        src: packages/confluent-community-{{ confluent_config.package_version }}.tar.gz
         dest: /opt
 
     - name: Create the symbolic link to the Confluent {{ confluent_config.package_version }} package

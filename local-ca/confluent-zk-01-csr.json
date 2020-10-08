@@ -1,0 +1,15 @@
+{
+  "CN": "confluent-zk-01.local",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "confluent-zk-01.local"
+    }
+  ],
+  "hosts": [
+    "confluent-zk-01.local"
+  ]
+}

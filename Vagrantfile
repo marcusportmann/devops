@@ -663,8 +663,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
             # Create the data disk if required and associate it with the VM
             if host[$provider]['data_disk']
-              data_disk_size = host[$provider]['data_disk'] / 1024
-
+              data_disk_size = host[$provider]['data_disk'].to_i / 1024
+              
               # { size: 30, datastore: 'datastore1' }
               vmware_esxi.guest_storage = [ data_disk_size ]
             end

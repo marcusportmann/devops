@@ -37,13 +37,13 @@
 
   - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki directory
     copy:
-      src: pki/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key
-      dest: /etc/kubernetes/pki/ca.key
+      src: "{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
+      dest: '/etc/kubernetes/pki/ca.key'
 
   - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki directory
     copy:
-      src: pki/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
-      dest: /etc/kubernetes/pki/ca.crt
+      src: "{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+      dest: '/etc/kubernetes/pki/ca.crt'
 
 
 #  _  _____ ____    _____ ___ ____  ____ _____   __  __    _    ____ _____ _____ ____
@@ -65,13 +65,13 @@
       block:
       - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key
-          dest: /etc/kubernetes/pki/etcd/ca.key
+          src: "{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
+          dest: '/etc/kubernetes/pki/etcd/ca.key'
 
       - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
-          dest: /etc/kubernetes/pki/etcd/ca.crt
+          src: "{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+          dest: '/etc/kubernetes/pki/etcd/ca.crt'
 
       when: k8s_config.etcd_topology == 'stacked'
 
@@ -79,18 +79,18 @@
       block:
       - name: Copy the etcd-ca.crt certificate to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/etcd-ca.crt
-          dest: /etc/kubernetes/pki/etcd/ca.crt
+          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/etcd-ca.crt'
+          dest: '/etc/kubernetes/pki/etcd/ca.crt'
 
       - name: Copy the {{ inventory_hostname_short }}.key private key to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.key
-          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.key
+          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.key'
+          dest: '/etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.key'
 
       - name: Copy the {{ inventory_hostname_short }}.crt certificate to the /etc/kubernetes/pki/etcd directory
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.crt
-          dest: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.crt
+          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.crt'
+          dest: '/etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.crt'
 
       when: k8s_config.etcd_topology == 'external'
 

@@ -2,11 +2,11 @@
 # file: roles/confluent_common/defaults/main.yaml
 
 confluent_defaults:
-  major_version: 5.5
-  package_version: 5.5.0
+  major_version: 6.0
+  package_version: 6.0.0
 
 prometheus_jmx_exporter:
   enabled: true
-  package_version: 0.13.0
+  package_version: 0.14.0
 
 confluent_config: "{{ confluent_defaults | combine(confluent | default({}), recursive=True) }}"
