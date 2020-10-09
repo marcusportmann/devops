@@ -1278,7 +1278,7 @@ hosts:
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     test
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1311,7 +1311,7 @@ hosts:
   domain:             local
   type:               centos8
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1344,7 +1344,7 @@ hosts:
   domain:             local
   type:               ubuntu1804
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1352,8 +1352,8 @@ hosts:
     fqdn:             test-ubuntu1804.local
     domain:           local
     ip:               192.168.184.45/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
@@ -1361,8 +1361,8 @@ hosts:
     fqdn:             test-ubuntu1804.local
     domain:           local
     ip:               192.168.184.45/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1377,7 +1377,7 @@ hosts:
   domain:             local
   type:               ubuntu2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,grafana
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1385,8 +1385,8 @@ hosts:
     fqdn:             test-ubuntu2004.local
     domain:           local
     ip:               192.168.184.44/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
@@ -1394,8 +1394,8 @@ hosts:
     fqdn:             test-ubuntu2004.local
     domain:           local
     ip:               192.168.184.44/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024

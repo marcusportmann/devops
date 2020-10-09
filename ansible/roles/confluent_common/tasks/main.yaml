@@ -39,17 +39,17 @@
 
     - name: Check whether the Confluent {{ confluent_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/confluent-community-{{ confluent_config.package_version }}.tar.gz
+      local_action: stat path=packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz
       register: confluent_package_stat_result
 
     - name: Download the Confluent {{ confluent_config.package_version }} package
       become: no
-      local_action: get_url url='https://packages.confluent.io/archive/{{ confluent_config.major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz' dest='packages/confluent-community-{{ confluent_config.package_version }}.tar.gz'
+      local_action: get_url url='https://packages.confluent.io/archive/{{ confluent_config.major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz' dest='packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz'
       when: (confluent_package_stat_result.stat.exists == False)
 
     - name: Extract the Confluent {{ confluent_config.package_version }} package
       unarchive:
-        src: packages/confluent-community-{{ confluent_config.package_version }}.tar.gz
+        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz
         dest: /opt
 
     - name: Create the symbolic link to the Confluent {{ confluent_config.package_version }} package
@@ -92,17 +92,17 @@
 
     - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} has been downloaded
       become: no
-      local_action: stat path=packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
+      local_action: stat path=packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
       register: prometheus_jmx_exporter_package_stat_result
 
     - name: Download the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       become: no
-      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
+      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
       when: (prometheus_jmx_exporter_package_stat_result.stat.exists == False)
 
     - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       copy:
-        src: packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
+        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
         dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
 
     when: (prometheus_jmx_exporter_installed_stat_result.stat.exists == False)

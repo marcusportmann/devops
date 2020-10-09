@@ -35,12 +35,12 @@
 
     - name: Check whether the istioctl {{ k8s_config.istio.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
       register: istioctl_package_stat_result
 
     - name: Download the istioctl {{ k8s_config.istio.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='packages/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.istioctl_package_checksum }}
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.istioctl_package_checksum }}
       when: (istioctl_package_stat_result.stat.exists == False)
 
     - name: Remove the existing istioctl binary
@@ -50,7 +50,7 @@
 
     - name: Extract the istioctl binary from the istioctl {{ k8s_config.istio.package_version }} package
       unarchive:
-        src: packages/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
+        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
         dest: /usr/bin
         creates: /usr/bin/istioctl
 
@@ -64,17 +64,17 @@
     block:
     - name: Check whether the istio {{ k8s_config.istio.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
+      local_action: stat path=packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
       register: istio_package_stat_result
 
     - name: Download the istio {{ k8s_config.istio.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='packages/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.package_checksum }}
+      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.package_checksum }}
       when: (istio_package_stat_result.stat.exists == False)
 
     - name: Extract the istio {{ k8s_config.istio.package_version }} package
       unarchive:
-        src: packages/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
+        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istio-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz
         dest: /var/tmp/ansible
         creates: /var/tmp/ansible/istio-{{ k8s_config.istio.package_version }}
 

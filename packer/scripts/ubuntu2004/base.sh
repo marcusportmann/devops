@@ -38,8 +38,7 @@ echo "install rds /bin/false" > /etc/modprobe.d/rds.conf
 echo "install tipc /bin/false" > /etc/modprobe.d/tipc.conf
 
 echo "Install the Zscaler certificate"
-mkdir -p /usr/share/ca-certificates/extra
-cat <<EOT >> /usr/share/ca-certificates/extra/zscalar.crt
+cat <<EOT >> /usr/local/share/ca-certificates/zscaler.crt
 -----BEGIN CERTIFICATE-----
 MIIE0zCCA7ugAwIBAgIJANu+mC2Jt3uTMA0GCSqGSIb3DQEBCwUAMIGhMQswCQYD
 VQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTERMA8GA1UEBxMIU2FuIEpvc2Ux
