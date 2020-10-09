@@ -102,32 +102,32 @@
 
       - name: Copy the Istio intermediate CA private key to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.key'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.key'
           dest: '/var/tmp/ansible/istio-pki/ca-key.pem'
 
       - name: Copy the Istio intermediate CA certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.crt'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.crt'
           dest: '/var/tmp/ansible/istio-pki/ca-cert.pem'
 
       - name: Copy the Root CA certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
           dest: '/var/tmp/ansible/istio-pki/root-cert.pem'
 
       - name: Copy the Istio intermediate CA certificate chain to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca-chain.crt'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca-chain.crt'
           dest: '/var/tmp/ansible/istio-pki/cert-chain.pem'
 
       - name: Copy the Istio ingress gateway private key to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.key'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.key'
           dest: '/var/tmp/ansible/istio-pki/ingressgateway-key.pem'
 
       - name: Copy the Istio ingress gateway certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.crt'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.crt'
           dest: '/var/tmp/ansible/istio-pki/ingressgateway-cert.pem'
 
     - name: Create the istio-system namespace

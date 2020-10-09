@@ -1,6 +1,8 @@
 ---
 # file: roles/confluent_zookeeper/defaults/main.yaml
 
+pki_root: ../../../pki
+
 confluent_defaults:
   zookeeper:
     etc_directory: /etc/zookeeper

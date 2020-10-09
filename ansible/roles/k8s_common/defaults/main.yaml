@@ -1,6 +1,8 @@
 ---
 # file: roles/k8s_common/defaults/main.yaml
 
+pki_root: ../../../pki
+
 k8s_defaults:
   centos_package_version: 1.18.4
   ubuntu_package_version: 1.18.4-00

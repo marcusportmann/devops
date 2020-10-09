@@ -487,93 +487,93 @@ cp demo-consumer.p12 ../demos/kafka/demo-consumer/pki/demo-consumer.p12
 #                                                   
 
 # Generate the Confluent hosts private keys and certificates
-cfssl genkey confluent-zk-01-csr.json | cfssljson -bare confluent-zk-01
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zk-01.csr | cfssljson -bare confluent-zk-01
-mv -f confluent-zk-01-key.pem confluent-zk-01.key
-mv -f confluent-zk-01.pem confluent-zk-01.crt
-cp confluent-zk-01.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-zk-01.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-zk-01.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-zk-01.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-zk-local-01-csr.json | cfssljson -bare confluent-zk-local-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zk-local-01.csr | cfssljson -bare confluent-zk-local-01
+mv -f confluent-zk-local-01-key.pem confluent-zk-local-01.key
+mv -f confluent-zk-local-01.pem confluent-zk-local-01.crt
+cp confluent-zk-local-01.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-zk-local-01.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-zk-local-01.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-zk-local-01.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-zk-02-csr.json | cfssljson -bare confluent-zk-02
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zk-02.csr | cfssljson -bare confluent-zk-02
-mv -f confluent-zk-02-key.pem confluent-zk-02.key
-mv -f confluent-zk-02.pem confluent-zk-02.crt
-cp confluent-zk-02.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-zk-02.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-zk-02.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-zk-02.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-zk-local-02-csr.json | cfssljson -bare confluent-zk-local-02
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zk-local-02.csr | cfssljson -bare confluent-zk-local-02
+mv -f confluent-zk-local-02-key.pem confluent-zk-local-02.key
+mv -f confluent-zk-local-02.pem confluent-zk-local-02.crt
+cp confluent-zk-local-02.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-zk-local-02.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-zk-local-02.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-zk-local-02.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-zk-03-csr.json | cfssljson -bare confluent-zk-03
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zk-03.csr | cfssljson -bare confluent-zk-03
-mv -f confluent-zk-03-key.pem confluent-zk-03.key
-mv -f confluent-zk-03.pem confluent-zk-03.crt
-cp confluent-zk-03.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-zk-03.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-zk-03.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-zk-03.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-zk-local-03-csr.json | cfssljson -bare confluent-zk-local-03
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-zk-local-03.csr | cfssljson -bare confluent-zk-local-03
+mv -f confluent-zk-local-03-key.pem confluent-zk-local-03.key
+mv -f confluent-zk-local-03.pem confluent-zk-local-03.crt
+cp confluent-zk-local-03.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-zk-local-03.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-zk-local-03.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-zk-local-03.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-ks-01-csr.json | cfssljson -bare confluent-ks-01
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-ks-01.csr | cfssljson -bare confluent-ks-01
-mv -f confluent-ks-01-key.pem confluent-ks-01.key
-mv -f confluent-ks-01.pem confluent-ks-01.crt
-cp confluent-ks-01.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-ks-01.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-ks-01.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-ks-01.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-ks-local-01-csr.json | cfssljson -bare confluent-ks-local-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-ks-local-01.csr | cfssljson -bare confluent-ks-local-01
+mv -f confluent-ks-local-01-key.pem confluent-ks-local-01.key
+mv -f confluent-ks-local-01.pem confluent-ks-local-01.crt
+cp confluent-ks-local-01.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-ks-local-01.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-ks-local-01.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-ks-local-01.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-ks-02-csr.json | cfssljson -bare confluent-ks-02
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-ks-02.csr | cfssljson -bare confluent-ks-02
-mv -f confluent-ks-02-key.pem confluent-ks-02.key
-mv -f confluent-ks-02.pem confluent-ks-02.crt
-cp confluent-ks-02.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-ks-02.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-ks-02.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-ks-02.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-ks-local-02-csr.json | cfssljson -bare confluent-ks-local-02
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-ks-local-02.csr | cfssljson -bare confluent-ks-local-02
+mv -f confluent-ks-local-02-key.pem confluent-ks-local-02.key
+mv -f confluent-ks-local-02.pem confluent-ks-local-02.crt
+cp confluent-ks-local-02.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-ks-local-02.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-ks-local-02.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-ks-local-02.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-ks-03-csr.json | cfssljson -bare confluent-ks-03
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-ks-03.csr | cfssljson -bare confluent-ks-03
-mv -f confluent-ks-03-key.pem confluent-ks-03.key
-mv -f confluent-ks-03.pem confluent-ks-03.crt
-cp confluent-ks-03.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-ks-03.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-ks-03.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-ks-03.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-ks-local-03-csr.json | cfssljson -bare confluent-ks-local-03
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-ks-local-03.csr | cfssljson -bare confluent-ks-local-03
+mv -f confluent-ks-local-03-key.pem confluent-ks-local-03.key
+mv -f confluent-ks-local-03.pem confluent-ks-local-03.crt
+cp confluent-ks-local-03.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-ks-local-03.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-ks-local-03.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-ks-local-03.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-sr-01-csr.json | cfssljson -bare confluent-sr-01
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-01.csr | cfssljson -bare confluent-sr-01
-mv -f confluent-sr-01-key.pem confluent-sr-01.key
-mv -f confluent-sr-01.pem confluent-sr-01.crt
-cp confluent-sr-01.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-01.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-01.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-sr-01.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-sr-local-01-csr.json | cfssljson -bare confluent-sr-local-01
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-local-01.csr | cfssljson -bare confluent-sr-local-01
+mv -f confluent-sr-local-01-key.pem confluent-sr-local-01.key
+mv -f confluent-sr-local-01.pem confluent-sr-local-01.crt
+cp confluent-sr-local-01.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-sr-local-01.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-sr-local-01.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-sr-local-01.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-sr-02-csr.json | cfssljson -bare confluent-sr-02
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-02.csr | cfssljson -bare confluent-sr-02
-mv -f confluent-sr-02-key.pem confluent-sr-02.key
-mv -f confluent-sr-02.pem confluent-sr-02.crt
-cp confluent-sr-02.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-02.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-02.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-sr-02.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-sr-local-02-csr.json | cfssljson -bare confluent-sr-local-02
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-local-02.csr | cfssljson -bare confluent-sr-local-02
+mv -f confluent-sr-local-02-key.pem confluent-sr-local-02.key
+mv -f confluent-sr-local-02.pem confluent-sr-local-02.crt
+cp confluent-sr-local-02.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-sr-local-02.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-sr-local-02.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-sr-local-02.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-sr-03-csr.json | cfssljson -bare confluent-sr-03
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-03.csr | cfssljson -bare confluent-sr-03
-mv -f confluent-sr-03-key.pem confluent-sr-03.key
-mv -f confluent-sr-03.pem confluent-sr-03.crt
-cp confluent-sr-03.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-03.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-03.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-sr-03.crt ../ansible/pki/confluent_zookeeper/local
+cfssl genkey confluent-sr-local-03-csr.json | cfssljson -bare confluent-sr-local-03
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-local-03.csr | cfssljson -bare confluent-sr-local-03
+mv -f confluent-sr-local-03-key.pem confluent-sr-local-03.key
+mv -f confluent-sr-local-03.pem confluent-sr-local-03.crt
+cp confluent-sr-local-03.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-sr-local-03.crt ../ansible/pki/confluent_kafka_server/local
+cp confluent-sr-local-03.key ../ansible/pki/confluent_zookeeper/local
+cp confluent-sr-local-03.crt ../ansible/pki/confluent_zookeeper/local
 
-cfssl genkey confluent-admin-csr.json | cfssljson -bare confluent-admin
-cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client confluent-admin.csr | cfssljson -bare confluent-admin
-mv -f confluent-admin-key.pem confluent-admin.key
-mv -f confluent-admin.pem confluent-admin.crt
-cp confluent-admin.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-admin.crt ../ansible/pki/confluent_kafka_server/local
+cfssl genkey confluent-admin-local-csr.json | cfssljson -bare confluent-admin-local
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client confluent-admin-local.csr | cfssljson -bare confluent-admin-local
+mv -f confluent-admin-local-key.pem confluent-admin-local.key
+mv -f confluent-admin-local.pem confluent-admin-local.crt
+cp confluent-admin-local.key ../ansible/pki/confluent_kafka_server/local
+cp confluent-admin-local.crt ../ansible/pki/confluent_kafka_server/local
 
 
 

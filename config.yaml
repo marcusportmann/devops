@@ -7,8 +7,6 @@
 #
 variables:
 
-  roles_pki_root: ../../../pki
-
   burrow:
     clusters:
       dev:

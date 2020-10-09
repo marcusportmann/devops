@@ -23,12 +23,12 @@
   block:
   - name: Copy the root CA certificate for the Kubernetes cluster to the /etc/pki/ca-trust/source/anchors directory
     copy:
-      src: '{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
+      src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
       dest: '/etc/pki/ca-trust/source/anchors/ca.crt'
 
   - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /etc/pki/ca-trust/source/anchors directory
     copy:
-      src: "{{ roles_pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+      src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
       dest: "/etc/pki/ca-trust/source/anchors/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
 
   - name: Update the certificate index to install the CA certificate for the Kubernetes cluster

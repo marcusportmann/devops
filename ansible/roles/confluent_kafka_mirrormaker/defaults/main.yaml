@@ -1,6 +1,8 @@
 ---
 # file: roles/confluent_kafka_mirrormaker/defaults/main.yaml
 
+pki_root: ../../../pki
+
 confluent_defaults:
   kafka_mirrormaker:
     etc_directory: /etc/kafka

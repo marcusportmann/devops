@@ -1,6 +1,8 @@
 ---
 # file: roles/k8s_monitoring/tasks/main.yaml
 
+pki_root: ../../../pki
+
 k8s_defaults:
   monitoring:
     enabled: false

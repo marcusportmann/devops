@@ -1,6 +1,8 @@
 ---
 # file: roles/k8s_master/defaults/main.yaml
 
+pki_root: ../../../pki
+
 k8s_defaults:
   bitnami_labs_sealed_secrets_enabled: true
   bitnami_labs_sealed_secrets_helm_chart_version: 1.10.1

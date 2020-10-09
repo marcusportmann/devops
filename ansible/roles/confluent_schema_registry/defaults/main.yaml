@@ -1,6 +1,8 @@
 ---
 # file: roles/confluent_schema_registry/defaults/main.yaml
 
+pki_root: ../../../pki
+
 confluent_defaults:
   schema_registry:
     etc_directory: /etc/schema-registry
