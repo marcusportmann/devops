@@ -1,0 +1,15 @@
+{
+  "CN": "monitoring",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "CN": "monitoring"
+    }
+  ],
+  "hosts": [
+    "monitoring.local"
+  ]
+}

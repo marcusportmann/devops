@@ -38,14 +38,19 @@
 
 
 mkdir -p ../ansible/pki/burrow/dev
-mkdir -p ../ansible/pki/confluent_kafka_mirrormaker/digital_dev
-mkdir -p ../ansible/pki/confluent_kafka_server/digital_dev
-mkdir -p ../ansible/pki/confluent_schema_registry/digital_dev
-mkdir -p ../ansible/pki/confluent_zookeeper/digital_dev
+mkdir -p ../ansible/pki/burrow/local
 mkdir -p ../ansible/pki/confluent_kafka_mirrormaker/analytics_dev
 mkdir -p ../ansible/pki/confluent_kafka_server/analytics_dev
 mkdir -p ../ansible/pki/confluent_schema_registry/analytics_dev
 mkdir -p ../ansible/pki/confluent_zookeeper/analytics_dev
+mkdir -p ../ansible/pki/confluent_kafka_mirrormaker/digital_dev
+mkdir -p ../ansible/pki/confluent_kafka_server/digital_dev
+mkdir -p ../ansible/pki/confluent_schema_registry/digital_dev
+mkdir -p ../ansible/pki/confluent_zookeeper/digital_dev
+mkdir -p ../ansible/pki/confluent_kafka_mirrormaker/local
+mkdir -p ../ansible/pki/confluent_kafka_server/local
+mkdir -p ../ansible/pki/confluent_schema_registry/local
+mkdir -p ../ansible/pki/confluent_zookeeper/local
 mkdir -p ../ansible/pki/etcd/digital_dev
 mkdir -p ../ansible/pki/k8s_common/digital_dev
 mkdir -p ../ansible/pki/k8s_istio/digital_dev
@@ -70,14 +75,19 @@ keytool -importcert -noprompt -trustcacerts -alias "Local Root Certificate Autho
 # keytool -list -keystore ca.p12 -storetype PKCS12 -storepass ulLdVI9hUP46gaQj
 # openssl pkcs12 -info -in ca.p12 -passin pass:ulLdVI9hUP46gaQj
 cp ca.crt ../ansible/pki/burrow/dev/ca.crt
-cp ca.crt ../ansible/pki/confluent_kafka_mirrormaker/digital_dev/ca.crt
-cp ca.crt ../ansible/pki/confluent_kafka_server/digital_dev/ca.crt
-cp ca.crt ../ansible/pki/confluent_schema_registry/digital_dev/ca.crt
-cp ca.crt ../ansible/pki/confluent_zookeeper/digital_dev/ca.crt
+cp ca.crt ../ansible/pki/burrow/local/ca.crt
 cp ca.crt ../ansible/pki/confluent_kafka_mirrormaker/analytics_dev/ca.crt
 cp ca.crt ../ansible/pki/confluent_kafka_server/analytics_dev/ca.crt
 cp ca.crt ../ansible/pki/confluent_schema_registry/analytics_dev/ca.crt
 cp ca.crt ../ansible/pki/confluent_zookeeper/analytics_dev/ca.crt
+cp ca.crt ../ansible/pki/confluent_kafka_mirrormaker/digital_dev/ca.crt
+cp ca.crt ../ansible/pki/confluent_kafka_server/digital_dev/ca.crt
+cp ca.crt ../ansible/pki/confluent_schema_registry/digital_dev/ca.crt
+cp ca.crt ../ansible/pki/confluent_zookeeper/digital_dev/ca.crt
+cp ca.crt ../ansible/pki/confluent_kafka_mirrormaker/local/ca.crt
+cp ca.crt ../ansible/pki/confluent_kafka_server/local/ca.crt
+cp ca.crt ../ansible/pki/confluent_schema_registry/local/ca.crt
+cp ca.crt ../ansible/pki/confluent_zookeeper/local/ca.crt
 cp ca.crt ../ansible/pki/etcd/digital_dev/ca.crt
 cp ca.crt ../ansible/pki/k8s_common/digital_dev/ca.crt
 cp ca.crt ../ansible/pki/k8s_istio/digital_dev/ca.crt
@@ -545,28 +555,22 @@ cfssl genkey confluent-sr-local-01-csr.json | cfssljson -bare confluent-sr-local
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-local-01.csr | cfssljson -bare confluent-sr-local-01
 mv -f confluent-sr-local-01-key.pem confluent-sr-local-01.key
 mv -f confluent-sr-local-01.pem confluent-sr-local-01.crt
-cp confluent-sr-local-01.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-local-01.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-local-01.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-sr-local-01.crt ../ansible/pki/confluent_zookeeper/local
+cp confluent-sr-local-01.key ../ansible/pki/confluent_schema_registry/local
+cp confluent-sr-local-01.crt ../ansible/pki/confluent_schema_registry/local
 
 cfssl genkey confluent-sr-local-02-csr.json | cfssljson -bare confluent-sr-local-02
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-local-02.csr | cfssljson -bare confluent-sr-local-02
 mv -f confluent-sr-local-02-key.pem confluent-sr-local-02.key
 mv -f confluent-sr-local-02.pem confluent-sr-local-02.crt
-cp confluent-sr-local-02.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-local-02.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-local-02.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-sr-local-02.crt ../ansible/pki/confluent_zookeeper/local
+cp confluent-sr-local-02.key ../ansible/pki/confluent_schema_registry/local
+cp confluent-sr-local-02.crt ../ansible/pki/confluent_schema_registry/local
 
 cfssl genkey confluent-sr-local-03-csr.json | cfssljson -bare confluent-sr-local-03
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server confluent-sr-local-03.csr | cfssljson -bare confluent-sr-local-03
 mv -f confluent-sr-local-03-key.pem confluent-sr-local-03.key
 mv -f confluent-sr-local-03.pem confluent-sr-local-03.crt
-cp confluent-sr-local-03.key ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-local-03.crt ../ansible/pki/confluent_kafka_server/local
-cp confluent-sr-local-03.key ../ansible/pki/confluent_zookeeper/local
-cp confluent-sr-local-03.crt ../ansible/pki/confluent_zookeeper/local
+cp confluent-sr-local-03.key ../ansible/pki/confluent_schema_registry/local
+cp confluent-sr-local-03.crt ../ansible/pki/confluent_schema_registry/local
 
 cfssl genkey confluent-admin-local-csr.json | cfssljson -bare confluent-admin-local
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client confluent-admin-local.csr | cfssljson -bare confluent-admin-local
@@ -574,6 +578,14 @@ mv -f confluent-admin-local-key.pem confluent-admin-local.key
 mv -f confluent-admin-local.pem confluent-admin-local.crt
 cp confluent-admin-local.key ../ansible/pki/confluent_kafka_server/local
 cp confluent-admin-local.crt ../ansible/pki/confluent_kafka_server/local
+
+# Generate the monitoring hosts private keys and certificates
+cfssl genkey monitoring-csr.json | cfssljson -bare monitoring
+cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile client_server monitoring.csr | cfssljson -bare monitoring
+mv -f monitoring-key.pem monitoring.key
+mv -f monitoring.pem monitoring.crt
+cp monitoring.key ../ansible/pki/burrow/local
+cp monitoring.crt ../ansible/pki/burrow/local
 
 
 

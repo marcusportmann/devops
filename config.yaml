@@ -15,9 +15,26 @@ variables:
         # One of confluent, kafka, or standalone
         zookeeper_cluster_type: kafka
         zookeeper_cluster_name: digital_dev
+      local:
+        hosts:
+        - monitoring.local
+        zookeeper_cluster_type: confluent
+        zookeeper_cluster_name: local
 
   confluent:
     clusters:
+      analytics_dev:
+        kafka_server_hosts:
+        - confluent-zkks-analytics-dev-01.local
+        - confluent-zkks-analytics-dev-02.local
+        - confluent-zkks-analytics-dev-03.local
+        schema_registry_hosts:
+        - confluent-sr-analytics-dev-01.local
+        zookeeper_hosts:
+        - confluent-zkks-analytics-dev-01.local
+        - confluent-zkks-analytics-dev-02.local
+        - confluent-zkks-analytics-dev-03.local
+    
       digital_dev:
         replicate_to_cluster: analytics_dev
         kafka_mirrormaker_hosts:
@@ -33,17 +50,19 @@ variables:
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
 
-      analytics_dev:
+      local:
         kafka_server_hosts:
-        - confluent-zkks-analytics-dev-01.local
-        - confluent-zkks-analytics-dev-02.local
-        - confluent-zkks-analytics-dev-03.local
+        - confluent-ks-local-01.local
+        - confluent-ks-local-02.local
+        - confluent-ks-local-03.local                
         schema_registry_hosts:
-        - confluent-sr-analytics-dev-01.local
+        - confluent-sr-local-01.local
+        - confluent-sr-local-02.local
+        - confluent-sr-local-03.local
         zookeeper_hosts:
-        - confluent-zkks-analytics-dev-01.local
-        - confluent-zkks-analytics-dev-02.local
-        - confluent-zkks-analytics-dev-03.local
+        - confluent-zk-local-01.local
+        - confluent-zk-local-02.local
+        - confluent-zk-local-03.local        
 
   etcd:
     clusters:
@@ -275,23 +294,23 @@ profiles:
   hosts:
   - awx.local
   - monitoring.local
-  - confluent-zk-01.local
-  - confluent-ks-01.local
-  - confluent-sr-01.local
+  - confluent-zk-local-01.local
+  - confluent-ks-local-01.local
+  - confluent-sr-local-01.local
 
 - name: platforms-full
   hosts:
   - awx.local
   - monitoring.local
-  - confluent-zk-01.local
-  - confluent-zk-02.local
-  - confluent-zk-03.local
-  - confluent-ks-01.local
-  - confluent-ks-02.local
-  - confluent-ks-03.local
-  - confluent-sr-01.local
-  - confluent-sr-02.local
-  - confluent-sr-03.local  
+  - confluent-zk-local-01.local
+  - confluent-zk-local-02.local
+  - confluent-zk-local-03.local
+  - confluent-ks-local-01.local
+  - confluent-ks-local-02.local
+  - confluent-ks-local-03.local
+  - confluent-sr-local-01.local
+  - confluent-sr-local-02.local
+  - confluent-sr-local-03.local  
 
 - name: test-all
   hosts:
@@ -1445,15 +1464,16 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               confluent-zk-01.local
+- name:               confluent-zk-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:     monitored,confluent_zookeeper
+#  ansible_groups:     
   virtualbox:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-zk-01.local
+    fqdn:             confluent-zk-local-01.local
     domain:           local
     ip:               192.168.184.21/24
     gateway:          192.168.184.2
@@ -1462,7 +1482,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-zk-01.local
+    fqdn:             confluent-zk-local-01.local
     domain:           local
     ip:               192.168.184.21/24
     gateway:          192.168.184.2
@@ -1471,13 +1491,13 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-zk-01.local
+    fqdn:             confluent-zk-local-01.local
     domain:           local
     ip:               192.168.0.21/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
     
-- name:               confluent-zk-02.local
+- name:               confluent-zk-local-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     
@@ -1485,7 +1505,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-zk-02.local
+    fqdn:             confluent-zk-local-02.local
     domain:           local
     ip:               192.168.184.22/24
     gateway:          192.168.184.2
@@ -1494,7 +1514,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-zk-02.local
+    fqdn:             confluent-zk-local-02.local
     domain:           local
     ip:               192.168.184.22/24
     gateway:          192.168.184.2
@@ -1503,13 +1523,13 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-zk-02.local
+    fqdn:             confluent-zk-local-02.local
     domain:           local
     ip:               192.168.0.22/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
   
-- name:               confluent-zk-03.local
+- name:               confluent-zk-local-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     
@@ -1517,7 +1537,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-zk-03.local
+    fqdn:             confluent-zk-local-03.local
     domain:           local
     ip:               192.168.184.23/24
     gateway:          192.168.184.2
@@ -1526,7 +1546,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-zk-03.local
+    fqdn:             confluent-zk-local-03.local
     domain:           local
     ip:               192.168.184.23/24
     gateway:          192.168.184.2
@@ -1535,21 +1555,22 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-zk-03.local
+    fqdn:             confluent-zk-local-03.local
     domain:           local
     ip:               192.168.0.23/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               confluent-ks-01.local
+- name:               confluent-ks-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:     monitored,confluent_kafka_server  
+#  ansible_groups:     
   virtualbox:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-ks-01.local
+    fqdn:             confluent-ks-local-01.local
     domain:           local
     ip:               192.168.184.24/24
     gateway:          192.168.184.2
@@ -1558,7 +1579,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-ks-02.local
+    fqdn:             confluent-ks-local-01.local
     domain:           local
     ip:               192.168.184.24/24
     gateway:          192.168.184.2
@@ -1567,13 +1588,13 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-ks-01.local
+    fqdn:             confluent-ks-local-01.local
     domain:           local
     ip:               192.168.0.24/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               confluent-ks-02.local
+- name:               confluent-ks-local-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     
@@ -1581,7 +1602,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-ks-02.local
+    fqdn:             confluent-ks-local-02.local
     domain:           local
     ip:               192.168.184.25/24
     gateway:          192.168.184.2
@@ -1590,7 +1611,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-ks-02.local
+    fqdn:             confluent-ks-local-02.local
     domain:           local
     ip:               192.168.184.25/24
     gateway:          192.168.184.2
@@ -1599,13 +1620,13 @@ hosts:
     cpus:             2
     memory:           2560
     data_disk:        40960
-    fqdn:             confluent-ks-02.local
+    fqdn:             confluent-ks-local-02.local
     domain:           local
     ip:               192.168.0.25/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               confluent-ks-03.local
+- name:               confluent-ks-local-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     
@@ -1613,7 +1634,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-ks-03.local
+    fqdn:             confluent-ks-local-03.local
     domain:           local
     ip:               192.168.184.26/24
     gateway:          192.168.184.2
@@ -1622,7 +1643,7 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        10240
-    fqdn:             confluent-ks-03.local
+    fqdn:             confluent-ks-local-03.local
     domain:           local
     ip:               192.168.184.26/24
     gateway:          192.168.184.2
@@ -1631,20 +1652,21 @@ hosts:
     cpus:             2
     memory:           1536
     data_disk:        40960
-    fqdn:             confluent-ks-03.local
+    fqdn:             confluent-ks-local-03.local
     domain:           local
     ip:               192.168.0.26/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
      
-- name:               confluent-sr-01.local
+- name:               confluent-sr-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:
+  ansible_groups:     monitored,confluent_schema_registry  
+#  ansible_groups:
   virtualbox:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-01.local
+    fqdn:             confluent-sr-local-01.local
     domain:           local
     ip:               192.168.184.27/24
     gateway:          192.168.184.2
@@ -1652,7 +1674,7 @@ hosts:
   vmware_desktop:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-01.local
+    fqdn:             confluent-sr-local-01.local
     domain:           local
     ip:               192.168.184.27/24
     gateway:          192.168.184.2
@@ -1660,20 +1682,20 @@ hosts:
   vmware_esxi:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-01.local
+    fqdn:             confluent-sr-local-01.local
     domain:           local
     ip:               192.168.0.27/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               confluent-sr-02.local
+- name:               confluent-sr-local-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-02.local
+    fqdn:             confluent-sr-local-02.local
     domain:           local
     ip:               192.168.184.28/24
     gateway:          192.168.184.2
@@ -1681,7 +1703,7 @@ hosts:
   vmware_desktop:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-02.local
+    fqdn:             confluent-sr-local-02.local
     domain:           local
     ip:               192.168.184.28/24
     gateway:          192.168.184.2
@@ -1689,20 +1711,20 @@ hosts:
   vmware_esxi:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-02.local
+    fqdn:             confluent-sr-local-02.local
     domain:           local
     ip:               192.168.0.28/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               confluent-sr-03.local
+- name:               confluent-sr-local-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-03.local
+    fqdn:             confluent-sr-local-03.local
     domain:           local
     ip:               192.168.184.29/24
     gateway:          192.168.184.2
@@ -1710,7 +1732,7 @@ hosts:
   vmware_desktop:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-03.local
+    fqdn:             confluent-sr-local-03.local
     domain:           local
     ip:               192.168.184.29/24
     gateway:          192.168.184.2
@@ -1718,7 +1740,7 @@ hosts:
   vmware_esxi:
     cpus:             1
     memory:           1024
-    fqdn:             confluent-sr-03.local
+    fqdn:             confluent-sr-local-03.local
     domain:           local
     ip:               192.168.0.29/24
     gateway:          192.168.0.1
@@ -1727,7 +1749,8 @@ hosts:
 - name:               monitoring.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:
+  ansible_groups:     monitored,prometheus_server,grafana  
+#  ansible_groups:
   virtualbox:
     cpus:             1
     memory:           1024

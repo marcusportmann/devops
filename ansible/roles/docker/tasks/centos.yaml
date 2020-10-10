@@ -6,6 +6,8 @@
   - set_fact:
       containerd_package: '{{ docker_config.centos7.containerd.package }}'
   - set_fact:
+      containerd_package_version: '{{ docker_config.centos7.containerd.package_version }}'      
+  - set_fact:
       docker_ce_cli_package: '{{ docker_config.centos7.docker_ce_cli.package }}'
   - set_fact:
       docker_ce_cli_package_version: '{{ docker_config.centos7.docker_ce_cli.package_version }}'
@@ -19,6 +21,8 @@
   block:
   - set_fact:
       containerd_package: '{{ docker_config.centos8.containerd.package }}'
+  - set_fact:
+      containerd_package_version: '{{ docker_config.centos8.containerd.package_version }}'            
   - set_fact:
       docker_ce_cli_package: '{{ docker_config.centos8.docker_ce_cli.package }}'
   - set_fact:
