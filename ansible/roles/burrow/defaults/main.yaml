@@ -1,6 +1,7 @@
 ---
 # file: roles/burrow/defaults/main.yaml
 
+credentials_root: "{{ playbook_dir }}/credentials"
 pki_root: ../../../pki
 
 burrow_defaults:

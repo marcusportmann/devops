@@ -109,6 +109,10 @@
 # |  _ \| | | | |_) | |_) | | | \ \ /\ / /
 # | |_) | |_| |  _ <|  _ <| |_| |\ V  V /
 # |____/ \___/|_| \_\_| \_\\___/  \_/\_/
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
+  become: false
+  
 - name: Install Burrow
   block:
   - debug:
@@ -245,13 +249,13 @@
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Confluent ZooKeeper cluster
   set_fact:
-    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/confluent/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "confluent")
 
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Kafka ZooKeeper cluster
   set_fact:
-    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/kafka/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "kafka")
 
 - name: Create the {{ burrow_config.log_directory }} directory

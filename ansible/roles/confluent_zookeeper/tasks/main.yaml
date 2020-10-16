@@ -56,6 +56,10 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |    / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
+  become: false
+  
 - name: Add the {{ confluent_config.zookeeper.group }} group
   group:
     name: '{{ confluent_config.zookeeper.group }}'
@@ -124,11 +128,11 @@
 
   - name: Generate or retrieve the password for the ZooKeeper keystore
     set_fact:
-      zookeeper_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      zookeeper_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the ZooKeeper truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the ZooKeeper keystore and ZooKeeper CA truststore
     block:
@@ -204,11 +208,11 @@
 
 - name: Generate or retrieve the password for the ZooKeeper admin user
   set_fact:
-    zookeeper_admin_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"
+    zookeeper_admin_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Generate or retrieve the password for the ZooKeeper confluent user
   set_fact:
-    zookeeper_kafka_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+    zookeeper_kafka_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the ZooKeeper JAAS configuration file
   template:

@@ -130,10 +130,10 @@
           src: scheduler-config.yaml.j2
           dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
-      - name: Create the scheduler-policy.cfg configuration file under the /etc/kubernetes/scheduler directory
-        template:
-          src: scheduler-policy.cfg.j2
-          dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
+#      - name: Create the scheduler-policy.cfg configuration file under the /etc/kubernetes/scheduler directory
+#        template:
+#          src: scheduler-policy.cfg.j2
+#          dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
 
     - name: Create the Kubernetes cluster configuration
       template:

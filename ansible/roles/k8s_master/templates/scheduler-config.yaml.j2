@@ -1,11 +1,38 @@
-apiVersion: kubescheduler.config.k8s.io/v1alpha1
+apiVersion: kubescheduler.config.k8s.io/v1beta1
 kind: KubeSchedulerConfiguration
-schedulerName: default-scheduler
-algorithmSource:
-  policy:
-    file:
-      path: /etc/kubernetes/scheduler/scheduler-policy.cfg
 leaderElection:
   leaderElect: true
 clientConnection:
   kubeconfig: /etc/kubernetes/scheduler.conf
+extenders:
+{% if ((k8s_config.storage.topolvm.enabled is defined) and (k8s_config.storage.topolvm.enabled != None) and (k8s_config.storage.topolvm.enabled == true))  %}    
+
+{% if ('k8s_master' in groups) %}
+
+- urlPrefix: "http://127.0.0.1:9251"
+  filterVerb: "predicate"
+  prioritizeVerb: "prioritize"
+  nodeCacheCapable: false
+  weight: 1
+  managedResources:
+  - name: "topolvm.cybozu.com/capacity"
+    ignoredByScheduler: true
+
+
+{% endif %}
+
+{% if ('k8s_master' not in groups) %}
+
+- urlPrefix: "http://topolvm-scheduler.topolvm-system:9251"
+  filterVerb: "predicate"
+  prioritizeVerb: "prioritize"
+  nodeCacheCapable: false
+  weight: 1
+  managedResources:
+  - name: "topolvm.cybozu.com/capacity"
+    ignoredByScheduler: true
+
+{% endif %}
+
+{% endif %}
+

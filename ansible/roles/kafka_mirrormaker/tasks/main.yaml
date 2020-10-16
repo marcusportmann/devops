@@ -33,6 +33,10 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |  | || ||  _ <|  _ <| |_| |  _ <  | |  | |/ ___ \| . \| |___|  _ <
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |_|  |_|___|_| \_\_| \_\\___/|_| \_\ |_|  |_/_/   \_\_|\_\_____|_| \_\
 #
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
+  become: false
+
 - name: Add the {{ kafka_config.kafka_mirrormaker.group }} group
   group:
     name: '{{ kafka_config.kafka_mirrormaker.group }}'
@@ -101,11 +105,11 @@
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
     set_fact:
-      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_mirrormaker_keystore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka MirrorMaker keystore and CA truststore
     block:
@@ -151,7 +155,7 @@
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   template:

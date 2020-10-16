@@ -83,7 +83,7 @@ sasl:
 {% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
   {{ confluent_cluster_name }}:
     username: {{ burrow_config.kafka_server.username }}
-    password: {{ lookup('file', 'credentials/confluent/' + confluent_cluster_name + '/kafka-server-burrow-user-password') }}
+    password: {{ lookup('file', '{{ credentials_root }}/confluent/' + confluent_cluster_name + '/kafka-server-burrow-user-password') }}
     handshake-first: true
     mechanism: SCRAM-SHA-256
 {% endif %}
@@ -94,7 +94,7 @@ sasl:
 {% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
   {{ kafka_cluster_name }}:
     username: {{ burrow_config.kafka_server.username }}
-    password: {{ lookup('file', 'credentials/kafka/' + kafka_cluster_name + '/kafka-server-burrow-user-password') }}
+    password: {{ lookup('file', '{{ credentials_root }}/kafka/' + kafka_cluster_name + '/kafka-server-burrow-user-password') }}
     handshake-first: true
     mechanism: SCRAM-SHA-256
 {% endif %}

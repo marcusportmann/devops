@@ -1467,8 +1467,7 @@ hosts:
 - name:               confluent-zk-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,confluent_zookeeper
-#  ansible_groups:     
+  ansible_groups:     
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1564,8 +1563,7 @@ hosts:
 - name:               confluent-ks-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,confluent_kafka_server  
-#  ansible_groups:     
+  ansible_groups:     
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1661,8 +1659,7 @@ hosts:
 - name:               confluent-sr-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,confluent_schema_registry  
-#  ansible_groups:
+  ansible_groups:
   virtualbox:
     cpus:             1
     memory:           1024
@@ -1749,8 +1746,7 @@ hosts:
 - name:               monitoring.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,grafana  
-#  ansible_groups:
+  ansible_groups:
   virtualbox:
     cpus:             1
     memory:           1024

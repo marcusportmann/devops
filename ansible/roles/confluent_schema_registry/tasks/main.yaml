@@ -56,6 +56,10 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |    ___) | |___|  _  | |___| |  | |/ ___ \  |  _ <| |__| |_| || | ___) || | |  _ < | |
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |____/ \____|_| |_|_____|_|  |_/_/   \_\ |_| \_\_____\____|___|____/ |_| |_| \_\|_|
 #
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
+  become: false
+
 - name: Add the {{ confluent_config.schema_registry.group }} group
   group:
     name: '{{ confluent_config.schema_registry.group }}'
@@ -124,11 +128,11 @@
 
   - name: Generate or retrieve the password for the Schema Registry keystore
     set_fact:
-      schema_registry_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      schema_registry_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Schema Registry keystore and CA truststore
     block:
@@ -174,7 +178,7 @@
 # NOTE: This is the password Schema Registry uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Schema Registry user
   set_fact:
-    kafka_server_schema_registry_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_schema_registry_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Schema Registry configuration file
   template:

@@ -1,6 +1,7 @@
 ---
 # file: roles/confluent_schema_registry/defaults/main.yaml
 
+credentials_root: "{{ playbook_dir }}/credentials"
 pki_root: ../../../pki
 
 confluent_defaults:

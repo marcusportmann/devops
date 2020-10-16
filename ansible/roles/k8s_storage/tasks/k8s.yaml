@@ -24,28 +24,23 @@
 # | |__| |_| | |\  | |_| |  _  | |_| |  _ <| |\  |
 # |_____\___/|_| \_|\____|_| |_|\___/|_| \_\_| \_|
 #
-- name: Install the Postgres Operator if it is enabled
+- name: Install Longhorn if it is enabled
   block:
-  - name: Check if the Postgres Operator is installed
+  - name: Check if Longhorn is installed
     shell:
       cmd: /usr/bin/helm -n longhorn-system list --filter 'longhorn' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
     register: longhorn_installed_helm_chart_version_output
 
   - name: Install Longhorn
     block:
-    - name: Copy the Longhorn v{{ k8s_config.storage.longhorn.helm_chart_version }} Helm chart
-      copy:
-        src: longhorn-{{ k8s_config.storage.longhorn.helm_chart_version }}.tgz
-        dest: /var/tmp/ansible/longhorn-{{ k8s_config.storage.longhorn.helm_chart_version }}.tgz
-
     - name: Generate the Longhorn Helm values
       template:
-        src: longhorn-values.yaml.j2
+        src: longhorn/longhorn-values.yaml.j2
         dest: /var/tmp/ansible/longhorn-values.yaml
 
     - name: Install Longhorn using Helm
       command:
-        cmd: /usr/bin/helm -n longhorn-system upgrade --install longhorn /var/tmp/ansible/longhorn-{{ k8s_config.storage.longhorn.helm_chart_version }}.tgz --values=/var/tmp/ansible/longhorn-values.yaml
+        cmd: /usr/bin/helm upgrade longhorn longhorn/longhorn --install --version={{ k8s_config.storage.longhorn.helm_chart_version }} --namespace=longhorn-system --values=/var/tmp/ansible/longhorn-values.yaml
 
     - name: Wait for 10 seconds for the Longhorn initialization to start
       wait_for:
@@ -58,7 +53,7 @@
     when: longhorn_installed_helm_chart_version_output.stdout != k8s_config.storage.longhorn.helm_chart_version
 
   - template:
-      src: longhorn.yaml.j2
+      src: longhorn/longhorn.yaml.j2
       dest: /var/tmp/ansible/longhorn.yaml
 
   - name: Apply the Longhorn configuration to Kubernetes
@@ -67,66 +62,6 @@
 
   when: ((k8s_config.storage.longhorn.enabled is defined) and (k8s_config.storage.longhorn.enabled != None) and (k8s_config.storage.longhorn.enabled == true))
 
-#
-#- name: Install Longhorn if it is enabled
-#  block:
-#  - name: Check if the longhorn-system namespace exists
-#    shell:
-#      cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep longhorn-system | wc -l
-#    register: longhorn_system_namespace_exists_output
-#
-#  - block:
-#    - template:
-#        src: longhorn.yaml.j2
-#        dest: /var/tmp/ansible/longhorn.yaml
-#
-#    - name: Apply the Longhorn configuration to Kubernetes
-#      command:
-#        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/longhorn.yaml
-#
-#    - name: Wait for the Longhorn compatible-csi-attacher deployment to complete
-#      command:
-#        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/compatible-csi-attacher
-#      register: wait_for_longhorn_compatible_csi_attacher_deployment_result
-#      until: wait_for_longhorn_compatible_csi_attacher_deployment_result is succeeded
-#      retries: 180
-#      delay: 10
-#
-#    - name: Wait for the Longhorn csi-attacher deployment to complete
-#      command:
-#        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/csi-attacher
-#      register: wait_for_longhorn_csi_attacher_deployment_result
-#      until: wait_for_longhorn_csi_attacher_deployment_result is succeeded
-#      retries: 180
-#      delay: 10
-#
-#    - name: Wait for the Longhorn csi-provisioner deployment to complete
-#      command:
-#        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/csi-provisioner
-#      register: wait_for_longhorn_csi_provisioner_deployment_result
-#      until: wait_for_longhorn_csi_provisioner_deployment_result is succeeded
-#      retries: 180
-#      delay: 10
-#
-#    - name: Wait for the Longhorn longhorn-driver-deployer deployment to complete
-#      command:
-#        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/longhorn-driver-deployer
-#      register: wait_for_longhorn_driver_deployer_deployment_result
-#      until: wait_for_longhorn_driver_deployer_deployment_result is succeeded
-#      retries: 180
-#      delay: 10
-#
-#    - name: Wait for the Longhorn longhorn-ui deployment to complete
-#      command:
-#        cmd: /usr/bin/kubectl -n longhorn-system rollout status -w deployment/longhorn-ui
-#      register: wait_for_longhorn_ui_deployment_result
-#      until: wait_for_longhorn_ui_deployment_result is succeeded
-#      retries: 180
-#      delay: 10
-#
-#    when: longhorn_system_namespace_exists_output.stdout == '0'
-#
-#  when: ((k8s_config.storage.longhorn.enabled is defined) and (k8s_config.storage.longhorn.enabled != None) and (k8s_config.storage.longhorn.enabled == true))
 
 #  _____ ___  ____   ___  _ __     ____  __
 # |_   _/ _ \|  _ \ / _ \| |\ \   / /  \/  |
@@ -144,22 +79,22 @@
 
   - block:
     - set_fact:
-        topolvm_mutatingwebhook_key: "{{ lookup('file', './files/pki/' + k8s_config.cluster_name + '/k8s-topolvm-mutatingwebhook-' + k8s_config.cluster_name.replace('_', '-') + '.key') | b64encode }}"
+        topolvm_mutatingwebhook_key: "{{ lookup('file', '{{ pki_root }}/{{ role_name }}/' + k8s_config.cluster_name + '/k8s-topolvm-mutatingwebhook-' + k8s_config.cluster_name.replace('_', '-') + '.key') | b64encode }}"
 
     - set_fact:
-        topolvm_mutatingwebhook_crt: "{{ lookup('file', './files/pki/' + k8s_config.cluster_name + '/k8s-topolvm-mutatingwebhook-' + k8s_config.cluster_name.replace('_', '-') + '.crt') | b64encode }}"
+        topolvm_mutatingwebhook_crt: "{{ lookup('file', '{{ pki_root }}/{{ role_name }}/' + k8s_config.cluster_name + '/k8s-topolvm-mutatingwebhook-' + k8s_config.cluster_name.replace('_', '-') + '.crt') | b64encode }}"
 
     - set_fact:
-        topolvm_mutatingwebhook_ca_bundle: "{{ lookup('file', './files/pki/' + k8s_config.cluster_name + '/ca-bundle.crt') | b64encode }}"
+        topolvm_mutatingwebhook_ca_bundle: "{{ lookup('file', '{{ pki_root }}/{{ role_name }}/' + k8s_config.cluster_name + '/ca-bundle.crt') | b64encode }}"
 
     - name: Generate the initial TopoLVM configuration
       template:
-        src: topolvm-init.yaml.j2
-        dest: /var/tmp/ansible/topolvm-init.yaml
+        src: topolvm/init.yaml.j2
+        dest: /var/tmp/ansible/topolvm/init.yaml
 
     - name: Apply the initial TopoLVM configuration to Kubernetes
       command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-init.yaml
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm/init.yaml
 
     - name: Disable the TopoLVM mutating webhook for the kube-system namespace
       command:
@@ -175,57 +110,65 @@
         cmd: /usr/bin/kubectl label --overwrite ns olm topolvm.cybozu.com/webhook=ignore
       when: ((k8s_operator_lifecycle_manager_enabled is defined) and (k8s_operator_lifecycle_manager_enabled != None) and (k8s_operator_lifecycle_manager_enabled == true))
 
-    - name: Generate the TopoLVM Custom Resource Definition configuration
+    - name: Create the /var/tmp/ansible/topolvm/manifests/base directory
+      file:
+        path: /var/tmp/ansible/topolvm/manifests/base
+        owner: root
+        group: root
+        mode: '0700'
+        state: directory
+    
+    - name: Copy the base TopoLVM deployment files
       template:
-        src: topolvm-crd.yaml.j2
-        dest: /var/tmp/ansible/topolvm-crd.yaml
+        src: "{{ item }}"
+        dest: /var/tmp/ansible/topolvm/manifests/base/{{ item | basename | regex_replace('\.j2$', '') }}
+      with_fileglob:
+        - ../templates/topolvm/manifests/base/*
 
-    - name: Apply the TopoLVM Custom Resource Definition configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-crd.yaml
-
-    - name: Generate the TopoLVM Pod Security Policy configuration
-      template:
-        src: topolvm-psp.yaml.j2
-        dest: /var/tmp/ansible/topolvm-psp.yaml
-
-    - name: Apply the TopoLVM Pod Security Policy configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-psp.yaml
-
-    - name: Generate the TopoLVM Scheduler daemonset configuration
-      template:
-        src: topolvm-scheduler-daemonset.yaml.j2
-        dest: /var/tmp/ansible/topolvm-scheduler.yaml
+    - block:
+      - name: Create the /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler directory
+        file:
+          path: /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler
+          owner: root
+          group: root
+          mode: '0700'
+          state: directory
+    
+      - name: Copy the daemonset-scheduler TopoLVM deployment files
+        template:
+          src: "{{ item }}"
+          dest: /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler/{{ item | basename | regex_replace('\.j2$', '') }}
+        with_fileglob:
+          - ../templates/topolvm/manifests/overlays/daemonset-scheduler/*
+    
+      - name: Apply the daemonset-scheduler TopoLVM configuration to Kubernetes
+        shell:
+          cmd: "/usr/bin/kustomize build /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler | kubectl apply -f -"
+    
       when: ('k8s_master' in groups.keys())
 
-    - name: Generate the TopoLVM Scheduler service configuration
-      template:
-        src: topolvm-scheduler-service.yaml.j2
-        dest: /var/tmp/ansible/topolvm-scheduler.yaml
+    - block:
+      - name: Create the /var/tmp/ansible/topolvm/manifests/overlays/deployment-scheduler directory
+        file:
+          path: /var/tmp/ansible/topolvm/manifests/overlays/deployment-scheduler
+          owner: root
+          group: root
+          mode: '0700'
+          state: directory
+    
+      - name: Copy the deployment-scheduler TopoLVM deployment files
+        template:
+          src: "{{ item }}"
+          dest: /var/tmp/ansible/topolvm/manifests/overlays/deployment-scheduler/{{ item | basename | regex_replace('\.j2$', '') }}
+        with_fileglob:
+          - ../templates/topolvm/manifests/overlays/deployment-scheduler/*
+
+      - name: Apply the deployment-scheduler TopoLVM configuration to Kubernetes
+        shell:
+          cmd: "/usr/bin/kustomize build /var/tmp/ansible/topolvm/manifests/overlays/deployment-scheduler | kubectl apply -f -"
+    
       when: ('k8s_master' not in groups.keys())
 
-    - name: Apply the TopoLVM Scheduler configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-scheduler.yaml
-
-    - name: Generate the TopoLVM Mutating Webhooks configuration
-      template:
-        src: topolvm-mutatingwebhooks.yaml.j2
-        dest: /var/tmp/ansible/topolvm-mutatingwebhooks.yaml
-
-    - name: Apply the TopoLVM Mutating Webhooks configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-mutatingwebhooks.yaml
-
-    - name: Generate the TopoLVM Controller configuration
-      template:
-        src: topolvm-controller.yaml.j2
-        dest: /var/tmp/ansible/topolvm-controller.yaml
-
-    - name: Apply the TopoLVM Controller configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-controller.yaml
 
     - name: Wait for the TopoLVM controller deployment to complete
       command:
@@ -234,24 +177,6 @@
       until: ((wait_for_topo_lvm_controller_deployment_result is succeeded) and (wait_for_topo_lvm_controller_deployment_result.stdout == 'deployment "controller" successfully rolled out'))
       retries: 180
       delay: 15
-
-    - name: Generate the TopoLVM Node configuration
-      template:
-        src: topolvm-node.yaml.j2
-        dest: /var/tmp/ansible/topolvm-node.yaml
-
-    - name: Apply the TopoLVM Node configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-node.yaml
-
-    - name: Generate the TopoLVM Provisioner configuration
-      template:
-        src: topolvm-provisioner.yaml.j2
-        dest: /var/tmp/ansible/topolvm-provisioner.yaml
-
-    - name: Apply the TopoLVM Provisioner configuration to Kubernetes
-      command:
-        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/topolvm-provisioner.yaml
 
     when: topolvm_system_namespace_exists_output.stdout == '0'
 

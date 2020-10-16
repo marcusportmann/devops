@@ -7,11 +7,11 @@ k8s_defaults:
   storage:
     longhorn:
       enabled: false
-      helm_chart_version: 1.0.0
+      helm_chart_version: 1.0.2
     topolvm:
       enabled: false
-      lvmd_version: 0.4.7
-      version: 0.4.7
+      lvmd_version: 0.6.0
+      version: 0.6.0
       volume_group: system
 
 k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"
