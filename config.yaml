@@ -84,10 +84,18 @@ variables:
     monitoring:
       enabled: true
       elasticsearch:
+        enabled: true
         cluster_type: standalone
         persistent_volume_size: 10Gi
         persistent_volume_storage_class_name: default-local-storage
+      grafana:
+        enabled: true
+      jaeger:
+        enabled: true
+      kibana:
+        enabld: true
       prometheus:
+        enabled: true
         alert_manager:
           persistent_volume_storage_class_name: default-local-storage
           persistent_volume_size: 2Gi

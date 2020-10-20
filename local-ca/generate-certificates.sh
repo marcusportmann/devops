@@ -305,11 +305,11 @@ cfssl gencert -initca k8s-istio-ca-digital-dev-csr.json | cfssljson -bare k8s-is
 cfssl sign -ca=ca.crt -ca-key=ca.key -config=ca-config.json -profile intermediate_ca k8s-istio-ca-digital-dev.csr | cfssljson -bare k8s-istio-ca-digital-dev
 mv -f k8s-istio-ca-digital-dev-key.pem k8s-istio-ca-digital-dev.key
 mv -f k8s-istio-ca-digital-dev.pem k8s-istio-ca-digital-dev.crt
-cat k8s-istio-ca-digital-dev.crt > k8s-istio-ca-digital-dev-chain.crt
-cat ca.crt >> k8s-istio-ca-digital-dev-chain.crt
+cat k8s-istio-ca-digital-dev.crt > k8s-istio-ca-chain-digital-dev.crt
+cat ca.crt >> k8s-istio-ca-chain-digital-dev.crt
 cp k8s-istio-ca-digital-dev.key ../ansible/pki/k8s_istio/digital_dev
 cp k8s-istio-ca-digital-dev.crt ../ansible/pki/k8s_istio/digital_dev
-cp k8s-istio-ca-digital-dev-chain.crt ../ansible/pki/k8s_istio/digital_dev
+cp k8s-istio-ca-chain-digital-dev.crt ../ansible/pki/k8s_istio/digital_dev
 
 
 # Generate the Istio ingress gateway private key and certificate

@@ -28,7 +28,6 @@
   roles:
   - k8s_storage
 
-
 #
 #- name: Apply the configuration for the Kubernetes operator components to the Kubernetes cluster
 #  hosts: k8s_master:k8s_worker
@@ -44,14 +43,11 @@
   roles:
   - k8s_monitoring
 
-#- name: Apply the configuration for the Istio components to the Kubernetes cluster
-#  hosts: k8s_master:k8s_worker
-#  become: yes
-#  become_user: root
-#  roles:
-#  - k8s_istio
-#
-#
-#
+- name: Apply the configuration for the Istio components to the Kubernetes cluster
+  hosts: k8s_master:k8s_worker
+  become: yes
+  become_user: root
+  roles:
+  - k8s_istio
 
 

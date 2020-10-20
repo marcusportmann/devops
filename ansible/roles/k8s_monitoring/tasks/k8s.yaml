@@ -284,7 +284,7 @@
 
     - name: Check if Jaeger is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger-tracing' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+        cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: jaeger_installed_helm_chart_version_output
 
     - name: Install Jaeger
@@ -333,7 +333,7 @@
 
       - name: Install Prometheus using Helm
         command:
-          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ k8s_config.monitoring.prometheus.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
+          cmd: /usr/bin/helm upgrade prometheus prometheus-community/prometheus --install --version={{ k8s_config.monitoring.prometheus.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
 
       - name: Wait for 10 seconds for the Prometheus initialization to start
         wait_for:
@@ -391,7 +391,7 @@
 
       - name: Install Grafana using Helm
         command:
-          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ k8s_config.monitoring.grafana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+          cmd: /usr/bin/helm upgrade grafana grafana/grafana --install --version={{ k8s_config.monitoring.grafana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
 
       - name: Wait for 10 seconds for the Grafana initialization to start
         wait_for:

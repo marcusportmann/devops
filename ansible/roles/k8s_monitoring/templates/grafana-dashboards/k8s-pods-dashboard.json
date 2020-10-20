@@ -160,7 +160,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "kube_pod_container_status_restarts{pod=~\"$Pod.*$\"}",
+          "expr": "sum (kube_pod_container_status_restarts_total{pod=~\"$Pod.*$\"})",
           "intervalFactor": 2,
           "refId": "A",
           "step": 40
@@ -330,6 +330,7 @@
         "rgba(245, 54, 54, 0.9)"
       ],
       "datasource": "Prometheus",
+      "decimals": 2,
       "editable": true,
       "error": false,
       "format": "percent",
@@ -386,7 +387,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum (container_memory_working_set_bytes{pod=~\"^$Pod$\"}) / sum (machine_memory_bytes{kubernetes_io_hostname=~\"^$Node$\"}) * 100",
+          "expr": "sum (container_memory_working_set_bytes{pod=~\"^$Pod$\"}) / sum (node_memory_MemTotal_bytes{kubernetes_node=~\"^$Node$\"}) * 100",
           "interval": "10s",
           "intervalFactor": 1,
           "refId": "A",
@@ -396,7 +397,7 @@
       "thresholds": "65, 90",
       "title": "Pod memory usage",
       "type": "singlestat",
-      "valueFontSize": "80%",
+      "valueFontSize": "50%",
       "valueMaps": [
         {
           "op": "=",
@@ -473,7 +474,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum (rate (container_cpu_usage_seconds_total{pod=~\"^$Pod$\"}[1m])) / sum (machine_cpu_cores{kubernetes_io_hostname=~\"^$Node$\"}) * 100",
+          "expr": "sum (rate (container_cpu_usage_seconds_total{pod=~\"^$Pod$\"}[1m])) / sum(rate (node_cpu_seconds_total{kubernetes_node=~\"^$Node$\",mode=\"user\"}[1m])) * 100",
           "interval": "10s",
           "intervalFactor": 1,
           "refId": "A",
@@ -483,7 +484,7 @@
       "thresholds": "65, 90",
       "title": "Pod CPU usage",
       "type": "singlestat",
-      "valueFontSize": "80%",
+      "valueFontSize": "50%",
       "valueMaps": [
         {
           "op": "=",
@@ -644,7 +645,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum (machine_memory_bytes{kubernetes_io_hostname=~\"^$Node$\"})",
+          "expr": "sum (node_memory_MemTotal_bytes{kubernetes_node=~\"^$Node$\"})",
           "intervalFactor": 2,
           "refId": "A",
           "step": 40

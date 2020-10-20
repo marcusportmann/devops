@@ -15,19 +15,19 @@ k8s_defaults:
       persistent_volume_storage_class_name: default-local-storage
 
     grafana:
-      enabled: true
+      enabled: false
       helm_chart_version: 5.7.9
 
     jaeger:
-      enabled: true
+      enabled: false
       helm_chart_version: 0.39.0
 
     kibana:
-      enabled: true
+      enabled: false
       helm_chart_version: 7.9.2
 
     prometheus:
-      enabled: true
+      enabled: false
       helm_chart_version: 11.16.2
 
       alert_manager:

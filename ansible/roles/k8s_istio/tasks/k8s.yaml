@@ -80,7 +80,7 @@
 
   - name: Check if the correct version of Istio is installed
     shell:
-      cmd: /usr/bin/istioctl version --remote | grep 'pilot version' | awk -F ':' {'print $2'} | tr -d ' '
+      cmd: /usr/bin/istioctl version --remote | grep 'control plane version' | awk -F ':' {'print $2'} | tr -d ' '
     register: istio_installed_version_output
 
   - set_fact:
@@ -90,7 +90,13 @@
   - set_fact:
       istio_installed_version: ''
     when: (istio_installed_version_output is not succeeded)
-
+    
+  - name: Create the Istio configuration file
+    template:
+      src: istio-config.yaml.j2
+      dest: /var/tmp/ansible/istio-config.yaml
+    register: create_istio_configuration_file_result
+    
   - name: Install and configure the Istio service mesh
     block:
     - name: Copy the keys and certificates for the Istio service mesh
@@ -102,12 +108,12 @@
 
       - name: Copy the Istio intermediate CA private key to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.key'
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-istio-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/istio-pki/ca-key.pem'
 
       - name: Copy the Istio intermediate CA certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca.crt'
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-istio-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/istio-pki/ca-cert.pem'
 
       - name: Copy the Root CA certificate to the /var/tmp/ansible/istio-pki directory
@@ -117,17 +123,17 @@
 
       - name: Copy the Istio intermediate CA certificate chain to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ca-chain.crt'
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-istio-ca-chain-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/istio-pki/cert-chain.pem'
 
       - name: Copy the Istio ingress gateway private key to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.key'
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-istio-ingressgateway-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/istio-pki/ingressgateway-key.pem'
 
       - name: Copy the Istio ingress gateway certificate to the /var/tmp/ansible/istio-pki directory
         copy:
-          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-{{ k8s_config.cluster_name }}-istio-ingressgateway.crt'
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-istio-ingressgateway-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/istio-pki/ingressgateway-cert.pem'
 
     - name: Create the istio-system namespace
@@ -163,14 +169,9 @@
 
       when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
 
-    - name: Create the Istio configuration file
-      template:
-        src: istio-config.yaml.j2
-        dest: /var/tmp/ansible/istio-config.yaml
-
     - name: Initialize the Istio service mesh using the custom profile
       shell:
-        cmd: /usr/bin/istioctl manifest apply -f /var/tmp/ansible/istio-config.yaml
+        cmd: "/usr/bin/istioctl manifest install -f /var/tmp/ansible/istio-config.yaml"
       when: ((k8s_config.istio.demo_configuration_enabled is not defined) or (k8s_config.istio.demo_configuration_enabled == None) or (k8s_config.istio.demo_configuration_enabled == false))
 
     - name: Initialize the Istio service mesh using the demo profile
@@ -247,7 +248,7 @@
 
       when: (((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True)))
 
-    when: (istio_installed_version != k8s_config.istio.package_version)
+    when: ((istio_installed_version != k8s_config.istio.package_version) or (create_istio_configuration_file_result.changed == True))
 
   when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))
 
