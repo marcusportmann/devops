@@ -183,6 +183,17 @@
       command:
         cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=1200s
 
+    - name: Enable the default Istio ingress gateway
+      block:
+      - name: Generate the default Istio ingress gateway configuration
+        template:
+          src: istio-default-gateway.yaml.j2
+          dest: /var/tmp/ansible/istio-default-gateway.yaml.yaml
+
+      - name: Apply the default Istio ingress gateway configuration
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-default-gateway.yaml
+
     - name: Enable ingress for Jaeger
       block:
       - name: Generate the Jaeger ingress configuration
