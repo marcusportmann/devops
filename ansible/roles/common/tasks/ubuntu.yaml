@@ -4,6 +4,12 @@
 - debug:
     msg: Applying the Ubuntu-specific common configuration
 
+
+
+
+
+
+
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group
