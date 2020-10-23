@@ -1,8 +1,8 @@
 ---
-# file: roles/kafka_zookeeper/tasks/centos.yaml
+# file: roles/kafka_zookeeper/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific ZooKeeper configuration
+    msg: Applying the RedHat-specific ZooKeeper configuration
 
 - name: Allow ZooKeeper hosts access to tcp port 2888
   firewalld:

@@ -1,8 +1,58 @@
 ---
-# file: roles/common/tasks/centos.yaml
+# file: roles/common/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific common configuration
+    msg: Applying the RedHat-specific common configuration
+
+- name: Enable the EPEL YUM repo
+  yum_repository:
+    name: epel
+    description: EPEL YUM repo
+    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
+        
+- name: Install the bzip2 package
+  yum:
+    name: bzip2
+    state: present
+
+- name: Install the ntp package
+  yum:
+    name: ntp
+    state: present
+
+- name: Install the ntpdate package
+  yum:
+    name: ntpdate
+    state: present
+
+- name: Install the python-yaml package
+  yum:
+    name: python-yaml
+    state: present
+
+- name: Install the screen package
+  yum:
+    name: screen
+    state: present
+
+- name: Install the net-tools package
+  yum:
+    name: net-tools
+    state: present
+
+- name: Install the python2-pip package
+  yum:
+    name: python2-pip
+    state: present
+
+- name: Upgrade pip
+  pip: 
+    name: pip
+    extra_args: --upgrade
+
+- name: Install the pyOpenSSL package using pip
+  pip: 
+    name: pyOpenSSL
 
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:

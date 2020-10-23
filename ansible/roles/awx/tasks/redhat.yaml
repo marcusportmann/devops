@@ -1,8 +1,8 @@
 ---
-# file: roles/awx/tasks/centos.yaml
+# file: roles/awx/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific common configuration
+    msg: Applying the RedHat-specific common configuration
     
 - name: Allow access to tcp port 53 and udp port 53 (DNS)
   block:
@@ -20,7 +20,7 @@
 - name: Install the python3 package
   yum:
     name: python3
-    state: latest
+    state: present
   when: ansible_distribution_major_version == '7'
 
 - pip:
@@ -38,7 +38,7 @@
 - name: Install the dnsmasq package
   yum:
     name: dnsmasq
-    state: latest
+    state: present
     
 - systemd:
     name: dnsmasq.service
@@ -48,7 +48,7 @@
 - name: Install the jq package
   yum:
     name: jq
-    state: latest
+    state: present
     
 - name: Check if docker has been configured to use dnsmasq for DNS
   shell:
@@ -75,12 +75,12 @@
 - name: Install the git package
   yum:
     name: git
-    state: latest
+    state: present
 
 - name: Install the ansible package
   yum:
     name: ansible
-    state: latest
+    state: present
 
 - name: Clone the AWX git repo
   git:

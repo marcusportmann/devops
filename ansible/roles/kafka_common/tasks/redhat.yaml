@@ -1,0 +1,10 @@
+---
+# file: roles/kafka_common/tasks/redhat.yaml
+
+- debug:
+    msg: Applying the RedHat-specific Kafka common configuration
+
+- name: Install the java-11-openjdk package
+  yum:
+    name: java-11-openjdk
+    state: present

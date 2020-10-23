@@ -1,8 +1,8 @@
 ---
-# file: roles/monitored/tasks/centos.yaml
+# file: roles/monitored/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific monitored configuration
+    msg: Applying the RedHat-specific monitored configuration
 
 - name: Allow all hosts access to tcp port {{ prometheus_node_exporter_port }}
   firewalld:

@@ -1,8 +1,8 @@
 ---
-# file: roles/k8s_load_balancer/tasks/centos.yaml
+# file: roles/k8s_load_balancer/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific Kubernetes load balancer configuration
+    msg: Applying the RedHat-specific Kubernetes load balancer configuration
 
 - name: Install the haproxy package
   yum: name=haproxy state=latest

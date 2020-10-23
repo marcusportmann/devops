@@ -1,8 +1,8 @@
 ---
-# file: roles/k8s_common/tasks/centos.yaml
+# file: roles/k8s_common/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific Kubernetes common configuration
+    msg: Applying the RedHat-specific Kubernetes common configuration
 
 - name: Collect the system service facts
   service_facts:
@@ -198,17 +198,17 @@
 - name: Install the arptables package
   yum:
     name: arptables
-    state: latest
+    state: present
 
 - name: Install the ebtables package
   yum:
     name: ebtables
-    state: latest
+    state: present
 
 - name: Install the jq package
   yum:
     name: jq
-    state: latest
+    state: present
 
 
 #  _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____    ____   _    ____ _  __    _    ____ _____ ____

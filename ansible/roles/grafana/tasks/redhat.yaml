@@ -1,8 +1,8 @@
 ---
-# file: roles/grafana/tasks/centos.yaml
+# file: roles/grafana/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific Grafana configuration
+    msg: Applying the RedHat-specific Grafana configuration
 
 - name: Allow all hosts access to tcp port 3000
   firewalld:

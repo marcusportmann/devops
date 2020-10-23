@@ -1,5 +1,5 @@
 ---
-# file: roles/docker/tasks/centos.yaml
+# file: roles/docker/tasks/redhat.yaml
 
 - name: Set CentOS 7 values
   block:
@@ -34,7 +34,7 @@
   when: ansible_distribution_major_version == '8'
 
 - debug:
-    msg: Applying the CentOS-specific Docker configuration
+    msg: Applying the RedHat-specific Docker configuration
 
 - name: Collect the package facts
   package_facts:

@@ -1,8 +1,8 @@
 ---
-# file: roles/burrow/tasks/centos.yaml
+# file: roles/burrow/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific Burrow configuration
+    msg: Applying the RedHat-specific Burrow configuration
 
 - name: Allow all hosts access to tcp port {{ burrow_config.http_port }}
   firewalld:

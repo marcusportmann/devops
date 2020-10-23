@@ -98,7 +98,7 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
+- include_tasks: redhat.yaml
   when: ansible_distribution == "CentOS"
   tags:
   - unbound

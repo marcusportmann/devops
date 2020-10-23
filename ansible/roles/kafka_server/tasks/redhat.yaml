@@ -1,8 +1,8 @@
 ---
-# file: roles/kafka_server/tasks/centos.yaml
+# file: roles/kafka_server/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the CentOS-specific Kafka Server configuration
+    msg: Applying the RedHat-specific Kafka Server configuration
 
 - name: Allow all hosts access to tcp port {{ kafka_config.kafka_server.secure_broker_port }} (Kafka Secure Broker Port)
   firewalld:
