@@ -1,9 +1,6 @@
 ---
 # file: roles/confluent_kafka_server/defaults/main.yaml
 
-credentials_root: "{{ playbook_dir }}/credentials"
-pki_root: ../../../pki
-
 confluent_defaults:
   kafka_server:
     secure_broker_port: 9093

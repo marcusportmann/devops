@@ -83,12 +83,12 @@
 
     - name: Check whether the Prometheus {{ prometheus_server_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
       register: prometheus_package_stat_result
 
     - name: Download the Prometheus {{ prometheus_server_config.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_server_config.package_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' dest='packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_server_config.package_checksum }}
+      local_action: get_url url='https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_server_config.package_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_server_config.package_checksum }}
       when: (prometheus_package_stat_result.stat.exists == False)
 
     - name: Remove the existing prometheus binary
@@ -98,7 +98,7 @@
 
     - name: Extract the prometheus binary from the Prometheus {{ prometheus_server_config.package_version }} package
       unarchive:
-        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
         dest: /usr/bin
         extra_opts:
         - --strip-components=1
@@ -115,7 +115,7 @@
 
     - name: Extract the consoles directory from the Prometheus {{ prometheus_server_config.package_version }} package
       unarchive:
-        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
         dest: /etc/prometheus
         extra_opts:
         - --strip-components=1
@@ -124,7 +124,7 @@
 
     - name: Extract the console_libraries directory from the Prometheus {{ prometheus_server_config.package_version }} package
       unarchive:
-        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
         dest: /etc/prometheus
         extra_opts:
         - --strip-components=1

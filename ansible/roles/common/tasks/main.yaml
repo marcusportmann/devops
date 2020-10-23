@@ -24,6 +24,10 @@
 # | |__| |_| | |  | | |  | | |_| | |\  |
 #  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
+- name: Create the packages directory
+  local_action: file path="{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}" state="directory"
+  become: false
+
 - name: Create the /var/tmp/ansible directory
   file:
     path: /var/tmp/ansible
@@ -31,6 +35,11 @@
     group: root
     mode: 0700
     state: directory
+
+- name: Upgrade pip
+  pip: 
+    name: pip
+    extra_args: --upgrade
 
 - name: Install the pyOpenSSL python package
   pip:

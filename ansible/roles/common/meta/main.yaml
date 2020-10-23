@@ -1,4 +1,5 @@
 ---
+# file: roles/common/meta/main.yaml
 
 galaxy_info:
   author: Marcus Portmann

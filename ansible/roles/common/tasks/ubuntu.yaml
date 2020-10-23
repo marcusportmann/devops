@@ -4,11 +4,15 @@
 - debug:
     msg: Applying the Ubuntu-specific common configuration
 
+- name: Install the python3-pip package
+  apt:
+    state: present
+    name:
+     - python3-pip
 
-
-
-
-
+- name: Install the pyOpenSSL package using pip
+  pip: 
+    name: pyOpenSSL
 
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:

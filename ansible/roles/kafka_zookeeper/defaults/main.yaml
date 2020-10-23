@@ -1,9 +1,6 @@
 ---
 # file: roles/kafka_zookeeper/defaults/main.yaml
 
-credentials_root: "{{ playbook_dir }}/credentials"
-pki_root: ../../../pki
-
 kafka_defaults:
   zookeeper:
     etc_directory: /etc/zookeeper

@@ -1,9 +1,6 @@
 ---
 # file: roles/confluent_kafka_mirrormaker/defaults/main.yaml
 
-credentials_root: "{{ playbook_dir }}/credentials"
-pki_root: ../../../pki
-
 confluent_defaults:
   kafka_mirrormaker:
     etc_directory: /etc/kafka

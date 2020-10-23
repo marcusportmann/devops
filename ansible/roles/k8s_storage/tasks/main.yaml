@@ -65,12 +65,12 @@
 
     - name: Check whether the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
       register: topolvm_lvmd_package_stat_result
 
     - name: Download the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package
       become: no
-      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ k8s_config.storage.topolvm.lvmd_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz' dest='packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
+      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ k8s_config.storage.topolvm.lvmd_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
       when: (topolvm_lvmd_package_stat_result.stat.exists == False)
 
     - name: Remove the existing TopoLVM lvmd binary
@@ -80,7 +80,7 @@
 
     - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package
       unarchive:
-        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
         dest: /usr/bin
         creates: /usr/bin/lvmd
 

@@ -1,4 +1,5 @@
 ---
+# file: roles/confluent_schema_registry/meta/main.yaml
 
 galaxy_info:
   author: Marcus Portmann

@@ -69,12 +69,12 @@
 
     - name: Check whether the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz'
       register: prometheus_node_exporter_package_stat_result
 
     - name: Download the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
       become: no
-      local_action: get_url url='https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' dest='packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' checksum={{ prometheus_node_exporter_package_checksum }}
+      local_action: get_url url='https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' checksum={{ prometheus_node_exporter_package_checksum }}
       when: (prometheus_node_exporter_package_stat_result.stat.exists == False)
 
     - name: Remove the existing prometheus-node-exporter binary
@@ -84,7 +84,7 @@
 
     - name: Extract the node_exporter binary from the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
       unarchive:
-        src: packages/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz'
         dest: /usr/bin
         extra_opts:
         - --strip-components=1
