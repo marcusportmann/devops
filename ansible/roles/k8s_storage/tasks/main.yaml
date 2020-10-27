@@ -34,8 +34,8 @@
   - name: Create the /etc/topolvm directory
     file:
       path: /etc/topolvm
-      owner: root
-      group: root
+      owner: 'root'
+      group: 'root'
       mode: '0755'
       state: directory
   
@@ -87,15 +87,15 @@
     - template:
         src: topolvm/lvmd.yaml.j2
         dest: /etc/topolvm/lvmd.yaml
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         mode: '0755'
 
     - template:
         src: topolvm/lvmd.service.j2
         dest: /lib/systemd/system/lvmd.service
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         mode: '0755'
 
     - name: Restart the lvmd systemd service

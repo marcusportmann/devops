@@ -233,12 +233,12 @@
 
 - name: Install the kubectl package
   block:
-  - name: Install the kubectl package ({{ k8s_config.centos_package_version }})
+  - name: Install the kubectl package ({{ k8s_config.redhat_package_version }})
     yum:
-      name: kubectl-{{k8s_config.centos_package_version}}*
+      name: kubectl-{{k8s_config.redhat_package_version}}*
       state: present
 
-  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.centos_package_version))
+  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.redhat_package_version))
 
 - name: Retrieve the version of the installed kubelet package
   debug:
@@ -247,12 +247,12 @@
 
 - name: Install the kubelet package
   block:
-  - name: Install the kubelet package ({{ k8s_config.centos_package_version }})
+  - name: Install the kubelet package ({{ k8s_config.redhat_package_version }})
     yum:
-      name: kubelet-{{k8s_config.centos_package_version}}*
+      name: kubelet-{{k8s_config.redhat_package_version}}*
       state: present
 
-  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.centos_package_version))
+  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.redhat_package_version))
 
 - name: Retrieve the version of the installed kubeadm package
   debug:
@@ -261,12 +261,12 @@
 
 - name: Install the kubeadm package
   block:
-  - name: Install the kubeadm package ({{ k8s_config.centos_package_version }})
+  - name: Install the kubeadm package ({{ k8s_config.redhat_package_version }})
     yum:
-      name: kubeadm-{{k8s_config.centos_package_version}}*
+      name: kubeadm-{{k8s_config.redhat_package_version}}*
       state: present
 
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.centos_package_version))
+  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.redhat_package_version))
 
 
 #  _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____    ______   ______   ____ _____ _       ____  _____ _____ _____ ___ _   _  ____ ____

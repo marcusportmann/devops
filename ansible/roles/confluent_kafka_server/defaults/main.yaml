@@ -6,7 +6,7 @@ confluent_defaults:
     secure_broker_port: 9093
     etc_directory: /etc/kafka
     log_directory: /var/log/kafka
-    data_directory: /data/kafka
+    data_directory: /var/lib/kafka
 
     user: cp-kafka
     user_id: 311

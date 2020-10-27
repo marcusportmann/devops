@@ -3,7 +3,7 @@
 
 - debug:
     msg: Applying the Ubuntu-specific common configuration
-
+    
 - name: Install the python3-pip package
   apt:
     state: present
@@ -33,9 +33,9 @@
   - name: Create the /data directory
     file:
       path: /data
-      owner: root
-      group: root
-      mode: 0755
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
       state: directory
 
   - name: Create and format the data logical volume in the data volume group and mount it under the /data directory

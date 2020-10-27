@@ -2,7 +2,7 @@
 # file: roles/confluent_kafka_mirrormaker/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the RedHat-specific Kafka MirrorMaker configuration
+    msg: Applying the RedHat-specific Confluent Kafka MirrorMaker configuration
 
 - name: Allow all hosts access to tcp port {{ confluent_config.kafka_mirrormaker.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
   firewalld:

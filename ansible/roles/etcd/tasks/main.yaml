@@ -159,18 +159,18 @@
       copy:
         src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcd
         dest: /usr/bin/etcd
-        owner: root
-        group: root
-        mode: 0755
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         remote_src: yes
 
     - name: Copy the etcdctl binary to the /bin directory
       copy:
         src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcdctl
         dest: /usr/bin/etcdctl
-        owner: root
-        group: root
-        mode: 0755
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         remote_src: yes
 
     when: (etcd_installed_version != etcd_config.package_version)

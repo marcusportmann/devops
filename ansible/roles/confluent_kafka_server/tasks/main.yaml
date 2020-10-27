@@ -75,6 +75,10 @@
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
+  register: create_credentials_directory_result
+  
+- debug:
+    msg: "{{ create_credentials_directory_result }}"
 
 - name: Add the {{ confluent_config.kafka_server.group }} group
   group:
@@ -93,8 +97,8 @@
 - name: Create the /var/tmp/ansible/confluent directory
   file:
     path: /var/tmp/ansible/confluent
-    owner: root
-    group: root
+    owner: 'root'
+    group: 'root'
     mode: '0700'
     state: directory
 
@@ -231,13 +235,10 @@
   template:
     src: kafka.service.j2
     dest: /lib/systemd/system/kafka.service
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: kafka_server_service_file_template_result
-
-#- name: Enable and start the Kafka service
-#  systemd:
-#    name: kafka.service
-#    state: started
-#    enabled: yes
 
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
 - name: Set the password for the Kafka Server user in ZooKeeper
@@ -310,6 +311,9 @@
     copy:
       src: files/prometheus_jmx_exporter.yaml
       dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml'
+      owner: '{{ confluent_config.kafka_server.user }}'
+      group: '{{ confluent_config.kafka_server.group }}'
+      mode: '0440'      
     when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
 - name: Setup the Kafka MirrorMaker users
@@ -323,6 +327,9 @@
   template:
     src: kafka.sh.j2
     dest: /etc/profile.d/kafka.sh
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Add the aliases for the Kafka tools to the /etc/profile.d/kafka.sh file
   block:

@@ -51,13 +51,16 @@
       unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz'
         dest: /opt
+        owner: 'root'
+        group: 'root'
 
     - name: Create the symbolic link to the Confluent {{ confluent_config.package_version }} package
       file:
         src: /opt/confluent-{{ confluent_config.package_version }}
         dest: /opt/confluent
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         state: link
 
     when: ((confluent_installed_stat_result.stat.exists == False) or (confluent_installed_stat_result.stat.lnk_target != ('/opt/confluent-' + confluent_config.package_version)))
@@ -74,8 +77,8 @@
   - name: Create the /opt/prometheus/lib directory
     file:
       path: /opt/prometheus/lib
-      owner: root
-      group: root
+      owner: 'root'
+      group: 'root'
       mode: '0755'
       state: directory
 
@@ -104,6 +107,9 @@
       copy:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
         dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
 
     when: (prometheus_jmx_exporter_installed_stat_result.stat.exists == False)
 
@@ -115,8 +121,9 @@
     file:
       src: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
       dest: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
-      owner: root
-      group: root
+      owner: 'root'
+      group: 'root'
+      mode: '0644'
       state: link
 
   when: ((prometheus_jmx_exporter.enabled is defined) and (prometheus_jmx_exporter.enabled != None) and (prometheus_jmx_exporter.enabled == true))

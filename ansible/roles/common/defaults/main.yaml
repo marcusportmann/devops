@@ -14,4 +14,3 @@ epel_repofile_path: "/etc/yum.repos.d/epel.repo"
 credentials_root: "{{ playbook_dir }}/credentials"
 packages_root: "{{ playbook_dir }}/packages"
 pki_root: "{{ playbook_dir }}/pki"
-

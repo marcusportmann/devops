@@ -94,12 +94,12 @@
 #  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
 #
 - include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_distribution == 'Ubuntu'
   tags:
   - unbound
 
 - include_tasks: redhat.yaml
-  when: ansible_distribution == "CentOS"
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -111,10 +111,6 @@
 # |____/ \___/|_| \_\_| \_\\___/  \_/\_/
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
-  become: false
-
-- name: Create the packages directory
-  local_action: file path="{{ packages_root }}/{{ role_name }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}" state="directory"
   become: false
   
 - name: Install Burrow
@@ -156,6 +152,9 @@
       unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
         dest: /usr/bin
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         extra_opts:
         - burrow
         creates: /usr/bin/burrow
@@ -184,8 +183,8 @@
 - name: Create the /var/tmp/ansible/burrow directory
   file:
     path: /var/tmp/ansible/burrow
-    owner: root
-    group: root
+    owner: 'root'
+    group: 'root'
     mode: '0700'
     state: directory
 
@@ -283,6 +282,9 @@
   template:
     src: burrow.service.j2
     dest: /lib/systemd/system/burrow.service
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: burrow_systemd_unit_template_result
 
 - name: Restart the Burrow service

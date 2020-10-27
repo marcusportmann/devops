@@ -60,16 +60,16 @@
       file:
         src: /opt/kafka_2.13-{{ kafka_config.package_version }}
         dest: /opt/kafka
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         state: link
 
     - name: Copy the custom-replication-policy.jar file to the /opt/kafka/libs directory
       copy:
         src: custom-replication-policy.jar
         dest: /opt/kafka/libs/custom-replication-policy.jar
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
 
     when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka_config.package_version)))
 
@@ -85,8 +85,8 @@
   - name: Create the /opt/prometheus/lib directory
     file:
       path: /opt/prometheus/lib
-      owner: root
-      group: root
+      owner: 'root'
+      group: 'root'
       mode: '0755'
       state: directory
 
@@ -126,8 +126,8 @@
     file:
       src: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
       dest: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
-      owner: root
-      group: root
+      owner: 'root'
+      group: 'root'
       state: link
 
   when: ((prometheus_jmx_exporter.enabled is defined) and (prometheus_jmx_exporter.enabled != None) and (prometheus_jmx_exporter.enabled == true))

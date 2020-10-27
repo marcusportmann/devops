@@ -35,7 +35,7 @@
 #
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
-  become: false
+  become: false  
 
 - name: Add the {{ confluent_config.kafka_mirrormaker.group }} group
   group:
@@ -54,8 +54,8 @@
 - name: Create the /var/tmp/ansible/confluent directory
   file:
     path: /var/tmp/ansible/confluent
-    owner: root
-    group: root
+    owner: 'root'
+    group: 'root'
     mode: '0700'
     state: directory
 
@@ -170,6 +170,9 @@
   template:
     src: mirrormaker.service.j2
     dest: /lib/systemd/system/mirrormaker.service
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: kafka_mirrormaker_service_file_template_result
 
 - name: Restart the mirrormaker service if required

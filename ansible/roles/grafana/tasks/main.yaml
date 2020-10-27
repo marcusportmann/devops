@@ -9,13 +9,45 @@
 
 - name: Add the grafana user
   user:
-    name: grafana
+    name: '{{ grafana_config.user }}'
     uid: '{{ grafana_config.user_id }}'
     group: grafana
     home: /var/lib/grafana
     create_home: no
     shell: /usr/sbin/nologin
     state: present
+
+- name: Create the /etc/grafana directory
+  file:
+    path: '/etc/grafana'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0550'
+    state: directory
+
+- name: Create the /etc/provisioning directory
+  file:
+    path: '/etc/grafana/provisioning'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0550'
+    state: directory
+
+- name: Create the /etc/provisioning/datasources directory
+  file:
+    path: '/etc/grafana/provisioning/datasources'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0550'
+    state: directory
+
+- name: Create the /etc/provisioning/dashboards directory
+  file:
+    path: '/etc/grafana/provisioning/dashboards'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0550'
+    state: directory
 
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == 'Ubuntu'
@@ -27,62 +59,105 @@
   tags:
   - unbound
 
+- name: Create the {{ grafana_config.data_directory }} directory
+  file:
+    path: '{{ grafana_config.data_directory }}'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0750'
+    state: directory
+
+- name: Create the {{ grafana_config.log_directory }} directory
+  file:
+    path: '{{ grafana_config.log_directory }}'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0750'
+    state: directory
+
 - name: Create the Grafana configuration file
   template:
     src: grafana.ini.j2
     dest: /etc/grafana/grafana.ini
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
   register: grafana_configuration_template_result
 
 - name: Create the Prometheus data source provisioning file
   template:
     src: prometheus-data-source.yaml.j2
     dest: /etc/grafana/provisioning/datasources/prometheus-data-source.yaml
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
 
 - name: Create the dashboard provisioning file
   template:
     src: all-dashboards.yaml.j2
     dest: /etc/grafana/provisioning/dashboards/all-dashboards.yaml
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
 
-- name: Create the /var/lib/grafana/dashboards directory
+- name: Create the {{ grafana_config.data_directory }}/dashboards directory
   file:
-    path: /var/lib/grafana/dashboards
-    owner: grafana
-    group: grafana
-    mode: 0775
+    path: '{{ grafana_config.data_directory }}/dashboards'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0550'
     state: directory
 
 - name: Copy the prometheus-2-0-overview_rev2.json dashboard file
   template:
     src: dashboards/prometheus-2-0-overview_rev2.json.j2
-    dest: /var/lib/grafana/dashboards/prometheus-2-0-overview_rev2.json
+    dest: '{{ grafana_config.data_directory }}/dashboards/prometheus-2-0-overview_rev2.json'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
 
 - name: Copy the nodes.json dashboard file
   template:
     src: dashboards/nodes.json.j2
-    dest: /var/lib/grafana/dashboards/nodes.json
+    dest: '{{ grafana_config.data_directory }}/dashboards/nodes.json'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
 
 - name: Copy the kubernetes.json dashboard file
   template:
     src: dashboards/kubernetes.json.j2
-    dest: /var/lib/grafana/dashboards/kubernetes.json
+    dest: '{{ grafana_config.data_directory }}/dashboards/kubernetes.json'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
   when: ('k8s_master' in groups)
 
 - name: Copy the zookeeper.json dashboard file
   template:
     src: dashboards/zookeeper.json.j2
-    dest: /var/lib/grafana/dashboards/zookeeper.json
+    dest: '{{ grafana_config.data_directory }}/dashboards/zookeeper.json'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Copy the kafka-overview.json dashboard file
   template:
     src: dashboards/kafka.json.j2
-    dest: /var/lib/grafana/dashboards/kafka.json
+    dest: '{{ grafana_config.data_directory }}/dashboards/kafka.json'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Copy the kafka-producers-consumers.json dashboard file
   template:
     src: dashboards/kafka-producers-consumers.json.j2
-    dest: /var/lib/grafana/dashboards/kafka-producers-consumers.json
+    dest: '{{ grafana_config.data_directory }}/dashboards/kafka-producers-consumers.json'
+    owner: '{{ grafana_config.user }}'
+    group: '{{ grafana_config.group }}'
+    mode: '0440'
   when: ((grafana_config.dashboards.kafka_producers_and_consumers.enabled) and (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups)))
 
 - name: Restart the grafana-server service

@@ -1758,6 +1758,7 @@ hosts:
   virtualbox:
     cpus:             1
     memory:           1024
+    data_disk:        10240
     fqdn:             monitoring.local
     domain:           local
     ip:               192.168.184.30/24
@@ -1766,6 +1767,7 @@ hosts:
   vmware_desktop:
     cpus:             1
     memory:           1024
+    data_disk:        10240
     fqdn:             monitoring.local
     domain:           local
     ip:               192.168.184.30/24
@@ -1774,6 +1776,7 @@ hosts:
   vmware_esxi:
     cpus:             1
     memory:           1024
+    data_disk:        40960
     fqdn:             monitoring.local
     domain:           local
     ip:               192.168.0.30/24

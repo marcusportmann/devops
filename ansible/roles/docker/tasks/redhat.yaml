@@ -1,36 +1,36 @@
 ---
 # file: roles/docker/tasks/redhat.yaml
 
-- name: Set CentOS 7 values
+- name: Set RedHat 7 values
   block:
   - set_fact:
-      containerd_package: '{{ docker_config.centos7.containerd.package }}'
+      containerd_package: '{{ docker_config.redhat7.containerd.package }}'
   - set_fact:
-      containerd_package_version: '{{ docker_config.centos7.containerd.package_version }}'      
+      containerd_package_version: '{{ docker_config.redhat7.containerd.package_version }}'      
   - set_fact:
-      docker_ce_cli_package: '{{ docker_config.centos7.docker_ce_cli.package }}'
+      docker_ce_cli_package: '{{ docker_config.redhat7.docker_ce_cli.package }}'
   - set_fact:
-      docker_ce_cli_package_version: '{{ docker_config.centos7.docker_ce_cli.package_version }}'
+      docker_ce_cli_package_version: '{{ docker_config.redhat7.docker_ce_cli.package_version }}'
   - set_fact:
-      docker_ce_package: '{{ docker_config.centos7.docker_ce.package }}'
+      docker_ce_package: '{{ docker_config.redhat7.docker_ce.package }}'
   - set_fact:
-      docker_ce_package_version: '{{ docker_config.centos7.docker_ce.package_version }}'
+      docker_ce_package_version: '{{ docker_config.redhat7.docker_ce.package_version }}'
   when: ansible_distribution_major_version == '7'
 
-- name: Set CentOS 8 values
+- name: Set RedHat 8 values
   block:
   - set_fact:
-      containerd_package: '{{ docker_config.centos8.containerd.package }}'
+      containerd_package: '{{ docker_config.redhat8.containerd.package }}'
   - set_fact:
-      containerd_package_version: '{{ docker_config.centos8.containerd.package_version }}'            
+      containerd_package_version: '{{ docker_config.redhat8.containerd.package_version }}'            
   - set_fact:
-      docker_ce_cli_package: '{{ docker_config.centos8.docker_ce_cli.package }}'
+      docker_ce_cli_package: '{{ docker_config.redhat8.docker_ce_cli.package }}'
   - set_fact:
-      docker_ce_cli_package_version: '{{ docker_config.centos8.docker_ce_cli.package_version }}'
+      docker_ce_cli_package_version: '{{ docker_config.redhat8.docker_ce_cli.package_version }}'
   - set_fact:
-      docker_ce_package: '{{ docker_config.centos8.docker_ce.package }}'
+      docker_ce_package: '{{ docker_config.redhat8.docker_ce.package }}'
   - set_fact:
-      docker_ce_package_version: '{{ docker_config.centos8.docker_ce.package_version }}'
+      docker_ce_package_version: '{{ docker_config.redhat8.docker_ce.package_version }}'
   when: ansible_distribution_major_version == '8'
 
 - debug:

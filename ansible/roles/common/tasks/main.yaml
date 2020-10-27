@@ -31,8 +31,8 @@
 - name: Create the /var/tmp/ansible directory
   file:
     path: /var/tmp/ansible
-    owner: root
-    group: root
+    owner: 'root'
+    group: 'root'
     mode: 0700
     state: directory
 
@@ -44,3 +44,5 @@
 - name: Install the pyOpenSSL python package
   pip:
     name: pyOpenSSL
+
+

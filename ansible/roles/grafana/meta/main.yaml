@@ -19,4 +19,4 @@ galaxy_info:
   - platform
 
 dependencies:
-  - role: common
+  - { role: common, common: { initialise_data_directory: true } }

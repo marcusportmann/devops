@@ -2,14 +2,17 @@
 # file: roles/grafana/defaults/main.yaml
 
 grafana_defaults:
-  centos_package: grafana-7.2.1-1.x86_64.rpm
-  centos_package_checksum: sha256:5db61dd25ce85afa336bebfc94cb1dd48686753436e9f1f7e7b3db3d6f6eabcc
-  centos_package_version: 7.2.1
+  redhat_package: grafana-7.2.1-1.x86_64.rpm
+  redhat_package_checksum: sha256:5db61dd25ce85afa336bebfc94cb1dd48686753436e9f1f7e7b3db3d6f6eabcc
+  redhat_package_version: 7.2.1
 
   ubuntu_package: grafana_7.2.1_amd64.deb
   ubuntu_package_checksum: sha256:34625fda0fe543bba140a8362c1c1c6fbd63dfb7e10968592c01ff14421c7781
   ubuntu_package_version: 7.2.1
-
+  
+  data_directory: /var/lib/grafana
+  log_directory: /var/log/grafana
+  
   user: grafana
   user_id: 425
   group: grafana

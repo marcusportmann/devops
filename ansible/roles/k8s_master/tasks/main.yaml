@@ -118,8 +118,8 @@
       - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
         file:
           path: /etc/kubernetes/apiserver/encryption.yaml
-          owner: root
-          group: root
+          owner: 'root'
+          group: 'root'
           mode: 0600
           state: file
 
@@ -149,8 +149,8 @@
       - name: Create the /root/.kube directory
         file:
           path: /root/.kube
-          owner: root
-          group: root
+          owner: 'root'
+          group: 'root'
           mode: 0700
           state: directory
 
@@ -161,8 +161,8 @@
       - name: Set the permissions for the /root/.kube/config file
         file:
           path: /root/.kube/config
-          owner: root
-          group: root
+          owner: 'root'
+          group: 'root'
           mode: 0600
           state: file
 
@@ -173,7 +173,7 @@
           path: /home/k8s-admin/.kube
           owner: k8s-admin
           group: k8s-admin
-          mode: 0750
+          mode: '0750'
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
@@ -185,7 +185,7 @@
           path: /home/k8s-admin/.kube/config
           owner: k8s-admin
           group: k8s-admin
-          mode: 0640
+          mode: '0640'
           state: file
 
     - name: Setup the kubeshell script
@@ -198,9 +198,9 @@
       - name: Set the permissions for the kubeshell script
         file:
           path: /usr/bin/kubeshell
-          owner: root
-          group: root
-          mode: 0750
+          owner: 'root'
+          group: 'root'
+          mode: '0750'
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
@@ -242,8 +242,8 @@
     - name: Set the permissions for the /usr/bin/weave file
       file:
         path: /usr/bin/weave
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         mode: 0770
         state: file
 
@@ -311,8 +311,8 @@
     - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
       file:
         path: /etc/kubernetes/apiserver/encryption.yaml
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         mode: 0600
         state: file
 
@@ -417,9 +417,9 @@
       - name: Create the /root/.kube directory
         file:
           path: /root/.kube
-          owner: root
-          group: root
-          mode: 0750
+          owner: 'root'
+          group: 'root'
+          mode: '0750'
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
@@ -431,7 +431,7 @@
           path: /root/.kube/config
           owner: k8s-admin
           group: k8s-admin
-          mode: 0640
+          mode: '0640'
           state: file
 
     - name: Copy the Kubernetes configuration to the k8s-admin user
@@ -441,7 +441,7 @@
           path: /home/k8s-admin/.kube
           owner: k8s-admin
           group: k8s-admin
-          mode: 0750
+          mode: '0750'
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
@@ -453,7 +453,7 @@
           path: /home/k8s-admin/.kube/config
           owner: k8s-admin
           group: k8s-admin
-          mode: 0640
+          mode: '0640'
           state: file
 
     - name: Setup the kubeshell script
@@ -466,8 +466,8 @@
       - name: Set the permissions for the kubeshell script
         file:
           path: /usr/bin/kubeshell
-          owner: root
-          group: root
+          owner: 'root'
+          group: 'root'
           mode: 0770
           state: file
 
@@ -548,8 +548,8 @@
     - name: Set the permissions for the kubeseal binary
       file:
         path: /usr/bin/kubeseal
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         mode: '0770'
         state: file
 

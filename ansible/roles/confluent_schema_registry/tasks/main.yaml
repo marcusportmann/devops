@@ -77,8 +77,8 @@
 - name: Create the /var/tmp/ansible/confluent directory
   file:
     path: /var/tmp/ansible/confluent
-    owner: root
-    group: root
+    owner: 'root'
+    group: 'root'
     mode: '0700'
     state: directory
 
@@ -193,6 +193,9 @@
   template:
     src: schema-registry.service.j2
     dest: /lib/systemd/system/schema-registry.service
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: schema_registry_service_file_template_result
 
 - name: Restart the schema-registry service if required

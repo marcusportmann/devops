@@ -113,8 +113,8 @@
     - name: Create the /var/tmp/ansible/topolvm/manifests/base directory
       file:
         path: /var/tmp/ansible/topolvm/manifests/base
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         mode: '0700'
         state: directory
     
@@ -129,8 +129,8 @@
       - name: Create the /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler directory
         file:
           path: /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler
-          owner: root
-          group: root
+          owner: 'root'
+          group: 'root'
           mode: '0700'
           state: directory
     
@@ -151,8 +151,8 @@
       - name: Create the /var/tmp/ansible/topolvm/manifests/overlays/deployment-scheduler directory
         file:
           path: /var/tmp/ansible/topolvm/manifests/overlays/deployment-scheduler
-          owner: root
-          group: root
+          owner: 'root'
+          group: 'root'
           mode: '0700'
           state: directory
     

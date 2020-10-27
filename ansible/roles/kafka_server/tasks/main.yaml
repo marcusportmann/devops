@@ -93,8 +93,8 @@
 - name: Create the /var/tmp/ansible/kafka directory
   file:
     path: /var/tmp/ansible/kafka
-    owner: root
-    group: root
+    owner: 'root'
+    group: 'root'
     mode: '0700'
     state: directory
 

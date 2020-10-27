@@ -2,7 +2,7 @@
 # file: roles/confluent_kafka_mirrormaker/tasks/ubuntu.yaml
 
 - debug:
-    msg: Applying the Ubuntu-specific Kafka MirrorMaker configuration
+    msg: Applying the Ubuntu-specific Confluent Kafka MirrorMaker configuration
 
 - name: Enable the firewall
   ufw:

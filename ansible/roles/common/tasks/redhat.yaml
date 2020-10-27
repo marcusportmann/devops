@@ -3,7 +3,13 @@
 
 - debug:
     msg: Applying the RedHat-specific common configuration
-
+  
+- name: Enable the firewalld service
+  systemd:
+    name: firewalld
+    state: started
+    enabled: true  
+  
 - name: Check if EPEL YUM repo is already configured
   stat: path={{ epel_repofile_path }}
   register: epel_repofile_result
@@ -55,7 +61,7 @@
   yum:
     name: python2-pip
     state: present
-
+  
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group
@@ -75,9 +81,9 @@
   - name: Create the /data directory
     file:
       path: /data
-      owner: root
-      group: root
-      mode: 0755
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
       state: directory
 
   - name: Create and format the data logical volume in the data volume group and mount it under the /data directory

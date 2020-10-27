@@ -7,4 +7,5 @@ prometheus_node_exporter_package_checksum: sha256:f175cffc4b96114e336288c9ea54b5
 prometheus_user_id: 455
 prometheus_group_id: 455
 
+
 prometheus_node_exporter_port: 9100
