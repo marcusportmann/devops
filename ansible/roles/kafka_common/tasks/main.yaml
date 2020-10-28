@@ -24,6 +24,14 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |__| |_| | |  | | |  | | |_| | |\  |
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
+- name: Create the /var/tmp/ansible/kafka directory
+  file:
+    path: /var/tmp/ansible/kafka
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - name: Install Kafka
   block:
   - debug:

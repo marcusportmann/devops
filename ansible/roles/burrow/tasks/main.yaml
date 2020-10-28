@@ -1,6 +1,14 @@
 ---
 # file: roles/burrow/tasks/main.yaml
 
+- name: Create the /var/tmp/ansible/burrow directory
+  file:
+    path: /var/tmp/ansible/burrow
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - fail:
     msg: 'No burrow configuration specified'
   when: ((burrow is not defined) or (burrow == None))
@@ -180,14 +188,6 @@
     shell: /usr/sbin/nologin
     state: present
 
-- name: Create the /var/tmp/ansible/burrow directory
-  file:
-    path: /var/tmp/ansible/burrow
-    owner: 'root'
-    group: 'root'
-    mode: '0700'
-    state: directory
-
 - name: Create the {{ burrow_config.etc_directory }} directory
   file:
     path: '{{ burrow_config.etc_directory }}'
@@ -222,7 +222,7 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the Burrow CA certificate to the {{ burrow_config.etc_directory }}/pki directory
+  - name: Copy the Burrow CA certificate
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/ca.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/ca.crt'
@@ -231,7 +231,7 @@
       mode: '0440'
     register: ca_certificate_copy_result
 
-  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/burrow directory
+  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key) 
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
@@ -240,7 +240,7 @@
       mode: '0440'
     register: burrow_private_key_copy_result
 
-  - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/burrow directory
+  - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt)
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt'

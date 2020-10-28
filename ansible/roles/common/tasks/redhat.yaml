@@ -12,20 +12,20 @@
   
 - name: Check if EPEL YUM repo is already configured
   stat: path={{ epel_repofile_path }}
-  register: epel_repofile_result
+  register: epel_repo_file_result
 
 - name: Enable the EPEL YUM repo
   yum_repository:
     name: epel
     description: EPEL YUM repo
     baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
-  when: not epel_repofile_result.stat.exists
+  when: not epel_repo_file_result.stat.exists
 
 - name: Import EPEL YUM repo GPG key
   rpm_key:
     key: "{{ epel_repo_gpg_key_url }}"
     state: present
-  when: not epel_repofile_result.stat.exists
+  when: not epel_repo_file_result.stat.exists
 
 - name: Install the bzip2 package
   yum:

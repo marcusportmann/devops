@@ -55,42 +55,42 @@
       mode: 0770
       state: directory
 
-  - name: Copy the Etcd CA certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the Etcd CA certificate
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/ca.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/ca.crt"
 
-  - name: Copy the Etcd intermediate CA certificate certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the Etcd intermediate CA certificate
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
-  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.key private key
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
-  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt certificate
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
-  - name: Copy the {{ inventory_hostname_short }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.key private key
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key"
 
-  - name: Copy the {{ inventory_hostname_short }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.crt certificate
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt"
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"

@@ -28,17 +28,17 @@
           path: /var/tmp/ansible/elasticsearch-pki
           state: directory
 
-      - name: Copy the root CA certificate to the /var/tmp/ansible/elasticsearch-pki directory
+      - name: Copy the root CA certificate
         copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
           dest: '/var/tmp/ansible/elasticsearch-pki/ca.pem'
 
-      - name: Copy the Elasticsearch private key to the /var/tmp/ansible/elasticsearch-pki directory
+      - name: Copy the Elasticsearch private key
         copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem'
 
-      - name: Copy the Elasticsearch certificate to the /var/tmp/ansible/elasticsearch-pki directory
+      - name: Copy the Elasticsearch certificate
         copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem'
@@ -180,17 +180,17 @@
           path: /var/tmp/ansible/kibana-pki
           state: directory
 
-      - name: Copy the root CA certificate to the /var/tmp/ansible/kibana-pki directory
+      - name: Copy the root CA certificate
         copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
           dest: '/var/tmp/ansible/kibana-pki/ca.pem'
 
-      - name: Copy the Kibana private key to the /var/tmp/ansible/kibana-pki directory
+      - name: Copy the Kibana private key
         copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/kibana-pki/kibana-key.pem'
 
-      - name: Copy the Kibana certificate to the /var/tmp/ansible/kibana-pki directory
+      - name: Copy the Kibana certificate
         copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/kibana-pki/kibana-cert.pem'
@@ -253,17 +253,17 @@
           path: /var/tmp/ansible/jaeger-pki
           state: directory
 
-      - name: Copy the root CA certificate to the /var/tmp/ansible/jaeger-pki directory
+      - name: Copy the root CA certificate
         copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
           dest: '/var/tmp/ansible/jaeger-pki/ca.pem'
 
-      - name: Copy the Jaeger private key to the /var/tmp/ansible/jaeger-pki directory
+      - name: Copy the Jaeger private key
         copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/jaeger-pki/jaeger-key.pem'
 
-      - name: Copy the Jaeger certificate to the /var/tmp/ansible/jaeger-pki directory
+      - name: Copy the Jaeger certificate
         copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/jaeger-pki/jaeger-cert.pem'
