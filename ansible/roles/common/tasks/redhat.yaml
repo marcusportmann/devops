@@ -3,29 +3,48 @@
 
 - debug:
     msg: Applying the RedHat-specific common configuration
+    
+- name: Generate the Proxy configuration
+  template:
+    src: proxy.sh.j2
+    dest: /etc/profile.d/proxy.sh
+    owner: 'root'
+    group: 'root'
+    mode: '0555'
   
 - name: Enable the firewalld service
   systemd:
     name: firewalld
     state: started
     enabled: true  
-  
-- name: Check if EPEL YUM repo is already configured
-  stat: path={{ epel_repofile_path }}
-  register: epel_repo_file_result
 
-- name: Enable the EPEL YUM repo
-  yum_repository:
-    name: epel
-    description: EPEL YUM repo
-    baseurl: https://download.fedoraproject.org/pub/epel/$releasever/$basearch/
-  when: not epel_repo_file_result.stat.exists
 
-- name: Import EPEL YUM repo GPG key
-  rpm_key:
-    key: "{{ epel_repo_gpg_key_url }}"
-    state: present
-  when: not epel_repo_file_result.stat.exists
+# NOTE: We no longer enable the EPEL repo. This has be done prior to executing this Ansible role.
+
+#- name: Check whether the EPEL repo package has been downloaded
+#  become: no
+#  local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/epel-release-latest-7.noarch.rpm'
+#  register: epel_package_stat_result
+#
+#- name: Download the EPEL package
+#  become: no
+#  local_action: get_url url='https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/epel-release-latest-7.noarch.rpm'
+#  when: (epel_package_stat_result.stat.exists == False)
+#
+#- name: Copy the EPEL package
+#  copy:
+#    src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/epel-release-latest-7.noarch.rpm'
+#    dest: /var/tmp/ansible/epel-release-latest-7.noarch.rpm
+#
+#- name: Install the EPEL package
+#  yum:
+#    name: /var/tmp/ansible/epel-release-latest-7.noarch.rpm
+#    state: present
+#
+#- name: Enable the EPEL YUM repo
+#  shell: yum-config-manager --enable epel-release
+
+
 
 - name: Install the bzip2 package
   yum:
@@ -95,16 +114,16 @@
         size: 100%FREE
       when: ('data' not in ansible_lvm.lvs)
 
-    - name: Format the data logical volume in the data volume group using the xfs filesystem
+    - name: Format the data logical volume in the data volume group using the ext4 filesystem
       filesystem:
-        fstype: xfs
+        fstype: ext4
         dev: /dev/data/data
 
     - name: Mount the data logical volume in the data volume group under the /data directory
       mount:
         path: /data
         src: /dev/mapper/data-data
-        fstype: xfs
+        fstype: ext4
         state: mounted
 
     when: ('data' in ansible_lvm.vgs)

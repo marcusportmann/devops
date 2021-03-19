@@ -57,6 +57,7 @@
       "vmx_data": {
         "ethernet0.connectiontype": "nat",
         "ethernet0.virtualDev": "vmxnet3",
+        "ethernet0.vnet": "",
         "memsize": "1024",
         "numvcpus": "1"
       }

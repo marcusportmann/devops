@@ -16,3 +16,4 @@
 
 - import_playbook: test.yaml
 
+- import_playbook: database.yaml

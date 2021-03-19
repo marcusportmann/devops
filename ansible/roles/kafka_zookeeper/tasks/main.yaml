@@ -108,7 +108,7 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the ZooKeeper CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the ZooKeeper CA certificate
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/kafka/{{ role_name }}/ca.crt'

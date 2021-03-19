@@ -305,6 +305,7 @@ profiles:
   - confluent-zk-local-01.local
   - confluent-ks-local-01.local
   - confluent-sr-local-01.local
+  - gitea.local
 
 - name: platforms-full
   hosts:
@@ -318,7 +319,8 @@ profiles:
   - confluent-ks-local-03.local
   - confluent-sr-local-01.local
   - confluent-sr-local-02.local
-  - confluent-sr-local-03.local  
+  - confluent-sr-local-03.local
+  - gitea.local
 
 - name: test-all
   hosts:
@@ -1749,7 +1751,7 @@ hosts:
     domain:           local
     ip:               192.168.0.29/24
     gateway:          192.168.0.1
-    dns_server:       192.168.0.1
+    dns_server:       192.168.0.1   
     
 - name:               monitoring.local
   type:               centos7
@@ -1783,5 +1785,36 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
+- name:               gitea.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     postgresql
+  virtualbox:
+    cpus:             1
+    memory:           1024
+    data_disk:        10240
+    fqdn:             gitea.local
+    domain:           local
+    ip:               192.168.184.31/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             1
+    memory:           1024
+    data_disk:        10240
+    fqdn:             gitea.local
+    domain:           local
+    ip:               192.168.184.31/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2 
+  vmware_esxi:
+    cpus:             1
+    memory:           1024
+    data_disk:        40960
+    fqdn:             gitea.local
+    domain:           local
+    ip:               192.168.0.31/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1 
 
 

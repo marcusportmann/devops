@@ -125,7 +125,7 @@ cert = /etc/pki/tls/certs/ca-bundle.trust.crt
 EOT
 
 echo "Upgrade pip"
-pip install --upgrade pip
+pip install --upgrade "pip < 21.0"
 
 echo "Install the pyOpenSSL python package"
 pip install pyOpenSSL

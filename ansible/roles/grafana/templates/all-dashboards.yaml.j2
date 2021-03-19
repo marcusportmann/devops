@@ -2,9 +2,9 @@
   org_id: 1             # id of the org to hold the dashboard
   folder: ''            # name of the folder to put the dashboard (http://docs.grafana.org/v5.0/reference/dashboard_folders/)
   type: 'file'          # type of dashboard description (json files)
-  disableDeletion: false
-  editable: true
+  disableDeletion: true
+  editable: false
   updateIntervalSeconds: 10
   allowUiUpdates: false
   options:
-    folder: '{{ grafana_config.data_directory }}/dashboards'       # where dashboards are
+    path: '{{ grafana_config.data_directory }}/dashboards'       # where dashboards are

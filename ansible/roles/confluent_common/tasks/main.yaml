@@ -73,6 +73,14 @@
 
     when: ((confluent_installed_stat_result.stat.exists == False) or (confluent_installed_stat_result.stat.lnk_target != ('/opt/confluent-' + confluent_config.package_version)))
 
+- name: Create the {{ confluent_config.data_directory }} directory
+  file:
+    path: '{{ confluent_config.data_directory }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    state: directory
+  when: ((confluent_config.data_directory is defined) and (confluent_config.data_directory != None))
 
 #  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____        _ __  ____  __  _______  ______   ___  ____ _____ _____ ____
 # |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|      | |  \/  \ \/ / | ____\ \/ /  _ \ / _ \|  _ \_   _| ____|  _ \

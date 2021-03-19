@@ -5,8 +5,8 @@ prometheus_server_defaults:
   etc_directory: /etc/prometheus
   data_directory: /var/lib/prometheus
 
-  package_checksum: sha256:f1f2eeabbf7822572dce67565dc96ffaa2dd1897dd1d844562552b11123f151a
-  package_version: 2.21.0
+  package_checksum: sha256:5aec10296624449e83469ef647cb762bd4de2aa12fc91d2375c5e6be9fd049c0
+  package_version: 2.24.1
 
   user: prometheus
   user_id: 455
