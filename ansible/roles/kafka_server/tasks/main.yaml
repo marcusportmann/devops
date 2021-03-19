@@ -60,8 +60,8 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == 'CentOS'
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -72,6 +72,18 @@
 # | . \  / ___ \|  _| | . \  / ___ \   ___) | |___|  _ < \ V / | |___|  _ <
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |____/|_____|_| \_\ \_/  |_____|_| \_\
 #
+- name: Create the /var/tmp/ansible/kafka/{{ role_name }} directory
+  file:
+    path: /var/tmp/ansible/kafka/{{ role_name }}
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
+  become: false
+
 - name: Add the {{ kafka_config.kafka_server.group }} group
   group:
     name: '{{ kafka_config.kafka_server.group }}'
@@ -85,14 +97,6 @@
     group: '{{ kafka_config.kafka_server.group }}'
     create_home: yes
     state: present
-
-- name: Create the /var/tmp/ansible/kafka directory
-  file:
-    path: /var/tmp/ansible/kafka
-    owner: root
-    group: root
-    mode: '0700'
-    state: directory
 
 - name: Create the {{ kafka_config.kafka_server.etc_directory }} directory
   file:
@@ -120,31 +124,31 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the Kafka Server CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server CA certificate
     copy:
-      src: pki/{{ kafka_cluster_name }}/ca.crt
-      dest: /var/tmp/ansible/kafka/ca.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/ca.crt'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/ca.crt'
     register: ca_certificate_copy_result
 
-  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key)
     copy:
-      src: pki/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.key
-      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.key'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.key'
     register: kafka_server_private_key_copy_result
 
-  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt)
     copy:
-      src: pki/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.crt
-      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.crt'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.crt'
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
     set_fact:
-      kafka_server_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_keystore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka Server keystore and CA truststore
     block:
@@ -153,8 +157,8 @@
         action: export
         path: '{{ kafka_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
         friendly_name: "{{ inventory_hostname_short }}"
-        privatekey_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
-        certificate_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
+        privatekey_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.crt
         passphrase: '{{ kafka_server_keystore_password }}'
         owner: '{{ kafka_config.kafka_server.user }}'
         group: '{{ kafka_config.kafka_server.group }}'
@@ -168,7 +172,7 @@
 
     - name: Generate the Kafka Server CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/{{ role_name }}/ca.crt -keystore '{{ kafka_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka Server CA PKCS12 truststore
       file:
@@ -207,12 +211,12 @@
 # NOTE: This is the password used to secure the connections the Kafka Server makes to ZooKeeper, which is generated by the kafka-zookeeper role
 - name: Generate or retrieve the password for the ZooKeeper kafka user
   set_fact:
-    kafka_server_zookeeper_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_zookeeper_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
 # NOTE: This is the password used to secure the inter broker connections
 - name: Generate or retrieve the password for the Kafka Server user
   set_fact:
-    kafka_server_broker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-server-broker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_broker_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/kafka-server-broker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka Server JAAS configuration file
   template:
@@ -254,25 +258,25 @@
   block:
   - name: Generate or retrieve the password for the Kafka admin keystore
     set_fact:
-      kafka_admin_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_admin_keystore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Copy the Kafka admin private key (kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin private key (kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key)
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key
-      dest: /var/tmp/ansible/kafka/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key
+      src: "{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key"
+      dest: "/var/tmp/ansible/kafka/{{ role_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key"
 
-  - name: Copy the Kafka admin certificate (kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka admin certificate (kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt)
     copy:
-      src: pki/{{ kafka_cluster_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt
-      dest: /var/tmp/ansible/kafka/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt
+      src: "{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt"
+      dest: "/var/tmp/ansible/kafka/{{ role_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt"
 
   - name: Generate the Kafka admin PKCS12 keystore
     openssl_pkcs12:
       action: export
       path: '{{ kafka_config.kafka_server.etc_directory }}/pki/admin.p12'
       friendly_name: "kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}"
-      privatekey_path: /var/tmp/ansible/kafka/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key
-      certificate_path: /var/tmp/ansible/kafka/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt
+      privatekey_path: /var/tmp/ansible/kafka/{{ role_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.key
+      certificate_path: /var/tmp/ansible/kafka/{{ role_name }}/kafka-admin-{{ kafka_cluster_name.replace('_', '-') }}.crt
       passphrase: '{{ kafka_admin_keystore_password }}'
       owner: '{{ kafka_config.kafka_server.user }}'
       group: '{{ kafka_config.kafka_server.group }}'
@@ -281,7 +285,7 @@
 
   - name: Generate or retrieve the password for the Kafka admin user
     set_fact:
-      kafka_server_admin_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-server-admin-user-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_admin_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/kafka-server-admin-user-password chars=ascii_letters,digits length=16') }}"
 
   - name: Set the password for the Kafka admin user in ZooKeeper
     shell:
@@ -307,7 +311,7 @@
   loop: '{{ kafka_config.clusters | flatten(1) }}'
   loop_control:
     loop_var: kafka_mirrormaker_user_kafka_cluster_name
-  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+  when: ((kafka_config.clusters[kafka_cluster_name].kafka_mirrormaker_hosts is defined) and (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname))
 
 - name: Create the Kafka profile file
   template:
@@ -395,7 +399,7 @@
 
 - name: Generate or retrieve the password for the Burrow ZooKeeper user
   set_fact:
-    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
 
 - debug:
     msg: 'Burrow user password: {{ kafka_server_burrow_user_password }}'

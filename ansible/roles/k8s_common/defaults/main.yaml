@@ -2,8 +2,10 @@
 # file: roles/k8s_common/defaults/main.yaml
 
 k8s_defaults:
-  centos_package_version: 1.18.4
-  ubuntu_package_version: 1.18.4-00
+  redhat_package_version: 1.19.3
+  ubuntu_package_version: 1.19.3-00
+  
+  kustomize_version: 3.8.5
 
   admin_user: k8s-admin
   admin_user_id: 500
@@ -12,8 +14,8 @@ k8s_defaults:
 
   cni_provider: weave
 
-  helm_package_checksum: sha256:8eb56cbb7d0da6b73cd8884c6607982d0be8087027b8ded01d6b2759a72e34b1
-  helm_version: 3.2.4
+  helm_package_checksum: sha256:b664632683c36446deeb85c406871590d879491e3de18978b426769e43a1e82c
+  helm_version: 3.3.4
 
 k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"
 

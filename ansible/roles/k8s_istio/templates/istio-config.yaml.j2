@@ -40,6 +40,10 @@ spec:
 {% endif %}
 
   components:
+    base:
+      enabled: true
+    cni:
+      enabled: false
     egressGateways:
     - name: istio-egressgateway
       enabled: true
@@ -71,16 +75,24 @@ spec:
         # TODO: CHECK ALL THESE PORTS -- MARCUS
         ports:
         - name: status-port
-          port: 15020
-          targetPort: 15020
+          port: 15021
+          targetPort: 15021
         - name: http2
-          port: 80
-          targetPort: 80
+          port: 8080
+          targetPort: 8080
           nodePort: 30080
         - name: https
-          port: 443
-          targetPort: 443
+          port: 8443
+          targetPort: 8443
           nodePort: 30443
+        - name: tcp
+          port: 31400
+          targetPort: 41400
+          nodePort: 31400
+        - name: tls
+          port: 15443
+          targetPort: 15443
+          nodePort: 31443
 {% if ((k8s_config.istio.grafana.enabled is defined) and (k8s_config.istio.grafana.enabled != None) and (k8s_config.istio.grafana.enabled == True)) %}
         - name: https-grafana
           port: 3000
@@ -109,14 +121,6 @@ spec:
           targetPort: 9093
           nodePort: 32504
 {% endif %}
-        - name: tcp
-          port: 1400
-          targetPort: 1400
-          nodePort: 31400
-        - name: tls
-          port: 1443
-          targetPort: 1443
-          nodePort: 31443
 
 #         debug: info
 #         domain: ""
@@ -147,8 +151,6 @@ spec:
       proxy:
         clusterDomain: {{ k8s_config.cluster_domain }}
         # logLevel: debug
-      sds:
-        enabled: true
 {% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True))  %}
       tracer:
         zipkin:

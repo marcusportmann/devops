@@ -12,8 +12,8 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == 'CentOS'
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -24,6 +24,14 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |__| |_| | |  | | |  | | |_| | |\  |
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
+- name: Create the /var/tmp/ansible/kafka directory
+  file:
+    path: /var/tmp/ansible/kafka
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - name: Install Kafka
   block:
   - debug:
@@ -39,7 +47,7 @@
 
     - name: Check whether the Kafka {{ kafka_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/kafka_2.13-{{ kafka_config.package_version }}.tgz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
       register: kafka_package_stat_result
 
     - debug:
@@ -48,28 +56,28 @@
 
     - name: Download the Kafka {{ kafka_config.package_version }} package
       become: no
-      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka_config.package_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' dest='packages/kafka_2.13-{{ kafka_config.package_version }}.tgz' checksum={{ kafka_config.package_checksum }}
+      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka_config.package_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' checksum={{ kafka_config.package_checksum }}
       when: (kafka_package_stat_result.stat.exists == False)
 
     - name: Extract the Kafka {{ kafka_config.package_version }} package
       unarchive:
-        src: packages/kafka_2.13-{{ kafka_config.package_version }}.tgz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
         dest: /opt
 
     - name: Create the symbolic link to the Kafka {{ kafka_config.package_version }} package
       file:
         src: /opt/kafka_2.13-{{ kafka_config.package_version }}
         dest: /opt/kafka
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
         state: link
 
     - name: Copy the custom-replication-policy.jar file to the /opt/kafka/libs directory
       copy:
         src: custom-replication-policy.jar
         dest: /opt/kafka/libs/custom-replication-policy.jar
-        owner: root
-        group: root
+        owner: 'root'
+        group: 'root'
 
     when: ((kafka_installed_stat_result.stat.exists == False) or (kafka_installed_stat_result.stat.lnk_target != ('/opt/kafka_2.13-' + kafka_config.package_version)))
 
@@ -85,8 +93,8 @@
   - name: Create the /opt/prometheus/lib directory
     file:
       path: /opt/prometheus/lib
-      owner: root
-      group: root
+      owner: 'root'
+      group: 'root'
       mode: '0755'
       state: directory
 
@@ -103,17 +111,17 @@
 
     - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} has been downloaded
       become: no
-      local_action: stat path=packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
       register: prometheus_jmx_exporter_package_stat_result
 
     - name: Download the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       become: no
-      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
+      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
       when: (prometheus_jmx_exporter_package_stat_result.stat.exists == False)
 
     - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       copy:
-        src: packages/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
         dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
 
     when: (prometheus_jmx_exporter_installed_stat_result.stat.exists == False)
@@ -126,8 +134,8 @@
     file:
       src: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
       dest: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
-      owner: root
-      group: root
+      owner: 'root'
+      group: 'root'
       state: link
 
   when: ((prometheus_jmx_exporter.enabled is defined) and (prometheus_jmx_exporter.enabled != None) and (prometheus_jmx_exporter.enabled == true))

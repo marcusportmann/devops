@@ -1,0 +1,6 @@
+---
+# file: roles/awx/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific common configuration
+

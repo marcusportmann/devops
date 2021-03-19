@@ -2,6 +2,8 @@
 
 - import_playbook: confluent.yaml
 
+- import_playbook: docker.yaml
+
 - import_playbook: etcd.yaml
 
 - import_playbook: k8s.yaml

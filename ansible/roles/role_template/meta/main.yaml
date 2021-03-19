@@ -1,9 +1,9 @@
 ---
+# file: roles/role_template/meta/main.yaml
 
 galaxy_info:
   author: Marcus Portmann
   description: Ansible ??? Role
-  company: http://mmp.guru
   license: Apache 2
   min_ansible_version: 2.9
   platforms:

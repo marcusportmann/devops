@@ -1,6 +1,14 @@
 ---
 # file: roles/confluent_kafka_server/tasks/main.yaml
 
+- name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
+  file:
+    path: '/var/tmp/ansible/confluent/{{ role_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - fail:
     msg: 'No confluent.clusters configuration specified'
   when: ((confluent is not defined) or (confluent == None) or (confluent.clusters is not defined) or (confluent.clusters == None))
@@ -60,8 +68,8 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == 'CentOS'
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -72,6 +80,14 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |   | . \  / ___ \|  _| | . \  / ___ \   ___) | |___|  _ < \ V / | |___|  _ <
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |____/|_____|_| \_\ \_/  |_____|_| \_\
 #
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
+  become: false
+  register: create_credentials_directory_result
+  
+- debug:
+    msg: "{{ create_credentials_directory_result }}"
+
 - name: Add the {{ confluent_config.kafka_server.group }} group
   group:
     name: '{{ confluent_config.kafka_server.group }}'
@@ -85,14 +101,6 @@
     group: '{{ confluent_config.kafka_server.group }}'
     create_home: yes
     state: present
-
-- name: Create the /var/tmp/ansible/confluent directory
-  file:
-    path: /var/tmp/ansible/confluent
-    owner: root
-    group: root
-    mode: '0700'
-    state: directory
 
 - name: Create the {{ confluent_config.kafka_server.etc_directory }} directory
   file:
@@ -120,31 +128,31 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the Kafka Server CA certificate to the /var/tmp/ansible/confluent directory
+  - name: Copy the Kafka Server CA certificate
     copy:
-      src: pki/{{ confluent_cluster_name }}/ca.crt
-      dest: /var/tmp/ansible/confluent/ca.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/ca.crt'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/ca.crt'
     register: ca_certificate_copy_result
 
-  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/confluent directory
+  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key)
     copy:
-      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key
-      dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.key
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
     register: kafka_server_private_key_copy_result
 
-  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/confluent directory
+  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt)
     copy:
-      src: pki/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt
-      dest: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
     set_fact:
-      kafka_server_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka Server keystore and CA truststore
     block:
@@ -153,8 +161,8 @@
         action: export
         path: '{{ confluent_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
         friendly_name: "{{ inventory_hostname_short }}"
-        privatekey_path: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.key
-        certificate_path: /var/tmp/ansible/confluent/{{ inventory_hostname_short }}.crt
+        privatekey_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt
         passphrase: '{{ kafka_server_keystore_password }}'
         owner: '{{ confluent_config.kafka_server.user }}'
         group: '{{ confluent_config.kafka_server.group }}'
@@ -168,7 +176,7 @@
 
     - name: Generate the Kafka Server CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/ca.crt -keystore '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/{{ role_name }}/ca.crt -keystore '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka Server CA PKCS12 truststore
       file:
@@ -207,12 +215,12 @@
 # NOTE: This is the password used to secure the connections the Kafka Server makes to ZooKeeper, which is generated by the kafka-zookeeper role
 - name: Generate or retrieve the password for the ZooKeeper kafka user
   set_fact:
-    kafka_server_zookeeper_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_zookeeper_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
 # NOTE: This is the password used to secure the inter broker connections
 - name: Generate or retrieve the password for the Kafka Server user
   set_fact:
-    kafka_server_broker_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-server-broker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_broker_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-broker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka Server JAAS configuration file
   template:
@@ -227,13 +235,10 @@
   template:
     src: kafka.service.j2
     dest: /lib/systemd/system/kafka.service
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: kafka_server_service_file_template_result
-
-#- name: Enable and start the Kafka service
-#  systemd:
-#    name: kafka.service
-#    state: started
-#    enabled: yes
 
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
 - name: Set the password for the Kafka Server user in ZooKeeper
@@ -260,25 +265,25 @@
   block:
   - name: Generate or retrieve the password for the Kafka admin keystore
     set_fact:
-      kafka_admin_keystore_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_admin_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
 
-  - name: Copy the Kafka admin private key (confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key) to the /var/tmp/ansible/confluent directory
+  - name: Copy the Kafka admin private key (confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key)
     copy:
-      src: pki/{{ confluent_cluster_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key
-      dest: /var/tmp/ansible/confluent/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key
+      src: "{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key"
+      dest: "/var/tmp/ansible/confluent/{{ role_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key"
 
-  - name: Copy the Kafka admin certificate (confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt) to the /var/tmp/ansible/confluent directory
+  - name: Copy the Kafka admin certificate (confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt)
     copy:
-      src: pki/{{ confluent_cluster_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt
-      dest: /var/tmp/ansible/confluent/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt
+      src: "{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt"
+      dest: "/var/tmp/ansible/confluent/{{ role_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt"
 
   - name: Generate the Kafka admin PKCS12 keystore
     openssl_pkcs12:
       action: export
       path: '{{ confluent_config.kafka_server.etc_directory }}/pki/admin.p12'
       friendly_name: "confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}"
-      privatekey_path: /var/tmp/ansible/confluent/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key
-      certificate_path: /var/tmp/ansible/confluent/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt
+      privatekey_path: /var/tmp/ansible/confluent/{{ role_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key
+      certificate_path: /var/tmp/ansible/confluent/{{ role_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt
       passphrase: '{{ kafka_admin_keystore_password }}'
       owner: '{{ confluent_config.kafka_server.user }}'
       group: '{{ confluent_config.kafka_server.group }}'
@@ -287,7 +292,7 @@
 
   - name: Generate or retrieve the password for the Kafka admin user
     set_fact:
-      kafka_server_admin_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-server-admin-user-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_admin_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-admin-user-password chars=ascii_letters,digits length=16') }}"
 
   - name: Set the password for the Kafka admin user in ZooKeeper
     shell:
@@ -306,6 +311,9 @@
     copy:
       src: files/prometheus_jmx_exporter.yaml
       dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml'
+      owner: '{{ confluent_config.kafka_server.user }}'
+      group: '{{ confluent_config.kafka_server.group }}'
+      mode: '0440'      
     when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
 - name: Setup the Kafka MirrorMaker users
@@ -313,12 +321,15 @@
   loop: '{{ confluent_config.clusters | flatten(1) }}'
   loop_control:
     loop_var: kafka_mirrormaker_user_confluent_cluster_name
-  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+  when: ((confluent_config.clusters[confluent_cluster_name].kafka_mirrormaker_hosts is defined) and (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname))
 
 - name: Create the Kafka profile file
   template:
     src: kafka.sh.j2
     dest: /etc/profile.d/kafka.sh
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Add the aliases for the Kafka tools to the /etc/profile.d/kafka.sh file
   block:
@@ -403,7 +414,7 @@
   block:
   - name: Generate or retrieve the password for the Schema Registry user
     set_fact:
-      kafka_server_schema_registry_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_schema_registry_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
 
   - name: Set the password for the Schema Registry user in ZooKeeper
     shell:
@@ -432,7 +443,7 @@
 
 - name: Generate or retrieve the password for the Burrow user
   set_fact:
-    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/confluent/{{ confluent_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
 
 - debug:
     msg: 'Burrow user password: {{ kafka_server_burrow_user_password }}'

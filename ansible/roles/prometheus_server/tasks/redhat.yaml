@@ -1,0 +1,40 @@
+---
+# file: roles/prometheus_server/tasks/redhat.yaml
+
+- debug:
+    msg: Applying the RedHat-specific Prometheus Server configuration
+
+- name: Allow all hosts access to tcp port 9090
+  firewalld:
+    port: 9090/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 9091
+  firewalld:
+    port: 9091/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 9092
+  firewalld:
+    port: 9092/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 9093
+  firewalld:
+    port: 9093/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 9094
+  firewalld:
+    port: 9094/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes

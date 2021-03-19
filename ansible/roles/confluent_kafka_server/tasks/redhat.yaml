@@ -1,0 +1,34 @@
+---
+# file: roles/confluent_kafka_server/tasks/redhat.yaml
+
+- debug:
+    msg: Applying the RedHat-specific Kafka Server configuration
+
+- name: Allow all hosts access to tcp port {{ confluent_config.kafka_server.secure_broker_port }} (Kafka Secure Broker Port)
+  firewalld:
+    port: '{{ confluent_config.kafka_server.secure_broker_port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port {{ confluent_config.kafka_server.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
+  firewalld:
+    port: '{{ confluent_config.kafka_server.prometheus_jmx_exporter.port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+  when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))
+
+- name: Allow access to tcp ports 9998 and 9999 (Remote JMX Ports)
+  block:
+  - firewalld:
+      port: '9998/tcp'
+      permanent: yes
+      state: enabled
+      immediate: yes
+  - firewalld:
+      port: '9999/tcp'
+      permanent: yes
+      state: enabled
+      immediate: yes
+  when: ((confluent_config.kafka_server.enable_remote_jmx is defined) and (confluent_config.kafka_server.enable_remote_jmx != None) and (confluent_config.kafka_server.enable_remote_jmx == true))

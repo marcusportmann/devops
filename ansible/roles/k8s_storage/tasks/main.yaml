@@ -17,8 +17,8 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == 'CentOS'
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -31,6 +31,14 @@
 #
 - name: Install the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package if TopoLVM is enabled and this is a worker or there are no workers only masters
   block:
+  - name: Create the /etc/topolvm directory
+    file:
+      path: /etc/topolvm
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
+      state: directory
+  
   - debug:
       msg: Check whether the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package has been installed
 
@@ -57,12 +65,12 @@
 
     - name: Check whether the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
       register: topolvm_lvmd_package_stat_result
 
     - name: Download the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package
       become: no
-      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ k8s_config.storage.topolvm.lvmd_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz' dest='packages/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
+      local_action: get_url url='https://github.com/cybozu-go/topolvm/releases/download/v{{ k8s_config.storage.topolvm.lvmd_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
       when: (topolvm_lvmd_package_stat_result.stat.exists == False)
 
     - name: Remove the existing TopoLVM lvmd binary
@@ -72,13 +80,23 @@
 
     - name: Extract the TopoLVM lvmd binary from the TopoLVM lvmd {{ k8s_config.storage.topolvm.lvmd_version }} package
       unarchive:
-        src: packages/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/lvmd-{{ k8s_config.storage.topolvm.lvmd_version }}.tar.gz'
         dest: /usr/bin
         creates: /usr/bin/lvmd
 
     - template:
-        src: topolvm-lvmd.service.j2
+        src: topolvm/lvmd.yaml.j2
+        dest: /etc/topolvm/lvmd.yaml
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+
+    - template:
+        src: topolvm/lvmd.service.j2
         dest: /lib/systemd/system/lvmd.service
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
 
     - name: Restart the lvmd systemd service
       systemd:

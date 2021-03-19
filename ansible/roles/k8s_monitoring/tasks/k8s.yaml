@@ -28,20 +28,20 @@
           path: /var/tmp/ansible/elasticsearch-pki
           state: directory
 
-      - name: Copy the root CA certificate to the /var/tmp/ansible/elasticsearch-pki directory
+      - name: Copy the root CA certificate
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/ca.crt
-          dest: /var/tmp/ansible/elasticsearch-pki/ca.pem
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
+          dest: '/var/tmp/ansible/elasticsearch-pki/ca.pem'
 
-      - name: Copy the Elasticsearch private key to the /var/tmp/ansible/elasticsearch-pki directory
+      - name: Copy the Elasticsearch private key
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.key
-          dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
+          dest: '/var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem'
 
-      - name: Copy the Elasticsearch certificate to the /var/tmp/ansible/elasticsearch-pki directory
+      - name: Copy the Elasticsearch certificate
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
-          dest: /var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+          dest: '/var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem'
 
       - name: Create the secret in the monitoring-system namespace for the Elasticsearch private key and certificates
         shell:
@@ -180,20 +180,20 @@
           path: /var/tmp/ansible/kibana-pki
           state: directory
 
-      - name: Copy the root CA certificate to the /var/tmp/ansible/kibana-pki directory
+      - name: Copy the root CA certificate
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/ca.crt
-          dest: /var/tmp/ansible/kibana-pki/ca.pem
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
+          dest: '/var/tmp/ansible/kibana-pki/ca.pem'
 
-      - name: Copy the Kibana private key to the /var/tmp/ansible/kibana-pki directory
+      - name: Copy the Kibana private key
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.key
-          dest: /var/tmp/ansible/kibana-pki/kibana-key.pem
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
+          dest: '/var/tmp/ansible/kibana-pki/kibana-key.pem'
 
-      - name: Copy the Kibana certificate to the /var/tmp/ansible/kibana-pki directory
+      - name: Copy the Kibana certificate
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
-          dest: /var/tmp/ansible/kibana-pki/kibana-cert.pem
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+          dest: '/var/tmp/ansible/kibana-pki/kibana-cert.pem'
 
       - name: Create the secret in the monitoring-system namespace for the Kibana private key and certificates
         shell:
@@ -253,20 +253,20 @@
           path: /var/tmp/ansible/jaeger-pki
           state: directory
 
-      - name: Copy the root CA certificate to the /var/tmp/ansible/jaeger-pki directory
+      - name: Copy the root CA certificate
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/ca.crt
-          dest: /var/tmp/ansible/jaeger-pki/ca.pem
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
+          dest: '/var/tmp/ansible/jaeger-pki/ca.pem'
 
-      - name: Copy the Jaeger private key to the /var/tmp/ansible/jaeger-pki directory
+      - name: Copy the Jaeger private key
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.key
-          dest: /var/tmp/ansible/jaeger-pki/jaeger-key.pem
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
+          dest: '/var/tmp/ansible/jaeger-pki/jaeger-key.pem'
 
-      - name: Copy the Jaeger certificate to the /var/tmp/ansible/jaeger-pki directory
+      - name: Copy the Jaeger certificate
         copy:
-          src: pki/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
-          dest: /var/tmp/ansible/jaeger-pki/jaeger-cert.pem
+          src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+          dest: '/var/tmp/ansible/jaeger-pki/jaeger-cert.pem'
 
       - name: Create the secret in the monitoring-system namespace for the Jaeger private key and certificates
         shell:
@@ -284,7 +284,7 @@
 
     - name: Check if Jaeger is installed
       shell:
-        cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger-tracing' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+        cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: jaeger_installed_helm_chart_version_output
 
     - name: Install Jaeger
@@ -333,7 +333,7 @@
 
       - name: Install Prometheus using Helm
         command:
-          cmd: /usr/bin/helm upgrade prometheus stable/prometheus --install --version={{ k8s_config.monitoring.prometheus.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
+          cmd: /usr/bin/helm upgrade prometheus prometheus-community/prometheus --install --version={{ k8s_config.monitoring.prometheus.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
 
       - name: Wait for 10 seconds for the Prometheus initialization to start
         wait_for:
@@ -391,7 +391,7 @@
 
       - name: Install Grafana using Helm
         command:
-          cmd: /usr/bin/helm upgrade grafana stable/grafana --install --version={{ k8s_config.monitoring.grafana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
+          cmd: /usr/bin/helm upgrade grafana grafana/grafana --install --version={{ k8s_config.monitoring.grafana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
 
       - name: Wait for 10 seconds for the Grafana initialization to start
         wait_for:

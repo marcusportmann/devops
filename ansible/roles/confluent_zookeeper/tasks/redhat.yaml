@@ -1,0 +1,69 @@
+---
+# file: roles/kafka_zookeeper/tasks/redhat.yaml
+
+- debug:
+    msg: Applying the RedHat-specific ZooKeeper configuration
+
+- name: Allow ZooKeeper hosts access to tcp port 2888
+  firewalld:
+    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=2888 protocol=tcp accept'
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop: "{{ zookeeper_hosts }}"
+
+- name: Allow ZooKeeper hosts access to tcp port 3888
+  firewalld:
+    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=3888 protocol=tcp accept'
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop: "{{ zookeeper_hosts }}"
+
+- name: Allow Kafka Server hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port }}
+  firewalld:
+    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port={{ confluent_config.zookeeper.secure_client_port }} protocol=tcp accept'
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop: "{{ kafka_server_hosts }}"
+
+- name: Allow Prometheus Server hosts access to tcp port {{ confluent_config.zookeeper.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
+  firewalld:
+    port: '{{ confluent_config.zookeeper.prometheus_jmx_exporter.port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop: "{{ (groups['prometheus_server'] | default([])) }}"
+  when: ((confluent_config.zookeeper.prometheus_jmx_exporter.enabled is defined) and (confluent_config.zookeeper.prometheus_jmx_exporter.enabled != None) and (confluent_config.zookeeper.prometheus_jmx_exporter.enabled == true))
+
+- name: Allow Prometheus Server hosts access to tcp port {{ confluent_config.zookeeper.prometheus_exporter.port }} (ZooKeeper Prometheus Exporter Port)
+  firewalld:
+    port: '{{ confluent_config.zookeeper.prometheus_exporter.port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop: "{{ (groups['prometheus_server'] | default([])) }}"
+  when: ((confluent_config.zookeeper.prometheus_exporter.enabled is defined) and (confluent_config.zookeeper.prometheus_exporter.enabled != None) and (confluent_config.zookeeper.prometheus_exporter.enabled == true))
+
+- name: Allow access to tcp ports 9998 and 9999 (Remote JMX Ports)
+  block:
+  - firewalld:
+      port: '9998/tcp'
+      permanent: yes
+      state: enabled
+      immediate: yes
+  - firewalld:
+      port: '9999/tcp'
+      permanent: yes
+      state: enabled
+      immediate: yes
+  when: ((confluent_config.zookeeper.enable_remote_jmx is defined) and (confluent_config.zookeeper.enable_remote_jmx != None) and (confluent_config.zookeeper.enable_remote_jmx == true))
+
+- name: Allow all Burrow hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port }}
+  firewalld:
+    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port={{ confluent_config.zookeeper.secure_client_port }} protocol=tcp accept'
+    state: enabled
+    permanent: yes
+    immediate: yes
+  loop: "{{ (groups['burrow'] | default([])) }}"

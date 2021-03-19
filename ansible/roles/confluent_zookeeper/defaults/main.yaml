@@ -5,8 +5,8 @@ confluent_defaults:
   zookeeper:
     etc_directory: /etc/zookeeper
     log_directory: /var/log/zookeeper
-    data_directory: /data/zookeeper/data
-    data_log_directory: /data/zookeeper/data-log
+    data_directory: /var/lib/zookeeper/data
+    data_log_directory: /var/lib/zookeeper/data-log
 
     user: cp-zookeeper
     user_id: 316

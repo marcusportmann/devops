@@ -1,0 +1,6 @@
+socket-name: /run/topolvm/lvmd.sock
+device-classes:
+  - name: {{ k8s_config.storage.topolvm.volume_group }}
+    volume-group: {{ k8s_config.storage.topolvm.volume_group }}
+    default: true
+    spare-gb: 10

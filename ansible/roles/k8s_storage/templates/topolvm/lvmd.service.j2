@@ -1,0 +1,16 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=lvmd for TopoLVM
+Wants=lvm2-monitor.service
+After=lvm2-monitor.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartForceExitStatus=SIGPIPE
+ExecStartPre=/bin/mkdir -p /run/topolvm
+ExecStart=/usr/bin/lvmd --config=/etc/topolvm/lvmd.yaml
+
+[Install]
+WantedBy=multi-user.target

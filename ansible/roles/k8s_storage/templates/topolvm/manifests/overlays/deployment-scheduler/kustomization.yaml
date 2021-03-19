@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - scheduler.yaml
+images:
+  - name: quay.io/topolvm/topolvm
+    newTag: 0.6.0

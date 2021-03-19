@@ -42,4 +42,10 @@ spring:
   kafka:
     bootstrap-servers: confluent-zkks-analytics-dev-01.local:9093
 
+---
+spring:
+  profiles: confluent-local
+  kafka:
+    bootstrap-servers: confluent-ks-local-01.local:9093
+
 

@@ -33,6 +33,18 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |  | || ||  _ <|  _ <| |_| |  _ <  | |  | |/ ___ \| . \| |___|  _ <
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |_|  |_|___|_| \_\_| \_\\___/|_| \_\ |_|  |_/_/   \_\_|\_\_____|_| \_\
 #
+- name: Create the /var/tmp/ansible/kafka/{{ role_name }} directory
+  file:
+    path: /var/tmp/ansible/kafka/{{ role_name }}
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
+  become: false
+
 - name: Add the {{ kafka_config.kafka_mirrormaker.group }} group
   group:
     name: '{{ kafka_config.kafka_mirrormaker.group }}'
@@ -46,14 +58,6 @@
     group: '{{ kafka_config.kafka_mirrormaker.group }}'
     create_home: yes
     state: present
-
-- name: Create the /var/tmp/ansible/kafka directory
-  file:
-    path: /var/tmp/ansible/kafka
-    owner: root
-    group: root
-    mode: '0700'
-    state: directory
 
 - name: Create the {{ kafka_config.kafka_mirrormaker.etc_directory }} directory
   file:
@@ -81,31 +85,31 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the Kafka MirrorMaker CA certificate to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker CA certificate
     copy:
-      src: pki/{{ kafka_cluster_name }}/ca.crt
-      dest: /var/tmp/ansible/kafka/ca.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/ca.crt'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/ca.crt'
     register: ca_certificate_copy_result
 
-  - name: Copy the Kafka MirrorMaker private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker private key ({{ inventory_hostname_short }}.key)
     copy:
-      src: pki/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.key
-      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.key'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.key'
     register: kafka_mirrormaker_private_key_copy_result
 
-  - name: Copy the Kafka MirrorMaker certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/kafka directory
+  - name: Copy the Kafka MirrorMaker certificate ({{ inventory_hostname_short }}.crt)
     copy:
-      src: pki/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.crt
-      dest: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.crt'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.crt'
     register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
     set_fact:
-      kafka_mirrormaker_keystore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_mirrormaker_keystore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     set_fact:
-      ca_truststore_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
+      ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka MirrorMaker keystore and CA truststore
     block:
@@ -114,8 +118,8 @@
         action: export
         path: '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
         friendly_name: "{{ inventory_hostname_short }}"
-        privatekey_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.key
-        certificate_path: /var/tmp/ansible/kafka/{{ inventory_hostname_short }}.crt
+        privatekey_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.key
+        certificate_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.crt
         passphrase: '{{ kafka_mirrormaker_keystore_password }}'
         owner: '{{ kafka_config.kafka_mirrormaker.user }}'
         group: '{{ kafka_config.kafka_mirrormaker.group }}'
@@ -129,7 +133,7 @@
 
     - name: Generate the Kafka MirrorMaker CA PKCS12 truststore
       shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/ca.crt -keystore '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/{{ role_name }}/ca.crt -keystore '{{ kafka_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka MirrorMaker CA PKCS12 truststore
       file:
@@ -151,7 +155,7 @@
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   template:

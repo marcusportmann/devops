@@ -6,7 +6,7 @@
 
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   set_fact:
-    kafka_server_mirrormaker_user_password: "{{ lookup('password', 'credentials/kafka/{{ kafka_mirrormaker_user_kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_mirrormaker_user_kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
 
 #- debug:
 #    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' with password '{{ kafka_server_mirrormaker_user_password }}' for the Kafka cluster '{{ kafka_cluster_name }}'"

@@ -12,8 +12,8 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == 'CentOS'
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -85,12 +85,12 @@
 
     - name: Check whether the helm {{ k8s_config.helm_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz'
       register: helm_package_stat_result
 
     - name: Download the helm {{ k8s_config.helm_version }} package
       become: no
-      local_action: get_url url='https://get.helm.sh/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' dest='packages/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.helm_package_checksum }}
+      local_action: get_url url='https://get.helm.sh/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.helm_package_checksum }}
       when: (helm_package_stat_result.stat.exists == False)
 
     - name: Remove the existing helm binary
@@ -100,7 +100,7 @@
 
     - name: Extract the helm binary from the helm {{ k8s_config.helm_version }} package
       unarchive:
-        src: packages/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz'
         dest: /usr/bin
         extra_opts:
         - --strip-components=1
@@ -129,7 +129,7 @@
     when: helm_stable_repo_added_output.stdout == '0'
 
   - name: Configure the monitoring Helm repos
-    block:
+    block:    
     - name: Check if the elastic Helm repository has been added
       shell:
         cmd: /usr/bin/helm repo list | grep elastic | wc -l
@@ -139,6 +139,16 @@
       command:
         cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
       when: helm_elastic_repo_added_output.stdout == '0'
+
+    - name: Check if the grafana Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep grafana | wc -l
+      register: helm_grafana_repo_added_output
+
+    - name: Add the grafana Helm repository
+      command:
+        cmd: /usr/bin/helm repo add grafana https://grafana.github.io/helm-charts
+      when: helm_grafana_repo_added_output.stdout == '0'
 
     - name: Check if the jaegertracing Helm repository has been added
       shell:
@@ -150,4 +160,74 @@
         cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
       when: helm_jaegertracing_repo_added_output.stdout == '0'
 
+    - name: Check if the prometheus-community Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep prometheus-community | wc -l
+      register: helm_prometheus_community_repo_added_output
+
+    - name: Add the prometheus-community Helm repository
+      command:
+        cmd: /usr/bin/helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      when: helm_prometheus_community_repo_added_output.stdout == '0'
+
     when: ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == true))
+
+  - name: Configure the Lonhorn Helm repo
+    block:
+    - name: Check if the Longhorn Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep longhorn | wc -l
+      register: helm_longhorn_repo_added_output
+
+    - name: Add the longhorn Helm repository
+      command:
+        cmd: /usr/bin/helm repo add longhorn https://charts.longhorn.io
+      when: helm_longhorn_repo_added_output.stdout == '0'
+
+    when: ((k8s_config.storage.longhorn.enabled is defined) and (k8s_config.storage.longhorn.enabled != None) and (k8s_config.storage.longhorn.enabled == true))
+
+
+#  _  ___   _ ____ _____ ___  __  __ ___ __________ 
+# | |/ / | | / ___|_   _/ _ \|  \/  |_ _|__  / ____|
+# | ' /| | | \___ \ | || | | | |\/| || |  / /|  _|  
+# | . \| |_| |___) || || |_| | |  | || | / /_| |___ 
+# |_|\_\\___/|____/ |_| \___/|_|  |_|___/____|_____|
+#                                                   
+- name: Install kustomize
+  block:
+  - debug:
+      msg: Check whether the kustomize {{ k8s_config.kustomize_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/kustomize
+    register: kustomize_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/kustomize version --short | head -1 | awk -F ' ' {'print $1'} | awk -F '/v' {'print $2'}
+    register: kustomize_installed_version_output
+    when: (kustomize_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      kustomize_installed_version: '{{ kustomize_installed_version_output.stdout }}'
+    when: (kustomize_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      kustomize_installed_version: ''
+    when: (kustomize_installed_stat_result.stat.exists == False)
+
+  - block:  
+    - debug:
+        msg: Install the kustomize {{ k8s_config.kustomize_version }} package
+
+    - name: Remove the existing kustomize binary
+      file:
+        path: /usr/bin/kustomize
+        state: absent
+        
+    - name: Install the kustomize binary
+      shell:
+        cmd: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+        chdir: /usr/bin
+        warn: false
+
+    when: (kustomize_installed_version != k8s_config.kustomize_version)

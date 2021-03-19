@@ -1,0 +1,23 @@
+---
+# file: roles/k8s_load_balancer/tasks/redhat.yaml
+
+- debug:
+    msg: Applying the RedHat-specific Kubernetes load balancer configuration
+
+- name: Install the haproxy package
+  yum: name=haproxy state=latest
+
+- name: Configure the haproxy
+  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+
+- name: Restart the haproxy service
+  systemd:
+    name: haproxy.service
+    state: restarted
+    enabled: yes
+
+- name: Ensure that the haproxy service is started
+  systemd:
+    name: haproxy.service
+    state: started
+    enabled: yes

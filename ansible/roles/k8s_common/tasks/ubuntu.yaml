@@ -31,13 +31,13 @@
 
   - name: Copy the root CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
     copy:
-      src: pki/{{ k8s_config.cluster_name }}/ca.crt
-      dest: /usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/ca.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
+      dest: '/usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/ca.crt'
 
   - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
     copy:
-      src: pki/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
-      dest: /usr/local/share/ca-certificates/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}.crt
+      src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+      dest: "/usr/local/share/ca-certificates/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
 
   - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
     shell:

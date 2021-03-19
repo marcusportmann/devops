@@ -4,7 +4,6 @@
 galaxy_info:
   author: Marcus Portmann
   description: Ansible Kubernetes Monitoring Role
-  company: http://mmp.guru
   license: Apache 2
   min_ansible_version: 2.9
   platforms:
@@ -16,19 +15,7 @@ galaxy_info:
       - breezy
       - focal
   categories:
-  #- cloud
-  #- cloud:ec2
-  #- cloud:gce
-  #- cloud:rax
-  #- database
-  #- database:nosql
-  #- database:sql
-  #- development
   - monitoring
-  #- networking
-  #- packaging
-  #- system
-  #- web
   - platform
 
 dependencies:

@@ -18,8 +18,8 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == 'CentOS'
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -55,44 +55,44 @@
       mode: 0770
       state: directory
 
-  - name: Copy the Etcd CA certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the Etcd CA certificate
     copy:
-      src: "pki/{{ etcd_cluster_name }}/ca.crt"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/ca.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/ca.crt"
 
-  - name: Copy the Etcd intermediate CA certificate certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the Etcd intermediate CA certificate
     copy:
-      src: "pki/{{ etcd_cluster_name }}/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
-  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.key private key
     copy:
-      src: "pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
-  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt certificate
     copy:
-      src: "pki/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
-  - name: Copy the {{ inventory_hostname_short }}.key private key to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.key private key
     copy:
-      src: "pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key"
 
-  - name: Copy the {{ inventory_hostname_short }}.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the {{ inventory_hostname_short }}.crt certificate
     copy:
-      src: "pki/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt"
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key
     copy:
-      src: "pki/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
-  - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate to the {{ etcd_config.etc_directory }}/pki directory
+  - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate
     copy:
-      src: "pki/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
 - name: Create the /var/lib/etcd directory
@@ -131,12 +131,12 @@
 
     - name: Check whether the etcd {{ etcd_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz'
       register: etcd_package_stat_result
 
     - name: Download the etcd {{ etcd_config.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/etcd-io/etcd/releases/download/v{{ etcd_config.package_version }}/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz' dest='packages/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz' checksum={{ etcd_config.package_checksum }}
+      local_action: get_url url='https://github.com/etcd-io/etcd/releases/download/v{{ etcd_config.package_version }}/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz' checksum={{ etcd_config.package_checksum }}
       when: (etcd_package_stat_result.stat.exists == False)
 
     - name: Remove the existing etcd binary
@@ -151,7 +151,7 @@
 
     - name: Extract the etcd binary from the etcd {{ etcd_config.package_version }} package
       unarchive:
-        src: packages/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/etcd-v{{ etcd_config.package_version }}-linux-amd64.tar.gz'
         dest: /var/tmp/ansible
         creates: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64
 
@@ -159,18 +159,18 @@
       copy:
         src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcd
         dest: /usr/bin/etcd
-        owner: root
-        group: root
-        mode: 0755
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         remote_src: yes
 
     - name: Copy the etcdctl binary to the /bin directory
       copy:
         src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcdctl
         dest: /usr/bin/etcdctl
-        owner: root
-        group: root
-        mode: 0755
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         remote_src: yes
 
     when: (etcd_installed_version != etcd_config.package_version)

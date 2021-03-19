@@ -1,0 +1,154 @@
+---
+# file: roles/docker/tasks/redhat.yaml
+
+- name: Set RedHat 7 values
+  block:
+  - set_fact:
+      containerd_package: '{{ docker_config.redhat7.containerd.package }}'
+  - set_fact:
+      containerd_package_version: '{{ docker_config.redhat7.containerd.package_version }}'      
+  - set_fact:
+      docker_ce_cli_package: '{{ docker_config.redhat7.docker_ce_cli.package }}'
+  - set_fact:
+      docker_ce_cli_package_version: '{{ docker_config.redhat7.docker_ce_cli.package_version }}'
+  - set_fact:
+      docker_ce_package: '{{ docker_config.redhat7.docker_ce.package }}'
+  - set_fact:
+      docker_ce_package_version: '{{ docker_config.redhat7.docker_ce.package_version }}'
+  when: ansible_distribution_major_version == '7'
+
+- name: Set RedHat 8 values
+  block:
+  - set_fact:
+      containerd_package: '{{ docker_config.redhat8.containerd.package }}'
+  - set_fact:
+      containerd_package_version: '{{ docker_config.redhat8.containerd.package_version }}'            
+  - set_fact:
+      docker_ce_cli_package: '{{ docker_config.redhat8.docker_ce_cli.package }}'
+  - set_fact:
+      docker_ce_cli_package_version: '{{ docker_config.redhat8.docker_ce_cli.package_version }}'
+  - set_fact:
+      docker_ce_package: '{{ docker_config.redhat8.docker_ce.package }}'
+  - set_fact:
+      docker_ce_package_version: '{{ docker_config.redhat8.docker_ce.package_version }}'
+  when: ansible_distribution_major_version == '8'
+
+- debug:
+    msg: Applying the RedHat-specific Docker configuration
+
+- name: Collect the package facts
+  package_facts:
+    manager: auto
+
+- name: Retrieve the version of the installed containerd package
+  debug:
+    msg: Found the installed containerd package ({{ ansible_facts.packages['containerd.io'][0].version }})
+  when: ('containerd.io' in ansible_facts.packages)
+
+- name: Install the containerd package
+  block:
+  - name: Check whether the {{ containerd_package }} package has been downloaded
+    become: no
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ containerd_package }}'
+    register: containerd_package_stat_result
+
+  - name: Download the {{ containerd_package }} package
+    become: no
+    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ containerd_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ containerd_package }}'
+    when: (containerd_package_stat_result.stat.exists == False)
+
+  - name: Copy the {{ containerd_package }} package
+    copy:
+      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ containerd_package }}'
+      dest: /var/tmp/ansible/{{ containerd_package }}
+
+  - name: Install the {{ containerd_package }} package
+    yum:
+      name: /var/tmp/ansible/{{ containerd_package }}
+      state: present
+
+  when: (('containerd.io' not in ansible_facts.packages) or (ansible_facts.packages['containerd.io'][0].version != containerd_package_version))
+
+
+- name: Retrieve the version of the installed docker-ce-cli package
+  debug:
+    msg: Found the installed docker-ce-cli package ({{ ansible_facts.packages['docker-ce-cli'][0].version }})
+  when: ('docker-ce-cli' in ansible_facts.packages)
+
+- name: Install the docker-ce-cli package
+  block:
+  - name: Check whether the {{ docker_ce_cli_package }} package has been downloaded
+    become: no
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+    register: docker_ce_cli_package_stat_result
+
+  - name: Download the {{ docker_ce_cli_package }} package
+    become: no
+    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_cli_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+    when: (docker_ce_cli_package_stat_result.stat.exists == False)
+
+  - name: Copy the {{ docker_ce_cli_package }} package
+    copy:
+      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+      dest: /var/tmp/ansible/{{ docker_ce_cli_package }}
+
+  - name: Install the {{ docker_ce_cli_package }} package
+    yum:
+      name: /var/tmp/ansible/{{ docker_ce_cli_package }}
+      state: present
+
+  when: (('docker-ce-cli' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-cli'][0].version != docker_ce_cli_package_version))
+
+
+- name: Retrieve the version of the installed docker-ce package
+  debug:
+    msg: Found the installed docker-ce package ({{ ansible_facts.packages['docker-ce'][0].version }})
+  when: ('docker-ce' in ansible_facts.packages)
+
+- name: Install the docker-ce package
+  block:
+  - name: Check whether the {{ docker_ce_package }} package has been downloaded
+    become: no
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
+    register: docker_ce_package_stat_result
+
+  - name: Download the {{ docker_ce_package }} package
+    become: no
+    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
+    when: (docker_ce_package_stat_result.stat.exists == False)
+
+  - name: Copy the {{ docker_ce_package }} package
+    copy:
+      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
+      dest: /var/tmp/ansible/{{ docker_ce_package }}
+
+  - name: Install the {{ docker_ce_package }} package
+    yum:
+      name: /var/tmp/ansible/{{ docker_ce_package }}
+      state: present
+
+  - name: Create the /etc/docker directory
+    file:
+      path: /etc/docker
+      state: directory
+
+  - name: Create the Docker daemon configuration file
+    template:
+      src: daemon.json.j2
+      dest: /etc/docker/daemon.json
+
+  - name: Restart the docker service
+    systemd:
+      name: docker.service
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+
+  - name: Ensure that the docker service is started
+    systemd:
+      name: docker.service
+      state: started
+      enabled: yes
+
+  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_package_version))
+

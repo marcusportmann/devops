@@ -1,6 +1,14 @@
 ---
 # file: roles/burrow/tasks/main.yaml
 
+- name: Create the /var/tmp/ansible/burrow directory
+  file:
+    path: /var/tmp/ansible/burrow
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - fail:
     msg: 'No burrow configuration specified'
   when: ((burrow is not defined) or (burrow == None))
@@ -94,12 +102,12 @@
 #  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
 #
 - include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_distribution == 'Ubuntu'
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == "CentOS"
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -109,6 +117,10 @@
 # |  _ \| | | | |_) | |_) | | | \ \ /\ / /
 # | |_) | |_| |  _ <|  _ <| |_| |\ V  V /
 # |____/ \___/|_| \_\_| \_\\___/  \_/\_/
+- name: Create the credentials directory
+  local_action: file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
+  become: false
+  
 - name: Install Burrow
   block:
   - debug:
@@ -136,18 +148,21 @@
 
     - name: Check whether the Burrow {{ burrow_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
       register: burrow_package_stat_result
 
     - name: Download the Burrow {{ burrow_config.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/linkedin/Burrow/releases/download/v{{ burrow_config.package_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' dest='packages/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' checksum={{ burrow_config.package_checksum }}
+      local_action: get_url url='https://github.com/linkedin/Burrow/releases/download/v{{ burrow_config.package_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' checksum={{ burrow_config.package_checksum }}
       when: (burrow_package_stat_result.stat.exists == False)
 
     - name: Extract the burrow binary from the Burrow {{ burrow_config.package_version }} package
       unarchive:
-        src: packages/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
         dest: /usr/bin
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         extra_opts:
         - burrow
         creates: /usr/bin/burrow
@@ -172,14 +187,6 @@
     create_home: no
     shell: /usr/sbin/nologin
     state: present
-
-- name: Create the /var/tmp/ansible/burrow directory
-  file:
-    path: /var/tmp/ansible/burrow
-    owner: root
-    group: root
-    mode: '0700'
-    state: directory
 
 - name: Create the {{ burrow_config.etc_directory }} directory
   file:
@@ -215,27 +222,27 @@
       mode: '0550'
       state: directory
 
-  - name: Copy the Burrow CA certificate to the {{ burrow_config.etc_directory }}/pki directory
+  - name: Copy the Burrow CA certificate
     copy:
-      src: pki/{{ burrow_cluster_name }}/ca.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/ca.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/ca.crt'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
       mode: '0440'
     register: ca_certificate_copy_result
 
-  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key) to the /var/tmp/ansible/burrow directory
+  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key) 
     copy:
-      src: pki/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.key
+      src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
       mode: '0440'
     register: burrow_private_key_copy_result
 
-  - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt) to the /var/tmp/ansible/burrow directory
+  - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt)
     copy:
-      src: pki/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.crt
+      src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
@@ -245,13 +252,13 @@
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Confluent ZooKeeper cluster
   set_fact:
-    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/confluent/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "confluent")
 
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Kafka ZooKeeper cluster
   set_fact:
-    kafka_server_burrow_user_password: "{{ lookup('password', 'credentials/kafka/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "kafka")
 
 - name: Create the {{ burrow_config.log_directory }} directory
@@ -275,6 +282,9 @@
   template:
     src: burrow.service.j2
     dest: /lib/systemd/system/burrow.service
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   register: burrow_systemd_unit_template_result
 
 - name: Restart the Burrow service

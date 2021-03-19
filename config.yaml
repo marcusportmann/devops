@@ -15,9 +15,26 @@ variables:
         # One of confluent, kafka, or standalone
         zookeeper_cluster_type: kafka
         zookeeper_cluster_name: digital_dev
+      local:
+        hosts:
+        - monitoring.local
+        zookeeper_cluster_type: confluent
+        zookeeper_cluster_name: local
 
   confluent:
     clusters:
+      analytics_dev:
+        kafka_server_hosts:
+        - confluent-zkks-analytics-dev-01.local
+        - confluent-zkks-analytics-dev-02.local
+        - confluent-zkks-analytics-dev-03.local
+        schema_registry_hosts:
+        - confluent-sr-analytics-dev-01.local
+        zookeeper_hosts:
+        - confluent-zkks-analytics-dev-01.local
+        - confluent-zkks-analytics-dev-02.local
+        - confluent-zkks-analytics-dev-03.local
+    
       digital_dev:
         replicate_to_cluster: analytics_dev
         kafka_mirrormaker_hosts:
@@ -33,17 +50,19 @@ variables:
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
 
-      analytics_dev:
+      local:
         kafka_server_hosts:
-        - confluent-zkks-analytics-dev-01.local
-        - confluent-zkks-analytics-dev-02.local
-        - confluent-zkks-analytics-dev-03.local
+        - confluent-ks-local-01.local
+        - confluent-ks-local-02.local
+        - confluent-ks-local-03.local                
         schema_registry_hosts:
-        - confluent-sr-analytics-dev-01.local
+        - confluent-sr-local-01.local
+        - confluent-sr-local-02.local
+        - confluent-sr-local-03.local
         zookeeper_hosts:
-        - confluent-zkks-analytics-dev-01.local
-        - confluent-zkks-analytics-dev-02.local
-        - confluent-zkks-analytics-dev-03.local
+        - confluent-zk-local-01.local
+        - confluent-zk-local-02.local
+        - confluent-zk-local-03.local        
 
   etcd:
     clusters:
@@ -65,10 +84,18 @@ variables:
     monitoring:
       enabled: true
       elasticsearch:
+        enabled: true
         cluster_type: standalone
         persistent_volume_size: 10Gi
         persistent_volume_storage_class_name: default-local-storage
+      grafana:
+        enabled: true
+      jaeger:
+        enabled: true
+      kibana:
+        enabld: true
       prometheus:
+        enabled: true
         alert_manager:
           persistent_volume_storage_class_name: default-local-storage
           persistent_volume_size: 2Gi
@@ -160,10 +187,6 @@ xxx:
 # Kubernetes cluster, the hosts that suport a set of integrated development tools, etc.
 #
 profiles:
-
-- name: awx
-  hosts:
-  - awx.local
 
 - name: confluent-multi-cluster-minimal
   hosts:
@@ -275,6 +298,28 @@ profiles:
   hosts:
   - monitoring-dev.local
 
+- name: platforms-minimal
+  hosts:
+  - awx.local
+  - monitoring.local
+  - confluent-zk-local-01.local
+  - confluent-ks-local-01.local
+  - confluent-sr-local-01.local
+
+- name: platforms-full
+  hosts:
+  - awx.local
+  - monitoring.local
+  - confluent-zk-local-01.local
+  - confluent-zk-local-02.local
+  - confluent-zk-local-03.local
+  - confluent-ks-local-01.local
+  - confluent-ks-local-02.local
+  - confluent-ks-local-03.local
+  - confluent-sr-local-01.local
+  - confluent-sr-local-02.local
+  - confluent-sr-local-03.local  
+
 - name: test-all
   hosts:
   - test-centos7.local
@@ -322,38 +367,6 @@ hosts:
 # | |_| | |___  \ V /   |  _  | |_| |___) || |  ___) |
 # |____/|_____|  \_/    |_| |_|\___/|____/ |_| |____/
 #
-- name:               awx.local
-  type:               centos7
-  ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     awx
-  virtualbox:
-    cpus:             2
-    memory:           1024
-    data_disk:        10240
-    fqdn:             awx.local
-    domain:           local
-    ip:               192.168.184.70/24
-    gateway:          192.168.184.2
-    dns_server:       192.168.184.2
-  vmware_desktop:
-    cpus:             2
-    memory:           1024
-    data_disk:        10240
-    fqdn:             awx.local
-    domain:           local
-    ip:               192.168.184.70/24
-    gateway:          192.168.184.2
-    dns_server:       192.168.184.2
-  vmware_esxi:
-    cpus:             2
-    memory:           1024
-    data_disk:        40960
-    fqdn:             awx.local
-    domain:           local
-    ip:               192.168.0.70/24
-    gateway:          192.168.0.1
-    dns_server:       192.168.0.1
-
 - name:               confluent-zkks-digital-dev-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
@@ -1292,7 +1305,7 @@ hosts:
   domain:             local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     test
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1325,7 +1338,7 @@ hosts:
   domain:             local
   type:               centos8
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1358,7 +1371,7 @@ hosts:
   domain:             local
   type:               ubuntu1804
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1366,8 +1379,8 @@ hosts:
     fqdn:             test-ubuntu1804.local
     domain:           local
     ip:               192.168.184.45/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
@@ -1375,8 +1388,8 @@ hosts:
     fqdn:             test-ubuntu1804.local
     domain:           local
     ip:               192.168.184.45/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1391,7 +1404,7 @@ hosts:
   domain:             local
   type:               ubuntu2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,grafana
+  ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
@@ -1399,8 +1412,8 @@ hosts:
     fqdn:             test-ubuntu2004.local
     domain:           local
     ip:               192.168.184.44/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
@@ -1408,8 +1421,8 @@ hosts:
     fqdn:             test-ubuntu2004.local
     domain:           local
     ip:               192.168.184.44/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1419,4 +1432,356 @@ hosts:
     ip:               192.168.0.44/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
+
+
+
+
+
+#     ___        ____  __  _   _  ___  ____ _____ ____  
+#    / \ \      / /\ \/ / | | | |/ _ \/ ___|_   _/ ___| 
+#   / _ \ \ /\ / /  \  /  | |_| | | | \___ \ | | \___ \ 
+#  / ___ \ V  V /   /  \  |  _  | |_| |___) || |  ___) |
+# /_/   \_\_/\_/   /_/\_\ |_| |_|\___/|____/ |_| |____/ 
+#                                                                                                                                                              
+- name:               awx.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     awx
+  virtualbox:
+    cpus:             2
+    memory:           2560
+    fqdn:             awx.local
+    domain:           local
+    ip:               192.168.184.20/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           2560
+    fqdn:             awx.local
+    domain:           local
+    ip:               192.168.184.20/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2  
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    fqdn:             awx.local
+    domain:           local
+    ip:               192.168.0.20/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               confluent-zk-local-01.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-zk-local-01.local
+    domain:           local
+    ip:               192.168.184.21/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-zk-local-01.local
+    domain:           local
+    ip:               192.168.184.21/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2        
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             confluent-zk-local-01.local
+    domain:           local
+    ip:               192.168.0.21/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+    
+- name:               confluent-zk-local-02.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-zk-local-02.local
+    domain:           local
+    ip:               192.168.184.22/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-zk-local-02.local
+    domain:           local
+    ip:               192.168.184.22/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2      
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             confluent-zk-local-02.local
+    domain:           local
+    ip:               192.168.0.22/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+  
+- name:               confluent-zk-local-03.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-zk-local-03.local
+    domain:           local
+    ip:               192.168.184.23/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-zk-local-03.local
+    domain:           local
+    ip:               192.168.184.23/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2      
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             confluent-zk-local-03.local
+    domain:           local
+    ip:               192.168.0.23/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               confluent-ks-local-01.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-ks-local-01.local
+    domain:           local
+    ip:               192.168.184.24/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-ks-local-01.local
+    domain:           local
+    ip:               192.168.184.24/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2      
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             confluent-ks-local-01.local
+    domain:           local
+    ip:               192.168.0.24/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               confluent-ks-local-02.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-ks-local-02.local
+    domain:           local
+    ip:               192.168.184.25/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-ks-local-02.local
+    domain:           local
+    ip:               192.168.184.25/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2    
+  vmware_esxi:
+    cpus:             2
+    memory:           2560
+    data_disk:        40960
+    fqdn:             confluent-ks-local-02.local
+    domain:           local
+    ip:               192.168.0.25/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               confluent-ks-local-03.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:     
+  virtualbox:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-ks-local-03.local
+    domain:           local
+    ip:               192.168.184.26/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1536
+    data_disk:        10240
+    fqdn:             confluent-ks-local-03.local
+    domain:           local
+    ip:               192.168.184.26/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2  
+  vmware_esxi:
+    cpus:             2
+    memory:           1536
+    data_disk:        40960
+    fqdn:             confluent-ks-local-03.local
+    domain:           local
+    ip:               192.168.0.26/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+     
+- name:               confluent-sr-local-01.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:
+  virtualbox:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-01.local
+    domain:           local
+    ip:               192.168.184.27/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-01.local
+    domain:           local
+    ip:               192.168.184.27/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2    
+  vmware_esxi:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-01.local
+    domain:           local
+    ip:               192.168.0.27/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               confluent-sr-local-02.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:
+  virtualbox:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-02.local
+    domain:           local
+    ip:               192.168.184.28/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-02.local
+    domain:           local
+    ip:               192.168.184.28/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2      
+  vmware_esxi:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-02.local
+    domain:           local
+    ip:               192.168.0.28/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+- name:               confluent-sr-local-03.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:
+  virtualbox:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-03.local
+    domain:           local
+    ip:               192.168.184.29/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-03.local
+    domain:           local
+    ip:               192.168.184.29/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2 
+  vmware_esxi:
+    cpus:             1
+    memory:           1024
+    fqdn:             confluent-sr-local-03.local
+    domain:           local
+    ip:               192.168.0.29/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+    
+- name:               monitoring.local
+  type:               centos7
+  ansible_playbook:   ansible/devops.yaml
+  ansible_groups:
+  virtualbox:
+    cpus:             1
+    memory:           1024
+    data_disk:        10240
+    fqdn:             monitoring.local
+    domain:           local
+    ip:               192.168.184.30/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             1
+    memory:           1024
+    data_disk:        10240
+    fqdn:             monitoring.local
+    domain:           local
+    ip:               192.168.184.30/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2     
+  vmware_esxi:
+    cpus:             1
+    memory:           1024
+    data_disk:        40960
+    fqdn:             monitoring.local
+    domain:           local
+    ip:               192.168.0.30/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
+
+
 

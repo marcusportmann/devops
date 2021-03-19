@@ -12,8 +12,8 @@
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == 'CentOS'
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -24,14 +24,25 @@
 # | |__| |_| | |  | | |  | | |_| | |\  |
 #  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
+- name: Create the packages directory
+  local_action: file path="{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}" state="directory"
+  become: false
+
 - name: Create the /var/tmp/ansible directory
   file:
     path: /var/tmp/ansible
-    owner: root
-    group: root
+    owner: 'root'
+    group: 'root'
     mode: 0700
     state: directory
+
+- name: Upgrade pip
+  pip: 
+    name: pip
+    extra_args: --upgrade
 
 - name: Install the pyOpenSSL python package
   pip:
     name: pyOpenSSL
+
+

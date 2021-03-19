@@ -1,16 +1,13 @@
 ---
 # file: roles/monitored/tasks/main.yaml
 
-- set_fact:
-    prometheus_data_directory: "{{ prometheus_data_directory if ((prometheus_data_directory is defined) and (prometheus_data_directory != None)) else '/var/lib/prometheus' }}"
-
 - include_tasks: ubuntu.yaml
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_distribution == 'Ubuntu'
   tags:
   - unbound
 
-- include_tasks: centos.yaml
-  when: ansible_distribution == "CentOS"
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
   tags:
   - unbound
 
@@ -69,12 +66,12 @@
 
     - name: Check whether the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package has been downloaded
       become: no
-      local_action: stat path=packages/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz'
       register: prometheus_node_exporter_package_stat_result
 
     - name: Download the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
       become: no
-      local_action: get_url url='https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' dest='packages/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' checksum={{ prometheus_node_exporter_package_checksum }}
+      local_action: get_url url='https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' checksum={{ prometheus_node_exporter_package_checksum }}
       when: (prometheus_node_exporter_package_stat_result.stat.exists == False)
 
     - name: Remove the existing prometheus-node-exporter binary
@@ -84,8 +81,11 @@
 
     - name: Extract the node_exporter binary from the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
       unarchive:
-        src: packages/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz'
         dest: /usr/bin
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
         extra_opts:
         - --strip-components=1
         - node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64/node_exporter
@@ -101,11 +101,17 @@
   template:
     src: prometheus-node-exporter-environment
     dest: /etc/default/prometheus-node-exporter
+    owner: 'root'
+    group: 'root'
+    mode: '0644' 
 
 - name: Create the Prometheus Node Exporter systemd unit
   template:
     src: prometheus-node-exporter.service.j2
     dest: /lib/systemd/system/prometheus-node-exporter.service
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
 
 - name: Restart the Prometheus Node Exporter service
   systemd:

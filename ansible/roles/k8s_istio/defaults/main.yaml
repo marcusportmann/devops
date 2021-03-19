@@ -4,10 +4,10 @@
 k8s_defaults:
   istio:
     enabled: false
-    package_checksum: sha256:9e6c7f5cc52663a4177d6f275c500b4de5c59f075384c7084e3a7412921c310d
-    package_version: 1.6.2
+    package_checksum: sha256:027ca706cadd96b3013b31bae1365ef94ed41feef0018e871f64a8c4e6275402
+    package_version: 1.7.3
 
-    istioctl_package_checksum: sha256:b2f0eb8188ba35754809980a35ee0a4ab2622c2a644fbe8b96a32d24c6c0a870
+    istioctl_package_checksum: sha256:a66c45da3f390c881f87d97daa5be32c52d5bc8b87b0bc3680aa3148e0ebbf0b
 
     grafana:
       enabled: false
