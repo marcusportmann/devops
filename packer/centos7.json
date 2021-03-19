@@ -133,7 +133,7 @@
       "scripts": [
         "scripts/centos7/base.sh",
         "scripts/centos7/vmtools.sh",
-        "scripts/centos7/cloud-init.sh",        
+        "scripts/centos7/cloud-init.sh",
         "scripts/centos7/vagrant.sh",
         "scripts/centos7/cleanup.sh",
         "scripts/centos7/zerodisk.sh"
@@ -148,9 +148,9 @@
   "variables": {
     "build_directory": "build",
     "headless": "false",
-    "iso_checksum": "659691c28a0e672558b003d223f83938f254b39875ee7559d1a4a14c79173193",
+    "iso_checksum": "07b94e6b1a0b0260b94c83d6bb76b26bf7a310dc78d7a9c7432809fb9bc6194a",
     "iso_checksum_type": "sha256",
-    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/7.8.2003/isos/x86_64/CentOS-7-x86_64-Minimal-2003.iso",
+    "iso_url": "http://ftp.is.co.za/linux/distributions/centos/7.9.2009/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso",
     "ssh_password": "root",
     "ssh_timeout": "1200s",
     "ssh_username": "root"

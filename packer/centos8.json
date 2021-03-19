@@ -133,7 +133,7 @@
       "scripts": [
         "scripts/centos8/base.sh",
         "scripts/centos8/vmtools.sh",
-        "scripts/centos8/cloud-init.sh",        
+        "scripts/centos8/cloud-init.sh",
         "scripts/centos8/vagrant.sh",
         "scripts/centos8/cleanup.sh",
         "scripts/centos8/zerodisk.sh"
@@ -148,9 +148,9 @@
   "variables": {
     "build_directory": "build",
     "headless": "false",
-    "iso_checksum": "c87a2d81d67bbaeaf646aea5bedd70990078ec252fc52f5a7d65ff609871e255",
+    "iso_checksum": "aaf9d4b3071c16dbbda01dfe06085e5d0fdac76df323e3bbe87cce4318052247",
     "iso_checksum_type": "sha256",
-    "iso_url": "http://ftp.is.co.za/mirror/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso",
+    "iso_url": "http://ftp.is.co.za/mirror/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso",
     "ssh_password": "root",
     "ssh_timeout": "1200s",
     "ssh_username": "root"
