@@ -73,6 +73,9 @@ update-ca-trust extract
 echo "Installing additional packages"
 yum -y install bzip2 chrony python3 python3-pip python3-yaml net-tools
 
+echo "Upgrading pip, setuptools and wheel"
+python3 -m pip install --upgrade pip setuptools wheel
+
 echo "Removing unnecessary packages"
 yum -y remove wpa_supplicant
 yum -y remove avahi-autoipd

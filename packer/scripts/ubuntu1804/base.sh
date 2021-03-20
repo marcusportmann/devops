@@ -73,9 +73,12 @@ update-ca-certificates
 echo "Installing additional packages"
 apt-get -y install python3-pip
 
-echo "Removing unnecessary packages"
+echo "Upgrading pip, setuptools and wheel"
+python3 -m pip install --upgrade pip setuptools wheel
 
-# echo "Updating all packages"
+# echo "Removing unnecessary packages"
+
+echo "Updating all packages"
 apt-get -y update
 apt-get -y upgrade
 apt-get -y dist-upgrade
