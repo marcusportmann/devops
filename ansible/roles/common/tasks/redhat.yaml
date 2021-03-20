@@ -3,14 +3,6 @@
 
 - debug:
     msg: Applying the RedHat-specific common configuration
-    
-- name: Generate the Proxy configuration
-  template:
-    src: proxy.sh.j2
-    dest: /etc/profile.d/proxy.sh
-    owner: 'root'
-    group: 'root'
-    mode: '0555'
   
 - name: Enable the firewalld service
   systemd:
