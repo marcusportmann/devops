@@ -49,6 +49,10 @@ variables:
         - confluent-zkks-digital-dev-01.local
         - confluent-zkks-digital-dev-02.local
         - confluent-zkks-digital-dev-03.local
+        kafka_server_racks:
+          "confluent-zkks-digital-dev-01.local": rack1
+          "confluent-zkks-digital-dev-02.local": rack2
+          "confluent-zkks-digital-dev-03.local": rack3
 
       local:
         kafka_server_hosts:

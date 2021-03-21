@@ -4,7 +4,7 @@
 broker.id={{ (kafka_server_hosts.index(inventory_hostname) + 1) }}
 
 # The ID of the rack for the broker
-broker.rack={{ (kafka_server_hosts.index(inventory_hostname) + 1) }}
+broker.rack={{ kafka_server_rack }}
 
 
 ############################# Socket Server Settings #############################
