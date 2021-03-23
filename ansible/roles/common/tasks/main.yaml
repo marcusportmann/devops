@@ -42,3 +42,11 @@
     name: pyOpenSSL
 
 
+
+
+
+- name: Add SSH authorized key
+  ansible.posix.authorized_key:
+    user: root
+    state: present
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCr7K8iP6PihNWuX393LbT4sCo3pmfBcS4xPhWUtiZQYQ/46EzFxuvFH7Thf+kt7WOZdat1Vju4fe56gREbbIMIHhlH35xd4FxfuUJ09CLs4j0MW+XKhDxafT2dtUnd2bkQXY14xHTMwGJMY/4T7oIS2hQQBOdkp5VK1yh8Qr/SYZpIdbkccVjemQN+98Vd9RLoLy51lw5PQ9DkZVoypnJ+HcIhfK7cdHuiU+XBMLEd3sAl+gpyn+95KgI5+HO0u0JN4lDw6RlBRWJ1gZ+881z3mo8aJ7x9QCr8GlwZwKa7N6uXajo1ausgGmOlPq6iRn40CJ/Rb7vF8gzOc+uoigVefgydw/DgFXE9pyI1EhdcnPDnPBjVaTIGfXEQKEauTFwn8o46xi8u5b7q6JAq/SIx3llf5VN/d1evDVLxjg4OZAamf+dILxTGhyGm1zz2+rhAkYAVglF+0U7guNc0p3CtOkmCj1UxoGqzyjVBYCfpLFvKvAxrxBe2TKP/Odkoaz8="
