@@ -1,0 +1,16 @@
+---
+# file: roles/prometheus_alert_manager/defaults/main.yaml
+
+prometheus_alert_manager_defaults:
+  etc_directory: /etc/alertmanager
+  data_directory: /var/lib/alertmanager
+
+  package_checksum: sha256:9ccd863937436fd6bfe650e22521a7f2e6a727540988eef515dde208f9aef232
+  package_version: 0.21.0
+
+  user: alertmanager
+  user_id: 456
+  group: alertmanager
+  group_id: 456
+
+prometheus_alert_manager_config: "{{ prometheus_alert_manager_defaults | combine(prometheus_alert_manager | default({}), recursive=True) }}"

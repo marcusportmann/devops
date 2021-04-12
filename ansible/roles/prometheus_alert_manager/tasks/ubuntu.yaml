@@ -1,0 +1,27 @@
+---
+# file: roles/prometheus_alert_manager/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Prometheus Alert Manager configuration
+
+- name: Allow all hosts access to tcp port 9093
+  ufw:
+    rule: allow
+    port: '9093'
+    proto: tcp
+
+- name: Allow Prometheus Alert Manager hosts access to tcp port 9094
+  ufw:
+    rule: allow
+    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    port: '9094'
+    proto: tcp
+  loop: "{{ groups['prometheus_alert_manager'] }}"
+
+- name: Allow Prometheus Alert Manager hosts access to udp port 9094
+  ufw:
+    rule: allow
+    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    port: '9094'
+    proto: udp
+  loop: "{{ groups['prometheus_alert_manager'] }}"

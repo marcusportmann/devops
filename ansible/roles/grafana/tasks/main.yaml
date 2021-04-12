@@ -1,6 +1,16 @@
 ---
 # file: roles/grafana/tasks/main.yaml
 
+- set_fact:
+    prometheus_server_url: http://{{ groups['prometheus_server'][0] }}:9090
+     
+- set_fact:
+    prometheus_server_url: "http://{{ grafana_config.prometheus_servers[inventory_hostname] }}:9090"
+  when: ((grafana_config.prometheus_servers is defined) and (grafana_config.prometheus_servers[inventory_hostname] is defined))
+  
+- debug:
+    msg: "Prometheus Server URL: {{ prometheus_server_url }}"
+
 - name: Add the grafana group
   group:
     name: grafana
@@ -91,6 +101,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
+  register: prometheus_data_source_template_result
 
 - name: Create the dashboard provisioning file
   template:
@@ -99,6 +110,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
+  register: all_dashboards_template_result
 
 - name: Create the {{ grafana_config.data_directory }}/dashboards directory
   file:
@@ -115,6 +127,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
+  register: prometheus_dashboard_template_result
 
 - name: Copy the nodes.json dashboard file
   template:
@@ -123,6 +136,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
+  register: nodes_dashboard_template_result
 
 - name: Copy the kubernetes.json dashboard file
   template:
@@ -132,6 +146,7 @@
     group: '{{ grafana_config.group }}'
     mode: '0440'
   when: ('k8s_master' in groups)
+  register: k8s_dashboard_template_result
 
 - name: Copy the zookeeper.json dashboard file
   template:
@@ -141,6 +156,7 @@
     group: '{{ grafana_config.group }}'
     mode: '0440'
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
+  register: zookeeper_dashboard_template_result
 
 - name: Copy the kafka-overview.json dashboard file
   template:
@@ -150,6 +166,7 @@
     group: '{{ grafana_config.group }}'
     mode: '0440'
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
+  register: kafka_dashboard_template_result
 
 - name: Copy the kafka-producers-consumers.json dashboard file
   template:
@@ -159,6 +176,7 @@
     group: '{{ grafana_config.group }}'
     mode: '0440'
   when: ((grafana_config.dashboards.kafka_producers_and_consumers.enabled) and (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups)))
+  register: kafka_producers_consumers_dashboard_template_result
 
 - name: Restart the grafana-server service
   systemd:
@@ -166,7 +184,7 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: (grafana_configuration_template_result.changed == True)
+  when: ((grafana_configuration_template_result.changed == True) or (prometheus_data_source_template_result.changed == True) or (all_dashboards_template_result.changed == True) or (prometheus_dashboard_template_result.changed == True) or (nodes_dashboard_template_result.changed == True) or (k8s_dashboard_template_result.changed == True) or (zookeeper_dashboard_template_result.changed == True) or (kafka_dashboard_template_result.changed == True) or (kafka_producers_consumers_dashboard_template_result.changed == True))
 
 - name: Ensure that the grafana-server service is started
   systemd:

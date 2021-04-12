@@ -9,6 +9,13 @@
     name: firewalld
     state: started
     enabled: true  
+    
+- name: Enable the chrony port
+  firewalld:
+    port: '123/udp'
+    permanent: yes
+    state: enabled
+    immediate: yes    
 
 
 # NOTE: We no longer enable the EPEL repo. This has be done prior to executing this Ansible role.

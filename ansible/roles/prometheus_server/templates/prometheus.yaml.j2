@@ -2,8 +2,19 @@ global:
   scrape_interval:     15s
   evaluation_interval: 15s
 
-scrape_configs:
+# Rules and alerts are read from the specified file(s)
+rule_files:
+  - rules.yml
 
+{% if prometheus_alert_manager_target is defined %}
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - {{ prometheus_alert_manager_target }}
+{% endif %}
+
+scrape_configs:
 
 #   ____  _   _ ____  ____   _____        __
 #  | __ )| | | |  _ \|  _ \ / _ \ \      / /

@@ -1,0 +1,22 @@
+---
+# file: roles/prometheus_alert_manager/meta/main.yaml
+
+galaxy_info:
+  author: Marcus Portmann
+  description: Ansible Prometheus Alert Manager Role
+  license: Apache 2
+  min_ansible_version: 2.9
+  platforms:
+  - name: EL
+    versions:
+     - 7
+  - name: Ubuntu
+    versions:
+      - breezy
+      - focal
+  categories:
+  - monitoring
+  - platform
+
+dependencies:
+  - { role: common, common: { initialise_data_directory: true } }

@@ -726,7 +726,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "burrow_kafka_consumer_lag_total{cluster=\"$cluster\"}",
+          "expr": "topk(1, burrow_kafka_consumer_lag_total{cluster=\"$cluster\"})",
           "interval": "",
           "legendFormat": "{{ consumer_group }}",
           "refId": "A"
@@ -822,7 +822,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "burrow_kafka_consumer_partition_lag{cluster=\"$cluster\"}",
+          "expr": "topk(1, burrow_kafka_consumer_partition_lag{cluster=\"$cluster\"})",
           "interval": "",
           "legendFormat": "{{ consumer_group }} : {{ topic }} : {{ partition }}",
           "refId": "A"

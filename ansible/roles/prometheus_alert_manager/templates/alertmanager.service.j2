@@ -1,0 +1,17 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=Prometheus Alert Manager
+Documentation=https://prometheus.io/docs/introduction/overview/
+
+[Service]
+Restart=always
+User={{ prometheus_alert_manager_config.user }}
+EnvironmentFile=/etc/default/alertmanager
+ExecStart=/usr/bin/alertmanager $ARGS
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutStopSec=20s
+SendSIGKILL=no
+
+[Install]
+WantedBy=multi-user.target
