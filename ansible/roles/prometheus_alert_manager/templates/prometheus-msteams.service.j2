@@ -1,0 +1,17 @@
+# {{ansible_managed}}
+
+[Unit]
+Description=Prometheus MS Teams
+Documentation=https://github.com/prometheus-msteams/prometheus-msteams
+
+[Service]
+Restart=always
+User={{ prometheus_alert_manager_config.prometheus_msteams_user }}
+EnvironmentFile=/etc/default/prometheus-msteams
+ExecStart=/usr/bin/prometheus-msteams $ARGS
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutStopSec=20s
+SendSIGKILL=no
+
+[Install]
+WantedBy=multi-user.target

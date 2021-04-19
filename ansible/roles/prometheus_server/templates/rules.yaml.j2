@@ -1,20 +1,220 @@
 {% raw %}
+
+#
+# NOTE: The title and summary annotations MUST NOT contain any alert specific information,
+#       e.g. the name of the node. This is to ensure that there is a common title and 
+#       summary annotation when grouping different alerts of the same type so that they 
+#       can be published correctly to MS Teams.        
+#
+
 groups:
-- name: AllInstances
+- name: Prometheus
   rules:
-  - alert: InstanceDown
-    # Condition for alerting
+  - alert: PrometheusJobMissing
+    expr: absent(up{job="prometheus"})
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Prometheus job missing'
+      summary: 'The Prometheus job has disappeared'
+      description: 'The Prometheus job (instance: {{ $labels.instance }}) has disappeared.'
+  
+  - alert: PrometheusTargetMissing
     expr: up == 0
     for: 1m
-    # Annotation - additional informational labels to store more information
-    annotations:
-      title: 'Instance {{ $labels.instance }} down'
-      description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
-    # Labels - additional labels to be attached to the alert
     labels:
-      severity: 'critical'
+      severity: critical
+    annotations:
+      title: 'Prometheus target missing'
+      summary: 'A Prometheus target has disappeared'
+      description: 'The Prometheus target (instance: {{ $labels.instance }}) has disappeared. An exporter might have crashed.'
 
+  - alert: PrometheusAllTargetsMissing
+    expr: count by (job) (up) == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Prometheus all targets missing'
+      summary: 'A Prometheus job does not have any living targets'
+      description: 'The Prometheus job (job: {{ $labels.job }}) does not have any living targets.'
+  
+- name: Host
+  rules:
+  - alert: HostOutOfMemory 
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < bool 10 == 1
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host out of memory'
+      summary: 'A host is running out of memory (< 10% left)'
+      description: 'The memory for the host ({{ $labels.node }}) is filling up (< 10% left).'
 
+  - alert: HostOutOfSwap 
+    expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) * 100 > bool 80 == 1
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host out of swap'
+      summary: 'A host is running out of swap (> 80% used)'
+      description: 'The host ({{ $labels.node }}) is under heavy memory pressure and is running out of swap (> 80% used).'
 
+  - alert: HostMemoryUnderMemoryPressure
+    expr: rate(node_vmstat_pgmajfault[1m]) > bool 1000 == 1
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Host under memory pressure'
+      summary: 'A host is under heavy memory pressure and is experiencing a high rate of major page faults'
+      description: 'The host ({{ $labels.node }}) is under heavy memory pressure and is experiencing a high rate of major page faults.'
+
+  - alert: HostOutOfDiskSpace
+    expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < bool 10 == 1 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host out of disk space'
+      summary: 'A host is running out of available disk space (< 10% left)'
+      description: 'The disk space for the host ({{ $labels.node }}) is filling up. There is less than 10% left for the device ({{ $labels.device }}) mounted under ({{ $labels.mountpoint }}).'
+
+  - alert: HostOutOfDiskSpaceIn24Hours
+    expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < bool 10 == 1 and ON (instance, device, mountpoint) predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs"}[1h], 24 * 3600) < 0 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Host out of disk space in 24 hours'
+      summary: 'A host is predicted to run out of disk space within the next 24 hours at the current write rate'
+      description: 'The disk space for the host ({{ $labels.node }}) is predicted to run out of space within the next 24 hours for the device ({{ $labels.device }}) mounted under ({{ $labels.mountpoint }}).'
+
+  - alert: HostOutOfInodes
+    expr: (node_filesystem_files_free * 100) / node_filesystem_files < bool 10 == 1 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host out of inodes'
+      summary: 'A host is running out of available inodes (< 10% left)'
+      description: 'The inodes for the host ({{ $labels.node }}) are running out. There are less than 10% left for the device ({{ $labels.device }}) mounted under ({{ $labels.mountpoint }}).'
+
+  - alert: HostOutOfInodesIn24Hours
+    expr: (node_filesystem_files_free * 100) / node_filesystem_files < bool 10 == 1 and ON (instance, device, mountpoint) predict_linear(node_filesystem_files_free[1h], 24 * 3600) < 0 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Host out of inodes in 24 hours'
+      summary: 'A host is predicted to run out of inodes within the next 24 hours at the current write rate'
+      description: 'The inodes for the host ({{ $labels.node }}) are predicted to run out within the next 24 hours for the device ({{ $labels.device }}) mounted under ({{ $labels.mountpoint }}).'
+
+  - alert: HostHighDiskReadLatency
+    expr: rate(node_disk_read_time_seconds_total[1m]) / rate(node_disk_reads_completed_total[1m]) > bool 0.1 == 1 and rate(node_disk_reads_completed_total[1m]) > bool 0 == 1
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host high disk read latency'
+      summary: 'A host is experiencing a high disk read latency (> 100ms)'
+      description: 'The host ({{ $labels.node }}) is experiencing a high disk read latency (> 100ms) for the device ({{ $labels.device }}).'
+
+  - alert: HostHighDiskWriteLatency
+    expr: rate(node_disk_write_time_seconds_total[1m]) / rate(node_disk_writes_completed_total[1m]) > bool 0.1 == 1 and rate(node_disk_writes_completed_total[1m]) > bool 0 == 1
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host high disk write latency'
+      summary: 'A host is experiencing a high disk write latency (> 100ms)'
+      description: 'The host ({{ $labels.node }}) is experiencing a high disk write latency (> 100ms) for the device ({{ $labels.device }}).'
+
+  - alert: HostHighCpuLoad
+    expr: 100 - (avg by(node) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > bool 80 == 1
+    for: 20m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host high CPU load'
+      summary: 'A host is experiencing high CPU load (> 80%)'
+      description: 'The host ({{ $labels.node }}) has experienced high CPU load (> 80%) for more than 20 minutes.'
+      
+  - alert: HostNetworkInterfaceSaturated
+    expr: (rate(node_network_receive_bytes_total{device!~"^tap.*"}[1m]) + rate(node_network_transmit_bytes_total{device!~"^tap.*"}[1m])) / node_network_speed_bytes{device!~"^tap.*"} > 0.8
+    for: 20m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Host network interface saturated'
+      summary: 'A host is experiencing a saturated network interface (> 80%)'
+      description: 'The host ({{ $labels.node }}) has experienced a saturated network interface (> 80%) on the device ({{ $labels.device }}) for more than 20 minutes.'
 
 {% endraw %}
+{% if (('confluent_kafka_server' in groups) or ('kafka_server' in groups)) %}
+{% raw %}
+
+- name: Kafka
+  rules:
+  - alert: KafkaNoController
+    expr: sum(kafka_controller_kafkacontroller_activecontrollercount) by (cluster) < 1
+    for: 3m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Kafka no controller'
+      summary: 'A Kafka cluster has no controller'
+      description: 'The Kafka cluster ({{ $labels.cluster }}) has no controller and is possibly broken.'
+
+  - alert: KafkaOfflinePartitions
+    expr: sum(kafka_controller_kafkacontroller_offlinepartitionscount) by (cluster) > 0
+    for: 3m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Kafka offline partitions'
+      summary: 'A Kafka cluster has offline partitions'
+      description: 'The Kafka cluster ({{ $labels.cluster }}) has {{ $value }} offline partitions (have no leader) and is possibly broken.'
+
+  - alert: KafkaUnderreplicatedPartitions
+    expr: sum(kafka_cluster_partition_underreplicated) by (cluster) > 0
+    for: 3m
+    labels:
+      severity: critical
+    annotations:
+      title: 'Kafka under-replicated partitions'
+      summary: 'A Kafka cluster has under-replicated partitions'
+      description: 'The Kafka cluster ({{ $labels.cluster }}) has {{ $value }} under-replicated partitions.'
+
+  - alert: KafkaConsumerPartitionLag
+    expr: topk(1, burrow_kafka_consumer_partition_lag) by (consumer_group, topic, partition) > 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      title: 'Kafka consumer partition lag'
+      summary: 'A Kafka consumer is lagging for one or more partitions'
+      description: 'The Kafka consumer group ({{ $labels.consumer_group }}) is lagging ({{ $value }} messages behind) for the partion ({{ $labels.partition }}) for the topic ({{ $labels.topic }}) on the cluster ({{ $labels.cluster }}).'
+
+{% endraw %}
+{% endif %}
+
+{% if (('confluent_zookeeper' in groups) or ('kafka_zookeeper' in groups) or ('zookeeper' in groups)) %}
+{% raw %}
+
+- name: ZooKeeper
+  rules:
+  - alert: ZooKeeperHighRequestLatency
+    expr: max_over_time(zookeeper_MaxRequestLatency[1m]) > 10000
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      title: 'ZooKeeper high request latency'
+      summary: 'A ZooKeeper node is experiencing high request latency'
+      description: 'The ZooKeeper node ({{ $labels.node }}) is experiencing high request latency ({{ $value }} ms).'
+
+{% endraw %}
+{% endif %}

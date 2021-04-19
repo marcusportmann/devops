@@ -6,15 +6,15 @@ route:
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 1h
-  receiver: 'blackhole'
+  receiver: default-receiver
   
 receivers:
-- name: 'blackhole'
+- name: default-receiver
+{% if ((prometheus_alert_manager_config.prometheus_msteams_url is defined) and (prometheus_alert_manager_config.prometheus_msteams_url != None) and (prometheus_alert_manager_config.prometheus_msteams_url != '')) %}
+  webhook_configs:
+  - url: "http://localhost:2000/alertmanager"
+    send_resolved: true
 
-inhibit_rules:
-- source_match:
-    severity: 'critical'
-  target_match:
-    severity: 'warning'
-  equal: ['alertname', 'dev', 'instance']
+{% endif %}
+
 

@@ -1,14 +1,14 @@
 {% set cluster_peers = [] -%}
 {% for host in groups["prometheus_alert_manager"] -%}
 {% if (host != inventory_hostname) %}
-  {% set _ = cluster_peers.append("--cluster.peer=%s:9094" % (host)) -%}
+  {% set _ = cluster_peers.append("--cluster.peer=%s:9094" % (hostvars[host].ansible_default_ipv4.address)) -%}
 {% endif %}  
 {% endfor -%}
 
 
 {% if ((cluster_peers|length) > 0) %}
 
-ARGS="--cluster.listen-address=0.0.0.0:9094 --cluster.advertise-address={{ hostvars[inventory_hostname].ansible_default_ipv4.address }}:9094 {{ cluster_peers | join(' ') }} --config.file={{ prometheus_alert_manager_config.etc_directory }}/alertmanager.yml --storage.path={{ prometheus_alert_manager_config.data_directory }}"
+ARGS="--cluster.listen-address={{ hostvars[inventory_hostname].ansible_default_ipv4.address }}:9094 --cluster.advertise-address={{ hostvars[inventory_hostname].ansible_default_ipv4.address }}:9094 {{ cluster_peers | join(' ') }} --config.file={{ prometheus_alert_manager_config.etc_directory }}/alertmanager.yml --storage.path={{ prometheus_alert_manager_config.data_directory }}"
 
 {% else %}
 

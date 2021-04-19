@@ -93,9 +93,9 @@
         path: /usr/bin/alertmanager
         state: absent
 
-    - name: Remove the existing alertmanager binary
+    - name: Remove the existing amtool binary
       file:
-        path: /usr/bin/amutil
+        path: /usr/bin/amtool
         state: absent
 
     - name: Extract the alertmanager binary from the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package
@@ -154,6 +154,7 @@
     src: alertmanager-environment.j2
     dest: /etc/default/alertmanager
     mode: '0644'  
+  register: prometheus_alert_manager_environment_template_result
 
 - name: Configure the Prometheus Alert Manager systemd unit
   template:
@@ -170,10 +171,149 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((prometheus_alert_manager_configuration_template_result.changed == True) or (prometheus_alert_manager_systemd_unit_template_result.changed == True))
+  when: ((prometheus_alert_manager_configuration_template_result.changed == True) or (prometheus_alert_manager_environment_template_result.changed == True) or (prometheus_alert_manager_systemd_unit_template_result.changed == True))
 
 - name: Ensure that the Prometheus Alert Manager service is started
   systemd:
     name: alertmanager.service
     state: started
     enabled: yes
+
+
+
+
+#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____    __  __ ____    _____ _____    _    __  __ ____  
+# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|  |  \/  / ___|  |_   _| ____|  / \  |  \/  / ___| 
+# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \  | |\/| \___ \    | | |  _|   / _ \ | |\/| \___ \ 
+# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) | | |  | |___) |   | | | |___ / ___ \| |  | |___) |
+# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/  |_|  |_|____/    |_| |_____/_/   \_\_|  |_|____/ 
+#   
+- name: Prometheus MS Teams integration
+  block:                                                                                                              
+  - name: Install prometheus-msteams
+    block:
+    - debug:
+        msg: Check whether the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package has been installed
+
+    - stat:
+        path: /usr/bin/prometheus-msteams
+      register: prometheus_msteams_installed_stat_result
+
+    - shell:
+        cmd: /usr/bin/prometheus-msteams --version 2>&1 
+      register: prometheus_msteams_installed_version_output
+      when: (prometheus_msteams_installed_stat_result.stat.exists == True)
+    
+    - set_fact:
+        prometheus_msteams_installed_version: '{{ prometheus_msteams_installed_version_output.stdout }}'
+      when: (prometheus_msteams_installed_stat_result.stat.exists == True)
+
+    - set_fact:
+        prometheus_msteams_installed_version: ''
+      when: (prometheus_msteams_installed_stat_result.stat.exists == False)
+    
+    - block:
+      - debug:
+          msg: Install the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package
+
+      - name: Add the {{ prometheus_alert_manager_config.prometheus_msteams_group }} group
+        group:
+          name: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
+          gid: '{{ prometheus_alert_manager_config.prometheus_msteams_group_id }}'
+          state: present
+
+      - name: Add the {{ prometheus_alert_manager_config.prometheus_msteams_user }} user
+        user:
+          name: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
+          uid: '{{ prometheus_alert_manager_config.prometheus_msteams_user_id }}'
+          group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
+          create_home: no
+          shell: /usr/sbin/nologin
+          state: present
+
+      - name: Check whether the prometheus-msteams service exists
+        stat:
+          path: /lib/systemd/system/prometheus-msteams.service
+        register: prometheus_msteams_service_stat_result
+
+      - name: Stop the prometheus-msteams service
+        service:
+          name: prometheus-msteams.service
+          state: stopped
+        when: prometheus_msteams_service_stat_result.stat.exists == True
+        register: prometheus_msteams_service_stopped
+
+      - name: Check whether the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package has been downloaded
+        become: no
+        local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}'
+        register: prometheus_msteams_package_stat_result
+
+      - name: Download the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package
+        become: no
+        local_action: get_url url='https://github.com/prometheus-msteams/prometheus-msteams/releases/download/{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}/prometheus-msteams-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}' checksum={{ prometheus_alert_manager_config.prometheus_msteams_package_checksum }}
+        when: (prometheus_msteams_package_stat_result.stat.exists == False)
+
+      - name: Remove the existing prometheus-msteams binary
+        file:
+          path: /usr/bin/prometheus-msteams
+          state: absent
+        
+      - name: Copy the prometheus-msteams binary
+        copy:
+          src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}'
+          dest: '/usr/bin/prometheus-msteams'
+          owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
+          group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
+          mode: '0550'
+          
+      - name: Create the {{ prometheus_alert_manager_config.etc_directory }} directory
+        file:
+          path: '{{ prometheus_alert_manager_config.prometheus_msteams_etc_directory }}'
+          owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
+          group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
+          mode: '0550'
+          state: directory
+    
+      when: (prometheus_msteams_installed_version != prometheus_alert_manager_config.prometheus_msteams_package_version)
+
+  - name: Generate the prometheus-msteams message card template
+    template:
+      src: prometheus-msteams-card.tmpl.j2
+      dest: '{{ prometheus_alert_manager_config.prometheus_msteams_etc_directory }}/card.tmpl'
+      owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
+      group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
+      mode: '0440'
+    register: prometheus_msteams_message_card_template_result  
+
+  - name: Generate the prometheus-msteams environment
+    template:
+      src: prometheus-msteams-environment.j2
+      dest: /etc/default/prometheus-msteams
+      mode: '0644'
+    register: prometheus_msteams_environment_template_result  
+
+  - name: Configure the prometheus-msteams systemd unit
+    template:
+      src: prometheus-msteams.service.j2
+      dest: /lib/systemd/system/prometheus-msteams.service
+      owner: 'root'
+      group: 'root'
+      mode: '0644'
+    register: prometheus_msteams_systemd_unit_template_result
+    
+  - name: Restart the prometheus-msteams service
+    systemd:
+      name: prometheus-msteams.service
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+    when: ((prometheus_msteams_environment_template_result.changed == True) or (prometheus_msteams_systemd_unit_template_result.changed == True) or (prometheus_msteams_message_card_template_result.changed == True))
+
+  - name: Ensure that the prometheus-msteams service is started
+    systemd:
+      name: prometheus-msteams.service
+      state: started
+      enabled: yes
+
+  when: ((prometheus_alert_manager_config.prometheus_msteams_url is defined) and (prometheus_alert_manager_config.prometheus_msteams_url != None) and (prometheus_alert_manager_config.prometheus_msteams_url != ''))
+
