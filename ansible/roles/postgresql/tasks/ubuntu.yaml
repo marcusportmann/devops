@@ -1,0 +1,16 @@
+---
+# file: roles/postgresql/tasks/ubuntu.yaml
+
+- debug:
+    msg: Applying the Ubuntu-specific Gitea configuration
+
+
+
+
+
+
+- name: Allow all hosts access to tcp port 5432
+  ufw:
+    rule: allow
+    port: '5432'
+    proto: tcp

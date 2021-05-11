@@ -1,0 +1,91 @@
+---
+# file: roles/postgresql/tasks/redhat.yaml
+
+- debug:
+    msg: Applying the RedHat-specific Postgresql configuration
+
+- name: Check if PGDG repo is already configured
+  stat: path=/etc/yum.repos.d/pgdg-redhat-all.repo
+  register: pgdg_repo_file_result
+
+- name: Enable the PGDG YUM repo
+  block:
+  - name: Check whether the pgdg-redhat-repo-latest.noarch.rpm package has been downloaded
+    become: no
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/pgdg-redhat-repo-latest.noarch.rpm'
+    register: pgdg_repo_package_stat_result
+
+  - name: Download the pgdg-redhat-repo-latest.noarch.rpm package
+    become: no
+    local_action: get_url url='https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/pgdg-redhat-repo-latest.noarch.rpm'
+    when: (pgdg_repo_package_stat_result.stat.exists == False)
+
+  - name: Copy the pgdg-redhat-repo-latest.noarch.rpm package
+    copy:
+      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/pgdg-redhat-repo-latest.noarch.rpm'
+      dest: '/var/tmp/ansible/{{ role_name }}/pgdg-redhat-repo-latest.noarch.rpm'
+
+  - name: Install the pgdg-redhat-repo-latest.noarch.rpm package
+    yum:
+      name: '/var/tmp/ansible/{{ role_name }}/pgdg-redhat-repo-latest.noarch.rpm'
+      state: present
+
+- name: Install the postgresql package
+  block:
+  - debug:
+      msg: Installing postgresql ({{ postgresql_config.package_version }})
+      
+  - name: Install the postgresql{{ postgresql_config.package_version }}-libs package
+    yum:
+      name: 'postgresql{{ postgresql_config.package_version }}-libs'
+      state: latest
+
+  - name: Install the postgresql{{ postgresql_config.package_version }} package
+    yum:
+      name: 'postgresql{{ postgresql_config.package_version }}'
+      state: latest
+
+  - name: Install the postgresql{{ postgresql_config.package_version }}-server package
+    yum:
+      name: 'postgresql{{ postgresql_config.package_version }}-server'
+      state: latest
+
+  - name: Install the postgresql{{ postgresql_config.package_version }}-docs package
+    yum:
+      name: 'postgresql{{ postgresql_config.package_version }}-docs'
+      state: latest
+  
+
+  
+  
+  
+  
+- name: Allow all hosts access to tcp port 5432
+  firewalld:
+    port: 5432/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+#
+#
+#
+#
+#
+#
+#
+#
+#yum install -y 
+#yum install -y postgresql13-server
+#/usr/pgsql-13/bin/postgresql-13-setup initdb
+#systemctl enable postgresql-13
+#systemctl start postgresql-13
