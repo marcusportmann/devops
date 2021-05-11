@@ -2,6 +2,8 @@
 # file: roles/prometheus_server/defaults/main.yaml
 
 prometheus_server_defaults:
+  enable_admin_api: false
+
   etc_directory: /etc/prometheus
   data_directory: /var/lib/prometheus
 

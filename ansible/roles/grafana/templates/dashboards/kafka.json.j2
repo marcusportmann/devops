@@ -461,13 +461,22 @@
       "title": "Kafka Broker",
       "type": "row"
     },
+    
+    
+    
+    
+    
+    
+    
+    
+    
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "TotalProduceRequestsPerSec",
+      "description": "ProduceRequestRateByTopic",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -483,7 +492,7 @@
         "y": 20
       },
       "hiddenSeries": false,
-      "id": 22,
+      "id": 82,
       "legend": {
         "alignAsTable": true,
         "avg": true,
@@ -512,7 +521,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_totalproducerequests_total{node=~\"[[node]]\", topic != \"\"}[1m])",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_totalproducerequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -520,7 +529,7 @@
           "refId": "A"
         },
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_failedproducerequests_total{node=~\"[[node]]\", topic != \"\"}[1m])",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_failedproducerequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -575,7 +584,229 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "TotalFetchRequestsPerSec",
+      "description": "FetchRequestRateByTopic",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "hiddenSeries": false,
+      "id": 81,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_totalfetchrequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{ node }} : {{ topic }}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_failedfetchrequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{ node }} : {{ topic }}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Fetch request rate by topic",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },    
+    
+    
+    
+    
+    
+    
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "ProduceRequestRateByNodeAndTopic",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "hiddenSeries": false,
+      "id": 22,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "rate(kafka_server_brokertopicmetrics_totalproducerequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{ node }} : {{ topic }}",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(kafka_server_brokertopicmetrics_failedproducerequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{ node }} : {{ topic }}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Produce request rate by node and topic",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "FetchRequestRateByNodeAndTopic",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -620,7 +851,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_totalfetchrequests_total{node=~\"[[node]]\", topic != \"\"}[1m])",
+          "expr": "rate(kafka_server_brokertopicmetrics_totalfetchrequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -628,7 +859,7 @@
           "refId": "A"
         },
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_failedfetchrequests_total{node=~\"[[node]]\", topic != \"\"}[1m])",
+          "expr": "rate(kafka_server_brokertopicmetrics_failedfetchrequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -640,7 +871,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Consume request rate by topic",
+      "title": "Fetch request rate by node and topic",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -677,6 +908,256 @@
         "alignLevel": null
       }
     },
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "BytesInRateByTopic",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "hiddenSeries": false,
+      "id": 92,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesin_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{ node }} : {{ topic }}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Bytes in rate by topic",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "BytesOutRateByTopic",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "hiddenSeries": false,
+      "id": 91,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesout_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "format": "time_series",
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{ node }} : {{ topic }}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Bytes out rate by topic",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },    
+    
+    
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     {
       "aliasColors": {},
       "bars": false,
@@ -736,7 +1217,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Consumer lag total",
+      "title": "Consumer lag",
       "tooltip": {
         "shared": true,
         "sort": 2,
@@ -920,7 +1401,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_network_requestmetrics_requests_total{node=~\"[[node]]\", request=~\"Produce|FetchConsumer|FetchFollower\"}[1m])",
+          "expr": "rate(kafka_network_requestmetrics_requests_total{request =~ \"Produce.*|FetchConsumer.*|FetchFollower.*\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -932,7 +1413,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Kafka network total request rate",
+      "title": "Kafka network request rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1120,7 +1601,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_server_sessionexpirelistener_zookeepersyncconnects_total{node=~\"[[node]]\"}[1m])",
+          "expr": "rate(kafka_server_sessionexpirelistener_zookeepersyncconnectspersec{node=~\"[[node]]\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,

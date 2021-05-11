@@ -327,6 +327,9 @@ The following users and groups are provisioned by the various Ansible scripts:
   * logstash (450)
   * prometheus (455)
   * alertmanager (456)
+  * prometheus-msteams (457)
+* Testing
+  * jmeter-server (490)  
 * Kubernetes
   * k8s-admin (500)
 * Other
@@ -361,6 +364,9 @@ The following users and groups are provisioned by the various Ansible scripts:
   * logstash (450)
   * prometheus (455)
   * alertmanager (456)
+  * prometheus-msteams (457)
+* Testing
+  * jmeter-server (490)    
 * Kubernetes
   * k8s-admin (500)
 * Other

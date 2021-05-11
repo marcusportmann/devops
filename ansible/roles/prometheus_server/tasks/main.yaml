@@ -184,7 +184,8 @@
   template:
     src: prometheus-environment.j2
     dest: /etc/default/prometheus
-    mode: '0644'  
+    mode: '0644'
+  register: prometheus_server_environment_template_result  
 
 - name: Configure the Prometheus systemd unit
   template:
@@ -242,7 +243,7 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-  when: ((prometheus_server_configuration_template_result.changed == True) or (prometheus_rules_configuration_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
+  when: ((prometheus_server_configuration_template_result.changed == True) or (prometheus_rules_configuration_template_result.changed == True) or (prometheus_server_environment_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
 
 - name: Ensure that the Prometheus service is started
   systemd:

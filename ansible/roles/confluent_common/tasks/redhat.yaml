@@ -2,10 +2,21 @@
 # file: roles/confluent_common/tasks/redhat.yaml
 
 - debug:
-    msg: Applying the RedHat-specific Kafka common configuration
+    msg: Applying the RedHat-specific Confluent common configuration
 
 - name: Install the java-11-openjdk package
   yum:
     name: java-11-openjdk
     state: present
+
+- name: Install the java-11-openjdk-devel package
+  yum:
+    name: java-11-openjdk-devel
+    state: present
+
+- name: Select the correct java version
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/java-11-openjdk/bin/java
+    link: /usr/bin/java
 

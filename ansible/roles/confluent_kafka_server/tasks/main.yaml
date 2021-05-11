@@ -417,6 +417,21 @@
       state: present
       regexp: '^%alias kafka-topics'
       line: alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      
+  - name: Add the kafka-console-producer alias to the /etc/profile.d/kafka.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka.sh
+      state: present
+      regexp: '^%alias kafka-console-producer'
+      line: alias kafka-topics='/opt/confluent/bin/kafka-console-producer --producer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+
+  - name: Add the kafka-console-consumer alias to the /etc/profile.d/kafka.sh file
+    lineinfile:
+      dest: /etc/profile.d/kafka.sh
+      state: present
+      regexp: '^%alias kafka-console-consumer'
+      line: alias kafka-topics='/opt/confluent/bin/kafka-console-consumer --consumer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      
 
 - name: Apply the Schema Registry configuration
   block:
