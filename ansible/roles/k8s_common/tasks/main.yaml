@@ -116,7 +116,7 @@
 # |  _  | |___| |___| |  | | |  _ <| |___|  __/| |_| |___) |
 # |_| |_|_____|_____|_|  |_| |_| \_\_____|_|    \___/|____/
 #
-- name: Configure the Helm repos
+- name: Configure the Helm repositories
   block:
   - name: Check if the stable Helm repository has been added
     shell:
@@ -125,74 +125,30 @@
 
   - name: Add the stable Helm repository
     command:
-      cmd: /usr/bin/helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+      cmd: /usr/bin/helm repo add stable https://charts.helm.sh/stable
     when: helm_stable_repo_added_output.stdout == '0'
 
-  - name: Configure the monitoring Helm repos
-    block:    
-    - name: Check if the elastic Helm repository has been added
-      shell:
-        cmd: /usr/bin/helm repo list | grep elastic | wc -l
-      register: helm_elastic_repo_added_output
-
-    - name: Add the elastic Helm repository
-      command:
-        cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
-      when: helm_elastic_repo_added_output.stdout == '0'
-
-    - name: Check if the grafana Helm repository has been added
-      shell:
-        cmd: /usr/bin/helm repo list | grep grafana | wc -l
-      register: helm_grafana_repo_added_output
-
-    - name: Add the grafana Helm repository
-      command:
-        cmd: /usr/bin/helm repo add grafana https://grafana.github.io/helm-charts
-      when: helm_grafana_repo_added_output.stdout == '0'
-
-    - name: Check if the jaegertracing Helm repository has been added
-      shell:
-        cmd: /usr/bin/helm repo list | grep jaegertracing | wc -l
-      register: helm_jaegertracing_repo_added_output
-
-    - name: Add the jaegertracing Helm repository
-      command:
-        cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
-      when: helm_jaegertracing_repo_added_output.stdout == '0'
-
-    - name: Check if the prometheus-community Helm repository has been added
-      shell:
-        cmd: /usr/bin/helm repo list | grep prometheus-community | wc -l
-      register: helm_prometheus_community_repo_added_output
-
-    - name: Add the prometheus-community Helm repository
-      command:
-        cmd: /usr/bin/helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-      when: helm_prometheus_community_repo_added_output.stdout == '0'
-
-    when: ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == true))
-
-  - name: Configure the Lonhorn Helm repo
+  - name: Configure the Bitnami Labs Sealed Secrets repository
     block:
-    - name: Check if the Longhorn Helm repository has been added
+    - name: Check if the Bitnami Labs Sealed Secrets Helm repository has been added
       shell:
-        cmd: /usr/bin/helm repo list | grep longhorn | wc -l
-      register: helm_longhorn_repo_added_output
+        cmd: /usr/bin/helm repo list | grep sealed-secrets | wc -l
+      register: helm_sealed_secrets_repo_added_output
 
-    - name: Add the longhorn Helm repository
+    - name: Add the Bitnami Labs Sealed Secrets Helm repository
       command:
-        cmd: /usr/bin/helm repo add longhorn https://charts.longhorn.io
-      when: helm_longhorn_repo_added_output.stdout == '0'
+        cmd: /usr/bin/helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+      when: helm_sealed_secrets_repo_added_output.stdout == '0'
 
-    when: ((k8s_config.storage.longhorn.enabled is defined) and (k8s_config.storage.longhorn.enabled != None) and (k8s_config.storage.longhorn.enabled == true))
+    when: ((k8s_config.bitnami_labs_sealed_secrets_enabled is defined) and (k8s_config.bitnami_labs_sealed_secrets_enabled != None) and (k8s_config.bitnami_labs_sealed_secrets_enabled == true))
 
 
-#  _  ___   _ ____ _____ ___  __  __ ___ __________ 
+#  _  ___   _ ____ _____ ___  __  __ ___ __________
 # | |/ / | | / ___|_   _/ _ \|  \/  |_ _|__  / ____|
-# | ' /| | | \___ \ | || | | | |\/| || |  / /|  _|  
-# | . \| |_| |___) || || |_| | |  | || | / /_| |___ 
+# | ' /| | | \___ \ | || | | | |\/| || |  / /|  _|
+# | . \| |_| |___) || || |_| | |  | || | / /_| |___
 # |_|\_\\___/|____/ |_| \___/|_|  |_|___/____|_____|
-#                                                   
+#
 - name: Install kustomize
   block:
   - debug:
@@ -215,7 +171,7 @@
       kustomize_installed_version: ''
     when: (kustomize_installed_stat_result.stat.exists == False)
 
-  - block:  
+  - block:
     - debug:
         msg: Install the kustomize {{ k8s_config.kustomize_version }} package
 
@@ -223,7 +179,7 @@
       file:
         path: /usr/bin/kustomize
         state: absent
-        
+
     - name: Install the kustomize binary
       shell:
         cmd: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash

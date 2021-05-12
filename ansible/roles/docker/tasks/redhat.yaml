@@ -6,15 +6,23 @@
   - set_fact:
       containerd_package: '{{ docker_config.redhat7.containerd.package }}'
   - set_fact:
-      containerd_package_version: '{{ docker_config.redhat7.containerd.package_version }}'      
+      containerd_package_version: '{{ docker_config.redhat7.containerd.package_version }}'
+  - set_fact:
+      docker_ce_package: '{{ docker_config.redhat7.docker_ce.package }}'
+  - set_fact:
+      docker_ce_package_version: '{{ docker_config.redhat7.docker_ce.package_version }}'
   - set_fact:
       docker_ce_cli_package: '{{ docker_config.redhat7.docker_ce_cli.package }}'
   - set_fact:
       docker_ce_cli_package_version: '{{ docker_config.redhat7.docker_ce_cli.package_version }}'
   - set_fact:
-      docker_ce_package: '{{ docker_config.redhat7.docker_ce.package }}'
+      docker_ce_rootless_extras_package: '{{ docker_config.redhat7.docker_ce_rootless_extras.package }}'
   - set_fact:
-      docker_ce_package_version: '{{ docker_config.redhat7.docker_ce.package_version }}'
+      docker_ce_rootless_extras_package_version: '{{ docker_config.redhat7.docker_ce_rootless_extras.package_version }}'
+  - set_fact:
+      docker_scan_plugin_package: '{{ docker_config.redhat7.docker_scan_plugin.package }}'
+  - set_fact:
+      docker_scan_plugin_package_version: '{{ docker_config.redhat7.docker_scan_plugin.package_version }}'
   when: ansible_distribution_major_version == '7'
 
 - name: Set RedHat 8 values
@@ -22,15 +30,23 @@
   - set_fact:
       containerd_package: '{{ docker_config.redhat8.containerd.package }}'
   - set_fact:
-      containerd_package_version: '{{ docker_config.redhat8.containerd.package_version }}'            
+      containerd_package_version: '{{ docker_config.redhat8.containerd.package_version }}'
+  - set_fact:
+      docker_ce_package: '{{ docker_config.redhat8.docker_ce.package }}'
+  - set_fact:
+      docker_ce_package_version: '{{ docker_config.redhat8.docker_ce.package_version }}'
   - set_fact:
       docker_ce_cli_package: '{{ docker_config.redhat8.docker_ce_cli.package }}'
   - set_fact:
       docker_ce_cli_package_version: '{{ docker_config.redhat8.docker_ce_cli.package_version }}'
   - set_fact:
-      docker_ce_package: '{{ docker_config.redhat8.docker_ce.package }}'
+      docker_ce_rootless_extras_package: '{{ docker_config.redhat8.docker_ce_rootless_extras.package }}'
   - set_fact:
-      docker_ce_package_version: '{{ docker_config.redhat8.docker_ce.package_version }}'
+      docker_ce_rootless_extras_package_version: '{{ docker_config.redhat8.docker_ce_rootless_extras.package_version }}'
+  - set_fact:
+      docker_scan_plugin_package: '{{ docker_config.redhat8.docker_scan_plugin.package }}'
+  - set_fact:
+      docker_scan_plugin_package_version: '{{ docker_config.redhat8.docker_scan_plugin.package_version }}'
   when: ansible_distribution_major_version == '8'
 
 - debug:
@@ -70,42 +86,28 @@
   when: (('containerd.io' not in ansible_facts.packages) or (ansible_facts.packages['containerd.io'][0].version != containerd_package_version))
 
 
-- name: Retrieve the version of the installed docker-ce-cli package
-  debug:
-    msg: Found the installed docker-ce-cli package ({{ ansible_facts.packages['docker-ce-cli'][0].version }})
-  when: ('docker-ce-cli' in ansible_facts.packages)
-
-- name: Install the docker-ce-cli package
-  block:
-  - name: Check whether the {{ docker_ce_cli_package }} package has been downloaded
-    become: no
-    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
-    register: docker_ce_cli_package_stat_result
-
-  - name: Download the {{ docker_ce_cli_package }} package
-    become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_cli_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
-    when: (docker_ce_cli_package_stat_result.stat.exists == False)
-
-  - name: Copy the {{ docker_ce_cli_package }} package
-    copy:
-      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
-      dest: /var/tmp/ansible/{{ docker_ce_cli_package }}
-
-  - name: Install the {{ docker_ce_cli_package }} package
-    yum:
-      name: /var/tmp/ansible/{{ docker_ce_cli_package }}
-      state: present
-
-  when: (('docker-ce-cli' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-cli'][0].version != docker_ce_cli_package_version))
-
-
 - name: Retrieve the version of the installed docker-ce package
   debug:
     msg: Found the installed docker-ce package ({{ ansible_facts.packages['docker-ce'][0].version }})
   when: ('docker-ce' in ansible_facts.packages)
 
-- name: Install the docker-ce package
+- name: Retrieve the version of the installed docker-ce-cli package
+  debug:
+    msg: Found the installed docker-ce-cli package ({{ ansible_facts.packages['docker-ce-cli'][0].version }})
+  when: ('docker-ce-cli' in ansible_facts.packages)
+
+- name: Retrieve the version of the installed docker-ce-rootless-extras package
+  debug:
+    msg: Found the installed docker-ce-rootless-extras package ({{ ansible_facts.packages['docker-ce-rootless-extras'][0].version }})
+  when: ('docker-ce-rootless-extras' in ansible_facts.packages)
+
+- name: Retrieve the version of the installed docker-scan-plugin package
+  debug:
+    msg: Found the installed docker-scan-plugin package ({{ ansible_facts.packages['docker-scan-plugin'][0].version }})
+  when: ('docker-scan-plugin' in ansible_facts.packages)
+
+
+- name: Install the docker packages
   block:
   - name: Check whether the {{ docker_ce_package }} package has been downloaded
     become: no
@@ -122,10 +124,65 @@
       src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
       dest: /var/tmp/ansible/{{ docker_ce_package }}
 
-  - name: Install the {{ docker_ce_package }} package
+  - name: Check whether the {{ docker_ce_cli_package }} package has been downloaded
+    become: no
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+    register: docker_ce_cli_package_stat_result
+
+  - name: Download the {{ docker_ce_cli_package }} package
+    become: no
+    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_cli_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+    when: (docker_ce_cli_package_stat_result.stat.exists == False)
+
+  - name: Copy the {{ docker_ce_cli_package }} package
+    copy:
+      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+      dest: /var/tmp/ansible/{{ docker_ce_cli_package }}
+
+
+
+
+  - name: Check whether the {{ docker_ce_rootless_extras_package }} package has been downloaded
+    become: no
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
+    register: docker_ce_rootless_extras_package_stat_result
+
+  - name: Download the {{ docker_ce_rootless_extras_package }} package
+    become: no
+    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_rootless_extras_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
+    when: (docker_ce_rootless_extras_package_stat_result.stat.exists == False)
+
+  - name: Copy the {{ docker_ce_rootless_extras_package }} package
+    copy:
+      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
+      dest: /var/tmp/ansible/{{ docker_ce_rootless_extras_package }}
+
+
+
+  - name: Check whether the {{ docker_scan_plugin_package }} package has been downloaded
+    become: no
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_scan_plugin_package }}'
+    register: docker_scan_plugin_package_stat_result
+
+  - name: Download the {{ docker_scan_plugin_package }} package
+    become: no
+    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_scan_plugin_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_scan_plugin_package }}'
+    when: (docker_scan_plugin_package_stat_result.stat.exists == False)
+
+  - name: Copy the {{ docker_scan_plugin_package }} package
+    copy:
+      src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_scan_plugin_package }}'
+      dest: /var/tmp/ansible/{{ docker_scan_plugin_package }}
+
+  - name: Install the docker packages
     yum:
-      name: /var/tmp/ansible/{{ docker_ce_package }}
+      name:
+      - /var/tmp/ansible/{{ docker_ce_package }}
+      - /var/tmp/ansible/{{ docker_scan_plugin_package }}
+      - /var/tmp/ansible/{{ docker_ce_cli_package }}
+      - /var/tmp/ansible/{{ docker_ce_rootless_extras_package }}
       state: present
+      install_weak_deps: no
 
   - name: Create the /etc/docker directory
     file:
@@ -150,5 +207,7 @@
       state: started
       enabled: yes
 
-  when: (('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_package_version))
+  when: (('docker-scan-plugin' not in ansible_facts.packages) or (ansible_facts.packages['docker-scan-plugin'][0].version != docker_scan_plugin_package_version) or ('docker-ce-cli' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-cli'][0].version != docker_ce_cli_package_version) or ('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_package_version) or ('docker-ce-rootless-extras' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-rootless-extras'][0].version != docker_ce_rootless_extras_package_version))
+
+
 

@@ -9,6 +9,48 @@
 #
 - name: Configure the monitoring components
   block:
+  - name: Configure the monitoring Helm repositories
+    block:
+    - name: Check if the elastic Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep elastic | wc -l
+      register: helm_elastic_repo_added_output
+
+    - name: Add the elastic Helm repository
+      command:
+        cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
+      when: helm_elastic_repo_added_output.stdout == '0'
+
+    - name: Check if the grafana Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep grafana | wc -l
+      register: helm_grafana_repo_added_output
+
+    - name: Add the grafana Helm repository
+      command:
+        cmd: /usr/bin/helm repo add grafana https://grafana.github.io/helm-charts
+      when: helm_grafana_repo_added_output.stdout == '0'
+
+    - name: Check if the jaegertracing Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep jaegertracing | wc -l
+      register: helm_jaegertracing_repo_added_output
+
+    - name: Add the jaegertracing Helm repository
+      command:
+        cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+      when: helm_jaegertracing_repo_added_output.stdout == '0'
+
+    - name: Check if the prometheus-community Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep prometheus-community | wc -l
+      register: helm_prometheus_community_repo_added_output
+
+    - name: Add the prometheus-community Helm repository
+      command:
+        cmd: /usr/bin/helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      when: helm_prometheus_community_repo_added_output.stdout == '0'
+
   - name: Create the monitoring-system namespace
     shell:
       cmd: /usr/bin/kubectl create namespace monitoring-system --dry-run -o yaml | kubectl apply -f -

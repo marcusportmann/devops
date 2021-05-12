@@ -26,6 +26,18 @@
 #
 - name: Install Longhorn if it is enabled
   block:
+  - name: Configure the Lonhorn Helm repository
+    block:
+    - name: Check if the Longhorn Helm repository has been added
+      shell:
+        cmd: /usr/bin/helm repo list | grep longhorn | wc -l
+      register: helm_longhorn_repo_added_output
+
+    - name: Add the longhorn Helm repository
+      command:
+        cmd: /usr/bin/helm repo add longhorn https://charts.longhorn.io
+      when: helm_longhorn_repo_added_output.stdout == '0'
+
   - name: Check if Longhorn is installed
     shell:
       cmd: /usr/bin/helm -n longhorn-system list --filter 'longhorn' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
@@ -71,6 +83,13 @@
 #
 - name: Install the TopoLVM CSI plugin
   block:
+  - name: Create the /var/tmp/ansible/topolvm directory
+    file:
+      path: /var/tmp/ansible/topolvm
+      owner: 'root'
+      group: 'root'
+      mode: 0700
+      state: directory
 
   - name: Check if the topolvm-system namespace exists
     shell:
@@ -117,7 +136,7 @@
         group: 'root'
         mode: '0700'
         state: directory
-    
+
     - name: Copy the base TopoLVM deployment files
       template:
         src: "{{ item }}"
@@ -133,18 +152,18 @@
           group: 'root'
           mode: '0700'
           state: directory
-    
+
       - name: Copy the daemonset-scheduler TopoLVM deployment files
         template:
           src: "{{ item }}"
           dest: /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler/{{ item | basename | regex_replace('\.j2$', '') }}
         with_fileglob:
           - ../templates/topolvm/manifests/overlays/daemonset-scheduler/*
-    
+
       - name: Apply the daemonset-scheduler TopoLVM configuration to Kubernetes
         shell:
           cmd: "/usr/bin/kustomize build /var/tmp/ansible/topolvm/manifests/overlays/daemonset-scheduler | kubectl apply -f -"
-    
+
       when: ('k8s_master' in groups.keys())
 
     - block:
@@ -155,7 +174,7 @@
           group: 'root'
           mode: '0700'
           state: directory
-    
+
       - name: Copy the deployment-scheduler TopoLVM deployment files
         template:
           src: "{{ item }}"
@@ -166,7 +185,7 @@
       - name: Apply the deployment-scheduler TopoLVM configuration to Kubernetes
         shell:
           cmd: "/usr/bin/kustomize build /var/tmp/ansible/topolvm/manifests/overlays/deployment-scheduler | kubectl apply -f -"
-    
+
       when: ('k8s_master' not in groups.keys())
 
 

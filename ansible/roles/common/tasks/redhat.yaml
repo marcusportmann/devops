@@ -3,83 +3,61 @@
 
 - debug:
     msg: Applying the RedHat-specific common configuration
-  
+
 - name: Enable the firewalld service
   systemd:
     name: firewalld
     state: started
-    enabled: true  
-    
+    enabled: true
+
 - name: Enable the chrony port
   firewalld:
     port: '123/udp'
     permanent: yes
     state: enabled
-    immediate: yes    
+    immediate: yes
 
+- name: Copy the Docker GPG key
+  copy:
+    src: files/docker.gpg
+    dest: '/var/tmp/ansible/docker.gpg'
 
-# NOTE: We no longer enable the EPEL repo. This has be done prior to executing this Ansible role.
-
-#- name: Check whether the EPEL repo package has been downloaded
-#  become: no
-#  local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/epel-release-latest-7.noarch.rpm'
-#  register: epel_package_stat_result
-#
-#- name: Download the EPEL package
-#  become: no
-#  local_action: get_url url='https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/epel-release-latest-7.noarch.rpm'
-#  when: (epel_package_stat_result.stat.exists == False)
-#
-#- name: Copy the EPEL package
-#  copy:
-#    src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/epel-release-latest-7.noarch.rpm'
-#    dest: /var/tmp/ansible/epel-release-latest-7.noarch.rpm
-#
-#- name: Install the EPEL package
-#  yum:
-#    name: /var/tmp/ansible/epel-release-latest-7.noarch.rpm
-#    state: present
-#
-#- name: Enable the EPEL YUM repo
-#  shell: yum-config-manager --enable epel-release
-
-
-
-- name: Install the bzip2 package
-  yum:
-    name: bzip2
+- name: Install the Docker GPG key
+  ansible.builtin.rpm_key:
     state: present
+    key: '/var/tmp/ansible/docker.gpg'
 
-- name: Install the ntp package
+- name: Install the RedHat 7 packages
   yum:
-    name: ntp
+    name:
+    - bzip2
+    - chrony
+    - net-tools
+    - python-yaml
+    - python2-pip
+    - screen
     state: present
+  when: ansible_distribution_major_version == '7'
 
-- name: Install the ntpdate package
+- name: Install EPEL repo
   yum:
-    name: ntpdate
+    name: epel-release
     state: present
+  when: ansible_distribution_major_version == '8'
 
-- name: Install the python-yaml package
+- name: Install the RedHat 8 packages
   yum:
-    name: python-yaml
+    name:
+    - bzip2
+    - chrony
+    - net-tools
+    - python3
+    - python3-pip
+    - python3-yaml
+    - screen
     state: present
+  when: ansible_distribution_major_version == '8'
 
-- name: Install the screen package
-  yum:
-    name: screen
-    state: present
-
-- name: Install the net-tools package
-  yum:
-    name: net-tools
-    state: present
-
-- name: Install the python2-pip package
-  yum:
-    name: python2-pip
-    state: present
-  
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group

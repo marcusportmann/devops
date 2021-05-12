@@ -90,13 +90,13 @@
   - set_fact:
       istio_installed_version: ''
     when: (istio_installed_version_output is not succeeded)
-    
+
   - name: Create the Istio configuration file
     template:
       src: istio-config.yaml.j2
       dest: /var/tmp/ansible/istio-config.yaml
     register: create_istio_configuration_file_result
-    
+
   - name: Install and configure the Istio service mesh
     block:
     - name: Copy the keys and certificates for the Istio service mesh
@@ -157,27 +157,9 @@
       shell:
         cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/var/tmp/ansible/istio-pki/root-cert.pem  --dry-run -o yaml | kubectl apply -f -
 
-    - name: Initialize the Kiali secret
-      block:
-      - template:
-          src: istio-kiali-secret.yaml.j2
-          dest: /var/tmp/ansible/istio-kiali-secret.yaml
-
-      - name: Create the Kiali secret
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-secret.yaml
-
-      when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
-
     - name: Initialize the Istio service mesh using the custom profile
       shell:
-        cmd: "/usr/bin/istioctl manifest install -f /var/tmp/ansible/istio-config.yaml"
-      when: ((k8s_config.istio.demo_configuration_enabled is not defined) or (k8s_config.istio.demo_configuration_enabled == None) or (k8s_config.istio.demo_configuration_enabled == false))
-
-    - name: Initialize the Istio service mesh using the demo profile
-      shell:
-        cmd: /usr/bin/istioctl install --set profile=demo
-      when: ((k8s_config.istio.demo_configuration_enabled is defined) and (k8s_config.istio.demo_configuration_enabled != None) and (k8s_config.istio.demo_configuration_enabled == true))
+        cmd: "/usr/bin/istioctl manifest install -y -f /var/tmp/ansible/istio-config.yaml"
 
     - name: Wait for the Istio service mesh initialization to complete
       command:
@@ -188,78 +170,40 @@
       - name: Generate the default Istio ingress gateway configuration
         template:
           src: istio-default-gateway.yaml.j2
-          dest: /var/tmp/ansible/istio-default-gateway.yaml.yaml
+          dest: /var/tmp/ansible/istio-default-gateway.yaml
 
       - name: Apply the default Istio ingress gateway configuration
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-default-gateway.yaml
 
-    - name: Enable ingress for Jaeger
-      block:
-      - name: Generate the Jaeger ingress configuration
-        template:
-          src: istio-jaeger-ingress.yaml.j2
-          dest: /var/tmp/ansible/istio-jaeger-ingress.yaml
-
-      - name: Apply the Jaeger ingress configuration
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
-
-      when: ((k8s_config.istio.tracing.enabled is defined) and (k8s_config.istio.tracing.enabled != None) and (k8s_config.istio.tracing.enabled == True))
-
-    - name: Enable ingress for Kiali
-      block:
-      - name: Generate the Kiali ingress configuration
-        template:
-          src: istio-kiali-ingress.yaml.j2
-          dest: /var/tmp/ansible/istio-kiali-ingress.yaml
-
-      - name: Apply the Kiali ingress configuration
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-ingress.yaml
-
-      when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
-
-    - name: Enable ingress for Grafana
-      block:
-      - name: Generate the Grafana ingress configuration
-        template:
-          src: istio-grafana-ingress.yaml.j2
-          dest: /var/tmp/ansible/istio-grafana-ingress.yaml
-
-      - name: Apply the Grafana ingress configuration
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
-
-      when: ((k8s_config.istio.grafana.enabled is defined) and (k8s_config.istio.grafana.enabled != None) and (k8s_config.istio.grafana.enabled == True))
-
-    - name: Enable ingress for Prometheus
-      block:
-      - name: Generate the Prometheus ingress configuration
-        template:
-          src: istio-prometheus-ingress.yaml.j2
-          dest: /var/tmp/ansible/istio-prometheus-ingress.yaml
-
-      - name: Apply the Prometheus ingress configuration
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-ingress.yaml
-
-      when: ((k8s_config.istio.prometheus.enabled is defined) and (k8s_config.istio.prometheus.enabled != None) and (k8s_config.istio.prometheus.enabled == True))
-
-    - name: Enable the Prometheus service reference in the istio-system namespace
-      block:
-      - name: Generate the Prometheus service reference configuration
-        template:
-          src: istio-prometheus-service.yaml.j2
-          dest: /var/tmp/ansible/istio-prometheus-service.yaml
-
-      - name: Apply the Prometheus service reference configuration
-        command:
-          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-service.yaml
-
-      when: (((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True)))
-
     when: ((istio_installed_version != k8s_config.istio.package_version) or (create_istio_configuration_file_result.changed == True))
+
+
+  - name: Install and configure Kiali
+    block:
+    - name: Configure the Kiali Helm repository
+      block:
+      - name: Check if the Kiali Helm repository has been added
+        shell:
+          cmd: /usr/bin/helm repo list | grep kiali | wc -l
+        register: helm_kiali_repo_added_output
+
+      - name: Add the Kiali Helm repository
+        command:
+          cmd: /usr/bin/helm repo add kiali https://kiali.org/helm-charts
+        when: helm_kiali_repo_added_output.stdout == '0'
+
+    - name: Initialize the Kiali secret
+      block:
+      - template:
+          src: istio-kiali-secret.yaml.j2
+          dest: /var/tmp/ansible/istio-kiali-secret.yaml
+
+      - name: Create the Kiali secret
+        command:
+          cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-secret.yaml
+
+    when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
 
   when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))
 

@@ -34,7 +34,7 @@ variables:
         - confluent-zkks-analytics-dev-01.local
         - confluent-zkks-analytics-dev-02.local
         - confluent-zkks-analytics-dev-03.local
-    
+
       digital_dev:
         replicate_to_cluster: analytics_dev
         kafka_mirrormaker_hosts:
@@ -58,7 +58,7 @@ variables:
         kafka_server_hosts:
         - confluent-ks-local-01.local
         - confluent-ks-local-02.local
-        - confluent-ks-local-03.local                
+        - confluent-ks-local-03.local
         schema_registry_hosts:
         - confluent-sr-local-01.local
         - confluent-sr-local-02.local
@@ -66,7 +66,7 @@ variables:
         zookeeper_hosts:
         - confluent-zk-local-01.local
         - confluent-zk-local-02.local
-        - confluent-zk-local-03.local        
+        - confluent-zk-local-03.local
 
   etcd:
     clusters:
@@ -84,13 +84,14 @@ variables:
     # service_subnet: 10.254.0.0/16
     istio:
       enabled: true
-      demo_configuration_enabled: false
+      kiali:
+        enabled: true
     monitoring:
       enabled: true
       elasticsearch:
         enabled: true
         cluster_type: standalone
-        persistent_volume_size: 10Gi
+        persistent_volume_size: 2Gi
         persistent_volume_storage_class_name: default-local-storage
       grafana:
         enabled: true
@@ -105,10 +106,10 @@ variables:
           persistent_volume_size: 2Gi
         server:
           persistent_volume_storage_class_name: default-local-storage
-          persistent_volume_size: 10Gi
+          persistent_volume_size: 2Gi
     storage:
       longhorn:
-        enabled: true
+        enabled: false
       topolvm:
         enabled: true
         volume_group: system
@@ -169,14 +170,6 @@ xxx:
   - true
 
 
-
-
-- name: k8s_istio_enabled
-  values:
-  - false
-- name: k8s_istio_demo_configuration_enabled
-  values:
-  - false
 
 
 #  ____  ____   ___  _____ ___ _     _____ ____
@@ -1443,12 +1436,12 @@ hosts:
 
 
 
-#     ___        ____  __  _   _  ___  ____ _____ ____  
-#    / \ \      / /\ \/ / | | | |/ _ \/ ___|_   _/ ___| 
-#   / _ \ \ /\ / /  \  /  | |_| | | | \___ \ | | \___ \ 
+#     ___        ____  __  _   _  ___  ____ _____ ____
+#    / \ \      / /\ \/ / | | | |/ _ \/ ___|_   _/ ___|
+#   / _ \ \ /\ / /  \  /  | |_| | | | \___ \ | | \___ \
 #  / ___ \ V  V /   /  \  |  _  | |_| |___) || |  ___) |
-# /_/   \_\_/\_/   /_/\_\ |_| |_|\___/|____/ |_| |____/ 
-#                                                                                                                                                              
+# /_/   \_\_/\_/   /_/\_\ |_| |_|\___/|____/ |_| |____/
+#
 - name:               awx.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
@@ -1468,7 +1461,7 @@ hosts:
     domain:           local
     ip:               192.168.184.10/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1  
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1481,7 +1474,7 @@ hosts:
 - name:               confluent-zk-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1499,7 +1492,7 @@ hosts:
     domain:           local
     ip:               192.168.184.11/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1        
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1509,11 +1502,11 @@ hosts:
     ip:               192.168.0.21/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-    
+
 - name:               confluent-zk-local-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1531,7 +1524,7 @@ hosts:
     domain:           local
     ip:               192.168.184.12/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1      
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1541,11 +1534,11 @@ hosts:
     ip:               192.168.0.22/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-  
+
 - name:               confluent-zk-local-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1563,7 +1556,7 @@ hosts:
     domain:           local
     ip:               192.168.184.13/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1      
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1577,7 +1570,7 @@ hosts:
 - name:               confluent-ks-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1595,7 +1588,7 @@ hosts:
     domain:           local
     ip:               192.168.184.14/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1      
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1609,7 +1602,7 @@ hosts:
 - name:               confluent-ks-local-02.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1627,7 +1620,7 @@ hosts:
     domain:           local
     ip:               192.168.184.15/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1    
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1641,7 +1634,7 @@ hosts:
 - name:               confluent-ks-local-03.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     
+  ansible_groups:
   virtualbox:
     cpus:             2
     memory:           1536
@@ -1659,7 +1652,7 @@ hosts:
     domain:           local
     ip:               192.168.184.16/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1  
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           1536
@@ -1669,7 +1662,7 @@ hosts:
     ip:               192.168.0.26/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
-     
+
 - name:               confluent-sr-local-01.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
@@ -1689,7 +1682,7 @@ hosts:
     domain:           local
     ip:               192.168.184.17/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1    
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -1718,7 +1711,7 @@ hosts:
     domain:           local
     ip:               192.168.184.18/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1      
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -1747,7 +1740,7 @@ hosts:
     domain:           local
     ip:               192.168.184.19/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1 
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -1755,8 +1748,8 @@ hosts:
     domain:           local
     ip:               192.168.0.29/24
     gateway:          192.168.0.1
-    dns_server:       192.168.0.1   
-    
+    dns_server:       192.168.0.1
+
 - name:               monitoring.local
   type:               centos7
   ansible_playbook:   ansible/devops.yaml
@@ -1778,7 +1771,7 @@ hosts:
     domain:           local
     ip:               192.168.184.130/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1     
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -1810,7 +1803,7 @@ hosts:
     domain:           local
     ip:               192.168.184.131/24
     gateway:          192.168.184.1
-    dns_server:       192.168.184.1 
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -1819,6 +1812,6 @@ hosts:
     domain:           local
     ip:               192.168.0.31/24
     gateway:          192.168.0.1
-    dns_server:       192.168.0.1 
+    dns_server:       192.168.0.1
 
 

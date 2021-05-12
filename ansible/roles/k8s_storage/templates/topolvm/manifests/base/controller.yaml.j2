@@ -1,5 +1,5 @@
 ---
-apiVersion: storage.k8s.io/v1beta1
+apiVersion: storage.k8s.io/v1
 kind: CSIDriver
 metadata:
   name: topolvm.cybozu.com
@@ -57,15 +57,27 @@ metadata:
   namespace: topolvm-system
   name: leader-election
 rules:
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "watch", "list", "create", "update", "patch", "delete"]
-  - apiGroups: [""]
-    resources: ["configmaps/status"]
-    verbs: ["get", "update", "patch"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["create"]
+  - apiGroups:
+    - ""
+    - coordination.k8s.io
+    resources:
+    - configmaps
+    - leases
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+  - apiGroups:
+    - ""
+    resources:
+    - events
+    verbs:
+    - create
+    - patch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -84,7 +96,7 @@ roleRef:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: external-provisioner-runner
+  name: topolvm-external-provisioner-runner
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -110,18 +122,21 @@ rules:
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-provisioner-role
+  name: topolvm-csi-provisioner-role
 subjects:
   - kind: ServiceAccount
     namespace: topolvm-system
     name: controller
 roleRef:
   kind: ClusterRole
-  name: external-provisioner-runner
+  name: topolvm-external-provisioner-runner
   apiGroup: rbac.authorization.k8s.io
 ---
 kind: Role
@@ -151,7 +166,7 @@ roleRef:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: external-attacher-runner
+  name: topolvm-external-attacher-runner
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -165,18 +180,21 @@ rules:
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
     verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments/status"]
+    verbs: ["patch"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-attacher-role
+  name: topolvm-csi-attacher-role
 subjects:
   - kind: ServiceAccount
     namespace: topolvm-system
     name: controller
 roleRef:
   kind: ClusterRole
-  name: external-attacher-runner
+  name: topolvm-external-attacher-runner
   apiGroup: rbac.authorization.k8s.io
 ---
 kind: Role
@@ -206,7 +224,7 @@ roleRef:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: external-resizer-runner
+  name: topolvm-external-resizer-runner
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -224,14 +242,14 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: csi-resizer-role
+  name: topolvm-csi-resizer-role
 subjects:
   - kind: ServiceAccount
     namespace: topolvm-system
     name: controller
 roleRef:
   kind: ClusterRole
-  name: external-resizer-runner
+  name: topolvm-external-resizer-runner
   apiGroup: rbac.authorization.k8s.io
 ---
 kind: Role
@@ -270,7 +288,7 @@ spec:
   ports:
   - protocol: TCP
     port: 443
-    targetPort: 8443
+    targetPort: 9443
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -307,7 +325,7 @@ spec:
       serviceAccountName: controller
       containers:
         - name: topolvm-controller
-          image: quay.io/topolvm/topolvm:latest
+          image: quay.io/topolvm/topolvm-with-sidecar:latest
           command:
             - /topolvm-controller
             - --cert-dir=/certs
@@ -335,20 +353,19 @@ spec:
               mountPath: /certs
 
         - name: csi-provisioner
-          image: quay.io/topolvm/topolvm:latest
+          image: quay.io/topolvm/topolvm-with-sidecar:latest
           command:
             - /csi-provisioner
             - "--csi-address=/run/topolvm/csi-topolvm.sock"
             - "--feature-gates=Topology=true"
-            - --enable-leader-election
+            - --leader-election
             - --leader-election-namespace=topolvm-system
-            - --leader-election-type=leases
           volumeMounts:
             - name: socket-dir
               mountPath: /run/topolvm
 
         - name: csi-attacher
-          image: quay.io/topolvm/topolvm:latest
+          image: quay.io/topolvm/topolvm-with-sidecar:latest
           command:
             - /csi-attacher
             - "--csi-address=/run/topolvm/csi-topolvm.sock"
@@ -359,7 +376,7 @@ spec:
               mountPath: /run/topolvm
 
         - name: csi-resizer
-          image: quay.io/topolvm/topolvm:latest
+          image: quay.io/topolvm/topolvm-with-sidecar:latest
           command:
             - /csi-resizer
             - "--csi-address=/run/topolvm/csi-topolvm.sock"
@@ -370,7 +387,7 @@ spec:
               mountPath: /run/topolvm
 
         - name: liveness-probe
-          image: quay.io/topolvm/topolvm:latest
+          image: quay.io/topolvm/topolvm-with-sidecar:latest
           command:
             - /livenessprobe
             - "--csi-address=/run/topolvm/csi-topolvm.sock"
@@ -384,3 +401,5 @@ spec:
         - name: certs
           secret:
             secretName: mutatingwebhook
+
+

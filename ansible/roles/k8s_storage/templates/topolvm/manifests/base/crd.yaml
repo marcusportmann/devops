@@ -1,10 +1,9 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.0
+    controller-gen.kubebuilder.io/version: v0.5.0
   creationTimestamp: null
   name: logicalvolumes.topolvm.cybozu.com
 spec:
@@ -35,7 +34,6 @@ spec:
               deviceClass:
                 type: string
               name:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run "make" to regenerate code after modifying this file'
                 type: string
               nodeName:
                 type: string
@@ -80,3 +78,4 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
+

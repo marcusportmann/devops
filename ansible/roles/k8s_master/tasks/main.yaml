@@ -569,7 +569,7 @@
 
     - name: Install Bitnami Labs Sealed Secrets using Helm
       command:
-        cmd: /usr/bin/helm upgrade sealed-secrets stable/sealed-secrets --install --version={{ k8s_config.bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
+        cmd: /usr/bin/helm upgrade sealed-secrets sealed-secrets/sealed-secrets --install --version={{ k8s_config.bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
 
     when: sealed_secrets_installed_helm_chart_version_output.stdout != k8s_config.bitnami_labs_sealed_secrets_helm_chart_version
 
