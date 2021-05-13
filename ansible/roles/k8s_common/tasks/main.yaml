@@ -38,7 +38,6 @@
     group: '{{ k8s_config.admin_group}}'
     groups:
     - k8s-admin
-    - docker
     shell: /bin/bash
     state: present
 

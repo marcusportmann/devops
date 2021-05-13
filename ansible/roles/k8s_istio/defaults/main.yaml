@@ -5,8 +5,13 @@ k8s_defaults:
   istio:
     enabled: false
     package_checksum: sha256:cd9f9af2b335c80a3c0b7021a55ebbe98e127abe4d12169b709bde858c00a33f
-    package_version: 1.9.5
+    package_version: '1.9.5'
 
     istioctl_package_checksum: sha256:423fad11cb9c1017b8688fba139617796265bd35fb07aea0b635e9924c8376af
+
+
+    kiali:
+      enabled: false
+      helm_chart_version: '1.30.0'
 
 k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"

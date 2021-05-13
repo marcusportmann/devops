@@ -17,16 +17,6 @@
     state: enabled
     immediate: yes
 
-- name: Copy the Docker GPG key
-  copy:
-    src: files/docker.gpg
-    dest: '/var/tmp/ansible/docker.gpg'
-
-- name: Install the Docker GPG key
-  ansible.builtin.rpm_key:
-    state: present
-    key: '/var/tmp/ansible/docker.gpg'
-
 - name: Install the RedHat 7 packages
   yum:
     name:

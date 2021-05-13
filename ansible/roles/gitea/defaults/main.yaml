@@ -4,11 +4,11 @@
 gitea_defaults:
 
   package_checksum: sha256:8ed8bff1f34d8012cab92943214701c10764ffaca102e311a3297edbb8fce940
-  package_version: 1.2.15
+  package_version: '1.2.15'
 
 #  data_directory: /var/lib/grafana
 #  log_directory: /var/log/grafana
-#  
+#
 #  user: grafana
 #  user_id: 425
 #  group: grafana

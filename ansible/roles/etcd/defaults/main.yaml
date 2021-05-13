@@ -2,7 +2,7 @@
 # file: roles/etcd/defaults/main.yaml
 
 etcd_defaults:
-  package_version: 3.4.8
+  package_version: '3.4.8'
   package_checksum: sha256:a3a332a68fe8dedf20149c1a4b8746fe8061b72d75d3a5850b17e04de9ed7942
 
   etc_directory: /etc/etcd

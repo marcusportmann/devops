@@ -33,6 +33,6 @@ kafka_defaults:
 
     kafka_minion:
       enabled: true
-      package_version: 1.0.1
+      package_version: '1.0.1'
 
 kafka_config: "{{ kafka_defaults | combine(kafka | default({}), recursive=True) }}"

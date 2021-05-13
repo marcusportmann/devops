@@ -56,6 +56,16 @@
   package_facts:
     manager: auto
 
+- name: Copy the Docker GPG key
+  copy:
+    src: files/docker.gpg
+    dest: '/var/tmp/ansible/docker.gpg'
+
+- name: Install the Docker GPG key
+  ansible.builtin.rpm_key:
+    state: present
+    key: '/var/tmp/ansible/docker.gpg'
+
 - name: Retrieve the version of the installed containerd package
   debug:
     msg: Found the installed containerd package ({{ ansible_facts.packages['containerd.io'][0].version }})

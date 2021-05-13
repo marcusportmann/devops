@@ -203,6 +203,44 @@
         command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-secret.yaml
 
+    - name: Check if Kialia is installed
+      shell:
+        cmd: /usr/bin/helm -n istio-system list --filter 'kiali' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+      register: kiali_installed_helm_chart_version_output
+
+    - name: Install Kiali
+      block:
+      - name: Generate the Jaeger Helm values
+        template:
+          src: kiali-values.yaml.j2
+          dest: /var/tmp/ansible/kiali-values.yaml
+
+      - name: Install Kiali using Helm
+        command:
+          cmd: /usr/bin/helm upgrade kiali-server kiali/kiali-server --install --version={{ k8s_config.istio.kiali.helm_chart_version }} --namespace=istio-system --values=/var/tmp/ansible/kiali-values.yaml
+
+      - name: Wait for 10 seconds for the Kiali initialization to start
+        wait_for:
+          timeout: 10
+
+      - name: Wait for the Kiali initialization to complete
+        command:
+          cmd: /usr/bin/kubectl wait --namespace=istio-system --for=condition=Ready pods --all --timeout=1200s
+
+      - name: Enable ingress for Kiali
+        block:
+        - name: Generate the Kiali ingress configuration
+          template:
+            src: istio-kiali-ingress.yaml.j2
+            dest: /var/tmp/ansible/istio-kiali-ingress.yaml
+
+        - name: Apply the Kiali ingress configuration
+          command:
+            cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kiali-ingress.yaml
+
+      when: kiali_installed_helm_chart_version_output.stdout != k8s_config.istio.kiali.helm_chart_version
+
+
     when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
 
   when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))

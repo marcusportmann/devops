@@ -4,21 +4,21 @@
 grafana_defaults:
   redhat_package: grafana-7.5.3-1.x86_64.rpm
   redhat_package_checksum: sha256:7d837bd175d045025c26763263600533b62b4abff629597c02fa83a6ed1806e3
-  redhat_package_version: 7.5.3
+  redhat_package_version: '7.5.3'
 
   ubuntu_package: grafana_7.5.3_amd64.deb
   ubuntu_package_checksum: sha256:b124979ebeaaf216d8285a4a9be5c84fee5cbb5385a78593554a0f90bafd2311
-  ubuntu_package_version: 7.5.3
-  
+  ubuntu_package_version: '7.5.3'
+
   data_directory: /var/lib/grafana
   log_directory: /var/log/grafana
-  
+
   user: grafana
   user_id: 425
   group: grafana
   group_id: 425
 
-  pie_chart_panel_plugin_version: 1.5.0
+  pie_chart_panel_plugin_version: '1.5.0'
 
   dashboards:
     kafka_producers_and_consumers:

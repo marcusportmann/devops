@@ -3,7 +3,7 @@
 
 postgresql_defaults:
 
-  package_version: 13
+  package_version: '13'
 
 
 postgresql_config: "{{ postgresql_defaults | combine(postgresql | default({}), recursive=True) }}"

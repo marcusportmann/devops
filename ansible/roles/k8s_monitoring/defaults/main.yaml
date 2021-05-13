@@ -8,25 +8,25 @@ k8s_defaults:
     elasticsearch:
       cluster_type: standalone
       enabled: true
-      helm_chart_version: 7.12.1
+      helm_chart_version: '7.12.1'
       persistent_volume_size: 10Gi
       persistent_volume_storage_class_name: default-local-storage
 
     grafana:
       enabled: false
-      helm_chart_version: 5.8.16
+      helm_chart_version: '5.8.16'
 
     jaeger:
       enabled: false
-      helm_chart_version: 0.45.2
+      helm_chart_version: '0.45.2'
 
     kibana:
       enabled: false
-      helm_chart_version: 7.12.1
+      helm_chart_version: '7.12.1'
 
     prometheus:
       enabled: false
-      helm_chart_version: 13.8.0
+      helm_chart_version: '13.8.0'
 
       alert_manager:
         persistent_volume_storage_class_name: default-local-storage

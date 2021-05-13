@@ -211,6 +211,82 @@
     state: present
 
 
+#   ____ ____  ___       ___
+#  / ___|  _ \|_ _|     / _ \
+# | |   | |_) || |_____| | | |
+# | |___|  _ < | |_____| |_| |
+#  \____|_| \_\___|     \___/
+#
+- name: Add the libcontainers YUM repo
+  yum_repository:
+    name: libcontainers
+    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_7/"
+    file: libcontainers
+    baseurl: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_7/
+    gpgcheck: yes
+    gpgkey: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_7/repodata/repomd.xml.key
+  when: ansible_distribution_major_version == '7'
+
+- name: Add the cri-o YUM repo
+  yum_repository:
+    name: cri-o
+    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_7/"
+    file: cri-o
+    baseurl: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_7/"
+    gpgcheck: yes
+    gpgkey: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_7/repodata/repomd.xml.key"
+  when: ansible_distribution_major_version == '7'
+
+- name: Add the libcontainers YUM repo
+  yum_repository:
+    name: libcontainers
+    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/"
+    file: libcontainers
+    baseurl: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/
+    gpgcheck: yes
+    gpgkey: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/repodata/repomd.xml.key
+  when: ansible_distribution_major_version == '8'
+
+- name: Add the cri-o YUM repo
+  yum_repository:
+    name: cri-o
+    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_8/"
+    file: cri-o
+    baseurl: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_8/"
+    gpgcheck: yes
+    gpgkey: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_8/repodata/repomd.xml.key"
+  when: ansible_distribution_major_version == '8'
+
+- name: Install the cri-o package
+  block:
+  - name: Install the cri-o package
+    yum:
+      name:
+      - cri-o
+      state: present
+
+- name: Add the overlay module
+  community.general.modprobe:
+    name: overlay
+    state: present
+
+- name: Add the br_netfilter module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Copy the Prometheus JMX Exporter configuration file
+  copy:
+    src: files/99-kubernetes-cri.conf
+    dest: '/etc/sysctl.d/99-kubernetes-cri.conf'
+
+- name: Ensure that the CRI-O service is started
+  systemd:
+    name: cri-o.service
+    state: started
+    enabled: yes
+
+
 #  _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____    ____   _    ____ _  __    _    ____ _____ ____
 # | |/ / | | | __ )| ____|  _ \| \ | | ____|_   _| ____/ ___|  |  _ \ / \  / ___| |/ /   / \  / ___| ____/ ___|
 # | ' /| | | |  _ \|  _| | |_) |  \| |  _|   | | |  _| \___ \  | |_) / _ \| |   | ' /   / _ \| |  _|  _| \___ \

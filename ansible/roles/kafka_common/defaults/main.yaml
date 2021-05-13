@@ -2,11 +2,11 @@
 # file: roles/kafka_common/defaults/main.yaml
 
 kafka_defaults:
-  package_version: 2.6.0
+  package_version: '2.6.0'
   package_checksum: sha512:D884E4DF7D85B4FFF54CA9CD987811C58506AD7871B9ED7114BBAFA6FEE2E79F43D04C550EEA471F508B08EA34B4316EA1E529996066FD9B93FCF912F41F6165
 
 prometheus_jmx_exporter:
   enabled: true
-  package_version: 0.14.0
+  package_version: '0.14.0'
 
 kafka_config: "{{ kafka_defaults | combine(kafka | default({}), recursive=True) }}"
