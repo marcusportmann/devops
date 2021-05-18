@@ -20,10 +20,15 @@ resources:
     memory: 256Mi
 
 service:
+{% if ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == True)) %}
+  port: 3000
+  targetPort: 3000
+{% else %}
   type: NodePort
   nodePort: 32500
   port: 3000
   targetPort: 3000
+{% endif %}
 
 sidecar:
   skipTlsVerify: true

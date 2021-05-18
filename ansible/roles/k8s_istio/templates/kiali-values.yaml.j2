@@ -16,10 +16,10 @@
 
 istio_namespace: "istio-system"
 
-# auth:
-#   openid: {}
-#   openshift: {}
-#   strategy: ""
+auth:
+  strategy: "{{ k8s_config.istio.kiali.auth.strategy  }}"
+
+
 
 # deployment:
 #   # This only limits what Kiali will attempt to see, but Kiali Service Account has permissions to see everything.

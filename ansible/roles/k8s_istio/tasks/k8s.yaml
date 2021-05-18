@@ -151,11 +151,11 @@
 
     - name: Create the secret in the istio-system namespace for the Istio ingress gateway private key and certificate
       shell:
-        cmd: /usr/bin/kubectl create -n istio-system secret tls istio-ingressgateway-certs --key=/var/tmp/ansible/istio-pki/ingressgateway-key.pem --cert=/var/tmp/ansible/istio-pki/ingressgateway-cert.pem  --dry-run -o yaml | kubectl apply -f -
+        cmd: /usr/bin/kubectl create -n istio-system secret tls ingressgateway-certs --key=/var/tmp/ansible/istio-pki/ingressgateway-key.pem --cert=/var/tmp/ansible/istio-pki/ingressgateway-cert.pem  --dry-run -o yaml | kubectl apply -f -
 
     - name: Create the secret in the istio-system namespace for the Istio ingress gateway CA certificate
       shell:
-        cmd: /usr/bin/kubectl create -n istio-system secret generic istio-ingressgateway-ca-certs --from-file=/var/tmp/ansible/istio-pki/root-cert.pem  --dry-run -o yaml | kubectl apply -f -
+        cmd: /usr/bin/kubectl create -n istio-system secret generic ingressgateway-ca-certs --from-file=/var/tmp/ansible/istio-pki/root-cert.pem  --dry-run -o yaml | kubectl apply -f -
 
     - name: Initialize the Istio service mesh using the custom profile
       shell:
@@ -210,7 +210,7 @@
 
     - name: Install Kiali
       block:
-      - name: Generate the Jaeger Helm values
+      - name: Generate the Kiali Helm values
         template:
           src: kiali-values.yaml.j2
           dest: /var/tmp/ansible/kiali-values.yaml
@@ -242,6 +242,55 @@
 
 
     when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
+
+
+  - name: Enable ingress for Jaeger
+    block:
+    - name: Generate the Jaeger ingress configuration
+      template:
+        src: istio-jaeger-ingress.yaml.j2
+        dest: /var/tmp/ansible/istio-jaeger-ingress.yaml
+
+    - name: Apply the Jaeger ingress configuration
+      command:
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
+    when: ((k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == True))
+
+  - name: Enable ingress for Kibana
+    block:
+    - name: Generate the Kibana ingress configuration
+      template:
+        src: istio-kibana-ingress.yaml.j2
+        dest: /var/tmp/ansible/istio-kibana-ingress.yaml
+
+    - name: Apply the Kibana ingress configuration
+      command:
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kibana-ingress.yaml
+    when: ((k8s_config.monitoring.kibana.enabled is defined) and (k8s_config.monitoring.kibana.enabled != None) and (k8s_config.monitoring.kibana.enabled == True))
+
+  - name: Enable ingress for Grafana
+    block:
+    - name: Generate the Grafana ingress configuration
+      template:
+        src: istio-grafana-ingress.yaml.j2
+        dest: /var/tmp/ansible/istio-grafana-ingress.yaml
+
+    - name: Apply the Grafana ingress configuration
+      command:
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
+    when: ((k8s_config.monitoring.grafana.enabled is defined) and (k8s_config.monitoring.grafana.enabled != None) and (k8s_config.monitoring.grafana.enabled == True))
+
+  - name: Enable ingress for Prometheus Server
+    block:
+    - name: Generate the Prometheus Server ingress configuration
+      template:
+        src: istio-prometheus-server-ingress.yaml.j2
+        dest: /var/tmp/ansible/istio-prometheus-server-ingress.yaml
+
+    - name: Apply the Prometheus Server ingress configuration
+      command:
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-server-ingress.yaml
+    when: ((k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True))
 
   when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))
 

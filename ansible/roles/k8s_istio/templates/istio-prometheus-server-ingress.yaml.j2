@@ -1,15 +1,15 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: jaeger-gateway
+  name: prometheus-server-gateway
   namespace: monitoring-system
 spec:
   selector:
     istio: ingressgateway
   servers:
   - port:
-      number: 16686
-      name: https-jaeger
+      number: 9090
+      name: https-prometheus-server
       protocol: HTTPS
     hosts:
     - "*"
@@ -20,19 +20,19 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: jaeger-vs
+  name: prometheus-server-vs
   namespace: monitoring-system
 spec:
   hosts:
   - "*"
   gateways:
-  - jaeger-gateway
+  - prometheus-server-gateway
   http:
   - match:
-    - port: 16686
+    - port: 9090
     route:
     - destination:
-        host: jaeger-query
+        host: prometheus-server
         port:
-          number: 16686
+          number: 9090
 ---

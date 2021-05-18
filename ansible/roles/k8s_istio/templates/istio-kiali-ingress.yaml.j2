@@ -5,7 +5,7 @@ metadata:
   namespace: istio-system
 spec:
   selector:
-    istio: istio-ingressgateway
+    istio: ingressgateway
   servers:
   - port:
       number: 20001
@@ -15,7 +15,7 @@ spec:
     - "*"
     tls:
       mode: SIMPLE
-      credentialName: istio-ingressgateway-certs
+      credentialName: ingressgateway-certs
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -37,15 +37,3 @@ spec:
         port:
           number: 20001
 ---
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: kiali
-  namespace: istio-system
-spec:
-  host: kiali
-  trafficPolicy:
-    tls:
-      mode: DISABLE
----
-

@@ -1,15 +1,15 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: jaeger-gateway
+  name: kibana-gateway
   namespace: monitoring-system
 spec:
   selector:
     istio: ingressgateway
   servers:
   - port:
-      number: 16686
-      name: https-jaeger
+      number: 5601
+      name: https-kibana
       protocol: HTTPS
     hosts:
     - "*"
@@ -20,19 +20,19 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: jaeger-vs
+  name: kibana-vs
   namespace: monitoring-system
 spec:
   hosts:
   - "*"
   gateways:
-  - jaeger-gateway
+  - kibana-gateway
   http:
   - match:
-    - port: 16686
+    - port: 5601
     route:
     - destination:
-        host: jaeger-query
+        host: kibana
         port:
-          number: 16686
+          number: 5601
 ---

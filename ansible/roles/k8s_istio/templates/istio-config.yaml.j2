@@ -42,20 +42,7 @@ spec:
       istio-ingressgateway:
         autoscaleEnabled: true
         name: istio-ingressgateway
-# TODO: CHECK IF WE NEED THESE LABELS -- MARCUS
-#         labels:
-#           app: istio-ingressgateway
-#           istio: istio-ingressgateway
-
-#         secretVolumes:
-#         - mountPath: /etc/istio/ingressgateway-certs
-#           name: ingressgateway-certs
-#           secretName: istio-ingressgateway-certs
-#         - mountPath: /etc/istio/ingressgateway-ca-certs
-#           name: ingressgateway-ca-certs
-#           secretName: istio-ingressgateway-ca-certs
         type: NodePort
-        # TODO: CHECK ALL THESE PORTS -- MARCUS
         ports:
         - name: status-port
           port: 15021
@@ -76,6 +63,34 @@ spec:
           port: 15443
           targetPort: 15443
           nodePort: 31443
+{% if ((k8s_config.monitoring.grafana.enabled is defined) and (k8s_config.monitoring.grafana.enabled != None) and (k8s_config.monitoring.grafana.enabled == True)) %}
+        - name: https-grafana
+          port: 3000
+          targetPort: 3000
+          nodePort: 32500
+{% endif %}
+{% if ((k8s_config.monitoring.tracing.enabled is defined) and (k8s_config.monitoring.tracing.enabled != None) and (k8s_config.monitoring.tracing.enabled == True)) %}
+        - name: https-jaeger
+          port: 16686
+          targetPort: 16686
+          nodePort: 32501
+{% endif %}
+{% if ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == True))  %}
+        - name: https-kiali
+          port: 20001
+          targetPort: 20001
+          nodePort: 32502
+{% endif %}
+{% if ((k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True)) %}
+        - name: https-prometheus
+          port: 9090
+          targetPort: 9090
+          nodePort: 32503
+        - name: https-alert-manager
+          port: 9093
+          targetPort: 9093
+          nodePort: 32504
+{% endif %}
 
       istio-egressgateway:
         autoscaleEnabled: true

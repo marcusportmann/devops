@@ -2,10 +2,10 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: grafana-gateway
-  namespace: istio-system
+  namespace: monitoring-system
 spec:
   selector:
-    istio: istio-ingressgateway
+    istio: ingressgateway
   servers:
   - port:
       number: 3000
@@ -15,13 +15,13 @@ spec:
     - "*"
     tls:
       mode: SIMPLE
-      credentialName: istio-ingressgateway-certs
+      credentialName: ingressgateway-certs
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: grafana-vs
-  namespace: istio-system
+  namespace: monitoring-system
 spec:
   hosts:
   - "*"
@@ -35,16 +35,5 @@ spec:
         host: grafana
         port:
           number: 3000
----
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: grafana
-  namespace: istio-system
-spec:
-  host: grafana
-  trafficPolicy:
-    tls:
-      mode: DISABLE
 ---
 

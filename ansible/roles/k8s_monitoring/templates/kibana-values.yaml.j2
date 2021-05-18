@@ -13,10 +13,15 @@ resources:
     memory: "1Gi"
 
 service:
+{% if ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == True)) %}
+  port: 5601
+  targetPort: 5601
+{% else %}
   type: NodePort
   port: 5601
   targetPort: 5601
   nodePort: 32506
+{% endif %}
 
 {% if ((monitoring_security_enabled is defined) and (monitoring_security_enabled != None) and (monitoring_security_enabled == True))  %}
 

@@ -221,7 +221,7 @@
 
   - name: Check whether a CNI provider has been configured
     stat:
-      path: /etc/cni
+      path: /etc/cni/net.d/10-weave.conflist
     register: etc_cni_stat_result
 
   - name: Configure the Weave CNI provider

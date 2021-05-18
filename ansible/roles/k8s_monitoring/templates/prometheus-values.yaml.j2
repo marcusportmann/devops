@@ -13,9 +13,14 @@ alertmanager:
     storageClass: {{ k8s_config.monitoring.prometheus.alert_manager.persistent_volume_storage_class_name }}
 
   service:
+{% if ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == True)) %}
+    type: ClusterIP
+    servicePort: 9093
+{% else %}
     type: NodePort
     servicePort: 9093
     nodePort: 32504
+{% endif %}
 
 pushgateway:
   enabled: true
@@ -38,9 +43,14 @@ server:
     storageClass: {{ k8s_config.monitoring.prometheus.server.persistent_volume_storage_class_name }}
 
   service:
+{% if ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == True)) %}
+    type: ClusterIP
+    servicePort: 9090
+{% else %}
     type: NodePort
     servicePort: 9090
     nodePort: 32503
+{% endif %}
 
   env:
   - name: JAEGER_AGENT_PORT

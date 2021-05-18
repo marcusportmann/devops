@@ -98,7 +98,7 @@ variables:
       jaeger:
         enabled: true
       kibana:
-        enabld: true
+        enabled: true
       prometheus:
         enabled: true
         alert_manager:

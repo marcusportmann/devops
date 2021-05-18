@@ -14,10 +14,15 @@ storage:
 
 query:
   service:
+{% if ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == True)) %}
+    port: 16686
+    targetPort: 16686
+{% else %}
     type: NodePort
     port: 16686
     targetPort: 16686
     nodePort: 32501
+{% endif %}
 
 collector:
   service:
