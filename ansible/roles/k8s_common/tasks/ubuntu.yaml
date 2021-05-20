@@ -245,6 +245,24 @@
     name: br_netfilter
     state: present
 
+- name: Ensure the overlay module is persistent
+  ansible.builtin.lineinfile:
+    path: /etc/modules-load.d/modules.conf
+    line: overlay
+    create: yes
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure the br_netfilter module is persistent
+  ansible.builtin.lineinfile:
+    path: /etc/modules-load.d/modules.conf
+    line: br_netfilter
+    create: yes
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Copy the CRI-O configuration file
   copy:
     src: files/99-kubernetes-cri.conf
