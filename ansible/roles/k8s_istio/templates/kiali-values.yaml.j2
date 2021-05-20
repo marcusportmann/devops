@@ -19,7 +19,19 @@ istio_namespace: "istio-system"
 auth:
   strategy: "{{ k8s_config.istio.kiali.auth.strategy  }}"
 
+external_services:
+{% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.elasticsearch.enabled is defined) and (k8s_config.monitoring.elasticsearch.enabled != None) and (k8s_config.monitoring.elasticsearch.enabled == true) and (k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == true))  %}
+  tracing:
+    auth:
+      type: none
+    in_cluster_url: 'http://jaeger-query.monitoring-system:16686'
+    use_grpc: false
+{% endif %}
 
+{% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == true))  %}
+  prometheus:
+    url: 'http://prometheus-server.monitoring-system:9090'
+{% endif %}
 
 # deployment:
 #   # This only limits what Kiali will attempt to see, but Kiali Service Account has permissions to see everything.

@@ -77,7 +77,6 @@ echo "Upgrading pip, setuptools and wheel"
 python3 -m pip install --upgrade pip setuptools wheel
 
 echo "Removing unnecessary packages"
-yum -y remove wpa_supplicant
 yum -y remove avahi-autoipd
 yum -y remove avahi-libs
 yum -y remove dnsmasq
@@ -113,5 +112,15 @@ echo 'LC_ALL=en_US.utf-8' >> /etc/environment
 echo "Install the pyOpenSSL python package"
 pip3 install pyOpenSSL
 
+mkdir /etc/systemd/system/getty@.service.d
+cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
+[Service]
+TTYVTDisallocate=no
+EOT
 
+cat <<EOT >> /etc/dhcp/dhclient.conf
+supersede domain-name "";
+supersede domain-search "";
+supersede search "";
+EOT
 

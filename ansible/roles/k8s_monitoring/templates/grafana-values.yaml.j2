@@ -7,7 +7,7 @@ datasources:
     datasources:
     - name: Prometheus
       type: prometheus
-      url: http://prometheus-server.monitoring-system.svc.{{ k8s_config.cluster_domain }}:9090
+      url: http://prometheus-server.monitoring-system:9090
       access: proxy
       isDefault: true
 

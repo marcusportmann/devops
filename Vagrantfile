@@ -7,7 +7,7 @@ require 'getoptlong'
 require 'ipaddr'
 
 def generate_guest_info_meta_data(hostname, fqdn, ip, gateway, dns_server, dns_search)
-ubuntu_boot_cloud_config = """
+guest_info_meta_data = """
 instance-id: #{fqdn}
 hostname: #{hostname}
 local-hostname: #{hostname}
@@ -19,7 +19,6 @@ network:
         - #{ip}
       gateway4: #{gateway}
       nameservers:
-        search: [#{dns_search}]
         addresses: [#{dns_server}]
 """
 end
@@ -576,7 +575,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
           host_config.trigger.after :up do |trigger|
             trigger.info = 'Configuring the VM network...'
-            trigger.run_remote = {inline: "/usr/bin/configure-network --interface eth0 --ip #{host[$provider]['ip']} --hostname #{host_hostname} --gateway #{host[$provider]['gateway']} --dnsservers #{host[$provider]['dns_server']} --dnssearch #{host[$provider]['domain']}"}
+            trigger.run_remote = {inline: "/usr/bin/configure-network --interface eth0 --ip #{host[$provider]['ip']} --hostname #{host_hostname} --gateway #{host[$provider]['gateway']} --dnsservers #{host[$provider]['dns_server']}"}
           end
 
           host_config.vm.provider :hyperv do |hyperv|
@@ -664,7 +663,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             # Create the data disk if required and associate it with the VM
             if host[$provider]['data_disk']
               data_disk_size = host[$provider]['data_disk'].to_i / 1024
-              
+
               # { size: 30, datastore: 'datastore1' }
               vmware_esxi.guest_storage = [ data_disk_size ]
             end

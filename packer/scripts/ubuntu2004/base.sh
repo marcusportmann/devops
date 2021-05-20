@@ -115,5 +115,17 @@ echo "UseDNS no" >> /etc/ssh/sshd_config
 echo "Install the pyOpenSSL python package"
 pip3 install pyOpenSSL
 
+mkdir /etc/systemd/system/getty@.service.d
+cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
+[Service]
+TTYVTDisallocate=no
+EOT
+
+cat <<EOT >> /etc/dhcp/dhclient.conf
+supersede domain-name "";
+supersede domain-search "";
+supersede search "";
+EOT
+
 
 

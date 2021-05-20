@@ -205,7 +205,7 @@
 
     - name: Check if Kialia is installed
       shell:
-        cmd: /usr/bin/helm -n istio-system list --filter 'kiali' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
+        cmd: /usr/bin/helm -n istio-system list --filter 'kiali-server' --output json | jq -r '.[0].chart' | cut -s -f3- -d-
       register: kiali_installed_helm_chart_version_output
 
     - name: Install Kiali
@@ -240,7 +240,6 @@
 
       when: kiali_installed_helm_chart_version_output.stdout != k8s_config.istio.kiali.helm_chart_version
 
-
     when: ((k8s_config.istio.kiali.enabled is defined) and (k8s_config.istio.kiali.enabled != None) and (k8s_config.istio.kiali.enabled == true))
 
 
@@ -254,6 +253,7 @@
     - name: Apply the Jaeger ingress configuration
       command:
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-jaeger-ingress.yaml
+
     when: ((k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == True))
 
   - name: Enable ingress for Kibana
@@ -266,6 +266,7 @@
     - name: Apply the Kibana ingress configuration
       command:
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-kibana-ingress.yaml
+
     when: ((k8s_config.monitoring.kibana.enabled is defined) and (k8s_config.monitoring.kibana.enabled != None) and (k8s_config.monitoring.kibana.enabled == True))
 
   - name: Enable ingress for Grafana
@@ -278,6 +279,7 @@
     - name: Apply the Grafana ingress configuration
       command:
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-ingress.yaml
+
     when: ((k8s_config.monitoring.grafana.enabled is defined) and (k8s_config.monitoring.grafana.enabled != None) and (k8s_config.monitoring.grafana.enabled == True))
 
   - name: Enable ingress for Prometheus Server
@@ -290,6 +292,16 @@
     - name: Apply the Prometheus Server ingress configuration
       command:
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-server-ingress.yaml
+
+    - name: Generate the Prometheus Alert Manager ingress configuration
+      template:
+        src: istio-prometheus-alertmanager-ingress.yaml.j2
+        dest: /var/tmp/ansible/istio-prometheus-alertmanager-ingress.yaml
+
+    - name: Apply the Prometheus Alert Manager ingress configuration
+      command:
+        cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-prometheus-alertmanager-ingress.yaml
+
     when: ((k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True))
 
   when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))

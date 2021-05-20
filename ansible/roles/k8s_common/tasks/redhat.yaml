@@ -275,7 +275,7 @@
     name: br_netfilter
     state: present
 
-- name: Copy the Prometheus JMX Exporter configuration file
+- name: Copy the CRI-O configuration file
   copy:
     src: files/99-kubernetes-cri.conf
     dest: '/etc/sysctl.d/99-kubernetes-cri.conf'

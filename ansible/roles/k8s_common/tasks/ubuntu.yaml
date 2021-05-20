@@ -185,6 +185,72 @@
   apt: name=jq state=latest
 
 
+#   ____ ____  ___       ___
+#  / ___|  _ \|_ _|     / _ \
+# | |   | |_) || |_____| | | |
+# | |___|  _ < | |_____| |_| |
+#  \____|_| \_\___|     \___/
+#
+- name: Add the CRI-O GPG apt key
+  apt_key:
+    url: https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${NAME}_${VERSION_ID}/Release.key
+    state: present
+
+- name: Add the CRI-O repository
+  apt_repository:
+    repo: deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${NAME}_${VERSION_ID}/ cri-o stable
+    state: present
+
+- name: Retrieve the version of the installed crio-o package
+  debug:
+    msg: Found the installed cri-o package ({{ ansible_facts.packages['cri-0'][0].version }})
+  when: "'cri-o' in ansible_facts.packages"
+
+
+- name: Install the cri-o package
+  block:
+  - name: Update the Apt cache
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: Unlock the version of the cri-o package
+    command:
+      cmd: apt-mark unhold cri-o
+
+  - name: Install the cri-o package ({{ k8s_config.cri_o_version }})
+    apt:
+      state: present
+      policy_rc_d: 101
+      name:
+       - cri-o={{ k8s_config.cri_o_version }}
+
+  - name: Lock the version of the cri-o package
+    command:
+      cmd: apt-mark hold cri-o
+
+  when: (('cri-o' not in ansible_facts.packages) or (ansible_facts.packages['cri-o'][0].version != k8s_config.cri_o_version))
+
+- name: Add the overlay module
+  community.general.modprobe:
+    name: overlay
+    state: present
+
+- name: Add the br_netfilter module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Copy the CRI-O configuration file
+  copy:
+    src: files/99-kubernetes-cri.conf
+    dest: '/etc/sysctl.d/99-kubernetes-cri.conf'
+
+- name: Ensure that the CRI-O service is started
+  systemd:
+    name: cri-o.service
+    state: started
+    enabled: yes
+
+
 #  _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____    ____   _    ____ _  __    _    ____ _____ ____
 # | |/ / | | | __ )| ____|  _ \| \ | | ____|_   _| ____/ ___|  |  _ \ / \  / ___| |/ /   / \  / ___| ____/ ___|
 # | ' /| | | |  _ \|  _| | |_) |  \| |  _|   | | |  _| \___ \  | |_) / _ \| |   | ' /   / _ \| |  _|  _| \___ \

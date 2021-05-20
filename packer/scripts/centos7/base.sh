@@ -81,12 +81,10 @@ curl -o /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm https://cbs.centos.org/koj
 rpm -ihv /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm
 
 echo "Removing unnecessary packages"
-yum -y remove wpa_supplicant
 yum -y remove avahi-autoipd
 yum -y remove avahi-libs
 yum -y remove dnsmasq
 yum -y remove gsettings-desktop-schemas
-yum -y remove libndp # Library for IPv6 Neighbor Discovery Protocol
 yum -y remove libpcap
 yum -y remove plymouth-core-libs
 
@@ -130,7 +128,17 @@ pip install --upgrade "pip < 21.0"
 echo "Install the pyOpenSSL python package"
 pip install pyOpenSSL
 
+mkdir /etc/systemd/system/getty@.service.d
+cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
+[Service]
+TTYVTDisallocate=no
+EOT
 
+cat <<EOT >> /etc/dhcp/dhclient.conf
+supersede domain-name "";
+supersede domain-search "";
+supersede search "";
+EOT
 
 
 

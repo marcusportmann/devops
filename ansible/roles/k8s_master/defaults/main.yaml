@@ -3,7 +3,7 @@
 
 k8s_defaults:
   bitnami_labs_sealed_secrets_enabled: true
-  bitnami_labs_sealed_secrets_helm_chart_version: '1.15.0-r3'
+  bitnami_labs_sealed_secrets_helm_chart_version: '1.16.1'
   bitnami_labs_sealed_secrets_kubeseal_version: '0.16.0'
 
   cni_provider: weave

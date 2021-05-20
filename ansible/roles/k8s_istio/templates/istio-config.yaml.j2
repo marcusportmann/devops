@@ -22,12 +22,16 @@ spec:
       enabled: true
   hub: docker.io/istio
   meshConfig:
+{% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.elasticsearch.enabled is defined) and (k8s_config.monitoring.elasticsearch.enabled != None) and (k8s_config.monitoring.elasticsearch.enabled == true) and (k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == true))  %}
+    enableTracing: true
+{% endif %}
+
     defaultConfig:
       proxyMetadata: {}
 {% if ((k8s_config.monitoring.enabled is defined) and (k8s_config.monitoring.enabled != None) and (k8s_config.monitoring.enabled == True) and (k8s_config.monitoring.elasticsearch.enabled is defined) and (k8s_config.monitoring.elasticsearch.enabled != None) and (k8s_config.monitoring.elasticsearch.enabled == true) and (k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == true))  %}
       tracing:
         zipkin:
-          address: jaeger-collector.monitoring-system.svc.{{ k8s_config.cluster_domain }}:9411
+          address: jaeger-collector.monitoring-system:9411
 {% endif %}
 
     enablePrometheusMerge: true
@@ -48,11 +52,11 @@ spec:
           port: 15021
           targetPort: 15021
         - name: http2
-          port: 8080
+          port: 80
           targetPort: 8080
           nodePort: 30080
         - name: https
-          port: 8443
+          port: 443
           targetPort: 8443
           nodePort: 30443
         - name: tcp
@@ -69,7 +73,7 @@ spec:
           targetPort: 3000
           nodePort: 32500
 {% endif %}
-{% if ((k8s_config.monitoring.tracing.enabled is defined) and (k8s_config.monitoring.tracing.enabled != None) and (k8s_config.monitoring.tracing.enabled == True)) %}
+{% if ((k8s_config.monitoring.jaeger.enabled is defined) and (k8s_config.monitoring.jaeger.enabled != None) and (k8s_config.monitoring.jaeger.enabled == True)) %}
         - name: https-jaeger
           port: 16686
           targetPort: 16686
@@ -80,6 +84,12 @@ spec:
           port: 20001
           targetPort: 20001
           nodePort: 32502
+{% endif %}
+{% if ((k8s_config.monitoring.kibana.enabled is defined) and (k8s_config.monitoring.kibana.enabled != None) and (k8s_config.monitoring.kibana.enabled == True)) %}
+        - name: https-kibana
+          port: 5601
+          targetPort: 5601
+          nodePort: 32506
 {% endif %}
 {% if ((k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == True)) %}
         - name: https-prometheus

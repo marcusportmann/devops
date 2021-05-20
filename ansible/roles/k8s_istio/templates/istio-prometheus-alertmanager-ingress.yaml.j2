@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: prometheus-alertmanager-gateway
+  namespace: monitoring-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 9093
+      name: https-prometheus-alertmanager
+      protocol: HTTPS
+    hosts:
+    - "*"
+    tls:
+      mode: SIMPLE
+      credentialName: ingressgateway-certs
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: prometheus-alertmanager-vs
+  namespace: monitoring-system
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - prometheus-alertmanager-gateway
+  http:
+  - match:
+    - port: 9093
+    route:
+    - destination:
+        host: prometheus-alertmanager
+        port:
+          number: 9093
+---
