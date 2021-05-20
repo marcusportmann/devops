@@ -220,49 +220,27 @@
 - name: Add the libcontainers YUM repo
   yum_repository:
     name: libcontainers
-    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_7/"
+    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_{{ ansible_distribution_major_version }}/"
     file: libcontainers
-    baseurl: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_7/
+    baseurl: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_{{ ansible_distribution_major_version }}/
     gpgcheck: yes
-    gpgkey: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_7/repodata/repomd.xml.key
-  when: ansible_distribution_major_version == '7'
+    gpgkey: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_{{ ansible_distribution_major_version }}/repodata/repomd.xml.key
 
 - name: Add the cri-o YUM repo
   yum_repository:
     name: cri-o
-    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_7/"
+    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_{{ ansible_distribution_major_version }}/"
     file: cri-o
-    baseurl: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_7/"
+    baseurl: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_{{ ansible_distribution_major_version }}/"
     gpgcheck: yes
-    gpgkey: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_7/repodata/repomd.xml.key"
-  when: ansible_distribution_major_version == '7'
-
-- name: Add the libcontainers YUM repo
-  yum_repository:
-    name: libcontainers
-    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/"
-    file: libcontainers
-    baseurl: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/
-    gpgcheck: yes
-    gpgkey: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_8/repodata/repomd.xml.key
-  when: ansible_distribution_major_version == '8'
-
-- name: Add the cri-o YUM repo
-  yum_repository:
-    name: cri-o
-    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_8/"
-    file: cri-o
-    baseurl: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_8/"
-    gpgcheck: yes
-    gpgkey: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_8/repodata/repomd.xml.key"
-  when: ansible_distribution_major_version == '8'
+    gpgkey: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_{{ ansible_distribution_major_version }}/repodata/repomd.xml.key"
 
 - name: Install the cri-o package
   block:
   - name: Install the cri-o package
     yum:
       name:
-      - cri-o
+      - cri-o-{{ k8s_config.cri_o_redhat_package_version }}*
       state: present
 
 - name: Add the overlay module

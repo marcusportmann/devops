@@ -3,6 +3,8 @@
 
 k8s_defaults:
   cri_o_version: '1.20'
+  cri_o_redhat_package_version: '1.20'
+  cri_o_ubuntu_package_version: '1.20.2~0'
 
   bitnami_labs_sealed_secrets_enabled: true
 

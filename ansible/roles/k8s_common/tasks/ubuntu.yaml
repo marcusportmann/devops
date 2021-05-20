@@ -32,12 +32,12 @@
   - name: Copy the root CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
-      dest: '/usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/ca.crt'
+      dest: "/usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/ca.crt"
 
   - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
     copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
-      dest: "/usr/local/share/ca-certificates/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
+      dest: "/usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
 
   - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
     shell:
@@ -193,19 +193,25 @@
 #
 - name: Add the CRI-O GPG apt key
   apt_key:
-    url: https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${NAME}_${VERSION_ID}/Release.key
+    url: https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_{{ ansible_distribution_version }}/Release.key
     state: present
 
-- name: Add the CRI-O repository
+- name: Add the devel_kubic_libcontainers_stable repository
   apt_repository:
-    repo: deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${NAME}_${VERSION_ID}/ cri-o stable
+    repo: 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_distribution_version }}/ /'
+    filename: 'devel_kubic_libcontainers_stable'
+    state: present
+
+- name: Add the devel_kubic_libcontainers_stable_cri_o repository
+  apt_repository:
+    repo: 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/xUbuntu_{{ ansible_distribution_version }}/ /'
+    filename: 'devel_kubic_libcontainers_stable_cri_o'
     state: present
 
 - name: Retrieve the version of the installed crio-o package
   debug:
-    msg: Found the installed cri-o package ({{ ansible_facts.packages['cri-0'][0].version }})
+    msg: Found the installed cri-o package ({{ ansible_facts.packages['cri-o'][0].version }})
   when: "'cri-o' in ansible_facts.packages"
-
 
 - name: Install the cri-o package
   block:
@@ -216,18 +222,18 @@
     command:
       cmd: apt-mark unhold cri-o
 
-  - name: Install the cri-o package ({{ k8s_config.cri_o_version }})
+  - name: Install the cri-o package ({{ k8s_config.cri_o_ubuntu_package_version }})
     apt:
       state: present
       policy_rc_d: 101
       name:
-       - cri-o={{ k8s_config.cri_o_version }}
+       - cri-o={{ k8s_config.cri_o_ubuntu_package_version }}
 
   - name: Lock the version of the cri-o package
     command:
       cmd: apt-mark hold cri-o
 
-  when: (('cri-o' not in ansible_facts.packages) or (ansible_facts.packages['cri-o'][0].version != k8s_config.cri_o_version))
+  when: (('cri-o' not in ansible_facts.packages) or (ansible_facts.packages['cri-o'][0].version != k8s_config.cri_o_ubuntu_package_version))
 
 - name: Add the overlay module
   community.general.modprobe:

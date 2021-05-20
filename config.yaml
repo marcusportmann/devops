@@ -1266,7 +1266,7 @@ hosts:
 #
 - name:               devops.local
   domain:             local
-  type:               centos7
+  type:               ubuntu2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master
   virtualbox:
