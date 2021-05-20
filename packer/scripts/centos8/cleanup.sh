@@ -12,7 +12,6 @@ rm -f /var/log/*
 > /var/log/lastlog
 
 # Other cleanup
-rm -f /etc/resolv.conf
 rm -f /etc/ssh/ssh_host_*
 rm -f /var/lib/NetworkManager/*
 rm -rf /tmp/*

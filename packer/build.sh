@@ -38,7 +38,7 @@ function build_image {
     vagrant box remove --force --provider vmware_desktop --all devops/${operating_system}
 
     packer build -only=${operating_system}-vmware ${operating_system}.json
-    
+
     vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-vmware.box
 
   	mkdir -p build/ova/${operating_system}
@@ -51,7 +51,7 @@ function build_image {
 
  	  vagrant box add --force --provider vsphere --name devops/${operating_system} build/boxes/${operating_system}-vsphere.box
   fi
-  
+
   if [[ "$provider" == "hyperv" ]]; then
     rm -rf build/boxes/${operating_system}-hyperv.box
     rm -rf build/hyperv/${operating_system}
@@ -61,7 +61,7 @@ function build_image {
     packer build -only=${operating_system}-hyperv ${operating_system}.json
 
     vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-hyperv.box
-  fi  
+  fi
 }
 
 if [ "$#" -ne 4 ]; then
@@ -86,7 +86,7 @@ case "${option}" in
         fi
         ;;
     o)
-        if [[ ${OPTARG} =~ ^centos7|centos8|ubuntu1804|ubuntu2004$ ]]
+        if [[ ${OPTARG} =~ ^centos7|centos8|ubuntu2004$ ]]
         then
             operating_system=${OPTARG}
         else

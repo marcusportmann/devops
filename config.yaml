@@ -148,7 +148,6 @@ variables:
         test_hosts:
         - test-centos7.local
         - test-centos8.local
-        - test-ubuntu1804.local
         - test-ubuntu2004.local
 
 
@@ -324,7 +323,6 @@ profiles:
   - test-centos7.local
   - test-centos8.local
   - test-centos81.local
-  - test-ubuntu1804.local
   - test-ubuntu2004.local
 
 - name: test-centos7
@@ -342,10 +340,6 @@ profiles:
 - name: test-centos81
   hosts:
   - test-centos81.local
-
-- name: test-ubuntu1804
-  hosts:
-  - test-ubuntu1804.local
 
 - name: test-ubuntu2004
   hosts:
@@ -1365,39 +1359,6 @@ hosts:
     ip:               192.168.184.148/24
     gateway:          192.168.184.1
     dns_server:       192.168.184.1
-
-- name:               test-ubuntu1804.local
-  domain:             local
-  type:               ubuntu1804
-  ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     docker
-  virtualbox:
-    cpus:             2
-    memory:           1024
-    data_disk:        4096
-    fqdn:             test-ubuntu1804.local
-    domain:           local
-    ip:               192.168.184.145/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
-  vmware_desktop:
-    cpus:             2
-    memory:           1024
-    data_disk:        4096
-    fqdn:             test-ubuntu1804.local
-    domain:           local
-    ip:               192.168.184.145/24
-    gateway:          192.168.184.1
-    dns_server:       192.168.184.1
-  vmware_esxi:
-    cpus:             2
-    memory:           1024
-    data_disk:        4096
-    fqdn:             test-ubuntu1804.local
-    domain:           local
-    ip:               192.168.0.45/24
-    gateway:          192.168.0.1
-    dns_server:       192.168.0.1
 
 - name:               test-ubuntu2004.local
   domain:             local
