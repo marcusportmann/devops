@@ -208,15 +208,27 @@
     filename: 'devel_kubic_libcontainers_stable_cri_o'
     state: present
 
+- name: Retrieve the version of the installed crio-o-runc package
+  debug:
+    msg: Found the installed cri-o-runc package ({{ ansible_facts.packages['cri-o-runc'][0].version }})
+  when: "'cri-o-runc' in ansible_facts.packages"
+
 - name: Retrieve the version of the installed crio-o package
   debug:
     msg: Found the installed cri-o package ({{ ansible_facts.packages['cri-o'][0].version }})
   when: "'cri-o' in ansible_facts.packages"
 
-- name: Install the cri-o package
+- name: Install the cri-o-runc and crio-o packages and apply the kernel parameter configuration
   block:
   - name: Update the Apt cache
     apt: update_cache=yes cache_valid_time=3600
+
+  - name: Install the cri-o-runc package
+    apt:
+      state: latest
+      policy_rc_d: 101
+      name:
+       - cri-o-runc
 
   - name: Unlock the version of the cri-o package
     command:
@@ -263,11 +275,6 @@
     group: root
     mode: '0644'
 
-- name: Copy the CRI-O configuration file
-  copy:
-    src: files/99-kubernetes-cri.conf
-    dest: '/etc/sysctl.d/99-kubernetes-cri.conf'
-
 - name: Ensure that the CRI-O service is started
   systemd:
     name: cri-o.service
@@ -288,8 +295,9 @@
 
 - name: Add the Kubernetes repository
   apt_repository:
-    repo: deb https://packages.cloud.google.com/apt kubernetes-xenial InRelease
+    repo: deb https://packages.cloud.google.com/apt kubernetes-xenial main
     state: present
+    filename: 'kubernetes'
 
 - name: Retrieve the version of the installed kubelet package
   debug:
@@ -372,3 +380,27 @@
 
   when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.ubuntu_package_version))
 
+
+#  _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____    ______   ______   ____ _____ _       ____  _____ _____ _____ ___ _   _  ____ ____
+# | |/ / | | | __ )| ____|  _ \| \ | | ____|_   _| ____/ ___|  / ___\ \ / / ___| / ___|_   _| |     / ___|| ____|_   _|_   _|_ _| \ | |/ ___/ ___|
+# | ' /| | | |  _ \|  _| | |_) |  \| |  _|   | | |  _| \___ \  \___ \\ V /\___ \| |     | | | |     \___ \|  _|   | |   | |  | ||  \| | |  _\___ \
+# | . \| |_| | |_) | |___|  _ <| |\  | |___  | | | |___ ___) |  ___) || |  ___) | |___  | | | |___   ___) | |___  | |   | |  | || |\  | |_| |___) |
+# |_|\_\\___/|____/|_____|_| \_\_| \_|_____| |_| |_____|____/  |____/ |_| |____/ \____| |_| |_____| |____/|_____| |_|   |_| |___|_| \_|\____|____/
+#
+- name: Check whether the /etc/sysctl.d/kubernetes.conf file exists
+  stat:
+    path: /etc/sysctl.d/kubernetes.conf
+  register: kubernetes_sysctl_stat_result
+
+- name: Apply the Kubernetes sysctl configuration
+  block:
+  - name: Create the /etc/sysctl.d/kubernetes.conf file
+    template:
+      src: kubernetes.conf.j2
+      dest: /etc/sysctl.d/kubernetes.conf
+
+  - name: Reload the kernel parameter configuration files
+    command:
+      cmd: /sbin/sysctl --system
+
+  when: (kubernetes_sysctl_stat_result.stat.exists == False)

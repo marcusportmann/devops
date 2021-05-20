@@ -72,6 +72,12 @@
 # |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
 # |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
 #
+- name: Enable IP masquerade on the firewall
+  firewalld:
+    masquerade: yes
+    state: enabled
+    permanent: yes
+
 - name: Allow all hosts access to tcp port 22 (SSH)
   firewalld:
     port: 22/tcp
