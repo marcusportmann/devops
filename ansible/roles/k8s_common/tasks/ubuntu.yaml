@@ -288,7 +288,7 @@
 
 - name: Add the Kubernetes repository
   apt_repository:
-    repo: deb https://apt.kubernetes.io kubernetes-xenial main
+    repo: deb https://packages.cloud.google.com/apt kubernetes-xenial InRelease
     state: present
 
 - name: Retrieve the version of the installed kubelet package
