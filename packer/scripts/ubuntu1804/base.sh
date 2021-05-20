@@ -121,11 +121,6 @@ cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
 TTYVTDisallocate=no
 EOT
 
-cat <<EOT >> /etc/dhcp/dhclient.conf
-supersede domain-name "";
-supersede domain-search "";
-supersede search "";
-EOT
 
 
 
