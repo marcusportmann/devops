@@ -277,11 +277,6 @@
     group: root
     mode: '0644'
 
-- name: Copy the CRI-O configuration file
-  copy:
-    src: files/99-kubernetes-cri.conf
-    dest: '/etc/sysctl.d/99-kubernetes-cri.conf'
-
 - name: Ensure that the CRI-O service is started
   systemd:
     name: cri-o.service
