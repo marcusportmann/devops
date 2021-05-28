@@ -1,0 +1,108 @@
+---
+# file: roles/k8s_worker/tasks/ubuntu.yaml
+
+#  _____ ___ ____  _______        ___    _     _       ____   ___  ____ _____ ____
+# |  ___|_ _|  _ \| ____\ \      / / \  | |   | |     |  _ \ / _ \|  _ \_   _/ ___|
+# | |_   | || |_) |  _|  \ \ /\ / / _ \ | |   | |     | |_) | | | | |_) || | \___ \
+# |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
+# |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
+#
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
+# TODO: HOW DO WE ENABLE MASQUERADING?
+#- name: Enable IP masquerade on the firewall
+#  firewalld:
+#    masquerade: 'yes'
+#    state: enabled
+#    permanent: yes
+
+- name: Allow all hosts access to tcp port 22 (SSH)
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+
+- name: Allow all hosts access to tcp port 4149 (Default cAdvisor port used to query container metrics)
+  ufw:
+    rule: allow
+    port: '4149'
+    proto: tcp
+
+- name: Allow all hosts access to tcp port 9100 (Prometheus Node Exporter)
+  ufw:
+    rule: allow
+    port: '9100'
+    proto: tcp
+
+- name: Allow all hosts access to tcp port 10250 (API which allows full node access)
+  ufw:
+    rule: allow
+    port: '10250'
+    proto: tcp
+
+- name: Allow all hosts access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
+  ufw:
+    rule: allow
+    port: '10255'
+    proto: tcp
+
+- name: Allow all hosts access to tcp ports 30000-32767 (Nodeport)
+  ufw:
+    rule: allow
+    port: 30000:32767
+    proto: tcp
+
+
+
+
+- name: Open ports for the Weave CNI provider
+  block:
+  - name: Allow all hosts access to tcp port 6783 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6783'
+      proto: tcp
+
+  - name: Allow all access to udp port 6783 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6783'
+      proto: udp
+
+  - name: Allow all access to tcp port 6784 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6784'
+      proto: tcp
+
+  - name: Allow all access to udp port 6784 for the Weave CNI provider
+    ufw:
+      rule: allow
+      port: '6784'
+      proto: udp
+
+  when: (k8s_config.cni_provider == 'weave')
+
+
+- name: Open ports for the Flannel CNI provider
+  block:
+  - name: Allow all hosts access to udp port 8285 for the Flannel CNI provider
+    ufw:
+      rule: allow
+      port: '8285'
+      proto: udp
+
+  - name: Allow all access to udp port 8472 for the Flannel CNI provider
+    ufw:
+      rule: allow
+      port: '8472'
+      proto: udp
+
+  when: (k8s_config.cni_provider == 'flannel')
+
+
+
+
