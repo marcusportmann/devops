@@ -66,135 +66,6 @@
     state: disabled
 
 
-#  _____ ___ ____  _______        ___    _     _       ____   ___  ____ _____ ____
-# |  ___|_ _|  _ \| ____\ \      / / \  | |   | |     |  _ \ / _ \|  _ \_   _/ ___|
-# | |_   | || |_) |  _|  \ \ /\ / / _ \ | |   | |     | |_) | | | | |_) || | \___ \
-# |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
-# |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
-#
-- name: Enable IP masquerade on the firewall
-  firewalld:
-    masquerade: yes
-    state: enabled
-    permanent: yes
-
-- name: Allow all hosts access to tcp port 22 (SSH)
-  firewalld:
-    port: 22/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 2379
-  firewalld:
-    port: 2379/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 2380
-  firewalld:
-    port: 2380/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 4149
-  firewalld:
-    port: 4149/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 6443 (Kubernetes API)
-  firewalld:
-    port: 6443/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 4149 (Default cAdvisor port used to query container metrics)
-  firewalld:
-    port: 4149/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 9099 (Health check server for Calico)
-  firewalld:
-    port: 9099/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 9100 (Prometheus Node Exporter)
-  firewalld:
-    port: 9100/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 10256 (Health check server for Kube Proxy)
-  firewalld:
-    port: 10256/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 10257 (Kube Controller Manager Port)
-  firewalld:
-    port: 10257/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 10250 (API which allows full node access)
-  firewalld:
-    port: 10250/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
-  firewalld:
-    port: 10255/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Allow all hosts access to tcp ports 30000-32767 (Nodeport)
-  firewalld:
-    port: 30000-32767/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
-
-- name: Open TCP and UDP pprts for the Weave CNI provider
-  block:
-  - name: Allow all hosts access to tcp port 6783 for the Weave CNI provider
-    firewalld:
-      port: 6783/tcp
-      permanent: yes
-      state: enabled
-      immediate: yes
-
-  - name: Allow all access to udp port 6783 for the Weave CNI provider
-    firewalld:
-      port: 6783/udp
-      permanent: yes
-      state: enabled
-      immediate: yes
-
-  - name: Allow all access to udp port 6784 for the Weave CNI provider
-    firewalld:
-      port: 6784/udp
-      permanent: yes
-      state: enabled
-      immediate: yes
-
-  when: (k8s_config.cni_provider == 'weave')
-
-
 #  ____  _   _ ____  ____   ___  ____ _____ ___ _   _  ____   ____   _    ____ _  __    _    ____ _____ ____
 # / ___|| | | |  _ \|  _ \ / _ \|  _ \_   _|_ _| \ | |/ ___| |  _ \ / \  / ___| |/ /   / \  / ___| ____/ ___|
 # \___ \| | | | |_) | |_) | | | | |_) || |  | ||  \| | |  _  | |_) / _ \| |   | ' /   / _ \| |  _|  _| \___ \
@@ -217,38 +88,12 @@
     state: present
 
 
-#   ____ ____  ___       ___
-#  / ___|  _ \|_ _|     / _ \
-# | |   | |_) || |_____| | | |
-# | |___|  _ < | |_____| |_| |
-#  \____|_| \_\___|     \___/
+#  _  _______ ____  _   _ _____ _       __  __  ___  ____  _   _ _     _____ ____
+# | |/ / ____|  _ \| \ | | ____| |     |  \/  |/ _ \|  _ \| | | | |   | ____/ ___|
+# | ' /|  _| | |_) |  \| |  _| | |     | |\/| | | | | | | | | | | |   |  _| \___ \
+# | . \| |___|  _ <| |\  | |___| |___  | |  | | |_| | |_| | |_| | |___| |___ ___) |
+# |_|\_\_____|_| \_\_| \_|_____|_____| |_|  |_|\___/|____/ \___/|_____|_____|____/
 #
-- name: Add the libcontainers YUM repo
-  yum_repository:
-    name: libcontainers
-    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_{{ ansible_distribution_major_version }}/"
-    file: libcontainers
-    baseurl: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_{{ ansible_distribution_major_version }}/
-    gpgcheck: yes
-    gpgkey: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/CentOS_{{ ansible_distribution_major_version }}/repodata/repomd.xml.key
-
-- name: Add the cri-o YUM repo
-  yum_repository:
-    name: cri-o
-    description: "See: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_{{ ansible_distribution_major_version }}/"
-    file: cri-o
-    baseurl: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_{{ ansible_distribution_major_version }}/"
-    gpgcheck: yes
-    gpgkey: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ k8s_config.cri_o_version }}/CentOS_{{ ansible_distribution_major_version }}/repodata/repomd.xml.key"
-
-- name: Install the cri-o package
-  block:
-  - name: Install the cri-o package
-    yum:
-      name:
-      - cri-o-{{ k8s_config.cri_o_redhat_package_version }}*
-      state: present
-
 - name: Add the overlay module
   community.general.modprobe:
     name: overlay
@@ -277,9 +122,66 @@
     group: root
     mode: '0644'
 
-- name: Ensure that the CRI-O service is started
+
+#   ____ ___  _   _ _____  _    ___ _   _ _____ ____  ____
+#  / ___/ _ \| \ | |_   _|/ \  |_ _| \ | | ____|  _ \|  _ \
+# | |  | | | |  \| | | | / _ \  | ||  \| |  _| | |_) | | | |
+# | |__| |_| | |\  | | |/ ___ \ | || |\  | |___|  _ <| |_| |
+#  \____\___/|_| \_| |_/_/   \_\___|_| \_|_____|_| \_\____/
+#
+- name: Add the Docker CE YUM repo
+  yum_repository:
+    name: 'docker-ce-stable'
+    description: "Docker CE Stable - $basearch"
+    file: docker-ce
+    baseurl: https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/$basearch/stable/
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/centos/gpg
+
+- name: Check whether the /etc/containerd/config.toml file exists
+  stat:
+    path: /etc/containerd/config.toml
+  register: containerd_config_stat_result
+
+- name: Install the containerd package
+  yum:
+    name:
+    - containerd
+    state: latest
+  register: install_containerd_package_result
+
+- name: Create the containerd configuration
+  block:
+  - name: Create the /etc/containerd directory if it does not exist
+    file:
+      path: /etc/containerd
+      state: directory
+      mode: '0755'
+      owner: root
+      group: root
+
+  - name: Create the default containerd configuration
+    shell:
+      cmd: containerd config default > /etc/containerd/config.toml
+
+  - name: Configure the systemd cgroup driver for containerd
+    ansible.builtin.lineinfile:
+      path: /etc/containerd/config.toml
+      insertafter: '^          \[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options\]'
+      line: '            SystemdCgroup = true'
+
+  when: (containerd_config_stat_result.stat.exists == False)
+
+- name: Restart the containerd service if required
   systemd:
-    name: cri-o.service
+    name: containerd.service
+    state: restarted
+    enabled: yes
+  when: (install_containerd_package_result.changed == True)
+
+- name: Ensure that the containerd service is started
+  systemd:
+    name: containerd.service
     state: started
     enabled: yes
 
@@ -306,12 +208,12 @@
 
 - name: Install the kubectl package
   block:
-  - name: Install the kubectl package ({{ k8s_config.redhat_package_version }})
+  - name: Install the kubectl package ({{ k8s_config.k8s_redhat_package_version }})
     yum:
-      name: kubectl-{{k8s_config.redhat_package_version}}*
+      name: kubectl-{{k8s_config.k8s_redhat_package_version}}*
       state: present
 
-  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.redhat_package_version))
+  when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.k8s_redhat_package_version))
 
 - name: Retrieve the version of the installed kubelet package
   debug:
@@ -320,12 +222,12 @@
 
 - name: Install the kubelet package
   block:
-  - name: Install the kubelet package ({{ k8s_config.redhat_package_version }})
+  - name: Install the kubelet package ({{ k8s_config.k8s_redhat_package_version }})
     yum:
-      name: kubelet-{{k8s_config.redhat_package_version}}*
+      name: kubelet-{{k8s_config.k8s_redhat_package_version}}*
       state: present
 
-  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.redhat_package_version))
+  when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.k8s_redhat_package_version))
 
 - name: Retrieve the version of the installed kubeadm package
   debug:
@@ -334,12 +236,12 @@
 
 - name: Install the kubeadm package
   block:
-  - name: Install the kubeadm package ({{ k8s_config.redhat_package_version }})
+  - name: Install the kubeadm package ({{ k8s_config.k8s_redhat_package_version }})
     yum:
-      name: kubeadm-{{k8s_config.redhat_package_version}}*
+      name: kubeadm-{{k8s_config.k8s_redhat_package_version}}*
       state: present
 
-  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.redhat_package_version))
+  when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.k8s_redhat_package_version))
 
 
 #  _  ___   _ ____  _____ ____  _   _ _____ _____ _____ ____    ______   ______   ____ _____ _       ____  _____ _____ _____ ___ _   _  ____ ____
@@ -365,9 +267,6 @@
       cmd: /sbin/sysctl --system
 
   when: (kubernetes_sysctl_stat_result.stat.exists == False)
-
-
-
 
 
 

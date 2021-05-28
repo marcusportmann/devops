@@ -50,6 +50,69 @@
     validate: 'visudo -cf %s'
 
 
+#   ____ ____  ___ ____ _____ _
+#  / ___|  _ \|_ _/ ___|_   _| |
+# | |   | |_) || | |     | | | |
+# | |___|  _ < | | |___  | | | |___
+#  \____|_| \_\___\____| |_| |_____|
+#
+- name: Install crictl
+  block:
+  - debug:
+      msg: Check whether the crictl {{ k8s_config.crictl_version }} package has been installed
+
+  - stat:
+      path: /usr/bin/crictl
+    register: crictl_installed_stat_result
+
+  - shell:
+      cmd: /usr/bin/crictl -v | head -1 | awk {'print $3'} | cut -c2-
+    register: crictl_installed_version_output
+    when: (crictl_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      crictl_installed_version: '{{ crictl_installed_version_output.stdout }}'
+    when: (crictl_installed_stat_result.stat.exists == True)
+
+  - set_fact:
+      crictl_installed_version: ''
+    when: (crictl_installed_stat_result.stat.exists == False)
+
+  - block:
+    - debug:
+        msg: Install the crictl {{ k8s_config.crictl_version }} package
+
+    - name: Check whether the crictl {{ k8s_config.crictl_version }} package has been downloaded
+      become: no
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz'
+      register: crictl_package_stat_result
+
+    - name: Download the crictl {{ k8s_config.crictl_version }} package
+      become: no
+      local_action: get_url url='https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ k8s_config.crictl_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.crictl_package_checksum }}
+      when: (crictl_package_stat_result.stat.exists == False)
+
+    - name: Remove the existing crictl binary
+      file:
+        path: /usr/bin/crictl
+        state: absent
+
+    - name: Extract the crictl binary from the crictl {{ k8s_config.crictl_version }} package
+      unarchive:
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz'
+        dest: /usr/bin
+        creates: /usr/bin/crictl
+
+    - name: Set the runtime endpoint for crictl
+      ansible.builtin.lineinfile:
+        path: /etc/crictl.yaml
+        regexp: '^runtime-endpoint:'
+        line: 'runtime-endpoint: unix:///run/containerd/containerd.sock'
+        create: true
+
+    when: (crictl_installed_version != k8s_config.crictl_version)
+
+
 #  _   _ _____ _     __  __
 # | | | | ____| |   |  \/  |
 # | |_| |  _| | |   | |\/| |

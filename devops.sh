@@ -16,6 +16,7 @@ function usage {
     echo ""
 }
 
+
 action=""
 debug=""
 profile=""
@@ -72,7 +73,7 @@ case "$subcommand" in
     profile=$1; shift
     host=$1; shift
     VAGRANT_DEFAULT_PROVIDER=$provider vagrant --provider=$provider --profile=$profile halt $host --force
-    ;;    
+    ;;
   *)
     echo "Invalid action: $subcommand\n"
     usage
@@ -80,6 +81,8 @@ case "$subcommand" in
     ;;
 
 esac
+
+
 
 
 

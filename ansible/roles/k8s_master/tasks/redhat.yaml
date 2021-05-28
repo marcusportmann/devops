@@ -1,0 +1,207 @@
+---
+# file: roles/k8s_master/tasks/redhat.yaml
+
+#  _____ _____  __  _____ ___  ____    _____ _        _    _   _ _   _ _____ _         _  _   _  ___ __________
+# |  ___|_ _\ \/ / |  ___/ _ \|  _ \  |  ___| |      / \  | \ | | \ | | ____| |      _| || |_/ |/ _ \___ /___ /
+# | |_   | | \  /  | |_ | | | | |_) | | |_  | |     / _ \ |  \| |  \| |  _| | |     |_  ..  _| | | | ||_ \ |_ \
+# |  _|  | | /  \  |  _|| |_| |  _ <  |  _| | |___ / ___ \| |\  | |\  | |___| |___  |_      _| | |_| |__) |__) |
+# |_|   |___/_/\_\ |_|   \___/|_| \_\ |_|   |_____/_/   \_\_| \_|_| \_|_____|_____|   |_||_| |_|\___/____/____/
+
+# See: https://github.com/rancher/rancher/issues/28840
+# See: https://github.com/flannel-io/flannel/issues/1033
+- name: Add the kubernetes_pods firewalld zone
+  firewalld:
+    zone: kubernetes_pods
+    state: present
+    permanent: yes
+  register: add_kubernetes_pods_firewalld_zone_result
+
+- name: Add the ACCEPT target to the kubernetes_pods firewalld zone
+  firewalld:
+    zone: kubernetes_pods
+    target: ACCEPT
+    permanent: yes
+    state: enabled
+
+- name: Add the {{ k8s_config.pod_subnet }} source to the kubernetes_pods firewalld zone
+  firewalld:
+    zone: kubernetes_pods
+    source: '{{ k8s_config.pod_subnet }}'
+    permanent: yes
+    state: enabled
+
+#- name: Add the {{ k8s_config.service_subnet }} source to the kubernetes_pods firewalld zone
+#  firewalld:
+#    zone: kubernetes_pods
+#    source: '{{ k8s_config.service_subnet }}'
+#    permanent: yes
+#    state: enabled
+
+- name: Reload firewalld
+  shell:
+    cmd: firewall-cmd --reload
+  when: (add_kubernetes_pods_firewalld_zone_result.changed == True)
+
+
+#  _____ ___ ____  _______        ___    _     _       ____  _   _ _     _____ ____
+# |  ___|_ _|  _ \| ____\ \      / / \  | |   | |     |  _ \| | | | |   | ____/ ___|
+# | |_   | || |_) |  _|  \ \ /\ / / _ \ | |   | |     | |_) | | | | |   |  _| \___ \
+# |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  _ <| |_| | |___| |___ ___) |
+# |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_| \_\\___/|_____|_____|____/
+#
+- name: Enable IP masquerade on firewalld
+  firewalld:
+    masquerade: 'yes'
+    state: enabled
+    permanent: yes
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 22 (SSH)
+  firewalld:
+    port: 22/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 2379
+  firewalld:
+    port: 2379/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 2380
+  firewalld:
+    port: 2380/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 4149 (Default cAdvisor port used to query container metrics)
+  firewalld:
+    port: 4149/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 6443 (Kubernetes API)
+  firewalld:
+    port: 6443/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 9100 (Prometheus Node Exporter)
+  firewalld:
+    port: 9100/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 10250 (API which allows full node access)
+  firewalld:
+    port: 10250/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 10251
+  firewalld:
+    port: 10251/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 10252
+  firewalld:
+    port: 10252/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
+  firewalld:
+    port: 10255/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+# TODO: CHECK THIS PORT
+- name: Allow all hosts access to tcp port 10256 (Health check server for Kube Proxy)
+  firewalld:
+    port: 10256/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+# TODO: CHECK THIS PORT
+- name: Allow all hosts access to tcp port 10257 (Kube Controller Manager Port)
+  firewalld:
+    port: 10257/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp ports 30000-32767 (Nodeport)
+  firewalld:
+    port: 30000-32767/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+
+
+
+- name: Open ports for the Weave CNI provider
+  block:
+  - name: Allow all hosts access to tcp port 6783 for the Weave CNI provider
+    firewalld:
+      port: 6783/tcp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  - name: Allow all access to udp port 6783 for the Weave CNI provider
+    firewalld:
+      port: 6783/udp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  - name: Allow all access to tcp port 6784 for the Weave CNI provider
+    firewalld:
+      port: 6784/tcp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  - name: Allow all access to udp port 6784 for the Weave CNI provider
+    firewalld:
+      port: 6784/udp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  when: (k8s_config.cni_provider == 'weave')
+
+
+- name: Open ports for the Flannel CNI provider
+  block:
+  - name: Allow all hosts access to udp port 8285 for the Flannel CNI provider
+    firewalld:
+      port: 8285/udp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  - name: Allow all access to udp port 8472 for the Flannel CNI provider
+    firewalld:
+      port: 8472/udp
+      permanent: yes
+      state: enabled
+      immediate: yes
+
+  when: (k8s_config.cni_provider == 'flannel')
+
+
+

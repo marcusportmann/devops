@@ -1,14 +1,9 @@
 ---
-# file: roles/k8s_master/defaults/main.yaml
+# file: roles/k8s_worker/defaults/main.yaml
 
 k8s_defaults:
-  bitnami_labs_sealed_secrets_enabled: true
-  bitnami_labs_sealed_secrets_helm_chart_version: '1.16.1'
-  bitnami_labs_sealed_secrets_kubeseal_version: '0.16.0'
 
   cni_provider: flannel
-
-  etcd_topology: stacked
 
   # NOTE: The pod subnet MUST be 10.244.0.0/16 since this is hardcoded in the default flannel yaml configuration
   pod_subnet: 10.244.0.0/16

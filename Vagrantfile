@@ -372,17 +372,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         config.vm.define host_name do |host_config|
           # NOTE: These boxes must have been added to Vagrant before executing this project.
-          if host['type'] == 'centos7'
-            host_config.vm.box = 'devops/centos7'
+          if host['type'] == 'centos-7'
+            host_config.vm.box = 'devops/centos-7'
           end
-          if host['type'] == 'centos8'
-            host_config.vm.box = 'devops/centos8'
+          if host['type'] == 'centos-8'
+            host_config.vm.box = 'devops/centos-8'
           end
-          if host['type'] == 'ubuntu1804'
-            host_config.vm.box = 'devops/ubuntu1804'
-          end
-          if host['type'] == 'ubuntu2004'
-            host_config.vm.box = 'devops/ubuntu2004'
+          if host['type'] == 'ubuntu-2004'
+            host_config.vm.box = 'devops/ubuntu-2004'
           end
 
           host_config.vm.synced_folder '.', '/vagrant', disabled: true
@@ -486,17 +483,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
 
           # NOTE: These boxes must have been added to Vagrant before executing this project.
-          if host['type'] == 'centos7'
-            host_config.vm.box = 'devops/centos7'
+          if host['type'] == 'centos-7'
+            host_config.vm.box = 'devops/centos-7'
           end
-          if host['type'] == 'centos8'
-            host_config.vm.box = 'devops/centos8'
+          if host['type'] == 'centos-8'
+            host_config.vm.box = 'devops/centos-8'
           end
-          if host['type'] == 'ubuntu1804'
-            host_config.vm.box = 'devops/ubuntu1804'
-          end
-          if host['type'] == 'ubuntu2004'
-            host_config.vm.box = 'devops/ubuntu2004'
+          if host['type'] == 'ubuntu-2004'
+            host_config.vm.box = 'devops/ubuntu-2004'
           end
 
           host_config.vm.synced_folder '.', '/vagrant', disabled: true
@@ -514,6 +508,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
             # Perform the VMware Fusion specific initialisation
             vmware_desktop.gui = true
+            vmware_desktop.linked_clone = true
             vmware_desktop.vmx['numvcpus'] = host[$provider]['cpus']
             vmware_desktop.vmx['memsize'] = host[$provider]['memory']
             vmware_desktop.vmx['ethernet0.connectionType'] = 'nat'
@@ -556,17 +551,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         config.vm.define host_name do |host_config|
           # NOTE: These boxes must have been added to Vagrant before executing this project.
-          if host['type'] == 'centos7'
-            host_config.vm.box = 'devops/centos7'
+          if host['type'] == 'centos-7'
+            host_config.vm.box = 'devops/centos-7'
           end
-          if host['type'] == 'centos8'
-            host_config.vm.box = 'devops/centos8'
+          if host['type'] == 'centos-8'
+            host_config.vm.box = 'devops/centos-8'
           end
-          if host['type'] == 'ubuntu1804'
-            host_config.vm.box = 'devops/ubuntu1804'
-          end
-          if host['type'] == 'ubuntu2004'
-            host_config.vm.box = 'devops/ubuntu2004'
+          if host['type'] == 'ubuntu-2004'
+            host_config.vm.box = 'devops/ubuntu-2004'
           end
 
           host_config.vm.synced_folder '.', '/vagrant', disabled: true
@@ -630,17 +622,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.vm.define host_name do |host_config|
 
           # NOTE: These boxes must have been added to Vagrant before executing this project.
-          if host['type'] == 'centos7'
-            host_config.vm.box = 'devops/centos7'
+          if host['type'] == 'centos-7'
+            host_config.vm.box = 'devops/centos-7'
           end
-          if host['type'] == 'centos8'
-            host_config.vm.box = 'devops/centos8'
+          if host['type'] == 'centos-8'
+            host_config.vm.box = 'devops/centos-8'
           end
-          if host['type'] == 'ubuntu1804'
-            host_config.vm.box = 'devops/ubuntu1804'
-          end
-          if host['type'] == 'ubuntu2004'
-            host_config.vm.box = 'devops/ubuntu2004'
+          if host['type'] == 'ubuntu-2004'
+            host_config.vm.box = 'devops/ubuntu-2004'
           end
 
           host_config.vm.provider :vmware_esxi do |vmware_esxi|

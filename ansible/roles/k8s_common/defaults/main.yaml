@@ -6,10 +6,14 @@ k8s_defaults:
   cri_o_redhat_package_version: '1.20'
   cri_o_ubuntu_package_version: '1.20.2~0'
 
+  crictl_version: '1.20.0'
+  crictl_package_checksum: sha256:44d5f550ef3f41f9b53155906e0229ffdbee4b19452b4df540265e29572b899c
+
   bitnami_labs_sealed_secrets_enabled: true
 
-  redhat_package_version: '1.20.6'
-  ubuntu_package_version: '1.20.6-00'
+
+  k8s_redhat_package_version: '1.20.6'
+  k8s_ubuntu_package_version: '1.20.6-00'
 
   kustomize_version: '4.1.2'
 
@@ -24,7 +28,5 @@ k8s_defaults:
   helm_version: '3.5.4'
 
 k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"
-
-
 
 

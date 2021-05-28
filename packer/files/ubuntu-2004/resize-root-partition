@@ -1,0 +1,20 @@
+#!/bin/bash
+
+parted /dev/sda --script "print"
+
+lvdisplay
+
+sgdisk /dev/sda -e
+
+growpart /dev/sda 4
+
+pvresize /dev/sda4
+
+lvresize -l +100%FREE /dev/system/root
+
+resize2fs /dev/system/root
+
+parted /dev/sda --script "print"
+
+lvdisplay
+

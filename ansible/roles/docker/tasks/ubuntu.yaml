@@ -9,10 +9,16 @@
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
-- name: Add the Docker repository
+- name: Add the Docker CE repository
   apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu bionic stable
+    repo: 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable'
+    filename: 'docker-ce'
     state: present
+  register: add_docker_ce_repository_result
+
+- name: Update the Apt cache
+  apt: update_cache=yes cache_valid_time=3600
+  when: (add_docker_ce_repository_result.changed == True)
 
 - name: Collect the package facts
   package_facts:

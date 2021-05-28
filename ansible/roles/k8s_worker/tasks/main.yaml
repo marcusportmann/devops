@@ -5,6 +5,22 @@
     msg: 'No cluster_name specified for the Kubernetes cluster'
   when: ((k8s_config.cluster_name is not defined) or (k8s_config.cluster_name == None) or (k8s_config.cluster_name == ''))
 
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+  - unbound
+
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
+  tags:
+  - unbound
+
 
 #  _  _____ ____   __        _____  ____  _  _______ ____
 # | |/ ( _ ) ___|  \ \      / / _ \|  _ \| |/ / ____|  _ \
@@ -41,6 +57,12 @@
     command:
       cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
     delegate_to: "{{ groups['k8s_master'][0] }}"
+
+  - name: Ensure that the kubelet service is started
+    systemd:
+      name: kubelet.service
+      state: started
+      enabled: yes
 
 
 #  _  _____ ____     ____ ___  _   _ _____ ___ ____

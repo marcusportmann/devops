@@ -9,6 +9,22 @@
     msg: 'No cluster_domain specified for the Kubernetes cluster'
   when: ((k8s_config.cluster_domain is not defined) or (k8s_config.cluster_domain == None) or (k8s_config.cluster_domain == ''))
 
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
+- include_tasks: ubuntu.yaml
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+  - unbound
+
+- include_tasks: redhat.yaml
+  when: ansible_os_family == 'RedHat'
+  tags:
+  - unbound
+
 
 #  _  _____ ____       _    _     _       __  __    _    ____ _____ _____ ____  ____
 # | |/ ( _ ) ___|     / \  | |   | |     |  \/  |  / \  / ___|_   _| ____|  _ \/ ___|
@@ -130,11 +146,6 @@
           src: scheduler-config.yaml.j2
           dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
-#      - name: Create the scheduler-policy.cfg configuration file under the /etc/kubernetes/scheduler directory
-#        template:
-#          src: scheduler-policy.cfg.j2
-#          dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
-
     - name: Create the Kubernetes cluster configuration
       template:
         src: k8s-config.yaml.j2
@@ -219,10 +230,10 @@
 
     when: (kubelet_config_stat_result.stat.exists == False)
 
-  - name: Check whether a CNI provider has been configured
+  - name: Check whether the Weave CNI provider has been configured
     stat:
       path: /etc/cni/net.d/10-weave.conflist
-    register: etc_cni_stat_result
+    register: etc_cni_weave_stat_result
 
   - name: Configure the Weave CNI provider
     block:
@@ -230,32 +241,38 @@
       shell:
         cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_config.pod_subnet}}"
 
-    - name: Download the Weave script
-      get_url:
-        url: https://git.io/weave
-        dest: /usr/bin/weave
-      register: download_weave_script_result
-      until: download_weave_script_result is succeeded
-      retries: 3
-      delay: 10
-
-    - name: Set the permissions for the /usr/bin/weave file
-      file:
-        path: /usr/bin/weave
-        owner: 'root'
-        group: 'root'
-        mode: 0770
-        state: file
-
     - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
       wait_for:
         timeout: 15
 
-    when: ((etc_cni_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'weave'))
+    when: ((etc_cni_weave_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'weave'))
+
+  - name: Check whether the Flannel CNI provider has been configured
+    stat:
+      path: /etc/cni/net.d/10-flannel.conflist
+    register: etc_cni_flannel_stat_result
+
+  - name: Configure the Flannel CNI provider
+    block:
+    - name: Initialize the Flannel CNI provider
+      shell:
+        cmd: /usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+    - name: Sleep for 15 seconds to allow the Flannel CNI provider to initialize
+      wait_for:
+        timeout: 15
+
+    when: ((etc_cni_flannel_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'flannel'))
 
   - name: Wait for Kubernetes node initialization to complete
     command:
       cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
+
+  - name: Ensure that the kubelet service is started
+    systemd:
+      name: kubelet.service
+      state: started
+      enabled: yes
 
   when: (groups['k8s_master'][0] == inventory_hostname)
 
@@ -285,17 +302,6 @@
       copy:
         src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-config.yaml
         dest: /etc/kubernetes/scheduler/scheduler-config.yaml
-
-    - name: Fetch the /etc/kubernetes/scheduler/scheduler-policy.cfg file from the first master node in the Kubernetes cluster
-      fetch:
-        src: /etc/kubernetes/scheduler/scheduler-policy.cfg
-        dest: fetched_files
-      delegate_to: "{{ groups['k8s_master'][0] }}"
-
-    - name: Copy the /etc/kubernetes/scheduler/scheduler-policy.cfg to the additional master
-      copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-policy.cfg
-        dest: /etc/kubernetes/scheduler/scheduler-policy.cfg
 
     - name: Fetch the /etc/kubernetes/apiserver/encryption.yaml file from the first master node in the Kubernetes cluster
       fetch:
@@ -412,6 +418,12 @@
         cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
+    - name: Ensure that the kubelet service is started
+      systemd:
+        name: kubelet.service
+        state: started
+        enabled: yes
+
     - name: Copy the Kubernetes configuration to the root user
       block:
       - name: Create the /root/.kube directory
@@ -472,8 +484,8 @@
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
-      command:
-        cmd: /usr/bin/kubectl taint node {{ inventory_hostname_short }} node-role.kubernetes.io/master:NoSchedule-
+      shell:
+        cmd: /usr/bin/kubectl taint node `hostname` node-role.kubernetes.io/master:NoSchedule-
       when: ('k8s_worker' not in groups.keys())
 
     when: kubelet_config_stat_result.stat.exists == False
@@ -574,5 +586,40 @@
     when: sealed_secrets_installed_helm_chart_version_output.stdout != k8s_config.bitnami_labs_sealed_secrets_helm_chart_version
 
   when: ((groups['k8s_master'][0] == inventory_hostname) and (k8s_config.bitnami_labs_sealed_secrets_enabled is defined) and (k8s_config.bitnami_labs_sealed_secrets_enabled != None) and (k8s_config.bitnami_labs_sealed_secrets_enabled == true))
+
+
+
+
+# __        _______    ___     _______   ____   ____ ____  ___ ____ _____
+# \ \      / / ____|  / \ \   / / ____| / ___| / ___|  _ \|_ _|  _ \_   _|
+#  \ \ /\ / /|  _|   / _ \ \ / /|  _|   \___ \| |   | |_) || || |_) || |
+#   \ V  V / | |___ / ___ \ V / | |___   ___) | |___|  _ < | ||  __/ | |
+#    \_/\_/  |_____/_/   \_\_/  |_____| |____/ \____|_| \_\___|_|    |_|
+#
+- name: Check if the Weave script is installed
+  stat:
+    path: /usr/bin/weave
+  register: weave_script_installed_stat_result
+
+- name: Install the Weave script
+  block:
+  - name: Download the Weave script
+    get_url:
+      url: https://git.io/weave
+      dest: /usr/bin/weave
+    register: download_weave_script_result
+    until: download_weave_script_result is succeeded
+    retries: 3
+    delay: 10
+
+  - name: Set the permissions for the /usr/bin/weave file
+    file:
+      path: /usr/bin/weave
+      owner: 'root'
+      group: 'root'
+      mode: 0770
+      state: file
+  when: ((weave_script_installed_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'weave'))
+
 
 

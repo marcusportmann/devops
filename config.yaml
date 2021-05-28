@@ -80,8 +80,8 @@ variables:
     cluster_name: digital_dev
     cluster_domain: digital-dev.internal
     # control_plane_endpoint: k8s-lb-digital-dev.local
-    # pod_subnet: 10.255.0.0/16
-    # service_subnet: 10.254.0.0/16
+    # pod_subnet: 10.244.0.0/16
+    # service_subnet: 10.245.0.0/16
     istio:
       enabled: true
       kiali:
@@ -91,8 +91,8 @@ variables:
       elasticsearch:
         enabled: true
         cluster_type: standalone
-        persistent_volume_size: 2Gi
-        persistent_volume_storage_class_name: default-local-storage
+        persistent_volume_size: 5Gi
+        persistent_volume_storage_class_name: default-remote-storage
       grafana:
         enabled: true
       jaeger:
@@ -102,14 +102,14 @@ variables:
       prometheus:
         enabled: true
         alert_manager:
-          persistent_volume_storage_class_name: default-local-storage
-          persistent_volume_size: 2Gi
+          persistent_volume_storage_class_name: default-remote-storage
+          persistent_volume_size: 1Gi
         server:
-          persistent_volume_storage_class_name: default-local-storage
-          persistent_volume_size: 2Gi
+          persistent_volume_storage_class_name: default-remote-storage
+          persistent_volume_size: 5Gi
     storage:
       longhorn:
-        enabled: false
+        enabled: true
       topolvm:
         enabled: true
         volume_group: system
@@ -146,9 +146,9 @@ variables:
     clusters:
       test_cluster:
         test_hosts:
-        - test-centos7.local
-        - test-centos8.local
-        - test-ubuntu2004.local
+        - test-centos-7.local
+        - test-centos-8.local
+        - test-ubuntu-2004.local
 
 
 xxx:
@@ -320,30 +320,25 @@ profiles:
 
 - name: test-all
   hosts:
-  - test-centos7.local
-  - test-centos8.local
-  - test-centos81.local
-  - test-ubuntu2004.local
+  - test-centos-7.local
+  - test-centos-8.local
+  - test-ubuntu-2004.local
 
-- name: test-centos7
+- name: test-centos-7
   hosts:
-  - test-centos7.local
+  - test-centos-7.local
 
-- name: test-centos7
+- name: test-centos-7
   hosts:
-  - test-centos7.local
+  - test-centos-7.local
 
-- name: test-centos8
+- name: test-centos-8
   hosts:
-  - test-centos8.local
+  - test-centos-8.local
 
-- name: test-centos81
+- name: test-ubuntu-2004
   hosts:
-  - test-centos81.local
-
-- name: test-ubuntu2004
-  hosts:
-  - test-ubuntu2004.local
+  - test-ubuntu-2004.local
 
 
 #  _   _  ___  ____ _____ ____
@@ -361,7 +356,7 @@ hosts:
 # |____/|_____|  \_/    |_| |_|\___/|____/ |_| |____/
 #
 - name:               confluent-zkks-digital-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -393,7 +388,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-digital-dev-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -425,7 +420,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-digital-dev-03.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -457,7 +452,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-sr-digital-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_schema_registry
   virtualbox:
@@ -486,7 +481,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-mm-digital-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_kafka_mirrormaker
   virtualbox:
@@ -515,7 +510,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-analytics-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -547,7 +542,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-analytics-dev-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -579,7 +574,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-analytics-dev-03.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -611,7 +606,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-sr-analytics-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_schema_registry
   virtualbox:
@@ -640,7 +635,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -669,7 +664,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -698,8 +693,8 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-03.local
-  domain:             centos7
-  type:               ubuntu2004
+  domain:             centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -729,7 +724,7 @@ hosts:
 
 - name:               k8s-lb-digital-dev.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_load_balancer
   virtualbox:
@@ -759,12 +754,12 @@ hosts:
 
 - name:               k8s-m-digital-dev-01.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-01.local
     domain:           local
     ip:               192.168.184.151/24
@@ -772,7 +767,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-01.local
     domain:           local
     ip:               192.168.184.151/24
@@ -780,7 +775,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-01.local
     domain:           local
     ip:               192.168.0.51/24
@@ -789,12 +784,12 @@ hosts:
 
 - name:               k8s-m-digital-dev-02.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-02.local
     domain:           local
     ip:               192.168.184.152/24
@@ -802,7 +797,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-02.local
     domain:           local
     ip:               192.168.184.152/24
@@ -810,7 +805,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-02.local
     domain:           local
     ip:               192.168.0.52/24
@@ -819,12 +814,12 @@ hosts:
 
 - name:               k8s-m-digital-dev-03.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-03.local
     domain:           local
     ip:               192.168.184.153/24
@@ -832,7 +827,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-03.local
     domain:           local
     ip:               192.168.184.153/24
@@ -840,7 +835,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
-    memory:           1536
+    memory:           2048
     fqdn:             k8s-m-digital-dev-03.local
     domain:           local
     ip:               192.168.0.53/24
@@ -849,7 +844,7 @@ hosts:
 
 - name:               k8s-w-digital-dev-01.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -880,7 +875,7 @@ hosts:
 
 - name:               k8s-w-digital-dev-02.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -911,7 +906,7 @@ hosts:
 
 - name:               k8s-w-digital-dev-03.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -941,7 +936,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -973,7 +968,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1005,7 +1000,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-03.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1037,7 +1032,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-sr-digital-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored
   virtualbox:
@@ -1069,7 +1064,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-mm-digital-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_mirrormaker
   virtualbox:
@@ -1101,7 +1096,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1133,7 +1128,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1165,7 +1160,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-03.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1197,7 +1192,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-sr-analytics-dev-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored
   virtualbox:
@@ -1230,7 +1225,7 @@ hosts:
 
 - name:               monitoring-dev.local
   domain:             local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana
   virtualbox:
@@ -1266,7 +1261,7 @@ hosts:
 #
 - name:               devops.local
   domain:             local
-  type:               centos7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     k8s_master
   virtualbox:
@@ -1294,16 +1289,16 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               test-centos7.local
+- name:               test-centos-7.local
   domain:             local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-centos7.local
+    fqdn:             test-centos-7.local
     domain:           local
     ip:               192.168.184.149/24
     gateway:          192.168.184.1
@@ -1312,7 +1307,7 @@ hosts:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-centos7.local
+    fqdn:             test-centos-7.local
     domain:           local
     ip:               192.168.184.149/24
     gateway:          192.168.184.1
@@ -1321,22 +1316,22 @@ hosts:
     cpus:             2
     memory:           1024
     #data_disk:        4096
-    fqdn:             test-centos7.local
+    fqdn:             test-centos-7.local
     domain:           local
     ip:               192.168.0.49/24
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
-- name:               test-centos8.local
+- name:               test-centos-8.local
   domain:             local
-  type:               centos8
+  type:               centos-8
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-centos8.local
+    fqdn:             test-centos-8.local
     domain:           local
     ip:               192.168.184.148/24
     gateway:          192.168.184.1
@@ -1345,7 +1340,7 @@ hosts:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-centos8.local
+    fqdn:             test-centos-8.local
     domain:           local
     ip:               192.168.184.148/24
     gateway:          192.168.184.1
@@ -1354,22 +1349,22 @@ hosts:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-centos8.local
+    fqdn:             test-centos-8.local
     domain:           local
     ip:               192.168.184.148/24
     gateway:          192.168.184.1
     dns_server:       192.168.184.1
 
-- name:               test-ubuntu2004.local
+- name:               test-ubuntu-2004.local
   domain:             local
-  type:               ubuntu2004
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     docker
   virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-ubuntu2004.local
+    fqdn:             test-ubuntu-2004.local
     domain:           local
     ip:               192.168.184.144/24
     gateway:          192.168.184.1
@@ -1378,7 +1373,7 @@ hosts:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-ubuntu2004.local
+    fqdn:             test-ubuntu-2004.local
     domain:           local
     ip:               192.168.184.144/24
     gateway:          192.168.184.1
@@ -1387,7 +1382,7 @@ hosts:
     cpus:             2
     memory:           1024
     data_disk:        4096
-    fqdn:             test-ubuntu2004.local
+    fqdn:             test-ubuntu-2004.local
     domain:           local
     ip:               192.168.0.44/24
     gateway:          192.168.0.1
@@ -1404,7 +1399,7 @@ hosts:
 # /_/   \_\_/\_/   /_/\_\ |_| |_|\___/|____/ |_| |____/
 #
 - name:               awx.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     awx
   virtualbox:
@@ -1433,7 +1428,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zk-local-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1465,7 +1460,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zk-local-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1497,7 +1492,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zk-local-03.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1529,7 +1524,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-ks-local-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1561,7 +1556,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-ks-local-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1593,7 +1588,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-ks-local-03.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1625,7 +1620,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-sr-local-01.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1654,7 +1649,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-sr-local-02.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1683,7 +1678,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-sr-local-03.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1712,7 +1707,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               monitoring.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:
   virtualbox:
@@ -1744,7 +1739,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               gitea.local
-  type:               centos7
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     postgresql
   virtualbox:

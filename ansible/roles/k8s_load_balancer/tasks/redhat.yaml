@@ -4,11 +4,25 @@
 - debug:
     msg: Applying the RedHat-specific Kubernetes load balancer configuration
 
+- name: Create the /run/haproxy directory
+  file:
+    path: /run/haproxy
+    owner: 'root'
+    group: 'root'
+    mode: 0755
+    state: directory
+
 - name: Install the haproxy package
   yum: name=haproxy state=latest
 
 - name: Configure the haproxy
   template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+
+- name: Set haproxy_connect_any selinux flag on and keep it persistent across reboots
+  ansible.posix.seboolean:
+    name: haproxy_connect_any
+    state: yes
+    persistent: yes
 
 - name: Restart the haproxy service
   systemd:

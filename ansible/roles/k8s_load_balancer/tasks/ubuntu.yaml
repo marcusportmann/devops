@@ -4,6 +4,14 @@
 - debug:
     msg: Applying the Ubuntu-specific Kubernetes load balancer configuration
 
+- name: Create the /run/haproxy directory
+  file:
+    path: /run/haproxy
+    owner: 'root'
+    group: 'root'
+    mode: 0755
+    state: directory
+
 - name: Update the Apt cache
   apt: update_cache=yes cache_valid_time=3600
 

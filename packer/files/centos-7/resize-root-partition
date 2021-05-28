@@ -1,7 +1,7 @@
 #!/bin/bash
 ##########
 # Script to resize the LVM Root Partition after extending the underlying disk device. Can be used on physical or virtual machines alike.
-# Tested with CentOS6, RHEL6, CentOS7, RHEL7. This script is only intended for MBR partitioned disks and not for GPT.
+# This script is only intended for MBR partitioned disks and not for GPT.
 #
 # The script will first resize the partition by changing the partition end sector of the selected partition, and then after a reboot resize the filesystem.
 # By default it rescans the SCSI bus to check a change in disk size if the disk was hot-extended, which is easy with VMs, and only then proceeds.
@@ -15,11 +15,13 @@ extenddisk_parted() {
     parted $disk --script unit s print
     if [ $logical == 1 ]
     then
+      echo -e "Resizing extended partition $ext_partitionnum on disk $disk"
       parted $disk --script rm $ext_partitionnum
       parted $disk --script "mkpart extended ${ext_startsector}s -1s"
       parted $disk --script "set $ext_partitionnum lba off"
       parted $disk --script "mkpart logical ext2 ${startsector}s -1s"
     else
+      echo -e "Resizing primary partition $partitionnum on disk $disk"
       parted $disk --script rm $partitionnum
       parted $disk --script "mkpart primary ext2 ${startsector}s -1s"
     fi

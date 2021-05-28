@@ -6,17 +6,23 @@ service:
 
 persistence:
   defaultClass: true
+{% if (('k8s_worker' in groups) and ((groups['k8s_worker'] | length) > 2)) %}
+  defaultClassReplicaCount: 2
+{% else %}
   defaultClassReplicaCount: 1
+{% endif %}
 
 
-{% if (('k8s_worker' in groups) and ((groups['k8s_worker'] | length) > 3)) %}
+{% if (('k8s_worker' in groups) and ((groups['k8s_worker'] | length) > 2)) %}
 csi:
   attacherReplicaCount: 3
   provisionerReplicaCount: 3
   resizerReplicaCount: 3
+  snapshotterReplicaCount: 3
 {% else %}
 csi:
   attacherReplicaCount: 1
   provisionerReplicaCount: 1
   resizerReplicaCount: 1
+  snapshotterReplicaCount: 1
 {% endif %}
