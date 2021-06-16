@@ -35,7 +35,7 @@ confluent_defaults:
     autopurge_purge_interval: 1
     autopurge_snap_retain_count: 10
 
-    enable_remote_jmx: true
+    enable_remote_jmx: false
 
     users:
       kafka:

@@ -30,52 +30,104 @@
       name: '/var/tmp/ansible/{{ role_name }}/pgdg-redhat-repo-latest.noarch.rpm'
       state: present
 
+- name: Collect the package facts
+  package_facts:
+    manager: auto
+
+- name: Retrieve the version of the installed postgresql-server package
+  debug:
+    msg: Found the installed postgresql{{ postgresql_config.version }}-server package ({{ ansible_facts.packages['postgresql' + postgresql_config.version + '-server'][0].version  }})
+  when: ('postgresql' + postgresql_config.version + '-server' in ansible_facts.packages)
+
 - name: Install the postgresql package
   block:
-  - debug:
-      msg: Installing postgresql ({{ postgresql_config.package_version }})
-      
-  - name: Install the postgresql{{ postgresql_config.package_version }}-libs package
+  - name: Install the postgresql{{ postgresql_config.version }}-libs-{{ postgresql_config.redhat_package_version }} package
     yum:
-      name: 'postgresql{{ postgresql_config.package_version }}-libs'
+     name: postgresql{{ postgresql_config.version }}-libs-{{ postgresql_config.redhat_package_version }}*
+     state: latest
+
+  - name: Install the postgresql{{ postgresql_config.version }}-server-{{ postgresql_config.redhat_package_version }} package
+    yum:
+      name: postgresql{{ postgresql_config.version }}-server-{{ postgresql_config.redhat_package_version }}*
       state: latest
 
-  - name: Install the postgresql{{ postgresql_config.package_version }} package
+  - name: Install the postgresql{{ postgresql_config.version }}-docs-{{ postgresql_config.redhat_package_version }} package
     yum:
-      name: 'postgresql{{ postgresql_config.package_version }}'
+      name: postgresql{{ postgresql_config.version }}-docs-{{ postgresql_config.redhat_package_version }}*
       state: latest
 
-  - name: Install the postgresql{{ postgresql_config.package_version }}-server package
-    yum:
-      name: 'postgresql{{ postgresql_config.package_version }}-server'
-      state: latest
+- name: Apply the custom data directory configuration
+  block:
+  - name: Ensure that the {{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data directory exists and has the correct permissions
+    file:
+      path: '{{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data'
+      owner: 'postgres'
+      group: 'postgres'
+      mode: '0700'
+      state: directory
 
-  - name: Install the postgresql{{ postgresql_config.package_version }}-docs package
-    yum:
-      name: 'postgresql{{ postgresql_config.package_version }}-docs'
-      state: latest
-  
+  - name: Ensure that the /lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d directory exists and has the correct permissions
+    file:
+      path: '/lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d'
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
+      state: directory
 
-  
-  
-  
-  
+  - name: Generate the /lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d/override.conf file
+    template:
+      src: override.conf.j2
+      dest: /lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d/override.conf
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
+
+  - name: Generate the /etc/profile.d/postgresql.sh file
+    template:
+      src: postgresql.sh.j2
+      dest: /etc/profile.d/postgresql.sh
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
+
+  - name: Remove the /var/lib/pgsql/{{ postgresql_config.version }}/data directory
+    file:
+      path: /var/lib/pgsql/{{ postgresql_config.version }}/data
+      state: absent
+  when: (postgresql_config.data_directory != '/var/lib')
+
+- name: Check whether the {{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data/postgresql.conf file exists
+  stat:
+    path: '{{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data/postgresql.conf'
+  register: postgresql_conf_stat_result
+
+- name: Initialize the PostgreSQL database cluster
+  shell:
+    cmd: "sudo -u postgres /usr/pgsql-{{ postgresql_config.version }}/bin/initdb -D {{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data"
+  when: (postgresql_conf_stat_result.stat.exists == False)
+
+- name: Ensure that the postgresql-{{ postgresql_config.version }} service is started
+  systemd:
+    name: postgresql-{{ postgresql_config.version }}.service
+    state: started
+    enabled: yes
+
 - name: Allow all hosts access to tcp port 5432
   firewalld:
     port: 5432/tcp
     permanent: yes
     state: enabled
     immediate: yes
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
 #
 #
 #
@@ -84,7 +136,7 @@
 #
 #
 #
-#yum install -y 
+#yum install -y
 #yum install -y postgresql13-server
 #/usr/pgsql-13/bin/postgresql-13-setup initdb
 #systemctl enable postgresql-13

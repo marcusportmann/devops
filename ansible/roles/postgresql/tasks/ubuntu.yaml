@@ -2,12 +2,92 @@
 # file: roles/postgresql/tasks/ubuntu.yaml
 
 - debug:
-    msg: Applying the Ubuntu-specific Gitea configuration
+    msg: Applying the Ubuntu-specific Postgresql configuration
 
+- name: Add the PostgreSQL Global Development Group (PGDG) apt key
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
 
+- name: Add the PostgreSQL Global Development Group (PGDG) repository
+  apt_repository:
+    repo: 'deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main'
+    filename: 'pgdg'
+    state: present
+  register: add_pgdg_repository_result
 
+- name: Update the Apt cache
+  apt: update_cache=yes cache_valid_time=3600
+  when: (add_pgdg_repository_result.changed == True)
 
+- name: Install the postgresql-client-{{ postgresql_config.version }} package ({{ postgresql_config.ubuntu_package_version }})
+  apt:
+    state: present
+    name:
+     - 'postgresql-client-{{ postgresql_config.version }}={{ postgresql_config.ubuntu_package_version }}'
 
+- name: Install the postgresql-{{ postgresql_config.version }} package ({{ postgresql_config.ubuntu_package_version }})
+  apt:
+    state: present
+    policy_rc_d: 101
+    name:
+     - 'postgresql-{{ postgresql_config.version }}={{ postgresql_config.ubuntu_package_version }}'
+
+- name: Apply the custom data directory configuration
+  block:
+  - name: Ensure that the {{ postgresql_config.data_directory }}/postgresql/{{ postgresql_config.version }}/data directory exists and has the correct permissions
+    file:
+      path: '{{ postgresql_config.data_directory }}/postgresql/{{ postgresql_config.version }}/data'
+      owner: 'postgres'
+      group: 'postgres'
+      mode: '0700'
+      state: directory
+
+  - name: Ensure that the /lib/systemd/system/postgresql.service.d directory exists and has the correct permissions
+    file:
+      path: '/lib/systemd/system/postgresql.service.d'
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
+      state: directory
+
+  - name: Generate the /lib/systemd/system/postgresql.service.d/override.conf file
+    template:
+      src: override.conf.j2
+      dest: /lib/systemd/system/postgresql.service.d/override.conf
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
+
+  - name: Remove the /var/lib/postgresql/{{ postgresql_config.version }}/main directory
+    file:
+      path: /var/lib/postgresql/{{ postgresql_config.version }}/main
+      state: absent
+  when: (postgresql_config.data_directory != '/var/lib')
+
+- name: Check whether the {{ postgresql_config.data_directory }}/postgresql/{{ postgresql_config.version }}/data/postgresql.conf file exists
+  stat:
+    path: '{{ postgresql_config.data_directory }}/postgresql/{{ postgresql_config.version }}/data/postgresql.conf'
+  register: postgresql_conf_stat_result
+
+- name: Initialize the PostgreSQL database cluster
+  shell:
+    cmd: "sudo -u postgres /usr/lib/postgresql/{{ postgresql_config.version }}/bin/initdb -D {{ postgresql_config.data_directory }}/postgresql/{{ postgresql_config.version }}/data"
+  when: (postgresql_conf_stat_result.stat.exists == False)
+
+- name: Generate the /etc/profile.d/postgresql.sh file
+  template:
+    src: postgresql.sh.j2
+    dest: /etc/profile.d/postgresql.sh
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Ensure that the postgresql service is started
+  systemd:
+    name: postgresql.service
+    state: started
+    enabled: yes
 
 - name: Allow all hosts access to tcp port 5432
   ufw:

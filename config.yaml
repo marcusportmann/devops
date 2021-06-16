@@ -91,7 +91,7 @@ variables:
       elasticsearch:
         enabled: true
         cluster_type: standalone
-        persistent_volume_size: 5Gi
+        persistent_volume_size: 35Gi
         persistent_volume_storage_class_name: default-remote-storage
       grafana:
         enabled: true
@@ -103,16 +103,16 @@ variables:
         enabled: true
         alert_manager:
           persistent_volume_storage_class_name: default-remote-storage
-          persistent_volume_size: 1Gi
+          persistent_volume_size: 5Gi
         server:
           persistent_volume_storage_class_name: default-remote-storage
-          persistent_volume_size: 5Gi
+          persistent_volume_size: 35Gi
     storage:
       longhorn:
         enabled: true
       topolvm:
         enabled: true
-        volume_group: system
+        volume_group: data
 
   kafka:
     clusters:
@@ -1263,7 +1263,7 @@ hosts:
   domain:             local
   type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     k8s_master
+  ansible_groups:     postgresql
   virtualbox:
     cpus:             4
     memory:           8192
@@ -1275,6 +1275,7 @@ hosts:
   vmware_desktop:
     cpus:             4
     memory:           8192
+    data_disk:        4096
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.160/24

@@ -71,7 +71,7 @@ EOT
 update-ca-certificates
 
 echo "Installing additional packages"
-apt-get -y install python3-pip
+apt-get -y install python3-pip acl
 
 echo "Upgrading pip, setuptools and wheel"
 python3 -m pip install --upgrade pip setuptools wheel
