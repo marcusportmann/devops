@@ -1261,7 +1261,7 @@ hosts:
 #
 - name:               devops.local
   domain:             local
-  type:               ubuntu-2004
+  type:               centos-8
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     postgresql
   virtualbox:
@@ -1275,7 +1275,7 @@ hosts:
   vmware_desktop:
     cpus:             4
     memory:           8192
-    data_disk:        4096
+#    data_disk:        4096
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.160/24

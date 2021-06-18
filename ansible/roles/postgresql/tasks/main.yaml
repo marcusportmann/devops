@@ -33,4 +33,24 @@
 # |  __/| |_| |___) || || |_| |  _ <| |___ ___) | |_| | |___
 # |_|    \___/|____/ |_| \____|_| \_\_____|____/ \__\_\_____|
 #
+- name: Configure global settings
+  lineinfile:
+    dest: "{{ postgresql_config_directory }}/postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = '{{ item.value }}'"
+    state: "{{ item.state | default('present') }}"
+    mode: 0644
+  with_items: "{{ postgresql_config.global_config_options }}"
+  notify: restart postgresql
+
+- name: Configure host based authentication (if entries are configured)
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_config_directory }}/pg_hba.conf"
+    owner: '{{ postgresql_config.user }}'
+    group: '{{ postgresql_config.group }}'
+    mode: 0600
+  when: postgresql_config.hba_entries | length > 0
+  notify: restart postgresql
+
 

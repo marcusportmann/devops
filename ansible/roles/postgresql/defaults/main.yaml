@@ -9,7 +9,33 @@ postgresql_defaults:
 
   ubuntu_package_version: '13.3-1.pgdg20.04+1'
 
-  data_directory: /var/lib
+  # Specifying a data_directory_root value will result in the default database being
+  # initialized at this location (RedHat) or moved to this location (Ubuntu)
+  #data_directory_root: /data
+
+  user: postgres
+  group: postgres
+
+  # Ubuntu only. Used to generate the locales used by PostgreSQL databases.
+  locales:
+    - 'en_US.UTF-8'
+
+  # Global configuration options that will be set in postgresql.conf.
+  global_config_options:
+  - option: unix_socket_directories
+    value: '/var/run/postgresql'
+
+  # NOTE: This list needs to match the unix_socket_directories global configuration option
+  unix_socket_directories:
+  - /var/run/postgresql
+
+  # Host based authentication (hba) entries to be added to the pg_hba.conf. This
+  # variable's defaults reflect the defaults that come with a fresh installation.
+  hba_entries:
+  - {type: local, database: all, user: postgres, auth_method: peer}
+  - {type: local, database: all, user: all, auth_method: peer}
+  - {type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: 'scram-sha-256'}
+  - {type: host, database: all, user: all, address: '::1/128', auth_method: 'scram-sha-256'}
 
 postgresql_config: "{{ postgresql_defaults | combine(postgresql | default({}), recursive=True) }}"
 
@@ -17,40 +43,18 @@ postgresql_config: "{{ postgresql_defaults | combine(postgresql | default({}), r
 
 
 
+
+
 #---
-## RHEL/CentOS only. Set a repository to use for PostgreSQL installation.
-#postgresql_enablerepo: ""
 #
-## Set postgresql state when configuration changes are made. Recommended values:
-## `restarted` or `reloaded`
-#postgresql_restarted_state: "restarted"
 #
 #postgresql_python_library: python-psycopg2
-#postgresql_user: postgres
-#postgresql_group: postgres
 #
-#postgresql_unix_socket_directories:
-#  - /var/run/postgresql
 #
 #postgresql_service_state: started
 #postgresql_service_enabled: true
 #
-## Global configuration options that will be set in postgresql.conf.
-#postgresql_global_config_options:
-#  - option: unix_socket_directories
-#    value: '{{ postgresql_unix_socket_directories | join(",") }}'
 #
-## Host based authentication (hba) entries to be added to the pg_hba.conf. This
-## variable's defaults reflect the defaults that come with a fresh installation.
-#postgresql_hba_entries:
-#  - {type: local, database: all, user: postgres, auth_method: peer}
-#  - {type: local, database: all, user: all, auth_method: peer}
-#  - {type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5}
-#  - {type: host, database: all, user: all, address: '::1/128', auth_method: md5}
-#
-## Debian only. Used to generate the locales used by PostgreSQL databases.
-#postgresql_locales:
-#  - 'en_US.UTF-8'
 #
 ## Databases to ensure exist.
 #postgresql_databases: []

@@ -1,1 +1,2 @@
-PGDATA={{ postgresql_config.data_directory }}/{% if ansible_distribution == 'Ubuntu' %}postgresql{% endif %}{% if ansible_os_family == 'RedHat' %}pgsql{% endif %}/{{ postgresql_config.version }}/data
+export PGDATA={{ postgresql_data_directory }}
+export PATH=$PATH:{{ postgresql_bin_directory }}

@@ -4,12 +4,40 @@
 - debug:
     msg: Applying the RedHat-specific Postgresql configuration
 
+- set_fact:
+    postgresql_config_directory: '{{ postgresql_config.data_directory_root|default("/var/lib") }}/pgsql/{{ postgresql_config.version }}/data'
+
+- set_fact:
+    postgresql_bin_directory: '/usr/pgsql-{{ postgresql_config.version }}/bin'
+
+- set_fact:
+    postgresql_default_data_directory: '/var/lib/pgsql/{{ postgresql_config.version }}/data'
+
+- set_fact:
+    postgresql_data_directory: '{{ postgresql_config.data_directory_root|default("/var/lib") }}/pgsql/{{ postgresql_config.version }}/data'
+
+- set_fact:
+    postgresql_service_override_directory: '/lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d'
+
+- set_fact:
+    postgresql_service: 'postgresql-{{ postgresql_config.version }}'
+
 - name: Check if PGDG repo is already configured
   stat: path=/etc/yum.repos.d/pgdg-redhat-all.repo
   register: pgdg_repo_file_result
 
 - name: Enable the PGDG YUM repo
   block:
+  - name: Disable the PostgreSQL AppStream repository
+    command:
+      cmd: dnf -qy module disable postgresql
+    when:  (ansible_distribution_major_version == '8')
+
+  - name: Install the PGDG GPG key
+    rpm_key:
+      state: present
+      key: 'https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG'
+
   - name: Check whether the pgdg-redhat-repo-latest.noarch.rpm package has been downloaded
     become: no
     local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/pgdg-redhat-repo-latest.noarch.rpm'
@@ -29,6 +57,7 @@
     yum:
       name: '/var/tmp/ansible/{{ role_name }}/pgdg-redhat-repo-latest.noarch.rpm'
       state: present
+  when: (pgdg_repo_file_result.stat.exists == False)
 
 - name: Collect the package facts
   package_facts:
@@ -45,11 +74,13 @@
     yum:
      name: postgresql{{ postgresql_config.version }}-libs-{{ postgresql_config.redhat_package_version }}*
      state: latest
+    notify: restart postgresql
 
   - name: Install the postgresql{{ postgresql_config.version }}-server-{{ postgresql_config.redhat_package_version }} package
     yum:
       name: postgresql{{ postgresql_config.version }}-server-{{ postgresql_config.redhat_package_version }}*
       state: latest
+    notify: restart postgresql
 
   - name: Install the postgresql{{ postgresql_config.version }}-docs-{{ postgresql_config.redhat_package_version }} package
     yum:
@@ -58,58 +89,63 @@
 
 - name: Apply the custom data directory configuration
   block:
-  - name: Ensure that the {{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data directory exists and has the correct permissions
+  - name: Ensure that the {{ postgresql_data_directory }}  directory exists and has the correct permissions
     file:
-      path: '{{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data'
-      owner: 'postgres'
-      group: 'postgres'
+      path: '{{ postgresql_data_directory }}'
+      owner: '{{ postgresql_config.user }}'
+      group: '{{ postgresql_config.group }}'
       mode: '0700'
       state: directory
 
-  - name: Ensure that the /lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d directory exists and has the correct permissions
+  - name: Ensure that the {{ postgresql_service_override_directory }} directory exists and has the correct permissions
     file:
-      path: '/lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d'
+      path: '{{ postgresql_service_override_directory }}'
       owner: 'root'
       group: 'root'
       mode: '0755'
       state: directory
 
-  - name: Generate the /lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d/override.conf file
+  - name: Generate the {{ postgresql_service_override_directory }}/override.conf file
     template:
       src: override.conf.j2
-      dest: /lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d/override.conf
+      dest: '{{ postgresql_service_override_directory }}/override.conf'
       owner: 'root'
       group: 'root'
       mode: '0755'
+    register: override_conf_template_result
 
-  - name: Generate the /etc/profile.d/postgresql.sh file
-    template:
-      src: postgresql.sh.j2
-      dest: /etc/profile.d/postgresql.sh
-      owner: 'root'
-      group: 'root'
-      mode: '0755'
-
-  - name: Remove the /var/lib/pgsql/{{ postgresql_config.version }}/data directory
+  - name: Remove the {{ postgresql_default_data_directory }} directory
     file:
-      path: /var/lib/pgsql/{{ postgresql_config.version }}/data
+      path: '{{ postgresql_default_data_directory }}'
       state: absent
-  when: (postgresql_config.data_directory != '/var/lib')
 
-- name: Check whether the {{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data/postgresql.conf file exists
-  stat:
-    path: '{{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data/postgresql.conf'
+  - name: Reload the systemd daemon
+    systemd:
+      daemon_reload: yes
+    when: (override_conf_template_result.changed == True)
+
+  when: ((postgresql_config.data_directory_root is defined) and (postgresql_config.data_directory_root != None))
+
+- stat:
+    path: '{{ postgresql_data_directory }}/postgresql.conf'
   register: postgresql_conf_stat_result
 
 - name: Initialize the PostgreSQL database cluster
   shell:
-    cmd: "sudo -u postgres /usr/pgsql-{{ postgresql_config.version }}/bin/initdb -D {{ postgresql_config.data_directory }}/pgsql/{{ postgresql_config.version }}/data"
+    cmd: "sudo -u postgres {{ postgresql_bin_directory }}/initdb -D {{ postgresql_data_directory }}"
   when: (postgresql_conf_stat_result.stat.exists == False)
 
-- name: Ensure that the postgresql-{{ postgresql_config.version }} service is started
+- name: Generate the /etc/profile.d/postgresql.sh file
+  template:
+    src: postgresql.sh.j2
+    dest: /etc/profile.d/postgresql.sh
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Ensure that the {{ postgresql_service }} service is enabled
   systemd:
-    name: postgresql-{{ postgresql_config.version }}.service
-    state: started
+    name: '{{ postgresql_service }}'
     enabled: yes
 
 - name: Allow all hosts access to tcp port 5432
@@ -122,22 +158,3 @@
 
 
 
-
-
-
-
-
-
-#
-#
-#
-#
-#
-#
-#
-#
-#yum install -y
-#yum install -y postgresql13-server
-#/usr/pgsql-13/bin/postgresql-13-setup initdb
-#systemctl enable postgresql-13
-#systemctl start postgresql-13
