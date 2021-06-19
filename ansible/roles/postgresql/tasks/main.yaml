@@ -9,6 +9,37 @@
     mode: '0700'
     state: directory
 
+- fail:
+    msg: 'No postgreql.clusters configuration specified'
+  when: ((postgresql is not defined) or (postgresql == None) or (postgresql.clusters is not defined) or (postgresql.clusters == None))
+
+- set_fact:
+    postgresql_cluster_config: ''
+
+- name: Finding the PostgreSQL cluster config for the host ({{ inventory_hostname }})
+  set_fact:
+    postgresql_cluster_config: '{{ item.0 }}'
+  when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == inventory_hostname))
+  loop: "{{ postgresql_config.clusters | subelements('servers') }}"
+  no_log: True
+
+- set_fact:
+    postgresql_server_config: ''
+
+- name: Finding the PostgreSQL server config for the host ({{ inventory_hostname }})
+  set_fact:
+    postgresql_server_config: '{{ item.1 }}'
+  when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == inventory_hostname))
+  loop: "{{ postgresql_config.clusters | subelements('servers') }}"
+  no_log: True
+
+- fail:
+    msg: "The host {{ inventory_hostname }} is not associated with a PostgreSQL cluster"
+  when: ((postgresql_cluster_config is not defined) or (postgresql_cluster_config == None) or (postgresql_cluster_config == ''))
+
+- debug:
+    msg: 'PostgreSQL Cluster Name: {{ postgresql_cluster_config.name }}'
+
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
@@ -43,6 +74,17 @@
   with_items: "{{ postgresql_config.global_config_options }}"
   notify: restart postgresql
 
+- name: Configure server settings
+  lineinfile:
+    dest: "{{ postgresql_config_directory }}/postgresql.conf"
+    regexp: "^#?{{ item.option }}.+$"
+    line: "{{ item.option }} = '{{ item.value }}'"
+    state: "{{ item.state | default('present') }}"
+    mode: 0644
+  with_items: "{{ postgresql_server_config.config_options }}"
+  notify: restart postgresql
+  when: ((postgresql_server_config.config_options is defined) and (postgresql_server_config.config_options != None))
+
 - name: Configure host based authentication (if entries are configured)
   template:
     src: "pg_hba.conf.j2"
@@ -50,7 +92,51 @@
     owner: '{{ postgresql_config.user }}'
     group: '{{ postgresql_config.group }}'
     mode: 0600
-  when: postgresql_config.hba_entries | length > 0
   notify: restart postgresql
+
+- name: Ensure that the {{ postgresql_service }} service is started
+  systemd:
+    name: '{{ postgresql_service }}'
+    state: started
+    enabled: yes
+
+- name: Ensure PostgreSQL databases are present
+  postgresql_db:
+    name: "{{ item.name }}"
+    lc_collate: "{{ item.lc_collate | default('en_US.UTF-8') }}"
+    lc_ctype: "{{ item.lc_ctype | default('en_US.UTF-8') }}"
+    encoding: "{{ item.encoding | default('UTF-8') }}"
+    template: "{{ item.template | default('template0') }}"
+#    login_host: "{{ item.login_host | default('localhost') }}"
+#    login_password: "{{ item.login_password | default(omit) }}"
+#    login_user: "{{ item.login_user | default(postgresql_config.user) }}"
+#    login_unix_socket: "{{ item.login_unix_socket | default(postgresql_config.unix_socket_directories[0]) }}"
+#    port: "{{ item.port | default(omit) }}"
+    owner: "{{ item.owner | default(postgresql_config.user) }}"
+    state: "{{ item.state | default('present') }}"
+  with_items: "{{ postgresql_cluster_config.databases }}"
+  become: true
+  become_user: "{{ postgresql_config.user }}"
+  # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
+  vars:
+    ansible_ssh_pipelining: true
+
+- name: Ensure PostgreSQL users are present
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | default(omit) }}"
+    priv: "{{ item.priv | default(omit) }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+    db: "{{ item.db | default(omit) }}"
+  with_items: "{{ postgresql_cluster_config.users }}"
+  no_log: "{{ postgresql_config.users_no_log }}"
+  become: true
+  become_user: "{{ postgresql_config.user }}"
+  # See: https://github.com/ansible/ansible/issues/16048#issuecomment-229012509
+  vars:
+    ansible_ssh_pipelining: true
+  environment:
+    PGOPTIONS: '-c password_encryption=scram-sha-256'
+
 
 

@@ -32,18 +32,19 @@
   apt: update_cache=yes cache_valid_time=3600
   when: (add_pgdg_repository_result.changed == True)
 
-- name: Install the postgresql-client-{{ postgresql_config.version }} package ({{ postgresql_config.ubuntu_package_version }})
-  apt:
-    state: present
-    name:
-     - 'postgresql-client-{{ postgresql_config.version }}={{ postgresql_config.ubuntu_package_version }}'
-
-- name: Install the postgresql-{{ postgresql_config.version }} package ({{ postgresql_config.ubuntu_package_version }})
+- name: Install the PostgreSQL packages
   apt:
     state: present
     policy_rc_d: 101
     name:
      - 'postgresql-{{ postgresql_config.version }}={{ postgresql_config.ubuntu_package_version }}'
+     - 'postgresql-client-{{ postgresql_config.version }}={{ postgresql_config.ubuntu_package_version }}'
+
+- name: Install the python3-psycopg2 library
+  apt:
+    state: present
+    name:
+     - 'python3-psycopg2'
 
 - name: Ensure all configured locales are present.
   locale_gen: "name={{ item }} state=present"
@@ -74,7 +75,7 @@
     lineinfile:
       path: '/etc/postgresql/{{ postgresql_config.version }}/main/postgresql.conf'
       regexp: '^data_directory ='
-      line: "data_directory = '{{ postgresql_data_directory }}'          # use data in another directory"
+      line: "data_directory = '{{ postgresql_data_directory }}'"
       owner: root
       group: root
       mode: '0644'
@@ -89,10 +90,7 @@
     group: 'root'
     mode: '0755'
 
-- name: Ensure that the {{ postgresql_service }} service is enabled
-  systemd:
-    name: '{{ postgresql_service }}'
-    enabled: yes
+- meta: flush_handlers
 
 - name: Allow all hosts access to tcp port 5432
   ufw:

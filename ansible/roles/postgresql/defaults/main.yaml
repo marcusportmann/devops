@@ -18,7 +18,7 @@ postgresql_defaults:
 
   # Ubuntu only. Used to generate the locales used by PostgreSQL databases.
   locales:
-    - 'en_US.UTF-8'
+  - 'en_US.UTF-8'
 
   # Global configuration options that will be set in postgresql.conf.
   global_config_options:
@@ -31,60 +31,45 @@ postgresql_defaults:
 
   # Host based authentication (hba) entries to be added to the pg_hba.conf. This
   # variable's defaults reflect the defaults that come with a fresh installation.
-  hba_entries:
+  default_hba_entries:
   - {type: local, database: all, user: postgres, auth_method: peer}
   - {type: local, database: all, user: all, auth_method: peer}
   - {type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: 'scram-sha-256'}
   - {type: host, database: all, user: all, address: '::1/128', auth_method: 'scram-sha-256'}
 
+#  clusters:
+#  - name: example
+#    servers:
+#    - hostname: example.hostname
+#      config_options:
+#        listen_addresses: 'localhost'
+#      hba_entries:
+#      - {type: local, database: all, user: postgres, auth_method: peer}
+#      - {type: local, database: all, user: all, auth_method: peer}
+#      - {type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: 'scram-sha-256'}
+#      - {type: host, database: all, user: all, address: '::1/128', auth_method: 'scram-sha-256'}
+#    ## Databases that should exist
+#    databases: []
+#    - name: exampledb # required; the rest are optional
+#      lc_collate: # defaults to 'en_US.UTF-8'
+#      lc_ctype: # defaults to 'en_US.UTF-8'
+#      encoding: # defaults to 'UTF-8'
+#      template: # defaults to 'template0'
+#      owner: # defaults to postgresql_user
+#      state: # defaults to 'present'
+#    # Users that should exist
+#    # See: https://docs.ansible.com/ansible/latest/collections/community/postgresql/postgresql_user_module.html#ansible-collections-community-postgresql-postgresql-user-module
+#    users: []
+#    - name: jdoe #required; the rest are optional
+#      password: # defaults to not set
+#      priv: # defaults to not set
+#      role_attr_flags: # defaults to not set
+#      db: # defaults to not set
+
+  # Whether to output user data when managing users.
+  users_no_log: true
+
 postgresql_config: "{{ postgresql_defaults | combine(postgresql | default({}), recursive=True) }}"
 
 
 
-
-
-
-
-#---
-#
-#
-#postgresql_python_library: python-psycopg2
-#
-#
-#postgresql_service_state: started
-#postgresql_service_enabled: true
-#
-#
-#
-## Databases to ensure exist.
-#postgresql_databases: []
-## - name: exampledb # required; the rest are optional
-##   lc_collate: # defaults to 'en_US.UTF-8'
-##   lc_ctype: # defaults to 'en_US.UTF-8'
-##   encoding: # defaults to 'UTF-8'
-##   template: # defaults to 'template0'
-##   login_host: # defaults to 'localhost'
-##   login_password: # defaults to not set
-##   login_user: # defaults to '{{ postgresql_user }}'
-##   login_unix_socket: # defaults to 1st of postgresql_unix_socket_directories
-##   port: # defaults to not set
-##   owner: # defaults to postgresql_user
-##   state: # defaults to 'present'
-#
-## Users to ensure exist.
-#postgresql_users: []
-## - name: jdoe #required; the rest are optional
-##   password: # defaults to not set
-##   encrypted: # defaults to not set
-##   priv: # defaults to not set
-##   role_attr_flags: # defaults to not set
-##   db: # defaults to not set
-##   login_host: # defaults to 'localhost'
-##   login_password: # defaults to not set
-##   login_user: # defaults to '{{ postgresql_user }}'
-##   login_unix_socket: # defaults to 1st of postgresql_unix_socket_directories
-##   port: # defaults to not set
-##   state: # defaults to 'present'
-#
-## Whether to output user data when managing users.
-#postgres_users_no_log: true

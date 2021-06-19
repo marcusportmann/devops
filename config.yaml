@@ -141,6 +141,38 @@ variables:
         - kafka-zkks-analytics-dev-02.local
         - kafka-zkks-analytics-dev-03.local
 
+  postgresql:
+    clusters:
+    - name: test
+      servers:
+      - hostname: test.local
+    - name: devops
+      servers:
+      - hostname: devops.local
+        config_options:
+        - option: listen_addresses
+          value: '*'
+        hba_entries:
+        - {type: local, database: all, user: postgres, auth_method: peer}
+        - {type: local, database: all, user: all, auth_method: peer}
+        - {type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: 'scram-sha-256'}
+        - {type: host, database: all, user: all, address: '::1/128', auth_method: 'scram-sha-256'}
+        - {type: host, database: all, user: all, address: '0.0.0.0/0', auth_method: 'scram-sha-256'}
+        - {type: host, database: all, user: all, address: '::/0', auth_method: 'scram-sha-256'}
+
+      databases:
+      - name: test
+        lc_collate: 'en_US.UTF-8'
+        lc_ctype: 'en_US.UTF-8'
+        encoding: 'UTF-8'
+      users:
+      - name: test
+        password: 'SCRAM-SHA-256$4096:9qBGFOA+0XKlThLUP9f0Pw==$5wuK98/J1eR9LvVcr+JYJf7mnMs3ukynDkTJK+M+svA=:j9mYo+OLy5xx8Do/085MSMX6yFa+e5VkEnAR4kxxLKc='
+        db: test
+        priv: 'ALL'
+        role_attr_flags: 'LOGIN'
+      users_no_log: false
+
   test:
     test_name: test_value
     clusters:
@@ -1261,7 +1293,7 @@ hosts:
 #
 - name:               devops.local
   domain:             local
-  type:               centos-8
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     postgresql
   virtualbox:
