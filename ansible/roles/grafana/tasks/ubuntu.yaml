@@ -50,7 +50,7 @@
       state: present
       policy_rc_d: 101
       deb: /var/tmp/ansible/{{ grafana_config.ubuntu_package }}
-    notify: restart grafana server
+    notify: restart grafana-server
 
   - name: Lock the version of the grafana package
     command:

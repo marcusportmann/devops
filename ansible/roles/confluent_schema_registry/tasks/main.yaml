@@ -112,18 +112,21 @@
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/ca.crt'
+    notify: restart schema-registry
     register: ca_certificate_copy_result
 
   - name: Copy the Schema Registry private key ({{ inventory_hostname_short }}.key)
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
+    notify: restart schema-registry
     register: schema_registry_private_key_copy_result
 
   - name: Copy the Schema Registry certificate ({{ inventory_hostname_short }}.crt)
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
+    notify: restart schema-registry
     register: schema_registry_certificate_copy_result
 
   - name: Generate or retrieve the password for the Schema Registry keystore
@@ -187,7 +190,7 @@
     owner: '{{ confluent_config.schema_registry.user }}'
     group: '{{ confluent_config.schema_registry.group }}'
     mode: '0440'
-  register: schema_registry_configuration_template_result
+  notify: restart schema-registry
 
 - name: Configure the schema-registry service
   template:
@@ -196,18 +199,17 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: restart schema-registry
   register: schema_registry_service_file_template_result
 
-- name: Restart the schema-registry service if required
+- name: Reload the schema-registry service if required
   systemd:
-    name: schema-registry.service
-    state: restarted
-    enabled: yes
+    name: schema-registry
     daemon_reload: yes
-  when: ((ca_certificate_copy_result.changed == True) or (schema_registry_private_key_copy_result.changed == True) or (schema_registry_certificate_copy_result.changed == True) or (schema_registry_configuration_template_result.changed == True) or (schema_registry_service_file_template_result.changed == True))
+  when: (schema_registry_service_file_template_result.changed == True)
 
 - name: Ensure that the schema-registry service is started
   systemd:
-    name: schema-registry.service
+    name: schema-registry
     state: started
     enabled: yes

@@ -7,5 +7,10 @@
 - name: Update the Apt cache
   apt: update_cache=yes cache_valid_time=3600
 
-- name: Install the openjdk-11-jre package
-  apt: name=openjdk-11-jre state=latest
+- name: Install the openjdk-11-jdk package
+  apt: name=openjdk-11-jdk state=latest
+
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny

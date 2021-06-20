@@ -20,3 +20,11 @@
     path: /usr/lib/jvm/java-11-openjdk/bin/java
     link: /usr/bin/java
 
+- name: Select the correct keytool version
+  alternatives:
+    name: keytool
+    path: /usr/lib/jvm/java-11-openjdk/bin/keytool
+    link: /usr/bin/keytool
+
+
+

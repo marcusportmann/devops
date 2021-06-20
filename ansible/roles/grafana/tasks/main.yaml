@@ -92,7 +92,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
 
 - name: Create the Prometheus data source provisioning file
   template:
@@ -101,7 +101,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
 
 - name: Create the dashboard provisioning file
   template:
@@ -110,7 +110,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
 
 - name: Create the {{ grafana_config.data_directory }}/dashboards directory
   file:
@@ -127,7 +127,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
 
 - name: Copy the nodes.json dashboard file
   template:
@@ -136,7 +136,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
 
 - name: Copy the kubernetes.json dashboard file
   template:
@@ -145,7 +145,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
   when: ('k8s_master' in groups)
 
 - name: Copy the zookeeper.json dashboard file
@@ -155,7 +155,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Copy the kafka-overview.json dashboard file
@@ -165,7 +165,7 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Copy the kafka-producers-consumers.json dashboard file
@@ -175,12 +175,12 @@
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
     mode: '0440'
-  notify: restart grafana server
+  notify: restart grafana-server
   when: ((grafana_config.dashboards.kafka_producers_and_consumers.enabled) and (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups)))
 
 - name: Ensure that the grafana-server service is started
   systemd:
-    name: grafana-server.service
+    name: grafana-server
     state: started
     enabled: yes
 
@@ -192,7 +192,7 @@
 - name: Install the Grafana pie chart panel plug-in {{ grafana_config.pie_chart_panel_plugin_version }}
   shell:
     cmd: grafana-cli plugins install grafana-piechart-panel {{ grafana_config.pie_chart_panel_plugin_version }}
-  notify: restart grafana server
+  notify: restart grafana-server
   when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_config.pie_chart_panel_plugin_version)
 
 

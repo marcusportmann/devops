@@ -41,7 +41,7 @@
     yum:
       name: /var/tmp/ansible/{{ grafana_config.redhat_package }}
       state: present
-    notify: restart grafana server
+    notify: restart grafana-server
 
   when: (('grafana' not in ansible_facts.packages) or (ansible_facts.packages['grafana'][0].version != grafana_config.redhat_package_version))
 

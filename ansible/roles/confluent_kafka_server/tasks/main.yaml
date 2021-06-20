@@ -255,6 +255,7 @@
   systemd:
     name: kafka
     daemon_reload: yes
+  notify: restart kafka
   when: (kafka_server_service_file_template_result.changed == True)
 
 # NOTE: This is the password for the user that is used to secure the inter-broker connections

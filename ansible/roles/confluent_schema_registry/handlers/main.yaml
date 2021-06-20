@@ -1,0 +1,7 @@
+---
+# file: roles/confluent_schema_registry/handlers/main.yaml
+
+- name: restart schema-registry
+  systemd:
+    name: schema-registry
+    state: restarted

@@ -176,6 +176,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: restart mirrormaker
   register: kafka_mirrormaker_service_file_template_result
 
 - name: Reload the mirrormaker service if required

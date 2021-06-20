@@ -1,8 +1,11 @@
 ---
+# file: roles/confluent_zookeeper/handlers/main.yaml
 
 - name: Reload systemctl daemon
   command: systemctl daemon-reload
   when: ansible_service_mgr == 'systemd'
 
-- name: Restart ZooKeeper
-  service: name=zookeeper state=restarted
+- name: restart zookeeper
+  systemd:
+    name: zookeeper
+    state: restarted

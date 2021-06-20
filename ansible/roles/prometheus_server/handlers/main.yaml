@@ -3,5 +3,5 @@
 
 - name: restart prometheus
   systemd:
-    name: 'prometheus'
+    name: prometheus
     state: restarted

@@ -1,7 +1,7 @@
 ---
 # file: roles/grafana/handlers/main.yaml
 
-- name: restart grafana server
+- name: restart grafana-server
   systemd:
-    name: 'grafana-server'
+    name: grafana-server
     state: restarted

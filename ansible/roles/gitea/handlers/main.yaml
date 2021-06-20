@@ -3,5 +3,5 @@
 
 - name: restart gitea
   systemd:
-    name: 'gitea'
+    name: gitea
     state: restarted
