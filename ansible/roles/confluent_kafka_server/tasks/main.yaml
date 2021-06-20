@@ -58,11 +58,11 @@
 
 - set_fact:
     kafka_server_rack: default
-     
+
 - set_fact:
     kafka_server_rack: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_racks[inventory_hostname] }}"
   when: ((confluent_config.clusters[confluent_cluster_name].kafka_server_racks is defined) and (confluent_config.clusters[confluent_cluster_name].kafka_server_racks[inventory_hostname] is defined))
-    
+
 
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -92,7 +92,7 @@
   local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
   register: create_credentials_directory_result
-  
+
 - debug:
     msg: "{{ create_credentials_directory_result }}"
 
@@ -321,7 +321,7 @@
       dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml'
       owner: '{{ confluent_config.kafka_server.user }}'
       group: '{{ confluent_config.kafka_server.group }}'
-      mode: '0440'      
+      mode: '0440'
     when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
 - name: Setup the Kafka MirrorMaker users
@@ -417,21 +417,21 @@
       state: present
       regexp: '^%alias kafka-topics'
       line: alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
-      
+
   - name: Add the kafka-console-producer alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-console-producer'
-      line: alias kafka-topics='/opt/confluent/bin/kafka-console-producer --producer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-console-producer='/opt/confluent/bin/kafka-console-producer --producer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-console-consumer alias to the /etc/profile.d/kafka.sh file
     lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-console-consumer'
-      line: alias kafka-topics='/opt/confluent/bin/kafka-console-consumer --consumer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
-      
+      line: alias kafka-console-consumer='/opt/confluent/bin/kafka-console-consumer --consumer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+
 
 - name: Apply the Schema Registry configuration
   block:
