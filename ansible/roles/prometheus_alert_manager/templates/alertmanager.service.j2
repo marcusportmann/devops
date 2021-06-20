@@ -3,6 +3,8 @@
 [Unit]
 Description=Prometheus Alert Manager
 Documentation=https://prometheus.io/docs/introduction/overview/
+After=syslog.target
+After=network.target
 
 [Service]
 Restart=always

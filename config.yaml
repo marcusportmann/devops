@@ -1259,7 +1259,7 @@ hosts:
   domain:             local
   type:               centos-7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana
+  ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana,burrow
   virtualbox:
     cpus:             1
     memory:           1024

@@ -3,6 +3,8 @@
 [Unit]
 Description=Prometheus exporter for machine metrics
 Documentation=https://github.com/prometheus/node_exporter
+After=syslog.target
+After=network.target
 
 [Service]
 Restart=always

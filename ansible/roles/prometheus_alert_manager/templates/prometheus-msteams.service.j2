@@ -3,6 +3,8 @@
 [Unit]
 Description=Prometheus MS Teams
 Documentation=https://github.com/prometheus-msteams/prometheus-msteams
+After=syslog.target
+After=network.target
 
 [Service]
 Restart=always
