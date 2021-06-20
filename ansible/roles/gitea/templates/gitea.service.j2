@@ -3,8 +3,8 @@
 [Unit]
 Description=Gitea
 Documentation=https://docs.gitea.io
-After=syslog.target
-After=network.target
+Requires=network.target syslog.target
+After=network.target syslog.target
 
 [Service]
 Type=simple

@@ -3,8 +3,8 @@
 [Unit]
 Description=Prometheus Server
 Documentation=https://prometheus.io/docs/introduction/overview/
-After=syslog.target
-After=network.target
+Requires=network.target syslog.target
+After=network.target syslog.target
 
 [Service]
 Restart=always
