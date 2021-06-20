@@ -43,7 +43,7 @@
 #
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
-  become: false  
+  become: false
 
 - name: Add the {{ confluent_config.kafka_mirrormaker.group }} group
   group:
@@ -89,18 +89,21 @@
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/confluent/kafaka_mirrormaker/ca.crt'
+    notify: restart mirrormaker
     register: ca_certificate_copy_result
 
   - name: Copy the Kafka MirrorMaker private key ({{ inventory_hostname_short }}.key)
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '/var/tmp/ansible/confluent/kafaka_mirrormaker/{{ inventory_hostname_short }}.key'
+    notify: restart mirrormaker
     register: kafka_mirrormaker_private_key_copy_result
 
   - name: Copy the Kafka MirrorMaker certificate ({{ inventory_hostname_short }}.crt)
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
       dest: '/var/tmp/ansible/confluent/kafaka_mirrormaker/{{ inventory_hostname_short }}.crt'
+    notify: restart mirrormaker
     register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
@@ -164,7 +167,7 @@
     owner: '{{ confluent_config.kafka_mirrormaker.user }}'
     group: '{{ confluent_config.kafka_mirrormaker.group }}'
     mode: '0440'
-  register: kafka_mirrormaker_configuration_template_result
+  notify: restart mirrormaker
 
 - name: Configure the mirrormaker service
   template:
@@ -175,16 +178,16 @@
     mode: '0644'
   register: kafka_mirrormaker_service_file_template_result
 
-- name: Restart the mirrormaker service if required
+- name: Reload the mirrormaker service if required
   systemd:
-    name: mirrormaker.service
-    state: restarted
-    enabled: yes
+    name: mirrormaker
     daemon_reload: yes
-  when: ((ca_certificate_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True) or (kafka_mirrormaker_configuration_template_result.changed == True) or (kafka_mirrormaker_service_file_template_result.changed == True))
+  when: (kafka_mirrormaker_service_file_template_result.changed == True)
+
+- meta: flush_handlers
 
 - name: Ensure that the mirrormaker service is started
   systemd:
-    name: mirrormaker.service
+    name: mirrormaker
     state: started
     enabled: yes

@@ -3,5 +3,5 @@
 
 - name: restart burrow
   systemd:
-    name: 'burrow'
+    name: burrow
     state: restarted

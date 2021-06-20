@@ -1,0 +1,7 @@
+---
+# file: roles/confluent_kafka_mirrormaker/handlers/main.yaml
+
+- name: restart mirrormaker
+  systemd:
+    name: mirrormaker
+    state: restarted
