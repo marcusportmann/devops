@@ -66,6 +66,8 @@ authenticationEnforced=true
 enforcedAuthenticationScheme=sasl
 requireClientAuthScheme=sasl
 
+quorumListenOnAllIPs=true
+
 {% if ((zookeeper_hosts|length) > 1) %}
 # The cluster hosts
 {% for zookeeper_host in zookeeper_hosts -%}
