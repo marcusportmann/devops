@@ -13,7 +13,7 @@
 - name: Allow Prometheus Alert Manager hosts access to tcp port 9094
   ufw:
     rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    from_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '9094'
     proto: tcp
   loop: "{{ groups['prometheus_alert_manager'] }}"
@@ -21,7 +21,7 @@
 - name: Allow Prometheus Alert Manager hosts access to udp port 9094
   ufw:
     rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    from_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '9094'
     proto: udp
   loop: "{{ groups['prometheus_alert_manager'] }}"

@@ -12,7 +12,7 @@
 - name: Allow ZooKeeper hosts access to tcp port 2888
   ufw:
     rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    from_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '2888'
     proto: tcp
   loop: "{{ zookeeper_hosts }}"
@@ -20,7 +20,7 @@
 - name: Allow ZooKeeper hosts access to tcp port 3888
   ufw:
     rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    from_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '3888'
     proto: tcp
   loop: "{{ zookeeper_hosts }}"
@@ -28,7 +28,7 @@
 - name: Allow Kafka Server hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port}}
   ufw:
     rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    from_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '{{ confluent_config.zookeeper.secure_client_port }}'
     proto: tcp
   loop: "{{ kafka_server_hosts }}"
@@ -64,7 +64,7 @@
 - name: Allow Burrow hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port}}
   ufw:
     rule: allow
-    source: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+    from_ip: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
     port: '{{ confluent_config.zookeeper.secure_client_port }}'
     proto: tcp
   loop: "{{ (groups['burrow'] | default([])) }}"

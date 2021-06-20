@@ -388,7 +388,7 @@ hosts:
 # |____/|_____|  \_/    |_| |_|\___/|____/ |_| |____/
 #
 - name:               confluent-zkks-digital-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -420,7 +420,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-digital-dev-02.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -452,7 +452,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-digital-dev-03.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -484,7 +484,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-sr-digital-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_schema_registry
   virtualbox:
@@ -513,7 +513,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-mm-digital-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_kafka_mirrormaker
   virtualbox:
@@ -542,7 +542,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-analytics-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -574,7 +574,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-analytics-dev-02.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -606,7 +606,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-zkks-analytics-dev-03.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
@@ -638,7 +638,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               confluent-sr-analytics-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,confluent_schema_registry
   virtualbox:
@@ -667,7 +667,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -696,7 +696,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-02.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -725,7 +725,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-03.local
-  domain:             centos-7
+  domain:             ubuntu-2004
   type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,etcd
@@ -968,7 +968,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1000,7 +1000,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-02.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1032,7 +1032,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-03.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1064,7 +1064,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-sr-digital-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored
   virtualbox:
@@ -1096,7 +1096,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-mm-digital-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_mirrormaker
   virtualbox:
@@ -1128,7 +1128,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1160,7 +1160,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-02.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1192,7 +1192,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-03.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1224,7 +1224,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-sr-analytics-dev-01.local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
   ansible_groups:     monitored
   virtualbox:
@@ -1257,9 +1257,9 @@ hosts:
 
 - name:               monitoring-dev.local
   domain:             local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana,burrow
+  ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana
   virtualbox:
     cpus:             1
     memory:           1024
