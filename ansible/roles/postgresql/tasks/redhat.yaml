@@ -31,7 +31,7 @@
   - name: Disable the PostgreSQL AppStream repository
     command:
       cmd: dnf -qy module disable postgresql
-    when:  (ansible_distribution_major_version == '8')
+    when: (ansible_distribution_major_version == '8')
 
   - name: Install the PGDG GPG key
     rpm_key:
@@ -82,10 +82,17 @@
   # and affects system behavior in multiple ways.
   # exclude: python-unversioned-command
 
+- name: Install the python-psycopg2 library
+  yum:
+   name: python-psycopg2
+   state: latest
+  when: (ansible_distribution_major_version == '7')
+
 - name: Install the python3-psycopg2 library
   yum:
    name: python3-psycopg2
    state: latest
+  when: (ansible_distribution_major_version == '8')
 
 - name: Apply the custom data directory configuration
   block:

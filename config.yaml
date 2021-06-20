@@ -1293,9 +1293,9 @@ hosts:
 #
 - name:               devops.local
   domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     postgresql
+  ansible_groups:     monitored,prometheus_server,grafana,postgresql
   virtualbox:
     cpus:             4
     memory:           8192

@@ -149,9 +149,6 @@
       src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
       dest: /var/tmp/ansible/{{ docker_ce_cli_package }}
 
-
-
-
   - name: Check whether the {{ docker_ce_rootless_extras_package }} package has been downloaded
     become: no
     local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
@@ -166,8 +163,6 @@
     copy:
       src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
       dest: /var/tmp/ansible/{{ docker_ce_rootless_extras_package }}
-
-
 
   - name: Check whether the {{ docker_scan_plugin_package }} package has been downloaded
     become: no
@@ -210,12 +205,6 @@
       state: restarted
       enabled: yes
       daemon_reload: yes
-
-  - name: Ensure that the docker service is started
-    systemd:
-      name: docker.service
-      state: started
-      enabled: yes
 
   when: (('docker-scan-plugin' not in ansible_facts.packages) or (ansible_facts.packages['docker-scan-plugin'][0].version != docker_scan_plugin_package_version) or ('docker-ce-cli' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-cli'][0].version != docker_ce_cli_package_version) or ('docker-ce' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce'][0].version != docker_ce_package_version) or ('docker-ce-rootless-extras' not in ansible_facts.packages) or (ansible_facts.packages['docker-ce-rootless-extras'][0].version != docker_ce_rootless_extras_package_version))
 

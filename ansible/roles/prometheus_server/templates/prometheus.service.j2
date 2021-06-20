@@ -3,9 +3,12 @@
 [Unit]
 Description=Prometheus Server
 Documentation=https://prometheus.io/docs/introduction/overview/
+After=syslog.target
+After=network.target
 
 [Service]
 Restart=always
+RestartSec=5s
 User={{ prometheus_server_config.user }}
 EnvironmentFile=/etc/default/prometheus
 ExecStart=/usr/bin/prometheus $ARGS

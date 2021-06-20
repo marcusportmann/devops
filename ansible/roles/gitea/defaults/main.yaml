@@ -3,21 +3,16 @@
 
 gitea_defaults:
 
-  package_checksum: sha256:8ed8bff1f34d8012cab92943214701c10764ffaca102e311a3297edbb8fce940
-  package_version: '1.2.15'
+  package_checksum: sha256:50c25c094ae109f49e276cd00ddc48a0a240b7670e487ae1286cc116d4cdbcf2
+  package_version: '1.14.3'
 
-#  data_directory: /var/lib/grafana
-#  log_directory: /var/log/grafana
-#
-#  user: grafana
-#  user_id: 425
-#  group: grafana
-#  group_id: 425
-#
-#  pie_chart_panel_plugin_version: 1.5.0
-#
-#  dashboards:
-#    kafka_producers_and_consumers:
-#      enabled: false
+  user: git
+  user_id: 305
+  group: git
+  group_id: 305
+
+  config_directory: /etc/gitea
+
+  data_directory: /var/lib/gitea
 
 gitea_config: "{{ gitea_defaults | combine(gitea | default({}), recursive=True) }}"

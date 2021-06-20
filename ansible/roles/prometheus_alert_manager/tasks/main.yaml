@@ -19,12 +19,12 @@
   - unbound
 
 
-#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____       _    _     _____ ____ _____   __  __    _    _   _    _    ____ _____ ____  
-# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|     / \  | |   | ____|  _ \_   _| |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \ 
+#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____       _    _     _____ ____ _____   __  __    _    _   _    _    ____ _____ ____
+# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|     / \  | |   | ____|  _ \_   _| |  \/  |  / \  | \ | |  / \  / ___| ____|  _ \
 # | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \    / _ \ | |   |  _| | |_) || |   | |\/| | / _ \ |  \| | / _ \| |  _|  _| | |_) |
-# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) |  / ___ \| |___| |___|  _ < | |   | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ < 
+# |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) |  / ___ \| |___| |___|  _ < | |   | |  | |/ ___ \| |\  |/ ___ \ |_| | |___|  _ <
 # |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/  /_/   \_\_____|_____|_| \_\|_|   |_|  |_/_/   \_\_| \_/_/   \_\____|_____|_| \_\
-#                                                                                                                                                
+#
 - name: Install Prometheus Alert Manager
   block:
   - debug:
@@ -109,6 +109,7 @@
         - --strip-components=1
         - alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64/alertmanager
         creates: /usr/bin/alertmanager
+      notify: restart alertmanager
 
     - name: Extract the amtool binary from the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package
       unarchive:
@@ -121,6 +122,7 @@
         - --strip-components=1
         - alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64/amtool
         creates: /usr/bin/amtool
+      notify: restart alertmanager
 
     - name: Create the {{ prometheus_alert_manager_config.etc_directory }} directory
       file:
@@ -147,13 +149,14 @@
     owner: '{{ prometheus_alert_manager_config.user }}'
     group: '{{ prometheus_alert_manager_config.group }}'
     mode: '0440'
-  register: prometheus_alert_manager_configuration_template_result
+  notify: restart alertmanager
 
 - name: Generate the Prometheus Alert Manager environment
   template:
     src: alertmanager-environment.j2
     dest: /etc/default/alertmanager
-    mode: '0644'  
+    mode: '0644'
+  notify: restart alertmanager
   register: prometheus_alert_manager_environment_template_result
 
 - name: Configure the Prometheus Alert Manager systemd unit
@@ -163,15 +166,14 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: restart alertmanager
   register: prometheus_alert_manager_systemd_unit_template_result
 
-- name: Restart the Prometheus Alert Manager service
+- name: Reload the Prometheus Alert Manager service
   systemd:
     name: alertmanager.service
-    state: restarted
-    enabled: yes
     daemon_reload: yes
-  when: ((prometheus_alert_manager_configuration_template_result.changed == True) or (prometheus_alert_manager_environment_template_result.changed == True) or (prometheus_alert_manager_systemd_unit_template_result.changed == True))
+  when: ((prometheus_alert_manager_environment_template_result.changed == True) or (prometheus_alert_manager_systemd_unit_template_result.changed == True))
 
 - name: Ensure that the Prometheus Alert Manager service is started
   systemd:
@@ -180,16 +182,14 @@
     enabled: yes
 
 
-
-
-#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____    __  __ ____    _____ _____    _    __  __ ____  
-# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|  |  \/  / ___|  |_   _| ____|  / \  |  \/  / ___| 
-# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \  | |\/| \___ \    | | |  _|   / _ \ | |\/| \___ \ 
+#  ____  ____   ___  __  __ _____ _____ _   _ _____ _   _ ____    __  __ ____    _____ _____    _    __  __ ____
+# |  _ \|  _ \ / _ \|  \/  | ____|_   _| | | | ____| | | / ___|  |  \/  / ___|  |_   _| ____|  / \  |  \/  / ___|
+# | |_) | |_) | | | | |\/| |  _|   | | | |_| |  _| | | | \___ \  | |\/| \___ \    | | |  _|   / _ \ | |\/| \___ \
 # |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) | | |  | |___) |   | | | |___ / ___ \| |  | |___) |
-# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/  |_|  |_|____/    |_| |_____/_/   \_\_|  |_|____/ 
-#   
+# |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/  |_|  |_|____/    |_| |_____/_/   \_\_|  |_|____/
+#
 - name: Prometheus MS Teams integration
-  block:                                                                                                              
+  block:
   - name: Install prometheus-msteams
     block:
     - debug:
@@ -200,10 +200,10 @@
       register: prometheus_msteams_installed_stat_result
 
     - shell:
-        cmd: /usr/bin/prometheus-msteams --version 2>&1 
+        cmd: /usr/bin/prometheus-msteams --version 2>&1
       register: prometheus_msteams_installed_version_output
       when: (prometheus_msteams_installed_stat_result.stat.exists == True)
-    
+
     - set_fact:
         prometheus_msteams_installed_version: '{{ prometheus_msteams_installed_version_output.stdout }}'
       when: (prometheus_msteams_installed_stat_result.stat.exists == True)
@@ -211,7 +211,7 @@
     - set_fact:
         prometheus_msteams_installed_version: ''
       when: (prometheus_msteams_installed_stat_result.stat.exists == False)
-    
+
     - block:
       - debug:
           msg: Install the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package
@@ -257,7 +257,7 @@
         file:
           path: /usr/bin/prometheus-msteams
           state: absent
-        
+
       - name: Copy the prometheus-msteams binary
         copy:
           src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}'
@@ -265,7 +265,7 @@
           owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
           group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
           mode: '0550'
-          
+
       - name: Create the {{ prometheus_alert_manager_config.etc_directory }} directory
         file:
           path: '{{ prometheus_alert_manager_config.prometheus_msteams_etc_directory }}'
@@ -273,7 +273,7 @@
           group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
           mode: '0550'
           state: directory
-    
+
       when: (prometheus_msteams_installed_version != prometheus_alert_manager_config.prometheus_msteams_package_version)
 
   - name: Generate the prometheus-msteams message card template
@@ -283,14 +283,14 @@
       owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
       group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
       mode: '0440'
-    register: prometheus_msteams_message_card_template_result  
+    register: prometheus_msteams_message_card_template_result
 
   - name: Generate the prometheus-msteams environment
     template:
       src: prometheus-msteams-environment.j2
       dest: /etc/default/prometheus-msteams
       mode: '0644'
-    register: prometheus_msteams_environment_template_result  
+    register: prometheus_msteams_environment_template_result
 
   - name: Configure the prometheus-msteams systemd unit
     template:
@@ -300,7 +300,7 @@
       group: 'root'
       mode: '0644'
     register: prometheus_msteams_systemd_unit_template_result
-    
+
   - name: Restart the prometheus-msteams service
     systemd:
       name: prometheus-msteams.service

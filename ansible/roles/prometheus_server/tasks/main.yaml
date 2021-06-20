@@ -27,7 +27,7 @@
 - set_fact:
     prometheus_alert_manager_target: "{{ groups['prometheus_alert_manager'][0] }}:9093"
   when: ((groups['prometheus_alert_manager'] is defined) and ((groups['prometheus_alert_manager']|length) > 0))
-     
+
 - set_fact:
     prometheus_alert_manager_target: "{{ prometheus_server_config.alert_managers[inventory_hostname] }}:9093"
   when: ((prometheus_server_config.alert_managers is defined) and (prometheus_server_config.alert_managers[inventory_hostname] is defined))
@@ -111,6 +111,7 @@
         - --strip-components=1
         - prometheus-{{ prometheus_server_config.package_version }}.linux-amd64/prometheus
         creates: /usr/bin/prometheus
+      notify: restart prometheus
 
     - name: Create the {{ prometheus_server_config.etc_directory }} directory
       file:
@@ -131,6 +132,7 @@
         - --strip-components=1
         - prometheus-{{ prometheus_server_config.package_version }}.linux-amd64/consoles
         creates: /etc/prometheus/consoles
+      notify: restart prometheus
 
     - name: Extract the console_libraries directory from the Prometheus {{ prometheus_server_config.package_version }} package
       unarchive:
@@ -143,6 +145,7 @@
         - --strip-components=1
         - prometheus-{{ prometheus_server_config.package_version }}.linux-amd64/console_libraries
         creates: /etc/prometheus/console_libraries
+      notify: restart prometheus
 
     when: (prometheus_installed_version != prometheus_server_config.package_version)
 
@@ -169,7 +172,7 @@
     owner: '{{ prometheus_server_config.user }}'
     group: '{{ prometheus_server_config.group }}'
     mode: '0440'
-  register: prometheus_rules_configuration_template_result
+  notify: restart prometheus
 
 - name: Generate the Prometheus configuration
   template:
@@ -178,14 +181,15 @@
     owner: '{{ prometheus_server_config.user }}'
     group: '{{ prometheus_server_config.group }}'
     mode: '0440'
-  register: prometheus_server_configuration_template_result
+  notify: restart prometheus
 
 - name: Generate the Prometheus environment
   template:
     src: prometheus-environment.j2
     dest: /etc/default/prometheus
     mode: '0644'
-  register: prometheus_server_environment_template_result  
+  notify: restart prometheus
+  register: prometheus_server_environment_template_result
 
 - name: Configure the Prometheus systemd unit
   template:
@@ -194,7 +198,14 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: restart prometheus
   register: prometheus_systemd_unit_template_result
+
+- name: Reload the Prometheus service
+  systemd:
+    name: prometheus.service
+    daemon_reload: yes
+  when: ((prometheus_server_environment_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
 
 - name: Setup the Prometheus Kubernetes monitoring configuration
   block:
@@ -221,7 +232,8 @@
         owner: '{{ prometheus_server_config.user }}'
         group: '{{ prometheus_server_config.group }}'
         mode: '0440'
-  
+      notify: restart prometheus
+
   - name: Save the token for the Prometheus service account
     block:
     - shell:
@@ -234,16 +246,9 @@
 
     - shell:
         cmd: echo '{{ prometheus_service_account_secret_token }}' > /etc/prometheus/k8s/token
+      notify: restart prometheus
 
   when: ("k8s_master" in groups.keys())
-
-- name: Restart the Prometheus service
-  systemd:
-    name: prometheus.service
-    state: restarted
-    enabled: yes
-    daemon_reload: yes
-  when: ((prometheus_server_configuration_template_result.changed == True) or (prometheus_rules_configuration_template_result.changed == True) or (prometheus_server_environment_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
 
 - name: Ensure that the Prometheus service is started
   systemd:

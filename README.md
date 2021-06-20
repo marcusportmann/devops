@@ -302,6 +302,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 
 * General
   * cloud-user (300)
+  * git (305)
 * Platform Services
   * cp-control-center (310)
   * cp-kafka (311)
@@ -329,7 +330,7 @@ The following users and groups are provisioned by the various Ansible scripts:
   * alertmanager (456)
   * prometheus-msteams (457)
 * Testing
-  * jmeter-server (490)  
+  * jmeter-server (490)
 * Kubernetes
   * k8s-admin (500)
 * Other
@@ -339,6 +340,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 
 * General
   * cloud-user (300)
+  * git (305)
 * Platform Services
   * cp-control-center (310)
   * cp-kafka (311)
@@ -366,7 +368,7 @@ The following users and groups are provisioned by the various Ansible scripts:
   * alertmanager (456)
   * prometheus-msteams (457)
 * Testing
-  * jmeter-server (490)    
+  * jmeter-server (490)
 * Kubernetes
   * k8s-admin (500)
 * Other
