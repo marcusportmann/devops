@@ -286,6 +286,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: restart burrow
   register: burrow_systemd_unit_template_result
 
 - name: Restart the Burrow service
