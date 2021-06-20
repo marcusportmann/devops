@@ -120,7 +120,7 @@
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
   become: false
-  
+
 - name: Install Burrow
   block:
   - debug:
@@ -166,6 +166,7 @@
         extra_opts:
         - burrow
         creates: /usr/bin/burrow
+      notify: restart burrow
 
     - name: Rename the burrow binary to include the version number
       shell:
@@ -229,16 +230,16 @@
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
       mode: '0440'
-    register: ca_certificate_copy_result
+    notify: restart burrow
 
-  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key) 
+  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key)
     copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
       mode: '0440'
-    register: burrow_private_key_copy_result
+    notify: restart burrow
 
   - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt)
     copy:
@@ -247,7 +248,7 @@
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
       mode: '0440'
-    register: burrow_certificate_copy_result
+    notify: restart burrow
 
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Confluent ZooKeeper cluster
@@ -276,7 +277,7 @@
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
     mode: '0440'
-  register: burrow_configuration_template_result
+  notify: restart burrow
 
 - name: Create the Burrow systemd unit
   template:
@@ -289,15 +290,15 @@
 
 - name: Restart the Burrow service
   systemd:
-    name: burrow.service
-    state: restarted
-    enabled: yes
+    name: burrow
     daemon_reload: yes
-  when: ((burrow_configuration_template_result.changed == True) or (burrow_systemd_unit_template_result.changed == True))
+  when: (burrow_systemd_unit_template_result.changed == True)
 
-- name: Ensure that the Prometheus service is started
+- meta: flush_handlers
+
+- name: Ensure that the Burrow service is started
   systemd:
-    name: burrow.service
+    name: burrow
     state: started
     enabled: yes
 
