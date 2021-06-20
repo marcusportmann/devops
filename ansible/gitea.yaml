@@ -1,0 +1,19 @@
+
+#- name: Gather facts from all gitea hosts
+#  hosts: gitea
+#  become: yes
+#  become_user: root
+#  pre_tasks:
+#  - setup:
+#    delegate_to: "{{ item }}"
+#    delegate_facts: True
+#    when: hostvars[item]['ansible_default_ipv4'] is not defined
+#    with_items: "{{ (groups['gitea'] | default([])) }}"
+#  tasks: []
+
+- name: Configure the gitea hosts
+  hosts: gitea
+  become: yes
+  become_user: root
+  roles:
+  - gitea

@@ -1,0 +1,7 @@
+---
+# file: roles/gitea/handlers/main.yaml
+
+- name: restart gitea
+  systemd:
+    name: 'gitea'
+    state: restarted
