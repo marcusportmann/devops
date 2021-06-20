@@ -1,0 +1,7 @@
+---
+# file: roles/burrow/handlers/main.yaml
+
+- name: restart burrow
+  systemd:
+    name: 'burrow'
+    state: restarted
