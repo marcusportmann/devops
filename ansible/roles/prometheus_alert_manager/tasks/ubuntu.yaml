@@ -4,6 +4,11 @@
 - debug:
     msg: Applying the Ubuntu-specific Prometheus Alert Manager configuration
 
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
 - name: Allow all hosts access to tcp port 9093
   ufw:
     rule: allow

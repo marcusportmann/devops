@@ -4,11 +4,6 @@
 - debug:
     msg: Applying the Ubuntu-specific Confluent Schema Registry configuration
 
-- name: Enable the firewall
-  ufw:
-    state: enabled
-    policy: deny
-
 - name: Allow all hosts access to tcp port 8443 (Confluent Schema Registry HTTPS)
   ufw:
     rule: allow

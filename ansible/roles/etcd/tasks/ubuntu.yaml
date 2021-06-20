@@ -4,12 +4,11 @@
 - debug:
     msg: Applying the Ubuntu-specific etcd configuration
 
-#  _____ ___ ____  _______        ___    _     _       ____   ___  ____ _____ ____
-# |  ___|_ _|  _ \| ____\ \      / / \  | |   | |     |  _ \ / _ \|  _ \_   _/ ___|
-# | |_   | || |_) |  _|  \ \ /\ / / _ \ | |   | |     | |_) | | | | |_) || | \___ \
-# |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
-# |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
-#
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
 - name: Allow all hosts access to tcp port 2379
   ufw:
     rule: allow

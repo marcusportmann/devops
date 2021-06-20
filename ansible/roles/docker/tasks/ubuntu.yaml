@@ -39,9 +39,15 @@
   - name: Update the Apt cache
     apt: update_cache=yes cache_valid_time=3600
 
-  - name: Unlock the version of the docker-ce and docker-ce-cli packages
+  - name: Unlock the version of the docker-ce package
     command:
-      cmd: apt-mark unhold docker-ce docker-ce-cli
+      cmd: apt-mark unhold docker-ce
+    when: "'docker-ce' in ansible_facts.packages"
+
+  - name: Unlock the version of the docker-ce-cli packages
+    command:
+      cmd: apt-mark unhold docker-ce-cli
+    when: "'docker-ce-cli' in ansible_facts.packages"
 
   - name: Install the docker-ce and docker-ce-cli packages ({{ docker_config.ubuntu.docker_ce.package_version }})
     apt:

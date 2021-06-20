@@ -92,6 +92,11 @@
 
 - meta: flush_handlers
 
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
 - name: Allow all hosts access to tcp port 5432
   ufw:
     rule: allow

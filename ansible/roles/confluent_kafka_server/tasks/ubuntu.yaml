@@ -4,11 +4,6 @@
 - debug:
     msg: Applying the Ubuntu-specific Kafka Server configuration
 
-- name: Enable the firewall
-  ufw:
-    state: enabled
-    policy: deny
-
 - name: Allow all hosts access to tcp port {{ confluent_config.kafka_server.secure_broker_port }} (Kafka Secure Broker Port)
   ufw:
     rule: allow

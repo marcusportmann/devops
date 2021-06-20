@@ -4,6 +4,11 @@
 - debug:
     msg: Applying the Ubuntu-specific Burrow configuration
 
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
 - name: Allow all hosts access to tcp port {{ burrow_config.http_port }}
   ufw:
     rule: allow

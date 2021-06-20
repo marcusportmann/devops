@@ -19,12 +19,6 @@
 #    state: enabled
 #    permanent: yes
 
-- name: Allow all hosts access to tcp port 22 (SSH)
-  ufw:
-    rule: allow
-    port: '22'
-    proto: tcp
-
 - name: Allow all hosts access to tcp port 2379
   ufw:
     rule: allow

@@ -4,6 +4,12 @@
 - debug:
     msg: Applying the Ubuntu-specific Gitea configuration
 
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
+
 #- name: Allow all hosts access to tcp port 9090
 #  ufw:
 #    rule: allow

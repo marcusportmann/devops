@@ -4,11 +4,6 @@
 - debug:
     msg: Applying the Ubuntu-specific ZooKeeper configuration
 
-- name: Enable the firewall
-  ufw:
-    state: enabled
-    policy: deny
-
 - name: Allow ZooKeeper hosts access to tcp port 2888
   ufw:
     rule: allow

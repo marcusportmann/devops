@@ -3,7 +3,7 @@
 
 - debug:
     msg: Applying the Ubuntu-specific common configuration
-    
+
 - name: Install the python3-pip package
   apt:
     state: present
@@ -11,7 +11,7 @@
      - python3-pip
 
 - name: Install the pyOpenSSL package using pip
-  pip: 
+  pip:
     name: pyOpenSSL
 
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
@@ -62,3 +62,9 @@
     when: ('data' in ansible_lvm.vgs)
 
   when: (common_config.initialise_data_directory == True)
+
+- name: Allow all hosts access to tcp port 22 (SSH)
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp

@@ -4,6 +4,11 @@
 - debug:
     msg: Applying the Ubuntu-specific Grafana configuration
 
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
+
 - name: Allow all hosts access to tcp port 3000
   ufw:
     rule: allow
@@ -44,6 +49,7 @@
   - name: Unlock the version of the grafana package
     command:
       cmd: apt-mark unhold grafana
+    when: "'grafana' in ansible_facts.packages"
 
   - name: Install the {{ grafana_config.ubuntu_package }} package
     apt:

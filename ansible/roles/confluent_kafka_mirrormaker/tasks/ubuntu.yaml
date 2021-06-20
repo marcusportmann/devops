@@ -4,11 +4,6 @@
 - debug:
     msg: Applying the Ubuntu-specific Confluent Kafka MirrorMaker configuration
 
-- name: Enable the firewall
-  ufw:
-    state: enabled
-    policy: deny
-
 - name: Allow all hosts access to tcp port {{ confluent_config.kafka_mirrormaker.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
   ufw:
     rule: allow

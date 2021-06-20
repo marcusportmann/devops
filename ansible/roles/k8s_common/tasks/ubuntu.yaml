@@ -211,6 +211,7 @@
   - name: Unlock the version of the kubelet package
     command:
       cmd: apt-mark unhold kubelet
+    when: "'kubelet' in ansible_facts.packages"
 
   - name: Install the kubelet package ({{ k8s_config.k8s_ubuntu_package_version }})
     apt:
@@ -238,6 +239,7 @@
   - name: Unlock the version of the kubectl package
     command:
       cmd: apt-mark unhold kubectl
+    when: "'kubectl' in ansible_facts.packages"
 
   - name: Install the kubectl package ({{ k8s_config.k8s_ubuntu_package_version }})
     apt:
@@ -265,6 +267,7 @@
   - name: Unlock the version of the kubeadm package
     command:
       cmd: apt-mark unhold kubeadm
+    when: "'kubeadm' in ansible_facts.packages"
 
   - name: Install the kubeadm package ({{ k8s_config.k8s_ubuntu_package_version }})
     apt:
