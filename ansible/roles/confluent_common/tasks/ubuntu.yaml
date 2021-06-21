@@ -9,9 +9,3 @@
 
 - name: Install the openjdk-11-jdk package
   apt: name=openjdk-11-jdk state=latest
-
-- name: Enable the firewall
-  ufw:
-    state: enabled
-    policy: deny
-

@@ -4,6 +4,12 @@
 - debug:
     msg: Applying the Ubuntu-specific Postgresql configuration
 
+- name: Allow all hosts access to tcp port 5432
+  ufw:
+    rule: allow
+    port: '5432'
+    proto: tcp
+
 - set_fact:
     postgresql_config_directory: '/etc/postgresql/{{ postgresql_config.version }}/main'
 
@@ -91,14 +97,3 @@
     mode: '0755'
 
 - meta: flush_handlers
-
-- name: Enable the firewall
-  ufw:
-    state: enabled
-    policy: deny
-
-- name: Allow all hosts access to tcp port 5432
-  ufw:
-    rule: allow
-    port: '5432'
-    proto: tcp

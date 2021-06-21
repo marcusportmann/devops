@@ -4,6 +4,13 @@
 - debug:
     msg: Applying the Ubuntu-specific common configuration
 
+
+#  ____   _    ____ _  __    _    ____ _____ ____
+# |  _ \ / \  / ___| |/ /   / \  / ___| ____/ ___|
+# | |_) / _ \| |   | ' /   / _ \| |  _|  _| \___ \
+# |  __/ ___ \ |___| . \  / ___ \ |_| | |___ ___) |
+# |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
+#
 - name: Install the python3-pip package
   apt:
     state: present
@@ -14,6 +21,13 @@
   pip:
     name: pyOpenSSL
 
+
+#  ____    _  _____  _     __     _____  _    _   _ __  __ _____
+# |  _ \  / \|_   _|/ \    \ \   / / _ \| |  | | | |  \/  | ____|
+# | | | |/ _ \ | | / _ \    \ \ / / | | | |  | | | | |\/| |  _|
+# | |_| / ___ \| |/ ___ \    \ V /| |_| | |__| |_| | |  | | |___
+# |____/_/   \_\_/_/   \_\    \_/  \___/|_____\___/|_|  |_|_____|
+#
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group
@@ -62,6 +76,18 @@
     when: ('data' in ansible_lvm.vgs)
 
   when: (common_config.initialise_data_directory == True)
+
+
+#  _____ ___ ____  _______        ___    _     _
+# |  ___|_ _|  _ \| ____\ \      / / \  | |   | |
+# | |_   | || |_) |  _|  \ \ /\ / / _ \ | |   | |
+# |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___
+# |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____|
+#
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: deny
 
 - name: Allow all hosts access to tcp port 22 (SSH)
   ufw:

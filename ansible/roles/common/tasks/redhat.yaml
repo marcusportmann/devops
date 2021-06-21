@@ -4,19 +4,13 @@
 - debug:
     msg: Applying the RedHat-specific common configuration
 
-- name: Enable the firewalld service
-  systemd:
-    name: firewalld
-    state: started
-    enabled: true
 
-- name: Enable the chrony port
-  firewalld:
-    port: '123/udp'
-    permanent: yes
-    state: enabled
-    immediate: yes
-
+#  ____   _    ____ _  __    _    ____ _____ ____
+# |  _ \ / \  / ___| |/ /   / \  / ___| ____/ ___|
+# | |_) / _ \| |   | ' /   / _ \| |  _|  _| \___ \
+# |  __/ ___ \ |___| . \  / ___ \ |_| | |___ ___) |
+# |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
+#
 - name: Install the RedHat 7 packages
   yum:
     name:
@@ -50,6 +44,13 @@
     state: present
   when: ansible_distribution_major_version == '8'
 
+
+#  ____    _  _____  _     __     _____  _    _   _ __  __ _____
+# |  _ \  / \|_   _|/ \    \ \   / / _ \| |  | | | |  \/  | ____|
+# | | | |/ _ \ | | / _ \    \ \ / / | | | |  | | | | |\/| |  _|
+# | |_| / ___ \| |/ ___ \    \ V /| |_| | |__| |_| | |  | | |___
+# |____/_/   \_\_/_/   \_\    \_/  \___/|_____\___/|_|  |_|_____|
+#
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group
@@ -98,3 +99,24 @@
     when: ('data' in ansible_lvm.vgs)
 
   when: (common_config.initialise_data_directory == True)
+
+
+#  _____ ___ ____  _______        ___    _     _
+# |  ___|_ _|  _ \| ____\ \      / / \  | |   | |
+# | |_   | || |_) |  _|  \ \ /\ / / _ \ | |   | |
+# |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___
+# |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____|
+#
+- name: Enable the firewalld service
+  systemd:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Enable the chrony port
+  firewalld:
+    port: '123/udp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+

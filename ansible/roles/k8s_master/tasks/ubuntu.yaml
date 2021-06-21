@@ -7,10 +7,6 @@
 # |  _|  | ||  _ <| |___  \ V  V / ___ \| |___| |___  |  __/| |_| |  _ < | |  ___) |
 # |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_|    \___/|_| \_\|_| |____/
 #
-- name: Enable the firewall
-  ufw:
-    state: enabled
-    policy: deny
 
 # TODO: HOW DO WE ENABLE MASQUERADING?
 #- name: Enable IP masquerade on the firewall
