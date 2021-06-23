@@ -15,4 +15,14 @@ gitea_defaults:
 
   data_directory: /var/lib/gitea
 
+  app_name: 'Gitea: Git with a cup of tea'
+
+  run_mode: prod
+
+  users_no_log: true
+
+  admin_username: gitea
+  admin_password: gitea
+  admin_email: gitea@example.org
+
 gitea_config: "{{ gitea_defaults | combine(gitea | default({}), recursive=True) }}"

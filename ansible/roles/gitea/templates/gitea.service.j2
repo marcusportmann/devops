@@ -7,7 +7,7 @@ Requires=network.target
 After=network.target
 
 [Service]
-Type=simple
+#Type=simple
 # The following two limits are required for repos with  lots of files
 LimitMEMLOCK=infinity
 LimitNOFILE=65535
@@ -17,7 +17,7 @@ User={{ gitea_config.user }}
 Group={{ gitea_config.group }}
 WorkingDirectory={{ gitea_config.data_directory }}
 EnvironmentFile=/etc/default/gitea
-ExecStart=/usr/bin/gitea web -c {{ gitea_config.config_directory }}/app.ini
+ExecStart=/usr/bin/gitea web -c {{ gitea_config.config_directory }}/conf/app.ini
 ExecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=20s
 SendSIGKILL=no

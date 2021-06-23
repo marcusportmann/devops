@@ -1,6 +1,34 @@
 ---
 # file: roles/gitea/tasks/main.yaml
 
+
+#   ____ _   _ _____ ____ _  __ __     ___    ____  ___    _    ____  _     _____ ____
+#  / ___| | | | ____/ ___| |/ / \ \   / / \  |  _ \|_ _|  / \  | __ )| |   | ____/ ___|
+# | |   | |_| |  _|| |   | ' /   \ \ / / _ \ | |_) || |  / _ \ |  _ \| |   |  _| \___ \
+# | |___|  _  | |__| |___| . \    \ V / ___ \|  _ < | | / ___ \| |_) | |___| |___ ___) |
+#  \____|_| |_|_____\____|_|\_\    \_/_/   \_\_| \_\___/_/   \_\____/|_____|_____|____/
+#
+- name: Check the gitea.database_host variable
+  fail:
+    msg: 'No gitea.database_host variable specified'
+  when: ((gitea.database_host is not defined) or (gitea.database_host == None))
+
+- name: Check the gitea.database_name variable
+  fail:
+    msg: 'No gitea.database_name variable specified'
+  when: ((gitea.database_name is not defined) or (gitea.database_name == None))
+
+- name: Check the gitea.database_username variable
+  fail:
+    msg: 'No gitea.database_username variable specified'
+  when: ((gitea.database_username is not defined) or (gitea.database_username == None))
+
+- name: Check the gitea.database_password variable
+  fail:
+    msg: 'No gitea.database_password variable specified'
+  when: ((gitea.database_password is not defined) or (gitea.database_password == None))
+
+
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
@@ -24,6 +52,10 @@
 # | |_| || |  | | | |___ / ___ \
 #  \____|___| |_| |_____/_/   \_\
 #
+- name: Create the Gitea credentials directory
+  local_action: file path="{{ credentials_root }}/gitea" state="directory"
+  become: false
+
 - name: Install Gitea
   block:
   - debug:
@@ -62,7 +94,7 @@
         uid: '{{ gitea_config.user_id }}'
         group: '{{ gitea_config.group }}'
         comment: 'Git Version Control'
-        create_home: no
+        create_home: yes
         shell: /usr/sbin/nologin
         state: present
 
@@ -100,13 +132,16 @@
         mode: '0755'
       notify: restart gitea
 
-    - name: Create the Gitea config directory ({{ gitea_config.config_directory }})
+    - name: Create Gitea config directories
       file:
-        path: '{{ gitea_config.config_directory }}'
-        owner: '{{ gitea_config.user }}'
-        group: '{{ gitea_config.group }}'
-        mode: '0550'
+        path: "{{ item }}"
         state: directory
+        owner: git
+        group: git
+        mode: '0750'
+      with_items:
+        - '{{ gitea_config.config_directory }}'
+        - '{{ gitea_config.config_directory }}/conf'
 
     - name: Create Gitea data directories
       file:
@@ -120,12 +155,102 @@
         - '{{ gitea_config.data_directory }}/custom'
         - '{{ gitea_config.data_directory }}/data'
         - '{{ gitea_config.data_directory }}/log'
+        - '{{ gitea_config.data_directory }}/repositories'
 
     when: (gitea_installed_version != gitea_config.package_version)
 
+- name: Retrieve the JWT secret for Gitea
+  block:
+  - name: Check whether the JWT secret for Gitea exists
+    become: no
+    local_action: stat path='{{ credentials_root }}/gitea/jwt-secret'
+    register: gitea_jwt_secret_stat_result
+
+  - name: Generate and save the JWT secret for Gitea
+    block:
+    - command:
+        cmd: /usr/bin/gitea generate secret JWT_SECRET
+      register: generate_jwt_secret_result
+    - local_action: copy content={{ generate_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/jwt-secret'
+      become: no
+    when: (gitea_jwt_secret_stat_result.stat.exists == False)
+
+  - name: Retrieve the JWT secret for gitea
+    set_fact:
+      gitea_jwt_secret: "{{ lookup('file', '{{ credentials_root }}/gitea/jwt-secret') }}"
+
+- name: Retrieve the LFS JWT secret for Gitea
+  block:
+  - name: Check whether the LFS JWT secret for Gitea exists
+    become: no
+    local_action: stat path='{{ credentials_root }}/gitea/lfs-jwt-secret'
+    register: gitea_lfs_jwt_secret_stat_result
+
+  - name: Generate and save the LFS JWT secret for Gitea
+    block:
+    - command:
+        cmd: /usr/bin/gitea generate secret JWT_SECRET
+      register: generate_lfs_jwt_secret_result
+    - local_action: copy content={{ generate_lfs_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/lfs-jwt-secret'
+      become: no
+    when: (gitea_lfs_jwt_secret_stat_result.stat.exists == False)
+
+  - name: Retrieve the LFS JWT secret for gitea
+    set_fact:
+      gitea_lfs_jwt_secret: "{{ lookup('file', '{{ credentials_root }}/gitea/lfs-jwt-secret') }}"
+
+- name: Retrieve the secret key for Gitea
+  block:
+  - name: Check whether the secret key for Gitea exists
+    become: no
+    local_action: stat path='{{ credentials_root }}/gitea/secret-key'
+    register: gitea_secret_key_stat_result
+
+  - name: Generate and save the secret key for Gitea
+    block:
+    - command:
+        cmd: /usr/bin/gitea generate secret SECRET_KEY
+      register: generate_secret_key_result
+    - local_action: copy content={{ generate_secret_key_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/secret-key'
+      become: no
+    when: (gitea_secret_key_stat_result.stat.exists == False)
+
+  - name: Retrieve the secret key for gitea
+    set_fact:
+      gitea_secret_key: "{{ lookup('file', '{{ credentials_root }}/gitea/secret-key') }}"
+
+- name: Retrieve the internal token for Gitea
+  block:
+  - name: Check whether the internal token for Gitea exists
+    become: no
+    local_action: stat path='{{ credentials_root }}/gitea/internal-token'
+    register: gitea_internal_token_stat_result
+
+  - name: Generate and save the internal token for Gitea
+    block:
+    - command:
+        cmd: /usr/bin/gitea generate secret INTERNAL_TOKEN
+      register: generate_internal_token_result
+    - local_action: copy content={{ generate_internal_token_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/internal-token'
+      become: no
+    when: (gitea_internal_token_stat_result.stat.exists == False)
+
+  - name: Retrieve the internal token for gitea
+    set_fact:
+      gitea_internal_token: "{{ lookup('file', '{{ credentials_root }}/gitea/internal-token') }}"
+
+- name: Generate the Gitea configuration file
+  template:
+    src: app.ini.j2
+    dest: '{{ gitea_config.config_directory }}/conf/app.ini'
+    owner: '{{ gitea_config.user }}'
+    group: '{{ gitea_config.group }}'
+    mode: '0550'
+  notify: restart gitea
+
 - name: Generate the Gitea environment
   template:
-    src: gitea-environment
+    src: gitea-environment.j2
     dest: /etc/default/gitea
     mode: '0644'
   notify: restart gitea
@@ -147,90 +272,31 @@
     daemon_reload: yes
   when: ((gitea_environment_template_result.changed == True) or (gitea_systemd_unit_template_result.changed == True))
 
+- meta: flush_handlers
 
 
+#   ____ ___ _____ _____    _         _    ____  __  __ ___ _   _   _   _ ____  _____ ____
+#  / ___|_ _|_   _| ____|  / \       / \  |  _ \|  \/  |_ _| \ | | | | | / ___|| ____|  _ \
+# | |  _ | |  | | |  _|   / _ \     / _ \ | | | | |\/| || ||  \| | | | | \___ \|  _| | |_) |
+# | |_| || |  | | | |___ / ___ \   / ___ \| |_| | |  | || || |\  | | |_| |___) | |___|  _ <
+#  \____|___| |_| |_____/_/   \_\ /_/   \_\____/|_|  |_|___|_| \_|  \___/|____/|_____|_| \_\
+#
+- name: Check whether the admin user exists
+  block:
+  - set_fact:
+      gitea_admin_user_exists: False
+  - shell:
+      cmd: "/usr/bin/gitea --config /etc/gitea/conf/app.ini admin user list --admin | sed -En '/^[0-9]+( *){{ gitea_config.admin_username }} .*/p'"
+    become: true
+    become_user: "{{ gitea_config.user }}"
+    register: gitea_admin_user_list_result
+  - set_fact:
+      gitea_admin_user_exists: True
+    when: ((gitea_admin_user_list_result.stdout_lines | length) > 0)
 
-#- name: Create the {{ prometheus_server_config.data_directory }} directory
-#  file:
-#    path: '{{ prometheus_server_config.data_directory }}'
-#    owner: '{{ prometheus_server_config.user }}'
-#    group: '{{ prometheus_server_config.group }}'
-#    mode: '0750'
-#    state: directory
-#
-#- name: Create the {{ prometheus_server_config.data_directory }}/metrics2 directory
-#  file:
-#    path: '{{ prometheus_server_config.data_directory }}/metrics2'
-#    owner: '{{ prometheus_server_config.user }}'
-#    group: '{{ prometheus_server_config.group }}'
-#    mode: '0750'
-#    state: directory
-#
-#- name: Generate the Prometheus configuration
-#  template:
-#    src: prometheus.yaml.j2
-#    dest: /etc/prometheus/prometheus.yml
-#    owner: '{{ prometheus_server_config.user }}'
-#    group: '{{ prometheus_server_config.group }}'
-#    mode: '0440'
-#  register: prometheus_server_configuration_template_result
-#
-#
-#- name: Setup the Prometheus Kubernetes monitoring configuration
-#  block:
-#  - name: Create the /etc/prometheus/k8s directory
-#    file:
-#      path: /etc/prometheus/k8s
-#      owner: '{{ prometheus_server_config.user }}'
-#      group: '{{ prometheus_server_config.group }}'
-#      mode: '0550'
-#      state: directory
-#
-#  - name: Copy the certificate for the Kubernetes CA to the Prometheus host
-#    block:
-#    - name: Fetch the /etc/kubernetes/pki/ca.crt from the first master node in the Kubernetes cluster
-#      fetch:
-#        src: /etc/kubernetes/pki/ca.crt
-#        dest: fetched_files
-#      delegate_to: "{{ groups['k8s_master'][0] }}"
-#
-#    - name: Copy the /etc/kubernetes/pki/ca.crt to the Prometheus host
-#      copy:
-#        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/ca.crt
-#        dest: /etc/prometheus/k8s/ca.crt
-#        owner: '{{ prometheus_server_config.user }}'
-#        group: '{{ prometheus_server_config.group }}'
-#        mode: '0440'
-#
-#  - name: Save the token for the Prometheus service account
-#    block:
-#    - shell:
-#        cmd: kubectl -n kube-system get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='prometheus')].data.token}"|base64 --decode
-#      delegate_to: "{{ groups['k8s_master'][0] }}"
-#      register: prometheus_service_account_secret_token_output
-#
-#    - set_fact:
-#        prometheus_service_account_secret_token: '{{ prometheus_service_account_secret_token_output.stdout }}'
-#
-#    - shell:
-#        cmd: echo '{{ prometheus_service_account_secret_token }}' > /etc/prometheus/k8s/token
-#
-#  when: ("k8s_master" in groups.keys())
-#
-#- name: Restart the Prometheus service
-#  systemd:
-#    name: prometheus.service
-#    state: restarted
-#    enabled: yes
-#    daemon_reload: yes
-#  when: ((prometheus_server_configuration_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
-#
-#- name: Ensure that the Prometheus service is started
-#  systemd:
-#    name: prometheus.service
-#    state: started
-#    enabled: yes
-#
-#
-
-
+- name: Create the gite user
+  shell:
+    cmd: "/usr/bin/gitea --config /etc/gitea/conf/app.ini admin user create --admin --username {{ gitea_config.admin_username }} --password {{ gitea_config.admin_password }} --email {{ gitea_config.admin_email }}"
+  become: true
+  become_user: "{{ gitea_config.user }}"
+  when: (gitea_admin_user_exists == False)

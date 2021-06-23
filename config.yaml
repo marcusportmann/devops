@@ -143,9 +143,6 @@ variables:
 
   postgresql:
     clusters:
-    - name: test
-      servers:
-      - hostname: test.local
     - name: devops
       servers:
       - hostname: devops.local
@@ -159,19 +156,23 @@ variables:
         - {type: host, database: all, user: all, address: '::1/128', auth_method: 'scram-sha-256'}
         - {type: host, database: all, user: all, address: '0.0.0.0/0', auth_method: 'scram-sha-256'}
         - {type: host, database: all, user: all, address: '::/0', auth_method: 'scram-sha-256'}
-
       databases:
-      - name: test
+      - name: gitea
         lc_collate: 'en_US.UTF-8'
         lc_ctype: 'en_US.UTF-8'
         encoding: 'UTF-8'
       users:
-      - name: test
-        password: 'SCRAM-SHA-256$4096:9qBGFOA+0XKlThLUP9f0Pw==$5wuK98/J1eR9LvVcr+JYJf7mnMs3ukynDkTJK+M+svA=:j9mYo+OLy5xx8Do/085MSMX6yFa+e5VkEnAR4kxxLKc='
-        db: test
+      - name: gitea
+        password: 'SCRAM-SHA-256$4096:2qdRzphtj0qlnvcRKr65eg==$q/OaUWuShbOHQ2F0csYeT3uEWbDLrFdwDVTYy8/FJQQ=:kXUF2MFdTxjRA2I3xYbHBuU2Hqv1uKnL9h36/KTxrFU='
+        db: gitea
         priv: 'ALL'
         role_attr_flags: 'LOGIN'
-      users_no_log: false
+
+  gitea:
+    database_host: devops.local
+    database_name: gitea
+    database_username: gitea
+    database_password: Password1
 
   test:
     test_name: test_value
@@ -1291,11 +1292,14 @@ hosts:
 # | |_| || | |  _  | |___|  _ <  |  _  | |_| |___) || |  ___) |
 #  \___/ |_| |_| |_|_____|_| \_\ |_| |_|\___/|____/ |_| |____/
 #
+
+# monitored,prometheus_server,grafana,postgresql
+
 - name:               devops.local
   domain:             local
-  type:               centos-7
+  type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,grafana,postgresql
+  ansible_groups:     postgresql,gitea
   virtualbox:
     cpus:             4
     memory:           8192

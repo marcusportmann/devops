@@ -1,0 +1,86 @@
+APP_NAME = {{ gitea_config.app_name }}
+RUN_USER = {{ gitea_config.user }}
+RUN_MODE = {{ gitea_config.run_mode }}
+
+[oauth2]
+JWT_SECRET = {{ gitea_jwt_secret }}
+
+[security]
+SECRET_KEY     = {{ gitea_secret_key }}
+INTERNAL_TOKEN = {{ gitea_internal_token }}
+INSTALL_LOCK   = true
+
+[server]
+PROTOCOL         = http
+ROOT_URL         = http://{{ inventory_hostname }}/
+HTTP_PORT        = 80
+DOMAIN           = {{ inventory_hostname }}
+# LOCAL_ROOT_URL  = %(PROTOCOL)s://%(HTTP_ADDR)s:%(HTTP_PORT)s/
+LOCAL_ROOT_URL   = %(PROTOCOL)://%(HTTP_ADDR)s:%(HTTP_PORT)/
+DISABLE_SSH      = true
+LFS_START_SERVER = true
+LFS_CONTENT_PATH = {{ gitea_config.data_directory }}/data/lfs
+LFS_JWT_SECRET   = {{ gitea_lfs_jwt_secret }}
+OFFLINE_MODE     = true
+ENABLE_GZIP      = true
+LANDING_PAGE     = explore
+
+[database]
+DB_TYPE  = postgres
+HOST     = {{ gitea_config.database_host }}:5432
+NAME     = {{ gitea_config.database_name }}
+USER     = {{ gitea_config.database_username }}
+PASSWD   = {{ gitea_config.database_password }}
+SSL_MODE = require
+PATH     = {{ gitea_config.data_directory }}/data/gitea.db
+CHARSET  = utf8
+LOG_SQL  = false
+
+[repository]
+ROOT = {{ gitea_config.data_directory }}/repositories
+# DISABLE_HTTP_GIT = true
+
+[webhook]
+DELIVER_TIMEOUT = 120
+
+# [mailer]
+# ENABLED = true
+# HOST    = mail.local:587
+# FROM    = git@local
+# USER    = git
+# PASSWD  = xxx
+
+[service]
+REGISTER_EMAIL_CONFIRM            = false
+ENABLE_NOTIFY_MAIL                = true
+DISABLE_REGISTRATION              = true
+ALLOW_ONLY_EXTERNAL_REGISTRATION  = false
+ENABLE_CAPTCHA                    = false
+REQUIRE_SIGNIN_VIEW               = false
+DEFAULT_KEEP_EMAIL_PRIVATE        = false
+DEFAULT_ALLOW_CREATE_ORGANIZATION = false
+DEFAULT_ENABLE_TIMETRACKING       = true
+NO_REPLY_ADDRESS                  = noreply.example.org
+ENABLE_USER_HEATMAP               = false
+
+[picture]
+DISABLE_GRAVATAR        = true
+ENABLE_FEDERATED_AVATAR = false
+
+[openid]
+ENABLE_OPENID_SIGNIN = false
+ENABLE_OPENID_SIGNUP = false
+
+[session]
+PROVIDER = file
+
+[i18n]
+LANGS = en-US
+NAMES = English
+
+[log]
+MODE  = file
+LEVEL = Info
+
+
+
