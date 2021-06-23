@@ -294,7 +294,7 @@
       gitea_admin_user_exists: True
     when: ((gitea_admin_user_list_result.stdout_lines | length) > 0)
 
-- name: Create the gite user
+- name: Create the admin user
   shell:
     cmd: "/usr/bin/gitea --config /etc/gitea/conf/app.ini admin user create --admin --username {{ gitea_config.admin_username }} --password {{ gitea_config.admin_password }} --email {{ gitea_config.admin_email }}"
   become: true
