@@ -1,0 +1,34 @@
+---
+# file: roles/gitea/tasks/assert.yaml
+
+- name: Check the gitea.database_host variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - gitea.database_host is defined
+    - gitea.database_host is string
+    - gitea.database_host != ''
+    quiet: yes
+
+- name: Check the gitea.database_name variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - gitea.database_name is defined
+    - gitea.database_name is string
+    - gitea.database_name != ''
+    quiet: yes
+
+- name: Check the gitea.database_username variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - gitea.database_username is defined
+    - gitea.database_username is string
+    - gitea.database_username != ''
+    quiet: yes
+
+- name: Check the gitea.database_password variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - gitea.database_password is defined
+    - gitea.database_password is string
+    - gitea.database_password != ''
+    quiet: yes

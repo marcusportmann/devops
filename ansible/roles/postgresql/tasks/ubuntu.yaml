@@ -5,21 +5,21 @@
     msg: Applying the Ubuntu-specific Postgresql configuration
 
 - name: Allow all hosts access to tcp port 5432
-  ufw:
+  community.general.ufw:
     rule: allow
     port: '5432'
     proto: tcp
 
-- set_fact:
+- ansible.builtin.set_fact:
     postgresql_config_directory: '/etc/postgresql/{{ postgresql_config.version }}/main'
 
-- set_fact:
+- ansible.builtin.set_fact:
     postgresql_bin_directory: '/usr/lib/postgresql/{{ postgresql_config.version }}/bin'
 
-- set_fact:
+- ansible.builtin.set_fact:
     postgresql_data_directory: '{{ postgresql_config.data_directory_root|default("/var/lib") }}/postgresql/{{ postgresql_config.version }}/main'
 
-- set_fact:
+- ansible.builtin.set_fact:
     postgresql_service: 'postgresql@{{ postgresql_config.version }}-main'
 
 - name: Add the PostgreSQL Global Development Group (PGDG) apt key
@@ -35,11 +35,11 @@
   register: add_pgdg_repository_result
 
 - name: Update the Apt cache
-  apt: update_cache=yes cache_valid_time=3600
+  ansible.builtin.apt: update_cache=yes cache_valid_time=3600
   when: (add_pgdg_repository_result.changed == True)
 
 - name: Install the PostgreSQL packages
-  apt:
+  ansible.builtin.apt:
     state: present
     policy_rc_d: 101
     name:
@@ -47,7 +47,7 @@
      - 'postgresql-client-{{ postgresql_config.version }}={{ postgresql_config.ubuntu_package_version }}'
 
 - name: Install the python3-psycopg2 library
-  apt:
+  ansible.builtin.apt:
     state: present
     name:
      - 'python3-psycopg2'
@@ -64,21 +64,21 @@
 - name: Apply the custom data directory configuration
   block:
   - name: Ensure that the {{ postgresql_service }} service is stopped
-    systemd:
+    ansible.builtin.systemd:
       name: '{{ postgresql_service }}'
       state: stopped
       enabled: yes
 
   - name: Copy the /var/lib/postgresql directory to {{ postgresql_config.data_directory_root }}/postgresql.
-    shell:
+    ansible.builtin.shell:
       cmd: rsync -av /var/lib/postgresql {{ postgresql_config.data_directory_root }}
 
   - name: Rename /var/lib/postgresql directory
-    command:
+    ansible.builtin.command:
       cmd: mv /var/lib/postgresql /var/lib/postgresql-backup
 
   - name: Edit the existing configuration file to change the data directory path
-    lineinfile:
+    ansible.builtin.lineinfile:
       path: '/etc/postgresql/{{ postgresql_config.version }}/main/postgresql.conf'
       regexp: '^data_directory ='
       line: "data_directory = '{{ postgresql_data_directory }}'"
@@ -89,7 +89,7 @@
   when: ((postgresql_config.data_directory_root is defined) and (postgresql_config.data_directory_root != None) and (postgresql_data_directory_stat_result.stat.exists == False))
 
 - name: Generate the /etc/profile.d/postgresql.sh file
-  template:
+  ansible.builtin.template:
     src: postgresql.sh.j2
     dest: /etc/profile.d/postgresql.sh
     owner: 'root'

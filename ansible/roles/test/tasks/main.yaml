@@ -1,5 +1,13 @@
+---
+# file: roles/test/tasks/main.yaml
 
-- debug:
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
+
+- ansible.builtin.debug:
     msg: 'Hello World!'
 
 

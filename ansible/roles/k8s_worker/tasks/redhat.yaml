@@ -10,28 +10,28 @@
 # See: https://github.com/rancher/rancher/issues/28840
 # See: https://github.com/flannel-io/flannel/issues/1033
 - name: Add the kubernetes_pods firewalld zone
-  firewalld:
+  ansible.posix.firewalld:
     zone: kubernetes_pods
     state: present
     permanent: yes
   register: add_kubernetes_pods_firewalld_zone_result
 
 - name: Add the ACCEPT target to the kubernetes_pods firewalld zone
-  firewalld:
+  ansible.posix.firewalld:
     zone: kubernetes_pods
     target: ACCEPT
     permanent: yes
     state: enabled
 
 - name: Add the {{ k8s_config.pod_subnet }} source to the kubernetes_pods firewalld zone
-  firewalld:
+  ansible.posix.firewalld:
     zone: kubernetes_pods
     source: '{{ k8s_config.pod_subnet }}'
     permanent: yes
     state: enabled
 
 - name: Reload firewalld
-  shell:
+  ansible.builtin.shell:
     cmd: firewall-cmd --reload
   when: (add_kubernetes_pods_firewalld_zone_result.changed == True)
 
@@ -43,49 +43,49 @@
 # |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____| |_| \_\\___/|_____|_____|____/
 #
 - name: Enable IP masquerade on firewalld
-  firewalld:
+  ansible.posix.firewalld:
     masquerade: 'yes'
     state: enabled
     permanent: yes
     immediate: yes
 
 - name: Allow all hosts access to tcp port 22 (SSH)
-  firewalld:
+  ansible.posix.firewalld:
     port: 22/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port 4149 (Default cAdvisor port used to query container metrics)
-  firewalld:
+  ansible.posix.firewalld:
     port: 4149/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port 9100 (Prometheus Node Exporter)
-  firewalld:
+  ansible.posix.firewalld:
     port: 9100/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port 10250 (API which allows full node access)
-  firewalld:
+  ansible.posix.firewalld:
     port: 10250/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port 10255 (Unauthenticated read-only port, allowing access to node state)
-  firewalld:
+  ansible.posix.firewalld:
     port: 10255/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp ports 30000-32767 (Nodeport)
-  firewalld:
+  ansible.posix.firewalld:
     port: 30000-32767/tcp
     permanent: yes
     state: enabled
@@ -95,28 +95,28 @@
 - name: Open ports for the Weave CNI provider
   block:
   - name: Allow all hosts access to tcp port 6783 for the Weave CNI provider
-    firewalld:
+    ansible.posix.firewalld:
       port: 6783/tcp
       permanent: yes
       state: enabled
       immediate: yes
 
   - name: Allow all access to udp port 6783 for the Weave CNI provider
-    firewalld:
+    ansible.posix.firewalld:
       port: 6783/udp
       permanent: yes
       state: enabled
       immediate: yes
 
   - name: Allow all access to tcp port 6784 for the Weave CNI provider
-    firewalld:
+    ansible.posix.firewalld:
       port: 6784/tcp
       permanent: yes
       state: enabled
       immediate: yes
 
   - name: Allow all access to udp port 6784 for the Weave CNI provider
-    firewalld:
+    ansible.posix.firewalld:
       port: 6784/udp
       permanent: yes
       state: enabled
@@ -128,14 +128,14 @@
 - name: Open ports for the Flannel CNI provider
   block:
   - name: Allow all hosts access to udp port 8285 for the Flannel CNI provider
-    firewalld:
+    ansible.posix.firewalld:
       port: 8285/udp
       permanent: yes
       state: enabled
       immediate: yes
 
   - name: Allow all access to udp port 8472 for the Weave Flannel provider
-    firewalld:
+    ansible.posix.firewalld:
       port: 8472/udp
       permanent: yes
       state: enabled

@@ -1,28 +1,28 @@
 ---
 # file: roles/prometheus_alert_manager/tasks/redhat.yaml
 
-- debug:
-    msg: Applying the RedHat-specific Prometheus Alert Manager configuration  
+- ansible.builtin.debug:
+    msg: Applying the RedHat-specific Prometheus Alert Manager configuration
 
 - name: Allow all hosts access to tcp port 9093
-  firewalld:
+  ansible.posix.firewalld:
     port: 9093/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow Prometheus Alert Manager hosts access to tcp port 9094
-  firewalld:
+  ansible.posix.firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=9094 protocol=tcp accept'
     state: enabled
     permanent: yes
     immediate: yes
-  loop: "{{ groups['prometheus_alert_manager'] }}"    
+  loop: "{{ groups['prometheus_alert_manager'] }}"
 
 - name: Allow Prometheus Alert Manager hosts access to udp port 9094
-  firewalld:
+  ansible.posix.firewalld:
     rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=9094 protocol=udp accept'
     state: enabled
     permanent: yes
     immediate: yes
-  loop: "{{ groups['prometheus_alert_manager'] }}"    
+  loop: "{{ groups['prometheus_alert_manager'] }}"

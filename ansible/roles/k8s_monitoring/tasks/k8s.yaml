@@ -12,47 +12,47 @@
   - name: Configure the monitoring Helm repositories
     block:
     - name: Check if the elastic Helm repository has been added
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm repo list | grep elastic | wc -l
       register: helm_elastic_repo_added_output
 
     - name: Add the elastic Helm repository
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/helm repo add elastic https://helm.elastic.co
       when: helm_elastic_repo_added_output.stdout == '0'
 
     - name: Check if the grafana Helm repository has been added
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm repo list | grep grafana | wc -l
       register: helm_grafana_repo_added_output
 
     - name: Add the grafana Helm repository
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/helm repo add grafana https://grafana.github.io/helm-charts
       when: helm_grafana_repo_added_output.stdout == '0'
 
     - name: Check if the jaegertracing Helm repository has been added
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm repo list | grep jaegertracing | wc -l
       register: helm_jaegertracing_repo_added_output
 
     - name: Add the jaegertracing Helm repository
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
       when: helm_jaegertracing_repo_added_output.stdout == '0'
 
     - name: Check if the prometheus-community Helm repository has been added
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm repo list | grep prometheus-community | wc -l
       register: helm_prometheus_community_repo_added_output
 
     - name: Add the prometheus-community Helm repository
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
       when: helm_prometheus_community_repo_added_output.stdout == '0'
 
   - name: Create the monitoring-system namespace
-    shell:
+    ansible.builtin.shell:
       cmd: /usr/bin/kubectl create namespace monitoring-system --dry-run -o yaml | kubectl apply -f -
 
   #  _____ _        _    ____ _____ ___ ____ ____  _____    _    ____   ____ _   _
@@ -66,67 +66,67 @@
     - name: Configure the Elasticsearch certificates and secrets if security is enabled
       block:
       - name: Create the /var/tmp/ansible/elasticsearch-pki directory
-        file:
+        ansible.builtin.file:
           path: /var/tmp/ansible/elasticsearch-pki
           state: directory
 
       - name: Copy the root CA certificate
-        copy:
+        ansible.builtin.copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
           dest: '/var/tmp/ansible/elasticsearch-pki/ca.pem'
 
       - name: Copy the Elasticsearch private key
-        copy:
+        ansible.builtin.copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem'
 
       - name: Copy the Elasticsearch certificate
-        copy:
+        ansible.builtin.copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-elasticsearch-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem'
 
       - name: Create the secret in the monitoring-system namespace for the Elasticsearch private key and certificates
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl create -n monitoring-system secret generic elasticsearch-certs --from-file=/var/tmp/ansible/elasticsearch-pki/elasticsearch-key.pem --from-file=/var/tmp/ansible/elasticsearch-pki/elasticsearch-cert.pem --from-file=/var/tmp/ansible/elasticsearch-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
 
       - name: Check if the Elasticsearch credentials secret exists
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep elasticsearch-credentials | wc -l
         register: elasticsearch_credentials_secret_exists_output
 
       - name: Create the Elasticsearch credentials secret if it does not exist
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl -n monitoring-system create secret generic elasticsearch-credentials --from-literal=username=elastic --from-literal=password=`tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1` --dry-run -o yaml | kubectl apply -f -
         when: (elasticsearch_credentials_secret_exists_output.stdout == '0')
 
       - name: Retrieve the Elasticsearch password
         block:
-        - shell:
+        - ansible.builtin.shell:
             cmd: /usr/bin/kubectl -n monitoring-system get secret elasticsearch-credentials -o=jsonpath='{.data.password}' | base64 --decode
           register: retrieve_elasticsearch_credentials_password_output
 
-        - set_fact:
+        - ansible.builtin.set_fact:
             elasticsearch_credentials_password: '{{ retrieve_elasticsearch_credentials_password_output.stdout }}'
 
-        - debug:
+        - ansible.builtin.debug:
             msg: 'Elasticsearch Password: {{ elasticsearch_credentials_password }}'
 
     - name: Install a single node Elasticsearch cluster using Helm
       block:
       - name: Check if Elasticsearch is installed
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_installed_helm_chart_version_output
 
       - name: Install Elasticsearch
         block:
         - name: Generate the Elasticsearch Helm values
-          template:
+          ansible.builtin.template:
             src: elasticsearch-standalone-values.yaml.j2
             dest: /var/tmp/ansible/elasticsearch-standalone-values.yaml
 
         - name: Install Elasticsearch using Helm
-          command:
+          ansible.builtin.command:
             cmd: /usr/bin/helm upgrade elasticsearch elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-standalone-values.yaml
 
         - name: Wait for 10 seconds for the Elasticsearch initialization to start
@@ -136,7 +136,7 @@
         when: elasticsearch_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
       - name: Wait for the Elasticsearch initialization to complete
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
       when: (k8s_config.monitoring.elasticsearch.cluster_type == 'standalone')
@@ -144,53 +144,53 @@
     - name: Install a multi node Elasticsearch cluster using Helm
       block:
       - name: Check if the Elasticsearch master nodes are installed
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch-master' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_master_installed_helm_chart_version_output
 
       - name: Install the Elasticsearch master nodes
         block:
         - name: Generate the master nodes Elasticsearch Helm values
-          template:
+          ansible.builtin.template:
             src: elasticsearch-master-values.yaml.j2
             dest: /var/tmp/ansible/elasticsearch-master-values.yaml
 
         - name: Install the Elasticsearch master nodes using Helm
-          command:
+          ansible.builtin.command:
             cmd: /usr/bin/helm upgrade elasticsearch-master elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-master-values.yaml
         when: elasticsearch_master_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
       - name: Check if the Elasticsearch ingest nodes are installed
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch-ingest' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_ingest_installed_helm_chart_version_output
 
       - name: Install the Elasticsearch ingest nodes
         block:
         - name: Generate the ingest nodes Elasticsearch Helm values
-          template:
+          ansible.builtin.template:
             src: elasticsearch-ingest-values.yaml.j2
             dest: /var/tmp/ansible/elasticsearch-ingest-values.yaml
 
         - name: Install the Elasticsearch ingest nodes using Helm
-          command:
+          ansible.builtin.command:
             cmd: /usr/bin/helm upgrade elasticsearch-ingest elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-ingest-values.yaml
         when: elasticsearch_ingest_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
       - name: Check if the Elasticsearch data nodes are installed
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/helm -n monitoring-system list --filter 'elasticsearch-data' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
         register: elasticsearch_data_installed_helm_chart_version_output
 
       - name: Install the Elasticsearch data nodes
         block:
         - name: Generate the data nodes Elasticsearch Helm values
-          template:
+          ansible.builtin.template:
             src: elasticsearch-data-values.yaml.j2
             dest: /var/tmp/ansible/elasticsearch-data-values.yaml
 
         - name: Install the Elasticsearch data nodes using Helm
-          command:
+          ansible.builtin.command:
             cmd: /usr/bin/helm upgrade elasticsearch-data elastic/elasticsearch --install --version={{ k8s_config.monitoring.elasticsearch.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/elasticsearch-data-values.yaml
         when: elasticsearch_data_installed_helm_chart_version_output.stdout != k8s_config.monitoring.elasticsearch.helm_chart_version
 
@@ -199,7 +199,7 @@
           timeout: 10
 
       - name: Wait for the Elasticsearch initialization to complete
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
       when: ((k8s_config.monitoring.elasticsearch.cluster_type == 'minimal') or (k8s_config.monitoring.elasticsearch.cluster_type == 'full'))
@@ -218,53 +218,53 @@
     - name: Configure the Kibana certificates and secrets if security is enabled
       block:
       - name: Create the /var/tmp/ansible/kibana-pki directory
-        file:
+        ansible.builtin.file:
           path: /var/tmp/ansible/kibana-pki
           state: directory
 
       - name: Copy the root CA certificate
-        copy:
+        ansible.builtin.copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
           dest: '/var/tmp/ansible/kibana-pki/ca.pem'
 
       - name: Copy the Kibana private key
-        copy:
+        ansible.builtin.copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/kibana-pki/kibana-key.pem'
 
       - name: Copy the Kibana certificate
-        copy:
+        ansible.builtin.copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-kibana-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/kibana-pki/kibana-cert.pem'
 
       - name: Create the secret in the monitoring-system namespace for the Kibana private key and certificates
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl create -n monitoring-system secret generic kibana-certs --from-file=/var/tmp/ansible/kibana-pki/kibana-key.pem --from-file=/var/tmp/ansible/kibana-pki/kibana-cert.pem --from-file=/var/tmp/ansible/kibana-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
 
       - name: Check if the Kibana Elasticsearch credentials secret exists
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep kibana-elasticsearch-credentials | wc -l
         register: kibana_elasticsearch_credentials_secret_exists_output
 
       - name: Create the Kibana Elasticsearch credentials secret if it does not exist
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl -n monitoring-system create secret generic kibana-elasticsearch-credentials --from-literal=username=elastic --from-literal=password={{ elasticsearch_credentials_password }} --dry-run -o yaml | kubectl apply -f -
         when: (kibana_elasticsearch_credentials_secret_exists_output.stdout == '0')
 
     - name: Check if Kibana is installed
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm -n monitoring-system list --filter 'kibana' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: kibana_installed_helm_chart_version_output
 
     - name: Install Kibana
       block:
       - name: Generate the Kibana Helm values
-        template:
+        ansible.builtin.template:
           src: kibana-values.yaml.j2
           dest: /var/tmp/ansible/kibana-values.yaml
 
       - name: Install Kibana using Helm
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/helm upgrade kibana elastic/kibana --install --version={{ k8s_config.monitoring.kibana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/kibana-values.yaml
 
       - name: Wait for 10 seconds for the Kibana initialization to start
@@ -272,7 +272,7 @@
           timeout: 10
 
       - name: Wait for the Kibana initialization to complete
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
       when: kibana_installed_helm_chart_version_output.stdout != k8s_config.monitoring.kibana.helm_chart_version
@@ -291,53 +291,53 @@
     - name: Configure the Jaeger certificates and secrets if security is enabled
       block:
       - name: Create the /var/tmp/ansible/jaeger-pki directory
-        file:
+        ansible.builtin.file:
           path: /var/tmp/ansible/jaeger-pki
           state: directory
 
       - name: Copy the root CA certificate
-        copy:
+        ansible.builtin.copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
           dest: '/var/tmp/ansible/jaeger-pki/ca.pem'
 
       - name: Copy the Jaeger private key
-        copy:
+        ansible.builtin.copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/var/tmp/ansible/jaeger-pki/jaeger-key.pem'
 
       - name: Copy the Jaeger certificate
-        copy:
+        ansible.builtin.copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-jaeger-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/var/tmp/ansible/jaeger-pki/jaeger-cert.pem'
 
       - name: Create the secret in the monitoring-system namespace for the Jaeger private key and certificates
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl create -n monitoring-system secret generic jaeger-certs --from-file=/var/tmp/ansible/jaeger-pki/jaeger-key.pem --from-file=/var/tmp/ansible/jaeger-pki/jaeger-cert.pem --from-file=/var/tmp/ansible/jaeger-pki/ca.pem --dry-run -o yaml | kubectl apply -f -
 
       - name: Check if the Jaeger Elasticsearch credentials secret exists
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep jaeger-elasticsearch-credentials | wc -l
         register: jaeger_elasticsearch_credentials_secret_exists_output
 
       - name: Create the Jaeger Elasticsearch credentials secret if it does not exist
-        shell:
+        ansible.builtin.shell:
           cmd: /usr/bin/kubectl -n monitoring-system create secret generic jaeger-elasticsearch-credentials --from-literal=username=elastic --from-literal=password={{ elasticsearch_credentials_password }} --dry-run -o yaml | kubectl apply -f -
         when: (jaeger_elasticsearch_credentials_secret_exists_output.stdout == '0')
 
     - name: Check if Jaeger is installed
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm -n monitoring-system list --filter 'jaeger' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: jaeger_installed_helm_chart_version_output
 
     - name: Install Jaeger
       block:
       - name: Generate the Jaeger Helm values
-        template:
+        ansible.builtin.template:
           src: jaeger-values.yaml.j2
           dest: /var/tmp/ansible/jaeger-values.yaml
 
       - name: Install Jaeger using Helm
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/helm upgrade jaeger jaegertracing/jaeger --install --version={{ k8s_config.monitoring.jaeger.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/jaeger-values.yaml
 
       - name: Wait for 10 seconds for the Jaeger initialization to start
@@ -345,7 +345,7 @@
           timeout: 10
 
       - name: Wait for the Jaeger initialization to complete
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
       when: jaeger_installed_helm_chart_version_output.stdout != k8s_config.monitoring.jaeger.helm_chart_version
@@ -362,19 +362,19 @@
   - name: Install and configure Prometheus if it is enabled
     block:
     - name: Check if Prometheus is installed
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm -n monitoring-system list --filter 'prometheus' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: prometheus_installed_helm_chart_version_output
 
     - name: Install Prometheus
       block:
       - name: Generate the Prometheus Helm values
-        template:
+        ansible.builtin.template:
           src: prometheus-values.yaml.j2
           dest: /var/tmp/ansible/prometheus-values.yaml
 
       - name: Install Prometheus using Helm
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/helm upgrade prometheus prometheus-community/prometheus --install --version={{ k8s_config.monitoring.prometheus.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/prometheus-values.yaml
 
       - name: Wait for 10 seconds for the Prometheus initialization to start
@@ -382,18 +382,18 @@
           timeout: 10
 
       - name: Wait for the Prometheus initialization to complete
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
       when: prometheus_installed_helm_chart_version_output.stdout != k8s_config.monitoring.prometheus.helm_chart_version
 
     - name: Generate the Prometheus Server configuration
-      template:
+      ansible.builtin.template:
         src: prometheus-server-config-map.yaml.j2
         dest: /var/tmp/ansible/prometheus-server-config-map.yaml
 
     - name: Apply the Prometheus Server configuration to Kubernetes
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-server-config-map.yaml
 
     when: ((k8s_config.monitoring.prometheus.enabled is defined) and (k8s_config.monitoring.prometheus.enabled != None) and (k8s_config.monitoring.prometheus.enabled == true))
@@ -410,29 +410,29 @@
     - name: Configure the Grafana certificates and secrets
       block:
         - name: Check if the Grafana admin credentials secret exists
-          shell:
+          ansible.builtin.shell:
             cmd: /usr/bin/kubectl -n monitoring-system get secret | awk {'print $1'} | grep grafana-admin-credentials | wc -l
           register: grafana_admin_credentials_secret_exists_output
 
         - name: Create the Grafana admin credentials secret if it does not exist
-          shell:
+          ansible.builtin.shell:
             cmd: /usr/bin/kubectl -n monitoring-system create secret generic grafana-admin-credentials --from-literal=username=admin --from-literal=password=admin --dry-run -o yaml | kubectl apply -f -
           when: (grafana_admin_credentials_secret_exists_output.stdout == '0')
 
     - name: Check if Grafana is installed
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm -n monitoring-system list --filter 'grafana' --output json | jq -r '.[0].chart' | cut -s -f2- -d-
       register: grafana_installed_helm_chart_version_output
 
     - name: Install Grafana
       block:
       - name: Generate the Grafana Helm values
-        template:
+        ansible.builtin.template:
           src: grafana-values.yaml.j2
           dest: /var/tmp/ansible/grafana-values.yaml
 
       - name: Install Grafana using Helm
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/helm upgrade grafana grafana/grafana --install --version={{ k8s_config.monitoring.grafana.helm_chart_version }} --namespace=monitoring-system --values=/var/tmp/ansible/grafana-values.yaml
 
       - name: Wait for 10 seconds for the Grafana initialization to start
@@ -440,7 +440,7 @@
           timeout: 10
 
       - name: Wait for the Grafana initialization to complete
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl wait --namespace=monitoring-system --for=condition=Ready pods --all --timeout=1200s
 
       when: grafana_installed_helm_chart_version_output.stdout != k8s_config.monitoring.grafana.helm_chart_version
@@ -448,41 +448,41 @@
     - name: Generate and install the Kubernetes Grafana dashboard ConfigMaps
       block:
       - name: Generate the Kubernetes Grafana dashboard ConfigMaps
-        template:
+        ansible.builtin.template:
           src: k8s-grafana-dashboard-config-maps.yaml.j2
           dest: /var/tmp/ansible/k8s-grafana-dashboard-config-maps.yaml
 
       - name: Install the Kubernetes Grafana dashboard ConfigMaps
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/k8s-grafana-dashboard-config-maps.yaml
 
     - name: Generate and install the Istio Grafana dashboard ConfigMaps
       block:
       - name: Generate the Istio Grafana dashboard ConfigMaps
-        template:
+        ansible.builtin.template:
           src: istio-grafana-dashboard-config-maps.yaml.j2
           dest: /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
 
       - name: Install the Istio Grafana dashboard ConfigMaps
-        command:
+        ansible.builtin.command:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/istio-grafana-dashboard-config-maps.yaml
 
       when: ((k8s_config.istio.enabled is defined) and (k8s_config.istio.enabled != None) and (k8s_config.istio.enabled == true))
 
     - name: Retrieve the grafana admin username and password
       block:
-      - shell:
+      - ansible.builtin.shell:
           cmd: kubectl -n monitoring-system get secret grafana-admin-credentials -o=jsonpath='{.data.username}' | base64 --decode
         register: grafana_admin_username_output
 
-      - debug:
+      - ansible.builtin.debug:
           msg: 'Grafana Admin Username: {{ grafana_admin_username_output.stdout }}'
 
-      - shell:
+      - ansible.builtin.shell:
           cmd: kubectl -n monitoring-system get secret grafana-admin-credentials -o=jsonpath='{.data.password}' | base64 --decode
         register: grafana_admin_password_output
 
-      - debug:
+      - ansible.builtin.debug:
           msg: 'Grafana Admin Password: {{ grafana_admin_password_output.stdout }}'
 
     when: ((k8s_config.monitoring.grafana.enabled is defined) and (k8s_config.monitoring.grafana.enabled != None) and (k8s_config.monitoring.grafana.enabled == true))

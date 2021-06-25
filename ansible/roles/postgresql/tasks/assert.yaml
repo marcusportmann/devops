@@ -1,0 +1,15 @@
+---
+# file: roles/postgresql/tasks/assert.yaml
+
+- name: Check the postgresql variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - postgresql is defined
+    quiet: yes
+
+- name: Check the postgresql.clusters variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - postgresql.clusters is defined
+    - (postgresql.clusters | length) >  0
+    quiet: yes

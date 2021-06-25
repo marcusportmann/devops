@@ -2,6 +2,6 @@
 # file: roles/grafana/handlers/main.yaml
 
 - name: restart grafana-server
-  systemd:
+  ansible.builtin.systemd:
     name: grafana-server
     state: restarted

@@ -1,16 +1,34 @@
 ---
 # file: roles/grafana/tasks/main.yaml
 
-- set_fact:
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
+#  ____  _____ _____   _____ _    ____ _____ ____
+# / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|
+# \___ \|  _|   | |   | |_ / _ \| |     | | \___ \
+#  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
+# |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
+#
+- ansible.builtin.set_fact:
     prometheus_server_url: http://{{ groups['prometheus_server'][0] }}:9090
 
-- set_fact:
+- ansible.builtin.set_fact:
     prometheus_server_url: "http://{{ grafana_config.prometheus_servers[inventory_hostname] }}:9090"
   when: ((grafana_config.prometheus_servers is defined) and (grafana_config.prometheus_servers[inventory_hostname] is defined))
 
-- debug:
+- ansible.builtin.debug:
     msg: "Prometheus Server URL: {{ prometheus_server_url }}"
 
+
+#   ____ ____      _    _____ _    _   _    _
+#  / ___|  _ \    / \  |  ___/ \  | \ | |  / \
+# | |  _| |_) |  / _ \ | |_ / _ \ |  \| | / _ \
+# | |_| |  _ <  / ___ \|  _/ ___ \| |\  |/ ___ \
+#  \____|_| \_\/_/   \_\_|/_/   \_\_| \_/_/   \_\
+#
 - name: Add the grafana group
   group:
     name: grafana
@@ -28,7 +46,7 @@
     state: present
 
 - name: Create the /etc/grafana directory
-  file:
+  ansible.builtin.file:
     path: '/etc/grafana'
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
@@ -36,7 +54,7 @@
     state: directory
 
 - name: Create the /etc/provisioning directory
-  file:
+  ansible.builtin.file:
     path: '/etc/grafana/provisioning'
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
@@ -44,7 +62,7 @@
     state: directory
 
 - name: Create the /etc/provisioning/datasources directory
-  file:
+  ansible.builtin.file:
     path: '/etc/grafana/provisioning/datasources'
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
@@ -52,7 +70,7 @@
     state: directory
 
 - name: Create the /etc/provisioning/dashboards directory
-  file:
+  ansible.builtin.file:
     path: '/etc/grafana/provisioning/dashboards'
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
@@ -70,7 +88,7 @@
   - unbound
 
 - name: Create the {{ grafana_config.data_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ grafana_config.data_directory }}'
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
@@ -78,7 +96,7 @@
     state: directory
 
 - name: Create the {{ grafana_config.log_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ grafana_config.log_directory }}'
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
@@ -86,7 +104,7 @@
     state: directory
 
 - name: Create the Grafana configuration file
-  template:
+  ansible.builtin.template:
     src: grafana.ini.j2
     dest: /etc/grafana/grafana.ini
     owner: '{{ grafana_config.user }}'
@@ -95,7 +113,7 @@
   notify: restart grafana-server
 
 - name: Create the Prometheus data source provisioning file
-  template:
+  ansible.builtin.template:
     src: prometheus-data-source.yaml.j2
     dest: /etc/grafana/provisioning/datasources/prometheus-data-source.yaml
     owner: '{{ grafana_config.user }}'
@@ -104,7 +122,7 @@
   notify: restart grafana-server
 
 - name: Create the dashboard provisioning file
-  template:
+  ansible.builtin.template:
     src: all-dashboards.yaml.j2
     dest: /etc/grafana/provisioning/dashboards/all-dashboards.yaml
     owner: '{{ grafana_config.user }}'
@@ -113,7 +131,7 @@
   notify: restart grafana-server
 
 - name: Create the {{ grafana_config.data_directory }}/dashboards directory
-  file:
+  ansible.builtin.file:
     path: '{{ grafana_config.data_directory }}/dashboards'
     owner: '{{ grafana_config.user }}'
     group: '{{ grafana_config.group }}'
@@ -121,7 +139,7 @@
     state: directory
 
 - name: Copy the prometheus-2-0-overview_rev2.json dashboard file
-  template:
+  ansible.builtin.template:
     src: dashboards/prometheus-2-0-overview_rev2.json.j2
     dest: '{{ grafana_config.data_directory }}/dashboards/prometheus-2-0-overview_rev2.json'
     owner: '{{ grafana_config.user }}'
@@ -130,7 +148,7 @@
   notify: restart grafana-server
 
 - name: Copy the nodes.json dashboard file
-  template:
+  ansible.builtin.template:
     src: dashboards/nodes.json.j2
     dest: '{{ grafana_config.data_directory }}/dashboards/nodes.json'
     owner: '{{ grafana_config.user }}'
@@ -139,7 +157,7 @@
   notify: restart grafana-server
 
 - name: Copy the kubernetes.json dashboard file
-  template:
+  ansible.builtin.template:
     src: dashboards/kubernetes.json.j2
     dest: '{{ grafana_config.data_directory }}/dashboards/kubernetes.json'
     owner: '{{ grafana_config.user }}'
@@ -149,7 +167,7 @@
   when: ('k8s_master' in groups)
 
 - name: Copy the zookeeper.json dashboard file
-  template:
+  ansible.builtin.template:
     src: dashboards/zookeeper.json.j2
     dest: '{{ grafana_config.data_directory }}/dashboards/zookeeper.json'
     owner: '{{ grafana_config.user }}'
@@ -159,7 +177,7 @@
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Copy the kafka-overview.json dashboard file
-  template:
+  ansible.builtin.template:
     src: dashboards/kafka.json.j2
     dest: '{{ grafana_config.data_directory }}/dashboards/kafka.json'
     owner: '{{ grafana_config.user }}'
@@ -169,7 +187,7 @@
   when: (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups))
 
 - name: Copy the kafka-producers-consumers.json dashboard file
-  template:
+  ansible.builtin.template:
     src: dashboards/kafka-producers-consumers.json.j2
     dest: '{{ grafana_config.data_directory }}/dashboards/kafka-producers-consumers.json'
     owner: '{{ grafana_config.user }}'
@@ -179,18 +197,18 @@
   when: ((grafana_config.dashboards.kafka_producers_and_consumers.enabled) and (('kafka_zookeeper' in groups) or ('confluent_zookeeper' in groups) or ('zookeeper' in groups)))
 
 - name: Ensure that the grafana-server service is started
-  systemd:
+  ansible.builtin.systemd:
     name: grafana-server
     state: started
     enabled: yes
 
 - name: Retrieve the currently installed version of the Grafana pie chart panel plug-in
-  shell:
+  ansible.builtin.shell:
     cmd: grafana-cli plugins ls | grep grafana-piechart-panel | awk  {'print $3'}
   register: grafana_pie_chart_panel_plugin_installed_version_output
 
 - name: Install the Grafana pie chart panel plug-in {{ grafana_config.pie_chart_panel_plugin_version }}
-  shell:
+  ansible.builtin.shell:
     cmd: grafana-cli plugins install grafana-piechart-panel {{ grafana_config.pie_chart_panel_plugin_version }}
   notify: restart grafana-server
   when: (grafana_pie_chart_panel_plugin_installed_version_output.stdout != grafana_config.pie_chart_panel_plugin_version)

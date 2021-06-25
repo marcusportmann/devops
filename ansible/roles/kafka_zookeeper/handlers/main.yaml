@@ -2,10 +2,10 @@
 # file: roles/kafka_zookeeper/handlers/main.yaml
 
 - name: Reload systemctl daemon
-  command: systemctl daemon-reload
+  ansible.builtin.command: systemctl daemon-reload
   when: ansible_service_mgr == 'systemd'
 
 - name: restart zookeeper
-  systemd:
+  ansible.builtin.systemd:
     name: zookeeper
     state: restarted

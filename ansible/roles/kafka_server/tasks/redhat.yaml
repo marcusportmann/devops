@@ -1,18 +1,18 @@
 ---
 # file: roles/kafka_server/tasks/redhat.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the RedHat-specific Kafka Server configuration
 
 - name: Allow all hosts access to tcp port {{ kafka_config.kafka_server.secure_broker_port }} (Kafka Secure Broker Port)
-  firewalld:
+  ansible.posix.firewalld:
     port: '{{ kafka_config.kafka_server.secure_broker_port }}/tcp'
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port {{ kafka_config.kafka_server.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
-  firewalld:
+  ansible.posix.firewalld:
     port: '{{ kafka_config.kafka_server.prometheus_jmx_exporter.port }}/tcp'
     permanent: yes
     state: enabled
@@ -21,12 +21,12 @@
 
 - name: Allow access to tcp ports 9998 and 9999 (Remote JMX Ports)
   block:
-  - firewalld:
+  - ansible.posix.firewalld:
       port: '9998/tcp'
       permanent: yes
       state: enabled
       immediate: yes
-  - firewalld:
+  - ansible.posix.firewalld:
       port: '9999/tcp'
       permanent: yes
       state: enabled

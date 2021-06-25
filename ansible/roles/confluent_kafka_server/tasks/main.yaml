@@ -1,22 +1,21 @@
 ---
 # file: roles/confluent_kafka_server/tasks/main.yaml
 
-- name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
-  file:
-    path: '/var/tmp/ansible/confluent/{{ role_name }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0700'
-    state: directory
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
 
-- fail:
-    msg: 'No confluent.clusters configuration specified'
-  when: ((confluent is not defined) or (confluent == None) or (confluent.clusters is not defined) or (confluent.clusters == None))
 
-- set_fact:
+#  ____  _____ _____   _____ _    ____ _____ ____
+# / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|
+# \___ \|  _|   | |   | |_ / _ \| |     | | \___ \
+#  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
+# |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
+#
+- ansible.builtin.set_fact:
     confluent_cluster_name: ''
 
-- set_fact:
+- ansible.builtin.set_fact:
     confluent_cluster_name: '{{ item }}'
   when: (('kafka_server_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].kafka_server_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
@@ -25,41 +24,41 @@
     msg: "The Kafka Server host {{ inventory_hostname }} is not associated with a Confluent cluster"
   when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
-- debug:
+- ansible.builtin.debug:
     msg: 'Cluster Name: {{ confluent_cluster_name }}'
 
-- set_fact:
+- ansible.builtin.set_fact:
     zookeeper_hosts: "{{ confluent_config.clusters[confluent_cluster_name].zookeeper_hosts | intersect(groups['confluent_zookeeper']|default([])) }}"
 
-- debug:
+- ansible.builtin.debug:
     msg: 'ZooKeeper hosts: {{ zookeeper_hosts }}'
 
-- set_fact:
+- ansible.builtin.set_fact:
     kafka_server_hosts: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
 
-- debug:
+- ansible.builtin.debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
 
 # Determine the Kafka MirrorMaker users, which include the MirrorMaker user for this
 # cluster and the users used by the MirrorMaker instances for the clusters that replicate
 # to this cluster.
-- set_fact:
+- ansible.builtin.set_fact:
     kafka_server_mirrormaker_users: [ "{{ 'mirrormaker-' + confluent_cluster_name.replace('_', '-') }}" ]
   when: ('kafka_mirrormaker_hosts' in confluent_config.clusters[confluent_cluster_name])
 
-- set_fact:
+- ansible.builtin.set_fact:
     kafka_server_mirrormaker_users: [ ]
   when: ('kafka_mirrormaker_hosts' not in confluent_config.clusters[confluent_cluster_name])
 
-- set_fact:
+- ansible.builtin.set_fact:
     kafka_server_mirrormaker_users: "{{ kafka_server_mirrormaker_users + [ 'mirrormaker-' + item.replace('_', '-') ] }}"
   loop: '{{ confluent_config.clusters | flatten(1) }}'
   when: ((confluent_config.clusters[item].replicate_to_cluster is defined) and (confluent_config.clusters[item].replicate_to_cluster != None) and (confluent_config.clusters[item].replicate_to_cluster == confluent_cluster_name))
 
-- set_fact:
+- ansible.builtin.set_fact:
     kafka_server_rack: default
 
-- set_fact:
+- ansible.builtin.set_fact:
     kafka_server_rack: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_racks[inventory_hostname] }}"
   when: ((confluent_config.clusters[confluent_cluster_name].kafka_server_racks is defined) and (confluent_config.clusters[confluent_cluster_name].kafka_server_racks[inventory_hostname] is defined))
 
@@ -88,12 +87,20 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |   | . \  / ___ \|  _| | . \  / ___ \   ___) | |___|  _ < \ V / | |___|  _ <
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |____/|_____|_| \_\ \_/  |_____|_| \_\
 #
+- name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
+  ansible.builtin.file:
+    path: '/var/tmp/ansible/confluent/{{ role_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
   register: create_credentials_directory_result
 
-- debug:
+- ansible.builtin.debug:
     msg: "{{ create_credentials_directory_result }}"
 
 - name: Add the {{ confluent_config.kafka_server.group }} group
@@ -111,7 +118,7 @@
     state: present
 
 - name: Create the {{ confluent_config.kafka_server.etc_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ confluent_config.kafka_server.etc_directory }}'
     owner: '{{ confluent_config.kafka_server.user }}'
     group: '{{ confluent_config.kafka_server.group }}'
@@ -119,7 +126,7 @@
     state: directory
 
 - name: Create the {{ confluent_config.kafka_server.etc_directory }}/conf directory
-  file:
+  ansible.builtin.file:
     path: '{{ confluent_config.kafka_server.etc_directory }}/conf'
     owner: '{{ confluent_config.kafka_server.user }}'
     group: '{{ confluent_config.kafka_server.group }}'
@@ -129,7 +136,7 @@
 - name: Setup the Kafka Server keystore and CA truststore
   block:
   - name: Create the {{ confluent_config.kafka_server.etc_directory }}/pki directory
-    file:
+    ansible.builtin.file:
       path: '{{ confluent_config.kafka_server.etc_directory }}/pki'
       owner: '{{ confluent_config.kafka_server.user }}'
       group: '{{ confluent_config.kafka_server.group }}'
@@ -137,32 +144,32 @@
       state: directory
 
   - name: Copy the Kafka Server CA certificate
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/ca.crt'
     notify: restart kafka
     register: ca_certificate_copy_result
 
   - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key)
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
     notify: restart kafka
     register: kafka_server_private_key_copy_result
 
   - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt)
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
     notify: restart kafka
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
-    set_fact:
+    ansible.builtin.set_fact:
       kafka_server_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
-    set_fact:
+    ansible.builtin.set_fact:
       ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka Server keystore and CA truststore
@@ -181,16 +188,16 @@
         state: present
 
     - name: Remove the Kafka Server CA PKCS12 truststore if it already exists
-      file:
+      ansible.builtin.file:
         path: '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the Kafka Server CA PKCS12 truststore
-      shell:
+      ansible.builtin.shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/{{ role_name }}/ca.crt -keystore '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka Server CA PKCS12 truststore
-      file:
+      ansible.builtin.file:
         path: '{{ confluent_config.kafka_server.etc_directory }}/pki/ca.p12'
         owner: '{{ confluent_config.kafka_server.user }}'
         group: '{{ confluent_config.kafka_server.group }}'
@@ -199,7 +206,7 @@
     when: ((ca_certificate_copy_result.changed == True) or (kafka_server_private_key_copy_result.changed == True) or (kafka_server_certificate_copy_result.changed == True))
 
 - name: Create the {{ confluent_config.kafka_server.log_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ confluent_config.kafka_server.log_directory }}'
     owner: '{{ confluent_config.kafka_server.user }}'
     group: '{{ confluent_config.kafka_server.group }}'
@@ -207,7 +214,7 @@
     state: directory
 
 - name: Create the {{ confluent_config.kafka_server.data_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ confluent_config.kafka_server.data_directory }}'
     owner: '{{ confluent_config.kafka_server.user }}'
     group: '{{ confluent_config.kafka_server.group }}'
@@ -215,7 +222,7 @@
     state: directory
 
 - name: Create the Kafka Server configuration file
-  template:
+  ansible.builtin.template:
     src: server.properties.j2
     dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/server.properties'
     owner: '{{ confluent_config.kafka_server.user }}'
@@ -225,16 +232,16 @@
 
 # NOTE: This is the password used to secure the connections the Kafka Server makes to ZooKeeper, which is generated by the kafka-zookeeper role
 - name: Generate or retrieve the password for the ZooKeeper kafka user
-  set_fact:
+  ansible.builtin.set_fact:
     kafka_server_zookeeper_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
 # NOTE: This is the password used to secure the inter broker connections
 - name: Generate or retrieve the password for the Kafka Server user
-  set_fact:
+  ansible.builtin.set_fact:
     kafka_server_broker_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-broker-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka Server JAAS configuration file
-  template:
+  ansible.builtin.template:
     src: server-jaas.conf.j2
     dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf'
     owner: '{{ confluent_config.kafka_server.user }}'
@@ -243,7 +250,7 @@
   notify: restart kafka
 
 - name: Configure the Kafka Server service
-  template:
+  ansible.builtin.template:
     src: kafka.service.j2
     dest: /lib/systemd/system/kafka.service
     owner: 'root'
@@ -252,7 +259,7 @@
   register: kafka_server_service_file_template_result
 
 - name: Reload the kafka service if required
-  systemd:
+  ansible.builtin.systemd:
     name: kafka
     daemon_reload: yes
   notify: restart kafka
@@ -260,7 +267,7 @@
 
 # NOTE: This is the password for the user that is used to secure the inter-broker connections
 - name: Set the password for the Kafka Server user in ZooKeeper
-  shell:
+  ansible.builtin.shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.broker.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_broker_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_broker_user_password }}]'
   when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
   register: set_kafka_server_broker_user_password_in_zookeeper_result
@@ -268,7 +275,7 @@
 - meta: flush_handlers
 
 - name: Ensure that the kafka service is started
-  systemd:
+  ansible.builtin.systemd:
     name: kafka
     state: started
     enabled: yes
@@ -276,16 +283,16 @@
 - name: Setup the Kafka admin user
   block:
   - name: Generate or retrieve the password for the Kafka admin keystore
-    set_fact:
+    ansible.builtin.set_fact:
       kafka_admin_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-admin-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Copy the Kafka admin private key (confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key)
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key"
       dest: "/var/tmp/ansible/confluent/{{ role_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.key"
 
   - name: Copy the Kafka admin certificate (confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt)
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt"
       dest: "/var/tmp/ansible/confluent/{{ role_name }}/confluent-admin-{{ confluent_cluster_name.replace('_', '-') }}.crt"
 
@@ -303,16 +310,16 @@
       state: present
 
   - name: Generate or retrieve the password for the Kafka admin user
-    set_fact:
+    ansible.builtin.set_fact:
       kafka_server_admin_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-admin-user-password chars=ascii_letters,digits length=16') }}"
 
   - name: Set the password for the Kafka admin user in ZooKeeper
-    shell:
+    ansible.builtin.shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.admin.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_admin_user_password }}]'
     when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
 
   - name: Create the Kafka admin command configuration file
-    template:
+    ansible.builtin.template:
       src: admin-command.conf.j2
       dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf'
       owner: '{{ confluent_config.kafka_server.user }}'
@@ -320,7 +327,7 @@
       mode: '0440'
 
   - name: Copy the Prometheus JMX Exporter configuration file
-    copy:
+    ansible.builtin.copy:
       src: files/prometheus_jmx_exporter.yaml
       dest: '{{ confluent_config.kafka_server.etc_directory }}/conf/prometheus_jmx_exporter.yaml'
       owner: '{{ confluent_config.kafka_server.user }}'
@@ -336,7 +343,7 @@
   when: ((confluent_config.clusters[confluent_cluster_name].kafka_mirrormaker_hosts is defined) and (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname))
 
 - name: Create the Kafka profile file
-  template:
+  ansible.builtin.template:
     src: kafka.sh.j2
     dest: /etc/profile.d/kafka.sh
     owner: 'root'
@@ -346,91 +353,91 @@
 - name: Add the aliases for the Kafka tools to the /etc/profile.d/kafka.sh file
   block:
   - name: Add the kafka-acls alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-acls'
       line: alias kafka-acls='/opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-broker-api-versions alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-broker-api-versions'
       line: alias kafka-broker-api-versions='/opt/confluent/bin/kafka-broker-api-versions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-configs alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-configs='
       line: alias kafka-configs='KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ groups['confluent_zookeeper'][0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }}'
 
   - name: Add the kafka-configs-brokers alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-configs-brokers'
       line: alias kafka-configs='/opt/confluent/bin/kafka-configs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-consumer-groups alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-consumer-groups'
       line: alias kafka-consumer-groups='/opt/confluent/bin/kafka-consumer-groups --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-delegation-tokens alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delegation-tokens'
       line: alias kafka-delegation-tokens='/opt/confluent/bin/kafka-delegation-tokens --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-delete-records alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delete-records'
       line: alias kafka-delete-records='/opt/confluent/bin/kafka-delete-records --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-leader-election alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-leader-election'
       line: alias kafka-leader-election='/opt/confluent/bin/kafka-leader-election --admin.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-log-dirs alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-log-dirs'
       line: alias kafka-log-dirs='/opt/confluent/bin/kafka-log-dirs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-reassign-partitions alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-reassign-partitions'
       line: alias kafka-reassign-partitions='/opt/confluent/bin/kafka-reassign-partitions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-topics alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-topics'
       line: alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-console-producer alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-console-producer'
       line: alias kafka-console-producer='/opt/confluent/bin/kafka-console-producer --producer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-console-consumer alias to the /etc/profile.d/kafka.sh file
-    lineinfile:
+    ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-console-consumer'
@@ -440,43 +447,43 @@
 - name: Apply the Schema Registry configuration
   block:
   - name: Generate or retrieve the password for the Schema Registry user
-    set_fact:
+    ansible.builtin.set_fact:
       kafka_server_schema_registry_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
 
   - name: Set the password for the Schema Registry user in ZooKeeper
-    shell:
+    ansible.builtin.shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.schema_registry.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_schema_registry_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_schema_registry_user_password }}]'
     when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
 
   - name: Check if the Schema Registry topic (_schemas) exists
-    shell:
+    ansible.builtin.shell:
       cmd: /opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --list --topic _schemas
     register: check_if_schema_registry_topic_exists_result
 
   - name: Create the Schema Registry topic (_schemas)
-    shell:
+    ansible.builtin.shell:
       cmd: /opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --create --replication-factor {{ (((kafka_server_hosts | length) - 1) if ((kafka_server_hosts | length) > 1) else 1) }} --partitions {{ (((kafka_server_hosts | length) - 1) if ((kafka_server_hosts | length) > 1) else 1) }} --topic _schemas --config cleanup.policy=compact
     when: (check_if_schema_registry_topic_exists_result.stdout == '0')
 
   - name: Grant the schema-registry user access to the Schema Registry topic (_schemas)
-    shell:
+    ansible.builtin.shell:
       cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --topic _schemas
 
   - name: Grant the schema-registry user access to the Schema Registry consumer group (schema-registry)
-    shell:
+    ansible.builtin.shell:
       cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --group schema-registry
 
   when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
 
 - name: Generate or retrieve the password for the Burrow user
-  set_fact:
+  ansible.builtin.set_fact:
     kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
 
-- debug:
+- ansible.builtin.debug:
     msg: 'Burrow user password: {{ kafka_server_burrow_user_password }}'
 
 - name: Set the password for the Burrow user in ZooKeeper
-  shell:
+  ansible.builtin.shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.burrow.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_burrow_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_burrow_user_password }}]'
   when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
   register: set_kafka_server_burrow_user_password_in_zookeeper_result

@@ -1,11 +1,11 @@
 ---
 # file: roles/grafana/tasks/ubuntu.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the Ubuntu-specific Grafana configuration
 
 - name: Allow all hosts access to tcp port 3000
-  ufw:
+  community.general.ufw:
     rule: allow
     port: '3000'
     proto: tcp
@@ -20,7 +20,7 @@
     manager: auto
 
 - name: Retrieve the version of the installed grafana package
-  debug:
+  ansible.builtin.debug:
     msg: Found the installed grafana package ({{ ansible_facts.packages['grafana'][0].version }})
   when: "'grafana' in ansible_facts.packages"
 
@@ -37,24 +37,24 @@
     when: (grafana_package_stat_result.stat.exists == False)
 
   - name: Copy the {{ grafana_config.ubuntu_package }} package
-    copy:
+    ansible.builtin.copy:
       src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ grafana_config.ubuntu_package }}'
       dest: /var/tmp/ansible/{{ grafana_config.ubuntu_package }}
 
   - name: Unlock the version of the grafana package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark unhold grafana
     when: "'grafana' in ansible_facts.packages"
 
   - name: Install the {{ grafana_config.ubuntu_package }} package
-    apt:
+    ansible.builtin.apt:
       state: present
       policy_rc_d: 101
       deb: /var/tmp/ansible/{{ grafana_config.ubuntu_package }}
     notify: restart grafana-server
 
   - name: Lock the version of the grafana package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark hold grafana
 
   when: (('grafana' not in ansible_facts.packages) or (ansible_facts.packages['grafana'][0].version != grafana_config.ubuntu_package_version))

@@ -1,0 +1,10 @@
+---
+# file: roles/prometheus_alert_manager/tasks/assert.yaml
+
+#- name: Check the XXX variable is defined correctly
+#  ansible.builtin.assert:
+#    that:
+#    - XXX is defined
+#    - XXX is string
+#    - XXX != ''
+#    quiet: yes

@@ -1,11 +1,11 @@
 ---
 # file: roles/k8s_storage/tasks/ubuntu.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the Ubuntu-specific Kubernetes storage configuration
 
 - name: Allow all hosts access to tcp port 3260 (iSCSI)
-  ufw:
+  community.general.ufw:
     rule: allow
     port: '3260'
     proto: tcp
@@ -13,15 +13,15 @@
 - name: Install the iSCSI client if this is a worker or there are no workers only masters
   block:
   - name: Install the open-iscsi package
-    apt:
+    ansible.builtin.apt:
       state: present
       policy_rc_d: 101
       name:
        - open-iscsi
 
   - name: Start the iscsid service
-    systemd:
-      name: iscsid.service
+    ansible.builtin.systemd:
+      name: iscsid
       state: started
       enabled: yes
 

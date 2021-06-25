@@ -1,17 +1,17 @@
 ---
 # file: roles/gitea/tasks/redhat.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the RedHat-specific Gitea configuration
 
 - name: Install the Git packages
-  yum:
+  ansible.builtin.yum:
     name:
     - git-core
     state: present
 
 - name: Allow all hosts access to tcp port 80
-  firewalld:
+  ansible.posix.firewalld:
     port: 80/tcp
     permanent: yes
     state: enabled

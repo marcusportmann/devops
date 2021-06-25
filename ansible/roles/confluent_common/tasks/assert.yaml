@@ -1,0 +1,16 @@
+---
+# file: roles/confluent_common/tasks/assert.yaml
+
+- name: Check the confluent variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - confluent is defined
+    quiet: yes
+
+- name: Check the confluent.clusters variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - confluent.clusters is defined
+    - (confluent.clusters | length) >  0
+    quiet: yes
+

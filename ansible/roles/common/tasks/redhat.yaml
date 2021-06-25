@@ -12,7 +12,7 @@
 # |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
 #
 - name: Install the RedHat 7 packages
-  yum:
+  ansible.builtin.yum:
     name:
     - bzip2
     - chrony
@@ -25,13 +25,13 @@
   when: ansible_distribution_major_version == '7'
 
 - name: Install EPEL repo
-  yum:
+  ansible.builtin.yum:
     name: epel-release
     state: present
   when: ansible_distribution_major_version == '8'
 
 - name: Install the RedHat 8 packages
-  yum:
+  ansible.builtin.yum:
     name:
     - bzip2
     - chrony
@@ -54,7 +54,7 @@
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group
-    lvg:
+    community.general.lvg:
       vg: data
       pvs: /dev/sdb
 
@@ -68,7 +68,7 @@
 - name: Initialise the /data directory
   block:
   - name: Create the /data directory
-    file:
+    ansible.builtin.file:
       path: /data
       owner: 'root'
       group: 'root'
@@ -78,19 +78,19 @@
   - name: Create and format the data logical volume in the data volume group and mount it under the /data directory
     block:
     - name: Create the data logical volume in the data volume group
-      lvol:
+      community.general.lvol:
         vg: data
         lv: data
         size: 100%FREE
       when: ('data' not in ansible_lvm.lvs)
 
     - name: Format the data logical volume in the data volume group using the ext4 filesystem
-      filesystem:
+      community.general.filesystem:
         fstype: xfs
         dev: /dev/data/data
 
     - name: Mount the data logical volume in the data volume group under the /data directory
-      mount:
+      ansible.posix.mount:
         path: /data
         src: /dev/mapper/data-data
         fstype: xfs

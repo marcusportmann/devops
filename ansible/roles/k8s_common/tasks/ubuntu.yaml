@@ -1,7 +1,7 @@
 ---
 # file: roles/k8s_common/tasks/ubuntu.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the Ubuntu-specific Kubernetes common configuration
 
 - name: Collect the system service facts
@@ -13,7 +13,7 @@
     manager: auto
 
 - name: Update the Apt cache
-  apt: update_cache=yes cache_valid_time=3600
+  ansible.builtin.apt: update_cache=yes cache_valid_time=3600
 
 
 #   ____ _____ ____ _____ ___ _____ ___ ____    _  _____ _____      _   _   _ _____ _   _  ___  ____  ___ _____ ___ _____ ____
@@ -25,22 +25,22 @@
 - name: Install the root CA, Kubernetes intermediate CA and Kubernetes etcd intermediate CA certificates
   block:
   - name: Create the /usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
-    file:
+    ansible.builtin.file:
       path: /usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}
       state: directory
 
   - name: Copy the root CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
       dest: "/usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/ca.crt"
 
   - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /usr/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }} directory
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
       dest: "/usr/local/share/ca-certificates/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}/k8s-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
 
   - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
-    shell:
+    ansible.builtin.shell:
       cmd: /usr/sbin/update-ca-certificates
 
 
@@ -51,7 +51,7 @@
 # |____/___|____/_/   \_\____/|_____|_____| |____/  \_/\_/_/   \_\_|
 #
 - name: Disable swap since Kubernetes cannot work with swap enabled (1/2)
-  shell: |
+  ansible.builtin.shell: |
     swapoff -a
   when: ansible_swaptotal_mb > 0
 
@@ -70,13 +70,19 @@
 # |____/ \___/|_|   |_|    \___/|_| \_\|_| |___|_| \_|\____| |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
 #
 - name: Install the arptables package
-  apt: name=arptables state=latest
+  ansible.builtin.apt:
+    name: arptables
+    state: latest
 
 - name: Install the ebtables package
-  apt: name=ebtables state=latest
+  ansible.builtin.apt:
+    name: ebtables
+    state: latest
 
 - name: Install the jq package
-  apt: name=jq state=latest
+  ansible.builtin.apt:
+    name: jq
+    state: latest
 
 
 #  _  _______ ____  _   _ _____ _       __  __  ___  ____  _   _ _     _____ ____
@@ -133,7 +139,7 @@
   register: add_docker_ce_repository_result
 
 - name: Update the Apt cache
-  apt: update_cache=yes cache_valid_time=3600
+  ansible.builtin.apt: update_cache=yes cache_valid_time=3600
   when: (add_docker_ce_repository_result.changed == True)
 
 - name: Check whether the /etc/containerd/config.toml file exists
@@ -142,13 +148,15 @@
   register: containerd_config_stat_result
 
 - name: Install the containerd package
-  apt: name=containerd.io state=latest
+  ansible.builtin.apt:
+    name: containerd.io
+    state: latest
   register: install_containerd_package_result
 
 - name: Create the containerd configuration
   block:
   - name: Create the /etc/containerd directory if it does not exist
-    file:
+    ansible.builtin.file:
       path: /etc/containerd
       state: directory
       mode: '0755'
@@ -156,7 +164,7 @@
       group: root
 
   - name: Create the default containerd configuration
-    shell:
+    ansible.builtin.shell:
       cmd: containerd config default > /etc/containerd/config.toml
 
   - name: Configure the systemd cgroup driver for containerd
@@ -168,15 +176,15 @@
   when: (containerd_config_stat_result.stat.exists == False)
 
 - name: Restart the containerd service if required
-  systemd:
-    name: containerd.service
+  ansible.builtin.systemd:
+    name: containerd
     state: restarted
     enabled: yes
   when: (install_containerd_package_result.changed == True)
 
 - name: Ensure that the containerd service is started
-  systemd:
-    name: containerd.service
+  ansible.builtin.systemd:
+    name: containerd
     state: started
     enabled: yes
 
@@ -199,85 +207,85 @@
     filename: 'kubernetes'
 
 - name: Retrieve the version of the installed kubelet package
-  debug:
+  ansible.builtin.debug:
     msg: Found the installed kubelet package ({{ ansible_facts.packages['kubelet'][0].version }})
   when: "'kubelet' in ansible_facts.packages"
 
 - name: Install the kubelet package
   block:
   - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
+    ansible.builtin.apt: update_cache=yes cache_valid_time=3600
 
   - name: Unlock the version of the kubelet package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark unhold kubelet
     when: "'kubelet' in ansible_facts.packages"
 
   - name: Install the kubelet package ({{ k8s_config.k8s_ubuntu_package_version }})
-    apt:
+    ansible.builtin.apt:
       state: present
       policy_rc_d: 101
       name:
        - kubelet={{ k8s_config.k8s_ubuntu_package_version }}
 
   - name: Lock the version of the kubelet package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark hold kubelet
 
   when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.k8s_ubuntu_package_version))
 
 - name: Retrieve the version of the installed kubectl package
-  debug:
+  ansible.builtin.debug:
     msg: Found the installed kubectl package ({{ ansible_facts.packages['kubectl'][0].version }})
   when: "'kubectl' in ansible_facts.packages"
 
 - name: Install the kubectl package
   block:
   - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
+    ansible.builtin.apt: update_cache=yes cache_valid_time=3600
 
   - name: Unlock the version of the kubectl package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark unhold kubectl
     when: "'kubectl' in ansible_facts.packages"
 
   - name: Install the kubectl package ({{ k8s_config.k8s_ubuntu_package_version }})
-    apt:
+    ansible.builtin.apt:
       state: present
       policy_rc_d: 101
       name:
        - kubectl={{ k8s_config.k8s_ubuntu_package_version }}
 
   - name: Lock the version of the kubectl package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark hold kubectl
 
   when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.k8s_ubuntu_package_version))
 
 - name: Retrieve the version of the installed kubeadm package
-  debug:
+  ansible.builtin.debug:
     msg: Found the installed kubeadm package ({{ ansible_facts.packages['kubeadm'][0].version }})
   when: "'kubeadm' in ansible_facts.packages"
 
 - name: Install the kubeadm package
   block:
   - name: Update the Apt cache
-    apt: update_cache=yes cache_valid_time=3600
+    ansible.builtin.apt: update_cache=yes cache_valid_time=3600
 
   - name: Unlock the version of the kubeadm package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark unhold kubeadm
     when: "'kubeadm' in ansible_facts.packages"
 
   - name: Install the kubeadm package ({{ k8s_config.k8s_ubuntu_package_version }})
-    apt:
+    ansible.builtin.apt:
       state: present
       policy_rc_d: 101
       name:
        - kubeadm={{ k8s_config.k8s_ubuntu_package_version }}
 
   - name: Lock the version of the kubeadm package
-    command:
+    ansible.builtin.command:
       cmd: apt-mark hold kubeadm
 
   when: (('kubeadm' not in ansible_facts.packages) or (ansible_facts.packages['kubeadm'][0].version != k8s_config.k8s_ubuntu_package_version))
@@ -297,12 +305,12 @@
 - name: Apply the Kubernetes sysctl configuration
   block:
   - name: Create the /etc/sysctl.d/kubernetes.conf file
-    template:
+    ansible.builtin.template:
       src: kubernetes.conf.j2
       dest: /etc/sysctl.d/kubernetes.conf
 
   - name: Reload the kernel parameter configuration files
-    command:
+    ansible.builtin.command:
       cmd: /sbin/sysctl --system
 
   when: (kubernetes_sysctl_stat_result.stat.exists == False)

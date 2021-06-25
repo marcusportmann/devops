@@ -1,6 +1,6 @@
 ---
 # file: roles/awx/tasks/ubuntu.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the Ubuntu-specific common configuration
 

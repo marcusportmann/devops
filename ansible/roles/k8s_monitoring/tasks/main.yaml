@@ -1,6 +1,11 @@
 ---
 # file: roles/k8s_monitoring/tasks/main.yaml
 
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
 #  _  _____ ____
 # | |/ ( _ ) ___|
 # | ' // _ \___ \

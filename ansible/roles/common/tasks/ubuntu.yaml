@@ -12,11 +12,18 @@
 # |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
 #
 - name: Install the python3-pip package
-  apt:
+  ansible.builtin.apt:
     state: present
     name:
      - python3-pip
 
+
+#  ____ ___ ____    ____   _    ____ _  __    _    ____ _____ ____
+# |  _ \_ _|  _ \  |  _ \ / \  / ___| |/ /   / \  / ___| ____/ ___|
+# | |_) | || |_) | | |_) / _ \| |   | ' /   / _ \| |  _|  _| \___ \
+# |  __/| ||  __/  |  __/ ___ \ |___| . \  / ___ \ |_| | |___ ___) |
+# |_|  |___|_|     |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
+#
 - name: Install the pyOpenSSL package using pip
   pip:
     name: pyOpenSSL
@@ -31,7 +38,7 @@
 - name: If the data disk is present (sdb) then create the data volume group if it does not exist
   block:
   - name: Create the data volume group
-    lvg:
+    community.general.lvg:
       vg: data
       pvs: /dev/sdb
 
@@ -45,7 +52,7 @@
 - name: Initialise the /data directory
   block:
   - name: Create the /data directory
-    file:
+    ansible.builtin.file:
       path: /data
       owner: 'root'
       group: 'root'
@@ -55,19 +62,19 @@
   - name: Create and format the data logical volume in the data volume group and mount it under the /data directory
     block:
     - name: Create the data logical volume in the data volume group
-      lvol:
+      community.general.lvol:
         vg: data
         lv: data
         size: 100%FREE
       when: ('data' not in ansible_lvm.lvs)
 
     - name: Format the data logical volume in the data volume group using the xfs filesystem
-      filesystem:
+      community.general.filesystem:
         fstype: ext4
         dev: /dev/data/data
 
     - name: Mount the data logical volume in the data volume group under the /data directory
-      mount:
+      ansible.posix.mount:
         path: /data
         src: /dev/mapper/data-data
         fstype: ext4

@@ -2,6 +2,6 @@
 # file: roles/postgresql/handlers/main.yaml
 
 - name: restart postgresql
-  systemd:
+  ansible.builtin.systemd:
     name: '{{ postgresql_service }}'
     state: restarted

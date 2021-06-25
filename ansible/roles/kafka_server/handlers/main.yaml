@@ -2,6 +2,6 @@
 # file: roles/kafka_server/handlers/main.yaml
 
 - name: restart kafka
-  systemd:
+  ansible.builtin.systemd:
     name: kafka
     state: restarted

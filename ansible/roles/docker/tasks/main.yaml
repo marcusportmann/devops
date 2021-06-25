@@ -1,6 +1,17 @@
 ---
 # file: roles/docker/tasks/main.yaml
 
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
+#   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
+#  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
+# | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
+# | |_| |___) |_____|__) |  __/| |__| |___ | ||  _|  | | |___
+#  \___/|____/     |____/|_|   |_____\____|___|_|   |___\____|
+#
 - include_tasks: ubuntu.yaml
   when: ansible_distribution == 'Ubuntu'
   tags:

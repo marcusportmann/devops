@@ -1,6 +1,10 @@
 ---
 # file: roles/prometheus_alert_manager/tasks/main.yaml
 
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
@@ -27,28 +31,28 @@
 #
 - name: Install Prometheus Alert Manager
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the Prometheus {{ prometheus_alert_manager_config.package_version }} package has been installed
 
   - stat:
       path: /usr/bin/alertmanager
     register: prometheus_alert_manager_installed_stat_result
 
-  - shell:
+  - ansible.builtin.shell:
       cmd: /usr/bin/alertmanager --version 2>&1 | head -1 | awk {'print $3'}
     register: prometheus_alert_manager_installed_version_output
     when: (prometheus_alert_manager_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       prometheus_alert_manager_installed_version: '{{ prometheus_alert_manager_installed_version_output.stdout }}'
     when: (prometheus_alert_manager_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       prometheus_alert_manager_installed_version: ''
     when: (prometheus_alert_manager_installed_stat_result.stat.exists == False)
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package
 
     - name: Add the {{ prometheus_alert_manager_config.group }} group
@@ -89,12 +93,12 @@
       when: (prometheus_alert_manager_package_stat_result.stat.exists == False)
 
     - name: Remove the existing alertmanager binary
-      file:
+      ansible.builtin.file:
         path: /usr/bin/alertmanager
         state: absent
 
     - name: Remove the existing amtool binary
-      file:
+      ansible.builtin.file:
         path: /usr/bin/amtool
         state: absent
 
@@ -125,7 +129,7 @@
       notify: restart alertmanager
 
     - name: Create the {{ prometheus_alert_manager_config.etc_directory }} directory
-      file:
+      ansible.builtin.file:
         path: '{{ prometheus_alert_manager_config.etc_directory }}'
         owner: '{{ prometheus_alert_manager_config.user }}'
         group: '{{ prometheus_alert_manager_config.group }}'
@@ -135,7 +139,7 @@
     when: (prometheus_alert_manager_installed_version != prometheus_alert_manager_config.package_version)
 
 - name: Create the {{ prometheus_alert_manager_config.data_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ prometheus_alert_manager_config.data_directory }}'
     owner: '{{ prometheus_alert_manager_config.user }}'
     group: '{{ prometheus_alert_manager_config.group }}'
@@ -143,7 +147,7 @@
     state: directory
 
 - name: Generate the Prometheus Alert Manager configuration
-  template:
+  ansible.builtin.template:
     src: alertmanager.yaml.j2
     dest: '{{ prometheus_alert_manager_config.etc_directory }}/alertmanager.yml'
     owner: '{{ prometheus_alert_manager_config.user }}'
@@ -152,7 +156,7 @@
   notify: restart alertmanager
 
 - name: Generate the Prometheus Alert Manager environment
-  template:
+  ansible.builtin.template:
     src: alertmanager-environment.j2
     dest: /etc/default/alertmanager
     mode: '0644'
@@ -160,7 +164,7 @@
   register: prometheus_alert_manager_environment_template_result
 
 - name: Configure the Prometheus Alert Manager systemd unit
-  template:
+  ansible.builtin.template:
     src: alertmanager.service.j2
     dest: /lib/systemd/system/alertmanager.service
     owner: 'root'
@@ -170,14 +174,14 @@
   register: prometheus_alert_manager_systemd_unit_template_result
 
 - name: Reload the Prometheus Alert Manager service
-  systemd:
-    name: alertmanager.service
+  ansible.builtin.systemd:
+    name: alertmanager
     daemon_reload: yes
   when: ((prometheus_alert_manager_environment_template_result.changed == True) or (prometheus_alert_manager_systemd_unit_template_result.changed == True))
 
 - name: Ensure that the Prometheus Alert Manager service is started
-  systemd:
-    name: alertmanager.service
+  ansible.builtin.systemd:
+    name: alertmanager
     state: started
     enabled: yes
 
@@ -192,28 +196,28 @@
   block:
   - name: Install prometheus-msteams
     block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Check whether the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package has been installed
 
     - stat:
         path: /usr/bin/prometheus-msteams
       register: prometheus_msteams_installed_stat_result
 
-    - shell:
+    - ansible.builtin.shell:
         cmd: /usr/bin/prometheus-msteams --version 2>&1
       register: prometheus_msteams_installed_version_output
       when: (prometheus_msteams_installed_stat_result.stat.exists == True)
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         prometheus_msteams_installed_version: '{{ prometheus_msteams_installed_version_output.stdout }}'
       when: (prometheus_msteams_installed_stat_result.stat.exists == True)
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         prometheus_msteams_installed_version: ''
       when: (prometheus_msteams_installed_stat_result.stat.exists == False)
 
     - block:
-      - debug:
+      - ansible.builtin.debug:
           msg: Install the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package
 
       - name: Add the {{ prometheus_alert_manager_config.prometheus_msteams_group }} group
@@ -254,12 +258,12 @@
         when: (prometheus_msteams_package_stat_result.stat.exists == False)
 
       - name: Remove the existing prometheus-msteams binary
-        file:
+        ansible.builtin.file:
           path: /usr/bin/prometheus-msteams
           state: absent
 
       - name: Copy the prometheus-msteams binary
-        copy:
+        ansible.builtin.copy:
           src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}'
           dest: '/usr/bin/prometheus-msteams'
           owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
@@ -267,7 +271,7 @@
           mode: '0550'
 
       - name: Create the {{ prometheus_alert_manager_config.etc_directory }} directory
-        file:
+        ansible.builtin.file:
           path: '{{ prometheus_alert_manager_config.prometheus_msteams_etc_directory }}'
           owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
           group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
@@ -277,7 +281,7 @@
       when: (prometheus_msteams_installed_version != prometheus_alert_manager_config.prometheus_msteams_package_version)
 
   - name: Generate the prometheus-msteams message card template
-    template:
+    ansible.builtin.template:
       src: prometheus-msteams-card.tmpl.j2
       dest: '{{ prometheus_alert_manager_config.prometheus_msteams_etc_directory }}/card.tmpl'
       owner: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
@@ -286,14 +290,14 @@
     register: prometheus_msteams_message_card_template_result
 
   - name: Generate the prometheus-msteams environment
-    template:
+    ansible.builtin.template:
       src: prometheus-msteams-environment.j2
       dest: /etc/default/prometheus-msteams
       mode: '0644'
     register: prometheus_msteams_environment_template_result
 
   - name: Configure the prometheus-msteams systemd unit
-    template:
+    ansible.builtin.template:
       src: prometheus-msteams.service.j2
       dest: /lib/systemd/system/prometheus-msteams.service
       owner: 'root'
@@ -302,16 +306,16 @@
     register: prometheus_msteams_systemd_unit_template_result
 
   - name: Restart the prometheus-msteams service
-    systemd:
-      name: prometheus-msteams.service
+    ansible.builtin.systemd:
+      name: prometheus-msteams
       state: restarted
       enabled: yes
       daemon_reload: yes
     when: ((prometheus_msteams_environment_template_result.changed == True) or (prometheus_msteams_systemd_unit_template_result.changed == True) or (prometheus_msteams_message_card_template_result.changed == True))
 
   - name: Ensure that the prometheus-msteams service is started
-    systemd:
-      name: prometheus-msteams.service
+    ansible.builtin.systemd:
+      name: prometheus-msteams
       state: started
       enabled: yes
 

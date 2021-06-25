@@ -13,7 +13,7 @@ variables:
         hosts:
         - monitoring-dev.local
         # One of confluent, kafka, or standalone
-        zookeeper_cluster_type: kafka
+        zookeeper_cluster_type: confluent
         zookeeper_cluster_name: digital_dev
       local:
         hosts:
@@ -184,7 +184,6 @@ variables:
         - test-ubuntu-2004.local
 
 
-xxx:
 
 
 # ----------------------------------------------------------------------------------------
@@ -197,9 +196,9 @@ xxx:
 #- name: k8s_operator_lifecycle_manager_enabled
 #  values:
 #  - false
-- name: k8s_postgres_operator_enabled
-  values:
-  - true
+#- name: k8s_postgres_operator_enabled
+#  values:
+#  - true
 
 
 
@@ -1260,7 +1259,7 @@ hosts:
   domain:             local
   type:               ubuntu-2004
   ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana
+  ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana,burrow
   virtualbox:
     cpus:             1
     memory:           1024

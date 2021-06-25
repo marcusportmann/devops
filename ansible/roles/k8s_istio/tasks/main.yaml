@@ -1,6 +1,11 @@
 ---
 # file: roles/k8s_istio/tasks/main.yaml
 
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
 #  ___ ____ _____ ___ ___   ____ _____ _
 # |_ _/ ___|_   _|_ _/ _ \ / ___|_   _| |
 #  | |\___ \ | |  | | | | | |     | | | |
@@ -9,28 +14,28 @@
 #
 - name: Install istioctl
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the istioctl {{ k8s_config.istio.package_version }} package has been installed
 
   - stat:
       path: /usr/bin/istioctl
     register: istioctl_installed_stat_result
 
-  - shell:
+  - ansible.builtin.shell:
       cmd: /usr/bin/istioctl version --remote=false
     register: istioctl_installed_version_output
     when: (istioctl_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       istioctl_installed_version: '{{ istioctl_installed_version_output.stdout }}'
     when: (istioctl_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       istioctl_installed_version: ''
     when: (istioctl_installed_stat_result.stat.exists == False)
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the istioctl {{ k8s_config.istio.package_version }} package
 
     - name: Check whether the istioctl {{ k8s_config.istio.package_version }} package has been downloaded
@@ -44,7 +49,7 @@
       when: (istioctl_package_stat_result.stat.exists == False)
 
     - name: Remove the existing istioctl binary
-      file:
+      ansible.builtin.file:
         path: /usr/bin/istioctl
         state: absent
 

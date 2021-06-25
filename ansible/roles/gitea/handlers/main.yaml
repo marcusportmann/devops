@@ -2,6 +2,6 @@
 # file: roles/gitea/handlers/main.yaml
 
 - name: restart gitea
-  systemd:
+  ansible.builtin.systemd:
     name: gitea
     state: restarted

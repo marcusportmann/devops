@@ -1,14 +1,17 @@
 ---
 # file: roles/burrow/tasks/main.yaml
 
-- name: Create the /var/tmp/ansible/burrow directory
-  file:
-    path: /var/tmp/ansible/burrow
-    owner: 'root'
-    group: 'root'
-    mode: '0700'
-    state: directory
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
 
+
+#  ____  _____ _____   _____ _    ____ _____ ____
+# / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|
+# \___ \|  _|   | |   | |_ / _ \| |     | | \___ \
+#  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
+# |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
+#
 - fail:
     msg: 'No burrow configuration specified'
   when: ((burrow is not defined) or (burrow == None))
@@ -117,6 +120,14 @@
 # |  _ \| | | | |_) | |_) | | | \ \ /\ / /
 # | |_) | |_| |  _ <|  _ <| |_| |\ V  V /
 # |____/ \___/|_| \_\_| \_\\___/  \_/\_/
+- name: Create the /var/tmp/ansible/burrow directory
+  ansible.builtin.file:
+    path: /var/tmp/ansible/burrow
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
   become: false
@@ -169,7 +180,7 @@
       notify: restart burrow
 
     - name: Rename the burrow binary to include the version number
-      shell:
+      ansible.builtin.shell:
         cmd: mv /usr/bin/burrow /usr/bin/burrow-{{ burrow_config.package_version }}
 
     when: (burrow_installed_stat_result.stat.exists == False)
@@ -190,7 +201,7 @@
     state: present
 
 - name: Create the {{ burrow_config.etc_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ burrow_config.etc_directory }}'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -198,7 +209,7 @@
     state: directory
 
 - name: Create the {{ burrow_config.etc_directory }}/conf directory
-  file:
+  ansible.builtin.file:
     path: '{{ burrow_config.etc_directory }}/conf'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -206,7 +217,7 @@
     state: directory
 
 - name: Create the {{ burrow_config.run_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ burrow_config.run_directory }}'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -216,7 +227,7 @@
 - name: Setup the Burrow keystore and CA truststore
   block:
   - name: Create the {{ burrow_config.etc_directory }}/pki directory
-    file:
+    ansible.builtin.file:
       path: '{{ burrow_config.etc_directory }}/pki'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
@@ -224,7 +235,7 @@
       state: directory
 
   - name: Copy the Burrow CA certificate
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/ca.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/ca.crt'
       owner: '{{ burrow_config.user }}'
@@ -233,7 +244,7 @@
     notify: restart burrow
 
   - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key)
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
       owner: '{{ burrow_config.user }}'
@@ -242,7 +253,7 @@
     notify: restart burrow
 
   - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt)
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt'
       owner: '{{ burrow_config.user }}'
@@ -263,7 +274,7 @@
   when: (burrow_zookeeper_cluster_type == "kafka")
 
 - name: Create the {{ burrow_config.log_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ burrow_config.log_directory }}'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -271,7 +282,7 @@
     state: directory
 
 - name: Generate the Burrow configuration
-  template:
+  ansible.builtin.template:
     src: burrow.yaml.j2
     dest: /etc/burrow/conf/burrow.yaml
     owner: '{{ burrow_config.user }}'
@@ -280,7 +291,7 @@
   notify: restart burrow
 
 - name: Create the Burrow systemd unit
-  template:
+  ansible.builtin.template:
     src: burrow.service.j2
     dest: /lib/systemd/system/burrow.service
     owner: 'root'

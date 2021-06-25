@@ -1,22 +1,21 @@
 ---
 # file: roles/confluent_schema_registry/tasks/main.yaml
 
-- name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
-  file:
-    path: '/var/tmp/ansible/confluent/{{ role_name }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0700'
-    state: directory
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
 
-- fail:
-    msg: 'No confluent.clusters configuration specified'
-  when: ((confluent is not defined) or (confluent == None) or (confluent.clusters is not defined) or (confluent.clusters == None))
 
-- set_fact:
+#  ____  _____ _____   _____ _    ____ _____ ____
+# / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|
+# \___ \|  _|   | |   | |_ / _ \| |     | | \___ \
+#  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
+# |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
+#
+- ansible.builtin.set_fact:
     confluent_cluster_name: ''
 
-- set_fact:
+- ansible.builtin.set_fact:
     confluent_cluster_name: '{{ item }}'
   when: (('schema_registry_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].schema_registry_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
@@ -25,19 +24,19 @@
     msg: "The Schema Registry host {{ inventory_hostname }} is not associated with a Confluent cluster"
   when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
-- debug:
+- ansible.builtin.debug:
     msg: 'Cluster Name: {{ confluent_cluster_name }}'
 
-- set_fact:
+- ansible.builtin.set_fact:
     schema_registry_hosts: "{{ confluent_config.clusters[confluent_cluster_name].schema_registry_hosts | intersect(groups['confluent_schema_registry']|default([])) }}"
 
-- debug:
+- ansible.builtin.debug:
     msg: 'Schema Registry hosts: {{ schema_registry_hosts }}'
 
-- set_fact:
+- ansible.builtin.set_fact:
     kafka_server_hosts: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
 
-- debug:
+- ansible.builtin.debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
 
 
@@ -64,6 +63,14 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |    ___) | |___|  _  | |___| |  | |/ ___ \  |  _ <| |__| |_| || | ___) || | |  _ < | |
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |____/ \____|_| |_|_____|_|  |_/_/   \_\ |_| \_\_____\____|___|____/ |_| |_| \_\|_|
 #
+- name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
+  ansible.builtin.file:
+    path: '/var/tmp/ansible/confluent/{{ role_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
@@ -83,7 +90,7 @@
     state: present
 
 - name: Create the {{ confluent_config.schema_registry.etc_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ confluent_config.schema_registry.etc_directory }}'
     owner: '{{ confluent_config.schema_registry.user }}'
     group: '{{ confluent_config.schema_registry.group }}'
@@ -91,7 +98,7 @@
     state: directory
 
 - name: Create the {{ confluent_config.schema_registry.etc_directory }}/conf directory
-  file:
+  ansible.builtin.file:
     path: '{{ confluent_config.schema_registry.etc_directory }}/conf'
     owner: '{{ confluent_config.schema_registry.user }}'
     group: '{{ confluent_config.schema_registry.group }}'
@@ -101,7 +108,7 @@
 - name: Setup the Schema Registry keystore and CA truststore
   block:
   - name: Create the {{ confluent_config.schema_registry.etc_directory }}/pki directory
-    file:
+    ansible.builtin.file:
       path: '{{ confluent_config.schema_registry.etc_directory }}/pki'
       owner: '{{ confluent_config.schema_registry.user }}'
       group: '{{ confluent_config.schema_registry.group }}'
@@ -109,32 +116,32 @@
       state: directory
 
   - name: Copy the Schema Registry CA certificate
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/ca.crt'
     notify: restart schema-registry
     register: ca_certificate_copy_result
 
   - name: Copy the Schema Registry private key ({{ inventory_hostname_short }}.key)
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
     notify: restart schema-registry
     register: schema_registry_private_key_copy_result
 
   - name: Copy the Schema Registry certificate ({{ inventory_hostname_short }}.crt)
-    copy:
+    ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
     notify: restart schema-registry
     register: schema_registry_certificate_copy_result
 
   - name: Generate or retrieve the password for the Schema Registry keystore
-    set_fact:
+    ansible.builtin.set_fact:
       schema_registry_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
-    set_fact:
+    ansible.builtin.set_fact:
       ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Schema Registry keystore and CA truststore
@@ -153,16 +160,16 @@
         state: present
 
     - name: Remove the Scheme Registry CA PKCS12 truststore if it already exists
-      file:
+      ansible.builtin.file:
         path: '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the Schema Registry CA PKCS12 truststore
-      shell:
+      ansible.builtin.shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/{{ role_name }}/ca.crt -keystore '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the Schema Registry CA PKCS12 truststore
-      file:
+      ansible.builtin.file:
         path: '{{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12'
         owner: '{{ confluent_config.schema_registry.user }}'
         group: '{{ confluent_config.schema_registry.group }}'
@@ -171,7 +178,7 @@
     when: ((ca_certificate_copy_result.changed == True) or (schema_registry_private_key_copy_result.changed == True) or (schema_registry_certificate_copy_result.changed == True))
 
 - name: Create the {{ confluent_config.schema_registry.log_directory }} directory
-  file:
+  ansible.builtin.file:
     path: '{{ confluent_config.schema_registry.log_directory }}'
     owner: '{{ confluent_config.schema_registry.user }}'
     group: '{{ confluent_config.schema_registry.group }}'
@@ -180,11 +187,11 @@
 
 # NOTE: This is the password Schema Registry uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Schema Registry user
-  set_fact:
+  ansible.builtin.set_fact:
     kafka_server_schema_registry_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-server-schema-registry-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Schema Registry configuration file
-  template:
+  ansible.builtin.template:
     src: schema-registry.properties.j2
     dest: '{{ confluent_config.schema_registry.etc_directory }}/conf/schema-registry.properties'
     owner: '{{ confluent_config.schema_registry.user }}'
@@ -193,7 +200,7 @@
   notify: restart schema-registry
 
 - name: Configure the schema-registry service
-  template:
+  ansible.builtin.template:
     src: schema-registry.service.j2
     dest: /lib/systemd/system/schema-registry.service
     owner: 'root'
@@ -203,13 +210,13 @@
   register: schema_registry_service_file_template_result
 
 - name: Reload the schema-registry service if required
-  systemd:
+  ansible.builtin.systemd:
     name: schema-registry
     daemon_reload: yes
   when: (schema_registry_service_file_template_result.changed == True)
 
 - name: Ensure that the schema-registry service is started
-  systemd:
+  ansible.builtin.systemd:
     name: schema-registry
     state: started
     enabled: yes

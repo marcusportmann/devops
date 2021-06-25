@@ -1,11 +1,11 @@
 ---
 # file: roles/burrow/tasks/redhat.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the RedHat-specific Burrow configuration
 
 - name: Allow all hosts access to tcp port {{ burrow_config.http_port }}
-  firewalld:
+  ansible.posix.firewalld:
     port: '{{ burrow_config.http_port }}/tcp'
     permanent: yes
     state: enabled

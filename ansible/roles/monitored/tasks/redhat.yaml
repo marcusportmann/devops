@@ -1,11 +1,11 @@
 ---
 # file: roles/monitored/tasks/redhat.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the RedHat-specific monitored configuration
 
 - name: Allow all hosts access to tcp port {{ prometheus_node_exporter_port }}
-  firewalld:
+  ansible.posix.firewalld:
     port: '{{ prometheus_node_exporter_port }}/tcp'
     permanent: yes
     state: enabled

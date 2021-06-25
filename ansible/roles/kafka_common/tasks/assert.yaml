@@ -1,0 +1,15 @@
+---
+# file: roles/kafka_common/tasks/assert.yaml
+
+- name: Check the kafka variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - kafka is defined
+    quiet: yes
+
+- name: Check the kafka.clusters variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - kafka.clusters is defined
+    - (kafka.clusters | length) >  0
+    quiet: yes

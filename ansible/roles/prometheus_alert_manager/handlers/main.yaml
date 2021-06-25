@@ -2,6 +2,6 @@
 # file: roles/prometheus_alert_manager/handlers/main.yaml
 
 - name: restart alertmanager
-  systemd:
+  ansible.builtin.systemd:
     name: alertmanager
     state: restarted

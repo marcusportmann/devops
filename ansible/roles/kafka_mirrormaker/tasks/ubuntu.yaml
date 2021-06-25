@@ -1,11 +1,11 @@
 ---
 # file: roles/kafka_mirrormaker/tasks/ubuntu.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the Ubuntu-specific Kafka MirrorMaker configuration
 
 - name: Allow all hosts access to tcp port {{ kafka_config.kafka_mirrormaker.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
-  ufw:
+  community.general.ufw:
     rule: allow
     port: '{{ kafka_config.kafka_mirrormaker.prometheus_jmx_exporter.port }}'
     proto: tcp

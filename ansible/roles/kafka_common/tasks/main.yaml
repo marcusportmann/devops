@@ -1,6 +1,11 @@
 ---
 # file: roles/kafka_common/tasks/main.yaml
 
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
@@ -25,7 +30,7 @@
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
 - name: Create the /var/tmp/ansible/kafka directory
-  file:
+  ansible.builtin.file:
     path: /var/tmp/ansible/kafka
     owner: 'root'
     group: 'root'
@@ -34,7 +39,7 @@
 
 - name: Install Kafka
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the Kafka {{ kafka_config.package_version }} package has been installed
 
   - stat:
@@ -42,7 +47,7 @@
     register: kafka_installed_stat_result
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the Kafka {{ kafka_config.package_version }} package
 
     - name: Check whether the Kafka {{ kafka_config.package_version }} package has been downloaded
@@ -50,7 +55,7 @@
       local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
       register: kafka_package_stat_result
 
-    - debug:
+    - ansible.builtin.debug:
         msg: 'Downloading the Kafka {{ kafka_config.package_version }} package from http://apache.is.co.za/kafka/{{ kafka_config.package_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
       when: (kafka_package_stat_result.stat.exists == False)
 
@@ -65,7 +70,7 @@
         dest: /opt
 
     - name: Create the symbolic link to the Kafka {{ kafka_config.package_version }} package
-      file:
+      ansible.builtin.file:
         src: /opt/kafka_2.13-{{ kafka_config.package_version }}
         dest: /opt/kafka
         owner: 'root'
@@ -73,7 +78,7 @@
         state: link
 
     - name: Copy the custom-replication-policy.jar file to the /opt/kafka/libs directory
-      copy:
+      ansible.builtin.copy:
         src: custom-replication-policy.jar
         dest: /opt/kafka/libs/custom-replication-policy.jar
         owner: 'root'
@@ -91,14 +96,14 @@
 - name: Install the Prometheus JMX Exporter library
   block:
   - name: Create the /opt/prometheus/lib directory
-    file:
+    ansible.builtin.file:
       path: /opt/prometheus/lib
       owner: 'root'
       group: 'root'
       mode: '0755'
       state: directory
 
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library has been installed
 
   - stat:
@@ -106,7 +111,7 @@
     register: prometheus_jmx_exporter_installed_stat_result
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
 
     - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} has been downloaded
@@ -120,7 +125,7 @@
       when: (prometheus_jmx_exporter_package_stat_result.stat.exists == False)
 
     - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
-      copy:
+      ansible.builtin.copy:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
         dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
 
@@ -131,7 +136,7 @@
     register: prometheus_jmx_exporter_link_stat_result
 
   - name: Create the symbolic link to the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
-    file:
+    ansible.builtin.file:
       src: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
       dest: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
       owner: 'root'

@@ -1,7 +1,18 @@
 ---
 # file: roles/etcd/tasks/main.yaml
 
-- set_fact:
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
+#  ____  _____ _____   _____ _    ____ _____ ____
+# / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|
+# \___ \|  _|   | |   | |_ / _ \| |     | | \___ \
+#  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
+# |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
+#
+- ansible.builtin.set_fact:
     etcd_cluster_name: '{{ item }}'
   when: (inventory_hostname in etcd_config.clusters[item].hosts)
   loop: '{{ etcd_config.clusters | flatten(1) }}'
@@ -22,6 +33,7 @@
   when: ansible_os_family == 'RedHat'
   tags:
   - unbound
+
 
 #  _____ _____ ____ ____
 # | ____|_   _/ ___|  _ \
@@ -48,7 +60,7 @@
 - name: Copy the keys and certificates for the etcd cluster
   block:
   - name: Create the {{ etcd_config.etc_directory }}/pki directory
-    file:
+    ansible.builtin.file:
       path: '{{ etcd_config.etc_directory }}/pki'
       owner: '{{ etcd_config.user }}'
       group: '{{ etcd_config.group }}'
@@ -56,47 +68,47 @@
       state: directory
 
   - name: Copy the Etcd CA certificate
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/ca.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/ca.crt"
 
   - name: Copy the Etcd intermediate CA certificate
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
   - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.key private key
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
   - name: Copy the etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt certificate
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
   - name: Copy the {{ inventory_hostname_short }}.key private key
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key"
 
   - name: Copy the {{ inventory_hostname_short }}.crt certificate
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt"
 
   - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key"
 
   - name: Copy the etcd-{{ etcd_cluster_name }}-client.crt certificate
-    copy:
+    ansible.builtin.copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
 - name: Create the /var/lib/etcd directory
-  file:
+  ansible.builtin.file:
     path: /var/lib/etcd
     owner: '{{ etcd_config.user }}'
     group: '{{ etcd_config.group }}'
@@ -105,28 +117,28 @@
 
 - name: Install etcd
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the etcd {{ etcd_config.package_version }} package has been installed
 
   - stat:
       path: /bin/etcd
     register: etcd_installed_stat_result
 
-  - shell:
+  - ansible.builtin.shell:
       cmd: /bin/etcd --version | head -n1 | awk  {'print $3'}
     register: etcd_installed_version_output
     when: (etcd_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       etcd_installed_version: '{{ etcd_installed_version_output.stdout }}'
     when: (etcd_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       etcd_installed_version: ''
     when: (etcd_installed_stat_result.stat.exists == False)
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the etcd {{ etcd_config.package_version }} package
 
     - name: Check whether the etcd {{ etcd_config.package_version }} package has been downloaded
@@ -140,12 +152,12 @@
       when: (etcd_package_stat_result.stat.exists == False)
 
     - name: Remove the existing etcd binary
-      file:
+      ansible.builtin.file:
         path: /bin/etcd
         state: absent
 
     - name: Remove the existing etcdctl binary
-      file:
+      ansible.builtin.file:
         path: /bin/etcd
         state: absent
 
@@ -156,7 +168,7 @@
         creates: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64
 
     - name: Copy the etcd binary to the /bin directory
-      copy:
+      ansible.builtin.copy:
         src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcd
         dest: /usr/bin/etcd
         owner: 'root'
@@ -165,7 +177,7 @@
         remote_src: yes
 
     - name: Copy the etcdctl binary to the /bin directory
-      copy:
+      ansible.builtin.copy:
         src: /var/tmp/ansible/etcd-v{{ etcd_config.package_version }}-linux-amd64/etcdctl
         dest: /usr/bin/etcdctl
         owner: 'root'
@@ -176,7 +188,7 @@
     when: (etcd_installed_version != etcd_config.package_version)
 
 - name: Create the etcd service file
-  template:
+  ansible.builtin.template:
     src: etcd.service.j2
     dest: /lib/systemd/system/etcd.service
   register: etcd_service_file_template_result
@@ -187,8 +199,8 @@
 #       completing the startup process. If the initial startup was blocking the subsequent
 #       nodes would never be provisioned and the deployment of the cluster would hang.
 - name: Restart the etcd service
-  systemd:
-    name: etcd.service
+  ansible.builtin.systemd:
+    name: etcd
     state: restarted
     enabled: yes
     daemon_reload: yes
@@ -196,8 +208,8 @@
   when: (etcd_service_file_template_result.changed == True)
 
 - name: Ensure that the etcd service is started
-  systemd:
-    name: etcd.service
+  ansible.builtin.systemd:
+    name: etcd
     state: started
     enabled: yes
 

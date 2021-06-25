@@ -1,6 +1,11 @@
 ---
 # file: roles/k8s_common/tasks/main.yaml
 
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
+
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
 # | | | \___ \ ____\___ \| |_) |  _|| |    | || |_   | | |
@@ -42,7 +47,7 @@
     state: present
 
 - name: Allow k8s-admin group to have passwordless sudo
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: /etc/sudoers
     state: present
     regexp: '^%k8s-admin'
@@ -58,28 +63,28 @@
 #
 - name: Install crictl
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the crictl {{ k8s_config.crictl_version }} package has been installed
 
   - stat:
       path: /usr/bin/crictl
     register: crictl_installed_stat_result
 
-  - shell:
+  - ansible.builtin.shell:
       cmd: /usr/bin/crictl -v | head -1 | awk {'print $3'} | cut -c2-
     register: crictl_installed_version_output
     when: (crictl_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       crictl_installed_version: '{{ crictl_installed_version_output.stdout }}'
     when: (crictl_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       crictl_installed_version: ''
     when: (crictl_installed_stat_result.stat.exists == False)
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the crictl {{ k8s_config.crictl_version }} package
 
     - name: Check whether the crictl {{ k8s_config.crictl_version }} package has been downloaded
@@ -93,7 +98,7 @@
       when: (crictl_package_stat_result.stat.exists == False)
 
     - name: Remove the existing crictl binary
-      file:
+      ansible.builtin.file:
         path: /usr/bin/crictl
         state: absent
 
@@ -121,28 +126,28 @@
 #
 - name: Install Helm
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the helm {{ k8s_config.helm_version }} package has been installed
 
   - stat:
       path: /usr/bin/helm
     register: helm_installed_stat_result
 
-  - shell:
+  - ansible.builtin.shell:
       cmd: /usr/bin/helm version --short | head -1 | awk -F '+' {'print $1'} | cut -c2-
     register: helm_installed_version_output
     when: (helm_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       helm_installed_version: '{{ helm_installed_version_output.stdout }}'
     when: (helm_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       helm_installed_version: ''
     when: (helm_installed_stat_result.stat.exists == False)
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the helm {{ k8s_config.helm_version }} package
 
     - name: Check whether the helm {{ k8s_config.helm_version }} package has been downloaded
@@ -156,7 +161,7 @@
       when: (helm_package_stat_result.stat.exists == False)
 
     - name: Remove the existing helm binary
-      file:
+      ansible.builtin.file:
         path: /usr/bin/helm
         state: absent
 
@@ -181,24 +186,24 @@
 - name: Configure the Helm repositories
   block:
   - name: Check if the stable Helm repository has been added
-    shell:
+    ansible.builtin.shell:
       cmd: /usr/bin/helm repo list | grep stable | wc -l
     register: helm_stable_repo_added_output
 
   - name: Add the stable Helm repository
-    command:
+    ansible.builtin.command:
       cmd: /usr/bin/helm repo add stable https://charts.helm.sh/stable
     when: helm_stable_repo_added_output.stdout == '0'
 
   - name: Configure the Bitnami Labs Sealed Secrets repository
     block:
     - name: Check if the Bitnami Labs Sealed Secrets Helm repository has been added
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/helm repo list | grep sealed-secrets | wc -l
       register: helm_sealed_secrets_repo_added_output
 
     - name: Add the Bitnami Labs Sealed Secrets Helm repository
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
       when: helm_sealed_secrets_repo_added_output.stdout == '0'
 
@@ -213,37 +218,37 @@
 #
 - name: Install kustomize
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the kustomize {{ k8s_config.kustomize_version }} package has been installed
 
   - stat:
       path: /usr/bin/kustomize
     register: kustomize_installed_stat_result
 
-  - shell:
+  - ansible.builtin.shell:
       cmd: /usr/bin/kustomize version --short | head -1 | awk -F ' ' {'print $1'} | awk -F '/v' {'print $2'}
     register: kustomize_installed_version_output
     when: (kustomize_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       kustomize_installed_version: '{{ kustomize_installed_version_output.stdout }}'
     when: (kustomize_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       kustomize_installed_version: ''
     when: (kustomize_installed_stat_result.stat.exists == False)
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the kustomize {{ k8s_config.kustomize_version }} package
 
     - name: Remove the existing kustomize binary
-      file:
+      ansible.builtin.file:
         path: /usr/bin/kustomize
         state: absent
 
     - name: Install the kustomize binary
-      shell:
+      ansible.builtin.shell:
         cmd: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
         chdir: /usr/bin
         warn: false

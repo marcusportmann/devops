@@ -1,0 +1,10 @@
+---
+# file: roles/k8s_worker/tasks/assert.yaml
+
+- name: Check the k8s.cluster_name variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - k8s.cluster_name is defined
+    - k8s.cluster_name is string
+    - k8s.cluster_name != ''
+    quiet: yes

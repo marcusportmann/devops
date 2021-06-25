@@ -1,17 +1,9 @@
 ---
 # file: roles/common/tasks/main.yaml
 
-- name: Create the packages directory
-  local_action: file path="{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}" state="directory"
-  become: false
-
-- name: Create the /var/tmp/ansible directory
-  file:
-    path: /var/tmp/ansible
-    owner: 'root'
-    group: 'root'
-    mode: 0700
-    state: directory
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
 
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -37,6 +29,18 @@
 # | |__| |_| | |  | | |  | | |_| | |\  |
 #  \____\___/|_|  |_|_|  |_|\___/|_| \_|
 #
+- name: Create the packages directory
+  local_action: file path="{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}" state="directory"
+  become: false
+
+- name: Create the /var/tmp/ansible directory
+  ansible.builtin.file:
+    path: /var/tmp/ansible
+    owner: 'root'
+    group: 'root'
+    mode: 0700
+    state: directory
+
 - name: Install the pyOpenSSL python package
   pip:
     name: pyOpenSSL

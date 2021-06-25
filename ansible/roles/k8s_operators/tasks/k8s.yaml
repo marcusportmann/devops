@@ -8,12 +8,12 @@
 #  \___/|_|   |_____|_| \_\/_/   \_\_| \___/|_| \_\____/  |_| \_/_/   \_\_|  |_|_____|____/|_| /_/   \_\____|_____|
 #
 - name: Check if the operators namespace exists
-  shell:
+  ansible.builtin.shell:
     cmd: /usr/bin/kubectl get ns | awk  {'print $1'} | grep operators | wc -l
   register: operators_namespace_exists_output
 
 - name: Create the operators namespace if required
-  command:
+  ansible.builtin.command:
     cmd: /usr/bin/kubectl create ns operators
   when: operators_namespace_exists_output.stdout == '0'
 
@@ -47,24 +47,24 @@
 - name: Install the Postgres Operator if it is enabled
   block:
   - name: Check if the Postgres Operator is installed
-    shell:
+    ansible.builtin.shell:
       cmd: /usr/bin/helm -n operators list --filter 'postgres-operator' --output json | jq -r '.[0].chart' | cut -s -f3- -d-
     register: postgres_operator_installed_helm_chart_version_output
 
   - name: Install the Postgres Operator
     block:
     - name: Copy the Postgres Operator v{{ k8s_postgres_operator_helm_chart_version }} Helm chart
-      copy:
+      ansible.builtin.copy:
         src: postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz
         dest: /var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz
 
     - name: Generate the Postgres Operator Helm values
-      template:
+      ansible.builtin.template:
         src: postgres-operator-values.yaml.j2
         dest: /var/tmp/ansible/postgres-operator-values.yaml
 
     - name: Install the Postgres Operator using Helm
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/helm -n operators upgrade --install postgres-operator /var/tmp/ansible/postgres-operator-{{ k8s_postgres_operator_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-values.yaml
 
     - name: Wait for 10 seconds for the Postgres Operator initialization to start
@@ -72,7 +72,7 @@
         timeout: 10
 
     - name: Wait for the Postgres Operator initialization to complete
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/kubectl wait --namespace=operators --for=condition=Ready pods --all --timeout=1200s
 
     when: postgres_operator_installed_helm_chart_version_output.stdout != k8s_postgres_operator_helm_chart_version
@@ -89,24 +89,24 @@
 - name: Install the Postgres Operator UI if it is enabled
   block:
   - name: Check if the Postgres Operator UI is installed
-    shell:
+    ansible.builtin.shell:
       cmd: /usr/bin/helm -n operators list --filter 'postgres-operator-ui' --output json | jq -r '.[0].chart' | cut -s -f4- -d-
     register: postgres_operator_ui_installed_helm_chart_version_output
 
   - name: Install the Postgres Operator UI
     block:
     - name: Copy the Postgres Operator UI v{{ k8s_postgres_operator_ui_helm_chart_version }} Helm chart
-      copy:
+      ansible.builtin.copy:
         src: postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz
         dest: /var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz
 
     - name: Generate the Postgres Operator UI Helm values
-      template:
+      ansible.builtin.template:
         src: postgres-operator-ui-values.yaml.j2
         dest: /var/tmp/ansible/postgres-operator-ui-values.yaml
 
     - name: Install the Postgres Operator UI using Helm
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/helm -n operators upgrade --install postgres-operator-ui /var/tmp/ansible/postgres-operator-ui-{{ k8s_postgres_operator_ui_helm_chart_version }}.tgz --values=/var/tmp/ansible/postgres-operator-ui-values.yaml
 
     - name: Wait for 10 seconds for the Postgres Operator UI initialization to start
@@ -114,7 +114,7 @@
         timeout: 10
 
     - name: Wait for the Postgres Operator UI initialization to complete
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/kubectl wait --namespace=operators --for=condition=Ready pods --all --timeout=1200s
 
     when: postgres_operator_ui_installed_helm_chart_version_output.stdout != k8s_postgres_operator_ui_helm_chart_version

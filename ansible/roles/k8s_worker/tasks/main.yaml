@@ -1,9 +1,10 @@
 ---
 # file: roles/k8s_worker/tasks/main.yaml
 
-- fail:
-    msg: 'No cluster_name specified for the Kubernetes cluster'
-  when: ((k8s_config.cluster_name is not defined) or (k8s_config.cluster_name == None) or (k8s_config.cluster_name == ''))
+- ansible.builtin.import_tasks: assert.yaml
+  run_once: yes
+  delegate_to: localhost
+
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
@@ -38,29 +39,29 @@
   - name: Initializing the additional worker node in the Kubernetes cluster
     block:
     - name: Retrieve the Kubernetes join command from the first master
-      command:
+      ansible.builtin.command:
         cmd: /usr/bin/kubeadm token create --print-join-command
       register: kubeadm_join_command_result
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Save the Kubernetes join command
-      set_fact:
+      ansible.builtin.set_fact:
         kubeadm_join_command: '{{ kubeadm_join_command_result.stdout_lines[0] }}'
 
     - name: Execute the command to Join the additional worker to the Kubernetes cluster
-      command:
+      ansible.builtin.command:
         cmd: '{{ kubeadm_join_command }}'
 
     when: kubelet_config_stat_result.stat.exists == False
 
   - name: Wait for Kubernetes node initialization to complete
-    command:
+    ansible.builtin.command:
       cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
     delegate_to: "{{ groups['k8s_master'][0] }}"
 
   - name: Ensure that the kubelet service is started
-    systemd:
-      name: kubelet.service
+    ansible.builtin.systemd:
+      name: kubelet
       state: started
       enabled: yes
 
@@ -80,7 +81,7 @@
 - name: Copy the Kubernetes configuration to the root user
   block:
   - name: Create the /root/.kube directory
-    file:
+    ansible.builtin.file:
       path: /root/.kube
       owner: 'root'
       group: 'root'
@@ -88,12 +89,12 @@
       state: directory
 
   - name: Create the /root/.kube/config file
-    copy:
+    ansible.builtin.copy:
       src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf
       dest: /root/.kube/config
 
   - name: Set the permissions for the /root/.kube/config file
-    file:
+    ansible.builtin.file:
       path: /root/.kube/config
       owner: 'root'
       group: 'root'
@@ -103,7 +104,7 @@
 - name: Copy the Kubernetes configuration to the k8s-admin user
   block:
   - name: Create the /home/k8s-admin/.kube directory
-    file:
+    ansible.builtin.file:
       path: /home/k8s-admin/.kube
       owner: k8s-admin
       group: k8s-admin
@@ -111,12 +112,12 @@
       state: directory
 
   - name: Create the /home/k8s-admin/.kube/config file
-    copy:
+    ansible.builtin.copy:
       src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf
       dest: /home/k8s-admin/.kube/config
 
   - name: Set the permissions for the /home/k8s-admin/.kube/config file
-    file:
+    ansible.builtin.file:
       path: /home/k8s-admin/.kube/config
       owner: k8s-admin
       group: k8s-admin
