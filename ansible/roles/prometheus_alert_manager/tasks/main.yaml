@@ -34,7 +34,7 @@
   - ansible.builtin.debug:
       msg: Check whether the Prometheus {{ prometheus_alert_manager_config.package_version }} package has been installed
 
-  - stat:
+  - ansible.builtin.stat:
       path: /usr/bin/alertmanager
     register: prometheus_alert_manager_installed_stat_result
 
@@ -56,13 +56,13 @@
         msg: Install the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package
 
     - name: Add the {{ prometheus_alert_manager_config.group }} group
-      group:
+      ansible.builtin.group:
         name: '{{ prometheus_alert_manager_config.group }}'
         gid: '{{ prometheus_alert_manager_config.group_id }}'
         state: present
 
     - name: Add the {{ prometheus_alert_manager_config.user }} user
-      user:
+      ansible.builtin.user:
         name: '{{ prometheus_alert_manager_config.user }}'
         uid: '{{ prometheus_alert_manager_config.user_id }}'
         group: '{{ prometheus_alert_manager_config.group }}'
@@ -71,25 +71,25 @@
         state: present
 
     - name: Check whether the Prometheus Alert Manager service exists
-      stat:
+      ansible.builtin.stat:
         path: /lib/systemd/system/alertmanager.service
       register: prometheus_alert_manager_service_stat_result
 
     - name: Stop the Prometheus Alert Manager service
-      service:
-        name: alertmanager.service
+      ansible.builtin.systemd:
+        name: alertmanager
         state: stopped
       when: prometheus_alert_manager_service_stat_result.stat.exists == True
       register: prometheus_alert_manager_service_stopped
 
     - name: Check whether the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz'
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz'
       register: prometheus_alert_manager_package_stat_result
 
     - name: Download the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/prometheus/alertmanager/releases/download/v{{ prometheus_alert_manager_config.package_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_alert_manager_config.package_checksum }}
+      local_action: ansible.builtin.get_url url='https://github.com/prometheus/alertmanager/releases/download/v{{ prometheus_alert_manager_config.package_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_alert_manager_config.package_checksum }}
       when: (prometheus_alert_manager_package_stat_result.stat.exists == False)
 
     - name: Remove the existing alertmanager binary
@@ -103,7 +103,7 @@
         state: absent
 
     - name: Extract the alertmanager binary from the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package
-      unarchive:
+      ansible.builtin.unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz'
         dest: /usr/bin
         owner: 'root'
@@ -116,7 +116,7 @@
       notify: restart alertmanager
 
     - name: Extract the amtool binary from the Prometheus Alert Manager {{ prometheus_alert_manager_config.package_version }} package
-      unarchive:
+      ansible.builtin.unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/alertmanager-{{ prometheus_alert_manager_config.package_version }}.linux-amd64.tar.gz'
         dest: /usr/bin
         owner: 'root'
@@ -199,7 +199,7 @@
     - ansible.builtin.debug:
         msg: Check whether the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package has been installed
 
-    - stat:
+    - ansible.builtin.stat:
         path: /usr/bin/prometheus-msteams
       register: prometheus_msteams_installed_stat_result
 
@@ -221,13 +221,13 @@
           msg: Install the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package
 
       - name: Add the {{ prometheus_alert_manager_config.prometheus_msteams_group }} group
-        group:
+        ansible.builtin.group:
           name: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
           gid: '{{ prometheus_alert_manager_config.prometheus_msteams_group_id }}'
           state: present
 
       - name: Add the {{ prometheus_alert_manager_config.prometheus_msteams_user }} user
-        user:
+        ansible.builtin.user:
           name: '{{ prometheus_alert_manager_config.prometheus_msteams_user }}'
           uid: '{{ prometheus_alert_manager_config.prometheus_msteams_user_id }}'
           group: '{{ prometheus_alert_manager_config.prometheus_msteams_group }}'
@@ -236,25 +236,25 @@
           state: present
 
       - name: Check whether the prometheus-msteams service exists
-        stat:
+        ansible.builtin.stat:
           path: /lib/systemd/system/prometheus-msteams.service
         register: prometheus_msteams_service_stat_result
 
       - name: Stop the prometheus-msteams service
-        service:
-          name: prometheus-msteams.service
+        ansible.builtin.systemd:
+          name: prometheus-msteams
           state: stopped
         when: prometheus_msteams_service_stat_result.stat.exists == True
         register: prometheus_msteams_service_stopped
 
       - name: Check whether the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package has been downloaded
         become: no
-        local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}'
+        local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}'
         register: prometheus_msteams_package_stat_result
 
       - name: Download the prometheus-msteams {{ prometheus_alert_manager_config.prometheus_msteams_package_version }} package
         become: no
-        local_action: get_url url='https://github.com/prometheus-msteams/prometheus-msteams/releases/download/{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}/prometheus-msteams-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}' checksum={{ prometheus_alert_manager_config.prometheus_msteams_package_checksum }}
+        local_action: ansible.builtin.get_url url='https://github.com/prometheus-msteams/prometheus-msteams/releases/download/{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}/prometheus-msteams-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-msteams-linux-amd64-{{ prometheus_alert_manager_config.prometheus_msteams_package_version }}' checksum={{ prometheus_alert_manager_config.prometheus_msteams_package_checksum }}
         when: (prometheus_msteams_package_stat_result.stat.exists == False)
 
       - name: Remove the existing prometheus-msteams binary

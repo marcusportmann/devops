@@ -76,13 +76,13 @@
   become: false
 
 - name: Add the {{ confluent_config.zookeeper.group }} group
-  group:
+  ansible.builtin.group:
     name: '{{ confluent_config.zookeeper.group }}'
     gid: '{{ confluent_config.zookeeper.group_id }}'
     state: present
 
 - name: Add the {{ confluent_config.zookeeper.user }} user
-  user:
+  ansible.builtin.user:
     name: '{{ confluent_config.zookeeper.user }}'
     uid: '{{ confluent_config.zookeeper.user_id }}'
     group: '{{ confluent_config.zookeeper.group }}'

@@ -42,7 +42,7 @@
   - ansible.builtin.debug:
       msg: Check whether the Kafka {{ kafka_config.package_version }} package has been installed
 
-  - stat:
+  - ansible.builtin.stat:
       path: /opt/kafka
     register: kafka_installed_stat_result
 
@@ -52,7 +52,7 @@
 
     - name: Check whether the Kafka {{ kafka_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
       register: kafka_package_stat_result
 
     - ansible.builtin.debug:
@@ -61,11 +61,11 @@
 
     - name: Download the Kafka {{ kafka_config.package_version }} package
       become: no
-      local_action: get_url url='http://apache.is.co.za/kafka/{{ kafka_config.package_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' checksum={{ kafka_config.package_checksum }}
+      local_action: ansible.builtin.get_url url='http://apache.is.co.za/kafka/{{ kafka_config.package_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz' checksum={{ kafka_config.package_checksum }}
       when: (kafka_package_stat_result.stat.exists == False)
 
     - name: Extract the Kafka {{ kafka_config.package_version }} package
-      unarchive:
+      ansible.builtin.unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kafka_2.13-{{ kafka_config.package_version }}.tgz'
         dest: /opt
 
@@ -106,7 +106,7 @@
   - ansible.builtin.debug:
       msg: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library has been installed
 
-  - stat:
+  - ansible.builtin.stat:
       path: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
     register: prometheus_jmx_exporter_installed_stat_result
 
@@ -116,12 +116,12 @@
 
     - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} has been downloaded
       become: no
-      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
       register: prometheus_jmx_exporter_package_stat_result
 
     - name: Download the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       become: no
-      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
+      local_action: ansible.builtin.get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
       when: (prometheus_jmx_exporter_package_stat_result.stat.exists == False)
 
     - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
@@ -131,7 +131,7 @@
 
     when: (prometheus_jmx_exporter_installed_stat_result.stat.exists == False)
 
-  - stat:
+  - ansible.builtin.stat:
       path: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
     register: prometheus_jmx_exporter_link_stat_result
 

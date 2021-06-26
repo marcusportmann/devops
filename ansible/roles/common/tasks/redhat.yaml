@@ -1,7 +1,7 @@
 ---
 # file: roles/common/tasks/redhat.yaml
 
-- debug:
+- ansible.builtin.debug:
     msg: Applying the RedHat-specific common configuration
 
 
@@ -108,13 +108,13 @@
 # |_|   |___|_| \_\_____|  \_/\_/_/   \_\_____|_____|
 #
 - name: Enable the firewalld service
-  systemd:
+  ansible.builtin.systemd:
     name: firewalld
     state: started
     enabled: true
 
 - name: Enable the chrony port
-  firewalld:
+  ansible.posix.firewalld:
     port: '123/udp'
     permanent: yes
     state: enabled

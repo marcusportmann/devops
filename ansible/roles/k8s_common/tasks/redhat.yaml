@@ -139,7 +139,7 @@
     gpgkey: https://download.docker.com/linux/centos/gpg
 
 - name: Check whether the /etc/containerd/config.toml file exists
-  stat:
+  ansible.builtin.stat:
     path: /etc/containerd/config.toml
   register: containerd_config_stat_result
 
@@ -251,7 +251,7 @@
 # |_|\_\\___/|____/|_____|_| \_\_| \_|_____| |_| |_____|____/  |____/ |_| |____/ \____| |_| |_____| |____/|_____| |_|   |_| |___|_| \_|\____|____/
 #
 - name: Check whether the /etc/sysctl.d/kubernetes.conf file exists
-  stat:
+  ansible.builtin.stat:
     path: /etc/sysctl.d/kubernetes.conf
   register: kubernetes_sysctl_stat_result
 

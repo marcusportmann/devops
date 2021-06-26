@@ -68,7 +68,7 @@
 - name: Initialize the first master node in the Kubernetes cluster
   block:
   - name: Check whether the kubelet service has been configured
-    stat:
+    ansible.builtin.stat:
       path: /var/lib/kubelet/config.yaml
     register: kubelet_config_stat_result
 
@@ -107,21 +107,21 @@
 
       when: k8s_config.etcd_topology == 'external'
 
-    - command:
+    - ansible.builtin.command:
         cmd: hostname -i
       register: hostname_i_result
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         k8s_apiserver_advertise_address: '{{ hostname_i_result.stdout_lines[0] }}'
 
     - name: Create the Kubernetes API server encryption configuration
       block:
       - name: Generate the Kubernetes API server encryption key
-        shell:
+        ansible.builtin.shell:
           cmd: head -c 32 /dev/urandom | base64
         register: generate_kube_apiserver_encryption_key_result
 
-      - set_fact:
+      - ansible.builtin.set_fact:
           kube_apiserver_encryption_key: '{{ generate_kube_apiserver_encryption_key_result.stdout }}'
 
       - template:
@@ -149,7 +149,7 @@
         dest: /var/tmp/ansible/k8s-config.yaml
 
     - name: Initialize the Kubernetes cluster
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/kubeadm init --config /var/tmp/ansible/k8s-config.yaml
 
     - name: Copy the Kubernetes configuration to the root user
@@ -212,7 +212,7 @@
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/kubectl taint node `hostname` node-role.kubernetes.io/master:NoSchedule-
       when: ('k8s_worker' not in groups.keys())
 
@@ -222,20 +222,20 @@
           src: prometheus-service-account.yaml.j2
           dest: /var/tmp/ansible/prometheus-service-account.yaml
 
-      - shell:
+      - ansible.builtin.shell:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-service-account.yaml
 
     when: (kubelet_config_stat_result.stat.exists == False)
 
   - name: Check whether the Weave CNI provider has been configured
-    stat:
+    ansible.builtin.stat:
       path: /etc/cni/net.d/10-weave.conflist
     register: etc_cni_weave_stat_result
 
   - name: Configure the Weave CNI provider
     block:
     - name: Initialize the Weave CNI provider
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_config.pod_subnet}}"
 
     - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
@@ -245,14 +245,14 @@
     when: ((etc_cni_weave_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'weave'))
 
   - name: Check whether the Flannel CNI provider has been configured
-    stat:
+    ansible.builtin.stat:
       path: /etc/cni/net.d/10-flannel.conflist
     register: etc_cni_flannel_stat_result
 
   - name: Configure the Flannel CNI provider
     block:
     - name: Initialize the Flannel CNI provider
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
     - name: Sleep for 15 seconds to allow the Flannel CNI provider to initialize
@@ -266,8 +266,8 @@
       cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
 
   - name: Ensure that the kubelet service is started
-    systemd:
-      name: kubelet.service
+    ansible.builtin.systemd:
+      name: kubelet
       state: started
       enabled: yes
 
@@ -283,7 +283,7 @@
 - name: Initialize an additional master node in the Kubernetes cluster
   block:
   - name: Check whether the kubelet service has been configured
-    stat:
+    ansible.builtin.stat:
       path: /var/lib/kubelet/config.yaml
     register: kubelet_config_stat_result
 
@@ -389,11 +389,11 @@
         src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/etcd/ca.crt
         dest: /etc/kubernetes/pki/etcd/ca.crt
 
-    - command:
+    - ansible.builtin.command:
         cmd: hostname -i
       register: hostname_i_result
 
-    - set_fact:
+    - ansible.builtin.set_fact:
         k8s_apiserver_advertise_address: '{{ hostname_i_result.stdout_lines[0] }}'
 
     - name: Retrieve the Kubernetes join command from the first master
@@ -403,7 +403,7 @@
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Save the Kubernetes join command
-      set_fact:
+      ansible.builtin.set_fact:
         kubeadm_join_command: '{{ kubeadm_join_command_result.stdout_lines[0] }}'
 
     - name: Execute the command to Join the additional master to the Kubernetes cluster
@@ -416,8 +416,8 @@
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Ensure that the kubelet service is started
-      systemd:
-        name: kubelet.service
+      ansible.builtin.systemd:
+        name: kubelet
         state: started
         enabled: yes
 
@@ -481,7 +481,7 @@
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
-      shell:
+      ansible.builtin.shell:
         cmd: /usr/bin/kubectl taint node `hostname` node-role.kubernetes.io/master:NoSchedule-
       when: ('k8s_worker' not in groups.keys())
 
@@ -490,8 +490,8 @@
   when: (groups['k8s_master'][0] != inventory_hostname)
 
 - name: Ensure the kubelet service is enabled and started
-  systemd:
-    name: kubelet.service
+  ansible.builtin.systemd:
+    name: kubelet
     enabled: yes
     state: started
 
@@ -504,29 +504,29 @@
 #
 - name: Install the Bitnami Labs Sealed Secrets Extension
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package has been installed
 
-  - stat:
+  - ansible.builtin.stat:
       path: /usr/bin/kubeseal
     register: kubeseal_installed_stat_result
 
-  - shell:
+  - ansible.builtin.shell:
       cmd: /usr/bin/kubeseal --version |  awk -F ' ' {'print $3'} | cut -c2-
     register: kubeseal_installed_version_output
     when: (kubeseal_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       kubeseal_installed_version: '{{ kubeseal_installed_version_output.stdout }}'
     when: (kubeseal_installed_stat_result.stat.exists == True)
 
-  - set_fact:
+  - ansible.builtin.set_fact:
       kubeseal_installed_version: ''
     when: (kubeseal_installed_stat_result.stat.exists == False)
 
   - name: Install the Bitnami Labs kubeseal package
     block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the Bitnami Labs kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package
 
     - name: Check whether the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package has been downloaded
@@ -565,7 +565,7 @@
     when: (kubeseal_installed_version.startswith(k8s_config.bitnami_labs_sealed_secrets_kubeseal_version) == False)
 
   - name: Check if Bitnami Labs Sealed Secrets is installed
-    shell:
+    ansible.builtin.shell:
       cmd: /usr/bin/helm -n kube-system list --filter 'sealed-secrets' --output json | jq -r '.[0].chart' | cut -s -f3- -d-
     register: sealed_secrets_installed_helm_chart_version_output
 
@@ -594,7 +594,7 @@
 #    \_/\_/  |_____/_/   \_\_/  |_____| |____/ \____|_| \_\___|_|    |_|
 #
 - name: Check if the Weave script is installed
-  stat:
+  ansible.builtin.stat:
     path: /usr/bin/weave
   register: weave_script_installed_stat_result
 

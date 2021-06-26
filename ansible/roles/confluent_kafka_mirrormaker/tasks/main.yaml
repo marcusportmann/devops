@@ -53,13 +53,13 @@
   become: false
 
 - name: Add the {{ confluent_config.kafka_mirrormaker.group }} group
-  group:
+  ansible.builtin.group:
     name: '{{ confluent_config.kafka_mirrormaker.group }}'
     gid: '{{ confluent_config.kafka_mirrormaker.group_id }}'
     state: present
 
 - name: Add the {{ confluent_config.kafka_mirrormaker.user }} user
-  user:
+  ansible.builtin.user:
     name: '{{ confluent_config.kafka_mirrormaker.user }}'
     uid: '{{ confluent_config.kafka_mirrormaker.user_id }}'
     group: '{{ confluent_config.kafka_mirrormaker.group }}'

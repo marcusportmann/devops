@@ -17,7 +17,7 @@
   - ansible.builtin.debug:
       msg: Check whether the istioctl {{ k8s_config.istio.package_version }} package has been installed
 
-  - stat:
+  - ansible.builtin.stat:
       path: /usr/bin/istioctl
     register: istioctl_installed_stat_result
 
@@ -40,12 +40,12 @@
 
     - name: Check whether the istioctl {{ k8s_config.istio.package_version }} package has been downloaded
       become: no
-      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz'
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz'
       register: istioctl_package_stat_result
 
     - name: Download the istioctl {{ k8s_config.istio.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.istioctl_package_checksum }}
+      local_action: ansible.builtin.get_url url='https://github.com/istio/istio/releases/download/{{ k8s_config.istio.package_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.istio.istioctl_package_checksum }}
       when: (istioctl_package_stat_result.stat.exists == False)
 
     - name: Remove the existing istioctl binary
@@ -54,7 +54,7 @@
         state: absent
 
     - name: Extract the istioctl binary from the istioctl {{ k8s_config.istio.package_version }} package
-      unarchive:
+      ansible.builtin.unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/istioctl-{{ k8s_config.istio.package_version }}-linux-amd64.tar.gz'
         dest: /usr/bin
         creates: /usr/bin/istioctl

@@ -76,13 +76,13 @@
   become: false
 
 - name: Add the {{ kafka_config.zookeeper.group }} group
-  group:
+  ansible.builtin.group:
     name: '{{ kafka_config.zookeeper.group }}'
     gid: '{{ kafka_config.zookeeper.group_id }}'
     state: present
 
 - name: Add the {{ kafka_config.zookeeper.user }} user
-  user:
+  ansible.builtin.user:
     name: '{{ kafka_config.zookeeper.user }}'
     uid: '{{ kafka_config.zookeeper.user_id }}'
     group: '{{ kafka_config.zookeeper.group }}'

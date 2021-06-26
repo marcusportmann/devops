@@ -75,12 +75,12 @@
   block:
   - name: Check whether the {{ containerd_package }} package has been downloaded
     become: no
-    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ containerd_package }}'
+    local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ containerd_package }}'
     register: containerd_package_stat_result
 
   - name: Download the {{ containerd_package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ containerd_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ containerd_package }}'
+    local_action: ansible.builtin.get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ containerd_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ containerd_package }}'
     when: (containerd_package_stat_result.stat.exists == False)
 
   - name: Copy the {{ containerd_package }} package
@@ -121,12 +121,12 @@
   block:
   - name: Check whether the {{ docker_ce_package }} package has been downloaded
     become: no
-    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
+    local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
     register: docker_ce_package_stat_result
 
   - name: Download the {{ docker_ce_package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
+    local_action: ansible.builtin.get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_package }}'
     when: (docker_ce_package_stat_result.stat.exists == False)
 
   - name: Copy the {{ docker_ce_package }} package
@@ -136,12 +136,12 @@
 
   - name: Check whether the {{ docker_ce_cli_package }} package has been downloaded
     become: no
-    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+    local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
     register: docker_ce_cli_package_stat_result
 
   - name: Download the {{ docker_ce_cli_package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_cli_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
+    local_action: ansible.builtin.get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_cli_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_cli_package }}'
     when: (docker_ce_cli_package_stat_result.stat.exists == False)
 
   - name: Copy the {{ docker_ce_cli_package }} package
@@ -151,12 +151,12 @@
 
   - name: Check whether the {{ docker_ce_rootless_extras_package }} package has been downloaded
     become: no
-    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
+    local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
     register: docker_ce_rootless_extras_package_stat_result
 
   - name: Download the {{ docker_ce_rootless_extras_package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_rootless_extras_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
+    local_action: ansible.builtin.get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_ce_rootless_extras_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_ce_rootless_extras_package }}'
     when: (docker_ce_rootless_extras_package_stat_result.stat.exists == False)
 
   - name: Copy the {{ docker_ce_rootless_extras_package }} package
@@ -166,12 +166,12 @@
 
   - name: Check whether the {{ docker_scan_plugin_package }} package has been downloaded
     become: no
-    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_scan_plugin_package }}'
+    local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_scan_plugin_package }}'
     register: docker_scan_plugin_package_stat_result
 
   - name: Download the {{ docker_scan_plugin_package }} package
     become: no
-    local_action: get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_scan_plugin_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_scan_plugin_package }}'
+    local_action: ansible.builtin.get_url url='https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable/Packages/{{ docker_scan_plugin_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ docker_scan_plugin_package }}'
     when: (docker_scan_plugin_package_stat_result.stat.exists == False)
 
   - name: Copy the {{ docker_scan_plugin_package }} package

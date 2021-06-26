@@ -64,7 +64,7 @@
 
     when: longhorn_installed_helm_chart_version_output.stdout != k8s_config.storage.longhorn.helm_chart_version
 
-  - template:
+  - ansible.builtin.template:
       src: longhorn/longhorn.yaml.j2
       dest: /var/tmp/ansible/longhorn.yaml
 
@@ -215,7 +215,7 @@
       retries: 180
       delay: 15
 
-    - debug:
+    - ansible.builtin.debug:
         msg: 'Successfully connected to TopoLVM controller service'
 
   when: ((k8s_config.storage.topolvm.enabled is defined) and (k8s_config.storage.topolvm.enabled != None) and (k8s_config.storage.topolvm.enabled == true))

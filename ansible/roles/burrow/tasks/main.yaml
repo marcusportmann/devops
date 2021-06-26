@@ -20,10 +20,10 @@
     msg: 'No burrow.clusters configuration specified'
   when: ((burrow_config.clusters is not defined) or (burrow_config.clusters == None))
 
-- set_fact:
+- ansible.builtin.set_fact:
     burrow_cluster_name: ''
 
-- set_fact:
+- ansible.builtin.set_fact:
     burrow_cluster_name: '{{ item }}'
   when: (('hosts' in burrow_config.clusters[item]) and (inventory_hostname in burrow_config.clusters[item].hosts))
   loop: '{{ burrow_config.clusters | flatten(1) }}'
@@ -60,33 +60,33 @@
     msg: 'The Kafka cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}) is invalid'
   when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "kafka") and (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name not in kafka.clusters))
 
-- set_fact:
+- ansible.builtin.set_fact:
     burrow_zookeeper_cluster_type: '{{ item }}'
   when: (('hosts' in burrow_config.clusters[item]) and (inventory_hostname in burrow_config.clusters[item].hosts))
   loop: '{{ burrow_config.clusters | flatten(1) }}'
 
-- set_fact:
+- ansible.builtin.set_fact:
     burrow_zookeeper_cluster_type: '{{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }}'
 
-- set_fact:
+- ansible.builtin.set_fact:
     burrow_zookeeper_cluster_name: '{{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}'
 
-- debug:
+- ansible.builtin.debug:
    msg: 'Using Confluent ZooKeeper cluster: {{ burrow_zookeeper_cluster_name }}'
   when: (burrow_zookeeper_cluster_type == "confluent")
 
-- debug:
+- ansible.builtin.debug:
    msg: 'Using Kafka ZooKeeper cluster: {{ burrow_zookeeper_cluster_name }}'
   when: (burrow_zookeeper_cluster_type == "kafka")
 
-- set_fact:
+- ansible.builtin.set_fact:
     zookeeper_hosts: []
 
-- set_fact:
+- ansible.builtin.set_fact:
    zookeeper_hosts: "{{ confluent.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name].zookeeper_hosts | intersect(groups['confluent_zookeeper']|default([])) }}"
   when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "confluent") and ('zookeeper_hosts' in confluent.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name]))
 
-- set_fact:
+- ansible.builtin.set_fact:
    zookeeper_hosts: "{{ kafka.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name].zookeeper_hosts | intersect(groups['kafka_zookeeper']|default([])) }}"
   when: (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "kafka") and ('zookeeper_hosts' in kafka.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name])
 
@@ -94,7 +94,7 @@
     msg: 'No ZooKeeper hosts found using cluster type ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }} and cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}))'
   when: ((zookeeper_hosts | length) == 0)
 
-- debug:
+- ansible.builtin.debug:
     msg: 'Found {{ (zookeeper_hosts | length) }} ZooKeeper hosts using cluster type ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }}) and cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}))'
 
 
@@ -134,25 +134,25 @@
 
 - name: Install Burrow
   block:
-  - debug:
+  - ansible.builtin.debug:
       msg: Check whether the Burrow {{ burrow_config.package_version }} package has been installed
 
-  - stat:
+  - ansible.builtin.stat:
       path: /usr/bin/burrow-{{ burrow_config.package_version }}
     register: burrow_installed_stat_result
 
   - block:
-    - debug:
+    - ansible.builtin.debug:
         msg: Install the Burrow {{ burrow_config.package_version }} package
 
     - name: Check whether the Burrow service exists
-      stat:
+      ansible.builtin.stat:
         path: /lib/systemd/system/burrow.service
       register: burrow_service_stat_result
 
     - name: Stop the Burrow service
-      service:
-        name: burrow.service
+      ansible.builtin.systemd:
+        name: burrow
         state: stopped
       when: burrow_service_stat_result.stat.exists == True
       register: burrow_service_stopped
@@ -186,13 +186,13 @@
     when: (burrow_installed_stat_result.stat.exists == False)
 
 - name: Add the {{ burrow_config.group }} group
-  group:
+  ansible.builtin.group:
     name: '{{ burrow_config.group }}'
     gid: '{{ burrow_config.group_id }}'
     state: present
 
 - name: Add the {{ burrow_config.user }} user
-  user:
+  ansible.builtin.user:
     name: '{{ burrow_config.user }}'
     uid: '{{ burrow_config.user_id }}'
     group: '{{ burrow_config.group }}'
@@ -263,13 +263,13 @@
 
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Confluent ZooKeeper cluster
-  set_fact:
+  ansible.builtin.set_fact:
     kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "confluent")
 
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Kafka ZooKeeper cluster
-  set_fact:
+  ansible.builtin.set_fact:
     kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "kafka")
 
@@ -301,7 +301,7 @@
   register: burrow_systemd_unit_template_result
 
 - name: Restart the Burrow service
-  systemd:
+  ansible.builtin.systemd:
     name: burrow
     daemon_reload: yes
   when: (burrow_systemd_unit_template_result.changed == True)
@@ -309,7 +309,7 @@
 - meta: flush_handlers
 
 - name: Ensure that the Burrow service is started
-  systemd:
+  ansible.builtin.systemd:
     name: burrow
     state: started
     enabled: yes

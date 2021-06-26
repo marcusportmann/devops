@@ -32,7 +32,7 @@
 - name: Initialize an additional worker node in the Kubernetes cluster
   block:
   - name: Check whether the kubelet service has been configured
-    stat:
+    ansible.builtin.stat:
       path: /var/lib/kubelet/config.yaml
     register: kubelet_config_stat_result
 
@@ -73,7 +73,7 @@
 # |_|\_\___/____/   \____\___/|_| \_|_|   |___\____|
 #
 - name: Fetch the Kubernetes configuration file /etc/kubernetes/admin.conf from the first master
-  fetch:
+  ansible.builtin.fetch:
     src: /etc/kubernetes/admin.conf
     dest: fetched_files
   delegate_to: "{{ groups['k8s_master'][0] }}"
