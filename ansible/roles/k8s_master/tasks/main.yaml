@@ -1,10 +1,6 @@
 ---
 # file: roles/k8s_master/tasks/main.yaml
 
-- ansible.builtin.import_tasks: assert.yaml
-  run_once: yes
-  delegate_to: localhost
-
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
 #  / _ \/ ___|     / ___||  _ \| ____/ ___|_ _|  ___|_ _/ ___|
@@ -124,7 +120,7 @@
       - ansible.builtin.set_fact:
           kube_apiserver_encryption_key: '{{ generate_kube_apiserver_encryption_key_result.stdout }}'
 
-      - template:
+      - ansible.builtin.template:
           src: k8s-apiserver-encryption.yaml.j2
           dest: /etc/kubernetes/apiserver/encryption.yaml
 
@@ -218,7 +214,7 @@
 
     - name: Create the Prometheus service account
       block:
-      - template:
+      - ansible.builtin.template:
           src: prometheus-service-account.yaml.j2
           dest: /var/tmp/ansible/prometheus-service-account.yaml
 
@@ -290,7 +286,7 @@
   - name: Initializing the additional master node in the Kubernetes cluster
     block:
     - name: Fetch the /etc/kubernetes/scheduler/scheduler-config.yaml file from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/scheduler/scheduler-config.yaml
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -301,7 +297,7 @@
         dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
     - name: Fetch the /etc/kubernetes/apiserver/encryption.yaml file from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/apiserver/encryption.yaml
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -324,7 +320,7 @@
       local_action: file path=fetched_files/{{ inventory_hostname }}/etc/kubernetes/apiserver/encryption.yaml state=absent
 
     - name: Fetch the /etc/kubernetes/pki/sa.key from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/pki/sa.key
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -335,7 +331,7 @@
         dest: /etc/kubernetes/pki/sa.key
 
     - name: Fetch the /etc/kubernetes/pki/sa.pub from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/pki/sa.pub
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -346,7 +342,7 @@
         dest: /etc/kubernetes/pki/sa.pub
 
     - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.key from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/pki/front-proxy-ca.key
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -357,7 +353,7 @@
         dest: /etc/kubernetes/pki/front-proxy-ca.key
 
     - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.crt from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/pki/front-proxy-ca.crt
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -368,7 +364,7 @@
         dest: /etc/kubernetes/pki/front-proxy-ca.crt
 
     - name: Fetch the /etc/kubernetes/pki/etcd/ca.key from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/pki/etcd/ca.key
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -379,7 +375,7 @@
         dest: /etc/kubernetes/pki/etcd/ca.key
 
     - name: Fetch the /etc/kubernetes/pki/etcd/ca.crt from the first master node in the Kubernetes cluster
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/kubernetes/pki/etcd/ca.crt
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
@@ -531,12 +527,12 @@
 
     - name: Check whether the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package has been downloaded
       become: no
-      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
       register: kubeseal_package_stat_result
 
     - name: Download the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package
       become: no
-      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
+      local_action: ansible.builtin.get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
       when: (kubeseal_package_stat_result.stat.exists == False)
 
     - name: Remove the existing kubeseal binary

@@ -1,10 +1,8 @@
 ---
 # file: roles/etcd/tasks/assert.yaml
 
-#- name: Check the XXX variable is defined correctly
-#  ansible.builtin.assert:
-#    that:
-#    - XXX is defined
-#    - XXX is string
-#    - XXX != ''
-#    quiet: yes
+- name: Check the etcd variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - etcd is defined
+    quiet: yes

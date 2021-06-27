@@ -174,6 +174,12 @@ variables:
     database_username: gitea
     database_password: Password1
 
+  artifactory_oss:
+    database_host: devops.local
+    database_name: artifactory
+    database_username: artifactory
+    database_password: Password1
+
   test:
     test_name: test_value
     clusters:
@@ -389,7 +395,7 @@ hosts:
 #
 - name:               confluent-zkks-digital-dev-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
@@ -421,7 +427,7 @@ hosts:
 
 - name:               confluent-zkks-digital-dev-02.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
@@ -453,7 +459,7 @@ hosts:
 
 - name:               confluent-zkks-digital-dev-03.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
@@ -485,7 +491,7 @@ hosts:
 
 - name:               confluent-sr-digital-dev-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_schema_registry
   virtualbox:
     cpus:             1
@@ -514,7 +520,7 @@ hosts:
 
 - name:               confluent-mm-digital-dev-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_kafka_mirrormaker
   virtualbox:
     cpus:             1
@@ -543,7 +549,7 @@ hosts:
 
 - name:               confluent-zkks-analytics-dev-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
@@ -575,7 +581,7 @@ hosts:
 
 - name:               confluent-zkks-analytics-dev-02.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
@@ -607,7 +613,7 @@ hosts:
 
 - name:               confluent-zkks-analytics-dev-03.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
@@ -639,7 +645,7 @@ hosts:
 
 - name:               confluent-sr-analytics-dev-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,confluent_schema_registry
   virtualbox:
     cpus:             1
@@ -668,7 +674,7 @@ hosts:
 
 - name:               etcd-digital-dev-01.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
     cpus:             1
@@ -697,7 +703,7 @@ hosts:
 
 - name:               etcd-digital-dev-02.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
     cpus:             1
@@ -727,7 +733,7 @@ hosts:
 - name:               etcd-digital-dev-03.local
   domain:             ubuntu-2004
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
     cpus:             1
@@ -757,7 +763,7 @@ hosts:
 - name:               k8s-lb-digital-dev.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_load_balancer
   virtualbox:
     cpus:             1
@@ -787,7 +793,7 @@ hosts:
 - name:               k8s-m-digital-dev-01.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
     cpus:             2
@@ -817,7 +823,7 @@ hosts:
 - name:               k8s-m-digital-dev-02.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
     cpus:             2
@@ -847,7 +853,7 @@ hosts:
 - name:               k8s-m-digital-dev-03.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
     cpus:             2
@@ -877,7 +883,7 @@ hosts:
 - name:               k8s-w-digital-dev-01.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
@@ -908,7 +914,7 @@ hosts:
 - name:               k8s-w-digital-dev-02.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
@@ -939,7 +945,7 @@ hosts:
 - name:               k8s-w-digital-dev-03.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
     cpus:             2
@@ -969,7 +975,7 @@ hosts:
 
 - name:               kafka-zkks-digital-dev-01.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
@@ -1001,7 +1007,7 @@ hosts:
 
 - name:               kafka-zkks-digital-dev-02.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
@@ -1033,7 +1039,7 @@ hosts:
 
 - name:               kafka-zkks-digital-dev-03.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
@@ -1065,7 +1071,7 @@ hosts:
 
 - name:               kafka-sr-digital-dev-01.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored
   virtualbox:
     cpus:             2
@@ -1097,7 +1103,7 @@ hosts:
 
 - name:               kafka-mm-digital-dev-01.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_mirrormaker
   virtualbox:
     cpus:             2
@@ -1129,7 +1135,7 @@ hosts:
 
 - name:               kafka-zkks-analytics-dev-01.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
@@ -1161,7 +1167,7 @@ hosts:
 
 - name:               kafka-zkks-analytics-dev-02.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
@@ -1193,7 +1199,7 @@ hosts:
 
 - name:               kafka-zkks-analytics-dev-03.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
@@ -1225,7 +1231,7 @@ hosts:
 
 - name:               kafka-sr-analytics-dev-01.local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored
   virtualbox:
     cpus:             2
@@ -1258,7 +1264,7 @@ hosts:
 - name:               monitoring-dev.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana,burrow
   virtualbox:
     cpus:             1
@@ -1297,8 +1303,8 @@ hosts:
 - name:               devops.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
-  ansible_groups:     postgresql,gitea
+  ansible_playbook:   ansible/all.yaml
+  ansible_groups:     postgresql,gitea,artifactory_oss
   virtualbox:
     cpus:             4
     memory:           8192
@@ -1328,7 +1334,7 @@ hosts:
 - name:               test-centos-7.local
   domain:             local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     docker
   virtualbox:
     cpus:             2
@@ -1361,7 +1367,7 @@ hosts:
 - name:               test-centos-8.local
   domain:             local
   type:               centos-8
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     docker
   virtualbox:
     cpus:             2
@@ -1394,7 +1400,7 @@ hosts:
 - name:               test-ubuntu-2004.local
   domain:             local
   type:               ubuntu-2004
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     docker
   virtualbox:
     cpus:             2
@@ -1436,7 +1442,7 @@ hosts:
 #
 - name:               awx.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     awx
   virtualbox:
     cpus:             2
@@ -1465,7 +1471,7 @@ hosts:
 
 - name:               confluent-zk-local-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             2
@@ -1497,7 +1503,7 @@ hosts:
 
 - name:               confluent-zk-local-02.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             2
@@ -1529,7 +1535,7 @@ hosts:
 
 - name:               confluent-zk-local-03.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             2
@@ -1561,7 +1567,7 @@ hosts:
 
 - name:               confluent-ks-local-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             2
@@ -1593,7 +1599,7 @@ hosts:
 
 - name:               confluent-ks-local-02.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             2
@@ -1625,7 +1631,7 @@ hosts:
 
 - name:               confluent-ks-local-03.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             2
@@ -1657,7 +1663,7 @@ hosts:
 
 - name:               confluent-sr-local-01.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             1
@@ -1686,7 +1692,7 @@ hosts:
 
 - name:               confluent-sr-local-02.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             1
@@ -1715,7 +1721,7 @@ hosts:
 
 - name:               confluent-sr-local-03.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             1
@@ -1744,7 +1750,7 @@ hosts:
 
 - name:               monitoring.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:
   virtualbox:
     cpus:             1
@@ -1776,7 +1782,7 @@ hosts:
 
 - name:               gitea.local
   type:               centos-7
-  ansible_playbook:   ansible/devops.yaml
+  ansible_playbook:   ansible/all.yaml
   ansible_groups:     postgresql
   virtualbox:
     cpus:             1

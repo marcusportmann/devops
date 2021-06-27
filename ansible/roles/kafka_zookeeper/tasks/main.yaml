@@ -1,10 +1,6 @@
 ---
 # file: roles/kafka_zookeeper/tasks/main.yaml
 
-- ansible.builtin.import_tasks: assert.yaml
-  run_once: yes
-  delegate_to: localhost
-
 
 #  ____  _____ _____   _____ _    ____ _____ ____
 # / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|

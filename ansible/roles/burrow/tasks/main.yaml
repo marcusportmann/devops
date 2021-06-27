@@ -159,16 +159,16 @@
 
     - name: Check whether the Burrow {{ burrow_config.package_version }} package has been downloaded
       become: no
-      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
       register: burrow_package_stat_result
 
     - name: Download the Burrow {{ burrow_config.package_version }} package
       become: no
-      local_action: get_url url='https://github.com/linkedin/Burrow/releases/download/v{{ burrow_config.package_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' checksum={{ burrow_config.package_checksum }}
+      local_action: ansible.builtin.get_url url='https://github.com/linkedin/Burrow/releases/download/v{{ burrow_config.package_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' checksum={{ burrow_config.package_checksum }}
       when: (burrow_package_stat_result.stat.exists == False)
 
     - name: Extract the burrow binary from the Burrow {{ burrow_config.package_version }} package
-      unarchive:
+      ansible.builtin.unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
         dest: /usr/bin
         owner: 'root'
