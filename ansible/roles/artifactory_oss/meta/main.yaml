@@ -1,0 +1,23 @@
+---
+# file: roles/artifactory_oss/meta/main.yaml
+
+galaxy_info:
+  author: Marcus Portmann
+  description: Ansible Artifactory OSS Role
+  license: Apache 2
+  min_ansible_version: 2.9
+  platforms:
+  - name: EL
+    versions:
+     - 7
+     - 8
+  - name: Ubuntu
+    versions:
+      - breezy
+      - focal
+  categories:
+  - development
+  - platform
+
+dependencies:
+  - { role: common, common: { initialise_data_directory: true } }

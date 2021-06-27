@@ -1,0 +1,7 @@
+---
+# file: roles/artifactory_oss/defaults/main.yaml
+
+artifactory_oss_defaults:
+  package_version: '7.19.9'
+
+artifactory_oss_config: "{{ artifactory_oss_defaults | combine(artifactory_oss | default({}), recursive=True) }}"

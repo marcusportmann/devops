@@ -1,0 +1,28 @@
+---
+# file: roles/artifactory_oss/tasks/redhat.yaml
+
+- ansible.builtin.debug:
+    msg: Applying the RedHat-specific Artifactory OSS configuration
+
+- name: Install the java-11-openjdk package
+  ansible.builtin.yum:
+    name: java-11-openjdk
+    state: present
+
+- name: Install the java-11-openjdk-devel package
+  ansible.builtin.yum:
+    name: java-11-openjdk-devel
+    state: present
+
+- name: Select the correct java version
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/java-11-openjdk/bin/java
+    link: /usr/bin/java
+
+- name: Select the correct keytool version
+  alternatives:
+    name: keytool
+    path: /usr/lib/jvm/java-11-openjdk/bin/keytool
+    link: /usr/bin/keytool
+
