@@ -49,16 +49,16 @@ client-profile:
 
 tls:
   zookeeper:
-    keyfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key
-    certfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt
+    keyfile: {{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.key
+    certfile: {{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.crt
     cafile: {{ burrow_config.etc_directory }}/pki/ca.crt
     noverify: false
 {% if ((confluent is defined) and (confluent != None) and (confluent.clusters is defined) and (confluent.clusters != None) and ((confluent.clusters|length) > 0)) %}
 {% for confluent_cluster_name in confluent.clusters %}
 {% if ((confluent.clusters[confluent_cluster_name].kafka_server_hosts is defined) and (confluent.clusters[confluent_cluster_name].kafka_server_hosts != None) and (((confluent.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([]))) | length  ) > 0 )) %}
   {{ confluent_cluster_name }}:
-    keyfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key
-    certfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt
+    keyfile: {{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.key
+    certfile: {{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.crt
     cafile: {{ burrow_config.etc_directory }}/pki/ca.crt
     noverify: false
 {% endif %}
@@ -68,8 +68,8 @@ tls:
 {% for kafka_cluster_name in kafka.clusters %}
 {% if ((kafka.clusters[kafka_cluster_name].kafka_server_hosts is defined) and (kafka.clusters[kafka_cluster_name].kafka_server_hosts != None) and (((kafka.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([]))) | length  ) > 0 )) %}
   {{ kafka_cluster_name }}:
-    keyfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key
-    certfile: {{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt
+    keyfile: {{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.key
+    certfile: {{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.crt
     cafile: {{ burrow_config.etc_directory }}/pki/ca.crt
     noverify: false
 {% endif %}

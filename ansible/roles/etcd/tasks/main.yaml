@@ -14,8 +14,12 @@
 #
 - ansible.builtin.set_fact:
     etcd_cluster_name: '{{ item }}'
-  when: (inventory_hostname in etcd_config.clusters[item].hosts)
+  when: (ansible_fqdn in etcd_config.clusters[item].hosts)
   loop: '{{ etcd_config.clusters | flatten(1) }}'
+
+- set_fact:
+    etcd_cluster_endpoints: "{{ etcd_cluster_endpoints | default([]) + [':'.join((item,'2379'))] }}"
+  loop: "{{ etcd_config.clusters[etcd_cluster_name].hosts }}"
 
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -87,15 +91,15 @@
       src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
       dest: "{{ etcd_config.etc_directory }}/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt"
 
-  - name: Copy the {{ inventory_hostname_short }}.key private key
+  - name: Copy the {{ ansible_hostname }}.key private key
     ansible.builtin.copy:
-      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.key"
-      dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ ansible_hostname }}.key"
+      dest: "{{ etcd_config.etc_directory }}/pki/{{ ansible_hostname }}.key"
 
-  - name: Copy the {{ inventory_hostname_short }}.crt certificate
+  - name: Copy the {{ ansible_hostname }}.crt certificate
     ansible.builtin.copy:
-      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ inventory_hostname_short }}.crt"
-      dest: "{{ etcd_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt"
+      src: "{{ pki_root }}/{{ role_name }}/{{ etcd_cluster_name }}/{{ ansible_hostname }}.crt"
+      dest: "{{ etcd_config.etc_directory }}/pki/{{ ansible_hostname }}.crt"
 
   - name: Copy the etcd-{{ etcd_cluster_name }}-client.key private key
     ansible.builtin.copy:
@@ -212,6 +216,21 @@
     name: etcd
     state: started
     enabled: yes
+
+- name: Add the etcdctl alias to the /etc/profile.d/etcd.sh file
+  ansible.builtin.lineinfile:
+    dest: /etc/profile.d/etcd.sh
+    state: present
+    regexp: '^%alias etcdctl'
+    line: alias etcdctl='etcdctl --key={{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.key --cert={{ etcd_config.etc_directory }}/pki/etcd-client-{{ etcd_cluster_name.replace('_', '-') }}.crt --cacert={{ etcd_config.etc_directory }}/pki/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt --endpoints={{ etcd_cluster_endpoints | join(',') }}'
+    create: yes
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+
+
+
 
 
 

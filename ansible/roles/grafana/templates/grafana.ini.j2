@@ -7,7 +7,7 @@
 app_mode = production
 
 # instance name, defaults to HOSTNAME environment variable value or hostname if HOSTNAME var is empty
-instance_name = {{ inventory_hostname_short }}
+instance_name = {{ ansible_hostname }}
 
 #################################### Paths ####################################
 [paths]
@@ -38,7 +38,7 @@ protocol = http
 http_port = 3000
 
 # The public facing domain name used to access grafana from a browser
-domain = {{ inventory_hostname }}
+domain = {{ ansible_fqdn }}
 
 # Redirect to correct domain if host header does not match domain
 # Prevents DNS rebinding attacks

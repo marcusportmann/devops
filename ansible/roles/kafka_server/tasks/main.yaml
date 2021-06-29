@@ -21,11 +21,11 @@
 
 - ansible.builtin.set_fact:
     kafka_cluster_name: '{{ item }}'
-  when: (('kafka_server_hosts' in kafka_config.clusters[item]) and (inventory_hostname in kafka_config.clusters[item].kafka_server_hosts))
+  when: (('kafka_server_hosts' in kafka_config.clusters[item]) and (ansible_fqdn in kafka_config.clusters[item].kafka_server_hosts))
   loop: '{{ kafka_config.clusters | flatten(1) }}'
 
 - fail:
-    msg: "The Kafka Server host {{ inventory_hostname }} is not associated with a Kafka cluster"
+    msg: "The Kafka Server host {{ ansible_fqdn }} is not associated with a Kafka cluster"
   when: ((kafka_cluster_name is not defined) or (kafka_cluster_name == None) or (kafka_cluster_name == ''))
 
 - ansible.builtin.debug:
@@ -134,23 +134,23 @@
     notify: restart kafka
     register: ca_certificate_copy_result
 
-  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key)
+  - name: Copy the Kafka Server private key ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.key'
-      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.key'
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ ansible_hostname }}.key'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart kafka
     register: kafka_server_private_key_copy_result
 
-  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt)
+  - name: Copy the Kafka Server certificate ({{ ansible_hostname }}.crt)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}.crt'
-      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.crt'
+      src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ ansible_hostname }}.crt'
+      dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart kafka
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
     ansible.builtin.set_fact:
-      kafka_server_keystore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_keystore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/{{ ansible_hostname }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     ansible.builtin.set_fact:
@@ -161,10 +161,10 @@
     - name: Generate the Kafka Server PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ kafka_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
-        friendly_name: "{{ inventory_hostname_short }}"
-        privatekey_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.key
-        certificate_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ inventory_hostname_short }}.crt
+        path: '{{ kafka_config.kafka_server.etc_directory }}/pki/{{ ansible_hostname }}.p12'
+        friendly_name: "{{ ansible_hostname }}"
+        privatekey_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.key
+        certificate_path: /var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.crt
         passphrase: '{{ kafka_server_keystore_password }}'
         owner: '{{ kafka_config.kafka_server.user }}'
         group: '{{ kafka_config.kafka_server.group }}'
@@ -322,6 +322,9 @@
   ansible.builtin.template:
     src: kafka.sh.j2
     dest: /etc/profile.d/kafka.sh
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Add the aliases for the Kafka tools to the /etc/profile.d/kafka.sh file
   block:
@@ -330,14 +333,14 @@
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-acls'
-      line: alias kafka-acls='/opt/kafka/bin/kafka-acls.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-acls='/opt/kafka/bin/kafka-acls.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-broker-api-versions alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-broker-api-versions'
-      line: alias kafka-broker-api-versions='/opt/kafka/bin/kafka-broker-api-versions.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-broker-api-versions='/opt/kafka/bin/kafka-broker-api-versions.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-configs alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
@@ -351,56 +354,56 @@
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-configs-brokers'
-      line: alias kafka-configs='/opt/kafka/bin/kafka-configs.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-configs='/opt/kafka/bin/kafka-configs.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-consumer-groups alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-consumer-groups'
-      line: alias kafka-consumer-groups='/opt/kafka/bin/kafka-consumer-groups.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-consumer-groups='/opt/kafka/bin/kafka-consumer-groups.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-delegation-tokens alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delegation-tokens'
-      line: alias kafka-delegation-tokens='/opt/kafka/bin/kafka-delegation-tokens.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-delegation-tokens='/opt/kafka/bin/kafka-delegation-tokens.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-delete-records alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delete-records'
-      line: alias kafka-delete-records='/opt/kafka/bin/kafka-delete-records.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-delete-records='/opt/kafka/bin/kafka-delete-records.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-leader-election alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-leader-election'
-      line: alias kafka-leader-election='/opt/kafka/bin/kafka-leader-election.sh --admin.config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-leader-election='/opt/kafka/bin/kafka-leader-election.sh --admin.config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-log-dirs alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-log-dirs'
-      line: alias kafka-log-dirs='/opt/kafka/bin/kafka-log-dirs.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-log-dirs='/opt/kafka/bin/kafka-log-dirs.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-reassign-partitions alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-reassign-partitions'
-      line: alias kafka-reassign-partitions='/opt/kafka/bin/kafka-reassign-partitions.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-reassign-partitions='/opt/kafka/bin/kafka-reassign-partitions.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-topics alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-topics'
-      line: alias kafka-topics='/opt/kafka/bin/kafka-topics.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-topics='/opt/kafka/bin/kafka-topics.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
 
 - name: Generate or retrieve the password for the Burrow ZooKeeper user
   ansible.builtin.set_fact:

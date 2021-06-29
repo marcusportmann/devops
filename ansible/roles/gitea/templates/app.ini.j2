@@ -12,9 +12,9 @@ INSTALL_LOCK   = true
 
 [server]
 PROTOCOL         = http
-ROOT_URL         = http://{{ inventory_hostname }}/
+ROOT_URL         = http://{{ ansible_fqdn }}/
 HTTP_PORT        = 80
-DOMAIN           = {{ inventory_hostname }}
+DOMAIN           = {{ ansible_fqdn }}
 # LOCAL_ROOT_URL  = %(PROTOCOL)s://%(HTTP_ADDR)s:%(HTTP_PORT)s/
 LOCAL_ROOT_URL   = %(PROTOCOL)://%(HTTP_ADDR)s:%(HTTP_PORT)/
 DISABLE_SSH      = true

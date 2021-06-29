@@ -259,7 +259,7 @@ scrape_configs:
   scrape_interval: 5s
   scrape_timeout: 5s
   static_configs:
-  - targets: ['{{ inventory_hostname }}:9090']
+  - targets: ['{{ ansible_fqdn }}:9090']
 
 
 #   ________   ___  _  _______ _____ ____  _____ ____

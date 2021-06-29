@@ -21,11 +21,11 @@
 
 - ansible.builtin.set_fact:
     confluent_cluster_name: '{{ item }}'
-  when: (('kafka_server_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].kafka_server_hosts))
+  when: (('kafka_server_hosts' in confluent_config.clusters[item]) and (ansible_fqdn in confluent_config.clusters[item].kafka_server_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - fail:
-    msg: "The Kafka Server host {{ inventory_hostname }} is not associated with a Confluent cluster"
+    msg: "The Kafka Server host {{ ansible_fqdn }} is not associated with a Confluent cluster"
   when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
 - ansible.builtin.debug:
@@ -63,8 +63,8 @@
     kafka_server_rack: default
 
 - ansible.builtin.set_fact:
-    kafka_server_rack: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_racks[inventory_hostname] }}"
-  when: ((confluent_config.clusters[confluent_cluster_name].kafka_server_racks is defined) and (confluent_config.clusters[confluent_cluster_name].kafka_server_racks[inventory_hostname] is defined))
+    kafka_server_rack: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_racks[ansible_fqdn] }}"
+  when: ((confluent_config.clusters[confluent_cluster_name].kafka_server_racks is defined) and (confluent_config.clusters[confluent_cluster_name].kafka_server_racks[ansible_fqdn] is defined))
 
 
 
@@ -146,23 +146,23 @@
     notify: restart kafka
     register: ca_certificate_copy_result
 
-  - name: Copy the Kafka Server private key ({{ inventory_hostname_short }}.key)
+  - name: Copy the Kafka Server private key ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
-      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.key'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart kafka
     register: kafka_server_private_key_copy_result
 
-  - name: Copy the Kafka Server certificate ({{ inventory_hostname_short }}.crt)
+  - name: Copy the Kafka Server certificate ({{ ansible_hostname }}.crt)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
-      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.crt'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart kafka
     register: kafka_server_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka Server keystore
     ansible.builtin.set_fact:
-      kafka_server_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      kafka_server_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ ansible_hostname }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     ansible.builtin.set_fact:
@@ -173,10 +173,10 @@
     - name: Generate the Kafka Server PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ confluent_config.kafka_server.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
-        friendly_name: "{{ inventory_hostname_short }}"
-        privatekey_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key
-        certificate_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt
+        path: '{{ confluent_config.kafka_server.etc_directory }}/pki/{{ ansible_hostname }}.p12'
+        friendly_name: "{{ ansible_hostname }}"
+        privatekey_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key
+        certificate_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt
         passphrase: '{{ kafka_server_keystore_password }}'
         owner: '{{ confluent_config.kafka_server.user }}'
         group: '{{ confluent_config.kafka_server.group }}'
@@ -353,14 +353,14 @@
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-acls'
-      line: alias kafka-acls='/opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-acls='/opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-broker-api-versions alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-broker-api-versions'
-      line: alias kafka-broker-api-versions='/opt/confluent/bin/kafka-broker-api-versions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-broker-api-versions='/opt/confluent/bin/kafka-broker-api-versions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-configs alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
@@ -374,70 +374,70 @@
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-configs-brokers'
-      line: alias kafka-configs='/opt/confluent/bin/kafka-configs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-configs='/opt/confluent/bin/kafka-configs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-consumer-groups alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-consumer-groups'
-      line: alias kafka-consumer-groups='/opt/confluent/bin/kafka-consumer-groups --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-consumer-groups='/opt/confluent/bin/kafka-consumer-groups --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-delegation-tokens alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delegation-tokens'
-      line: alias kafka-delegation-tokens='/opt/confluent/bin/kafka-delegation-tokens --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-delegation-tokens='/opt/confluent/bin/kafka-delegation-tokens --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-delete-records alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-delete-records'
-      line: alias kafka-delete-records='/opt/confluent/bin/kafka-delete-records --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-delete-records='/opt/confluent/bin/kafka-delete-records --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-leader-election alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-leader-election'
-      line: alias kafka-leader-election='/opt/confluent/bin/kafka-leader-election --admin.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-leader-election='/opt/confluent/bin/kafka-leader-election --admin.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-log-dirs alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-log-dirs'
-      line: alias kafka-log-dirs='/opt/confluent/bin/kafka-log-dirs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-log-dirs='/opt/confluent/bin/kafka-log-dirs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-reassign-partitions alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-reassign-partitions'
-      line: alias kafka-reassign-partitions='/opt/confluent/bin/kafka-reassign-partitions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-reassign-partitions='/opt/confluent/bin/kafka-reassign-partitions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-topics alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-topics'
-      line: alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-console-producer alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-console-producer'
-      line: alias kafka-console-producer='/opt/confluent/bin/kafka-console-producer --producer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-console-producer='/opt/confluent/bin/kafka-console-producer --producer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
   - name: Add the kafka-console-consumer alias to the /etc/profile.d/kafka.sh file
     ansible.builtin.lineinfile:
       dest: /etc/profile.d/kafka.sh
       state: present
       regexp: '^%alias kafka-console-consumer'
-      line: alias kafka-console-consumer='/opt/confluent/bin/kafka-console-consumer --consumer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+      line: alias kafka-console-consumer='/opt/confluent/bin/kafka-console-consumer --consumer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
 
 
 - name: Apply the Schema Registry configuration
@@ -453,21 +453,21 @@
 
   - name: Check if the Schema Registry topic (_schemas) exists
     ansible.builtin.shell:
-      cmd: /opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --list --topic _schemas
+      cmd: /opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }} --list --topic _schemas
     register: check_if_schema_registry_topic_exists_result
 
   - name: Create the Schema Registry topic (_schemas)
     ansible.builtin.shell:
-      cmd: /opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --create --replication-factor {{ (((kafka_server_hosts | length) - 1) if ((kafka_server_hosts | length) > 1) else 1) }} --partitions {{ (((kafka_server_hosts | length) - 1) if ((kafka_server_hosts | length) > 1) else 1) }} --topic _schemas --config cleanup.policy=compact
+      cmd: /opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }} --create --replication-factor {{ (((kafka_server_hosts | length) - 1) if ((kafka_server_hosts | length) > 1) else 1) }} --partitions {{ (((kafka_server_hosts | length) - 1) if ((kafka_server_hosts | length) > 1) else 1) }} --topic _schemas --config cleanup.policy=compact
     when: (check_if_schema_registry_topic_exists_result.stdout == '0')
 
   - name: Grant the schema-registry user access to the Schema Registry topic (_schemas)
     ansible.builtin.shell:
-      cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --topic _schemas
+      cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --topic _schemas
 
   - name: Grant the schema-registry user access to the Schema Registry consumer group (schema-registry)
     ansible.builtin.shell:
-      cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ inventory_hostname }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --group schema-registry
+      cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --group schema-registry
 
   when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
 

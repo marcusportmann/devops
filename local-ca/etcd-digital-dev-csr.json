@@ -10,10 +10,10 @@
     }
   ],
   "hosts": [
-    "etcd-digital-dev.digital",
-    "etcd-digital-dev-01.digital",
-    "etcd-digital-dev-02.digital",
-    "etcd-digital-dev-03.digital",
+    "etcd-digital-dev.local",
+    "etcd-digital-dev-01.local",
+    "etcd-digital-dev-02.local",
+    "etcd-digital-dev-03.local",
     "localhost",
     "127.0.0.1"
   ]

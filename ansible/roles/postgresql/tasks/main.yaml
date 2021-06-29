@@ -23,25 +23,25 @@
 - ansible.builtin.set_fact:
     postgresql_cluster_config: ''
 
-- name: Finding the PostgreSQL cluster config for the host ({{ inventory_hostname }})
+- name: Finding the PostgreSQL cluster config for the host ({{ ansible_fqdn }})
   ansible.builtin.set_fact:
     postgresql_cluster_config: '{{ item.0 }}'
-  when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == inventory_hostname))
+  when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == ansible_fqdn))
   loop: "{{ postgresql_config.clusters | subelements('servers') }}"
   no_log: True
 
 - ansible.builtin.set_fact:
     postgresql_server_config: ''
 
-- name: Finding the PostgreSQL server config for the host ({{ inventory_hostname }})
+- name: Finding the PostgreSQL server config for the host ({{ ansible_fqdn }})
   ansible.builtin.set_fact:
     postgresql_server_config: '{{ item.1 }}'
-  when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == inventory_hostname))
+  when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == ansible_fqdn))
   loop: "{{ postgresql_config.clusters | subelements('servers') }}"
   no_log: True
 
 - fail:
-    msg: "The host {{ inventory_hostname }} is not associated with a PostgreSQL cluster"
+    msg: "The host {{ ansible_fqdn }} is not associated with a PostgreSQL cluster"
   when: ((postgresql_cluster_config is not defined) or (postgresql_cluster_config == None) or (postgresql_cluster_config == ''))
 
 - ansible.builtin.debug:

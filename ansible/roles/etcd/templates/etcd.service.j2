@@ -1,8 +1,8 @@
 # {{ansible_managed}}
 
 {% set initial_cluster_hosts = [] -%}
-{% for host in groups["etcd"] -%}
-  {% set _ = initial_cluster_hosts.append("%s=https://%s:2380" % (hostvars[host]['inventory_hostname_short'], host)) -%}
+{% for host in etcd_config.clusters[etcd_cluster_name].hosts -%}
+  {% set _ = initial_cluster_hosts.append("%s=https://%s:2380" % (hostvars[host]['ansible_hostname'], host)) -%}
 {% endfor -%}
 
 [Unit]
@@ -13,7 +13,7 @@ Wants=network-online.target
 
 [Service]
 Environment=DAEMON_ARGS=
-Environment=ETCD_NAME={{ inventory_hostname_short }}
+Environment=ETCD_NAME={{ ansible_hostname }}
 Environment=ETCD_DATA_DIR=/var/lib/etcd/default
 EnvironmentFile=-/etc/default/%p
 Type=notify
@@ -22,16 +22,16 @@ PermissionsStartOnly=true
 ExecStart=/usr/bin/etcd $DAEMON_ARGS \
   --cert-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.crt \
   --key-file=/etc/etcd/pki/etcd-{{ etcd_cluster_name.replace('_', '-') }}.key \
-  --peer-cert-file=/etc/etcd/pki/{{ inventory_hostname_short }}.crt \
-  --peer-key-file=/etc/etcd/pki/{{ inventory_hostname_short }}.key \
+  --peer-cert-file=/etc/etcd/pki/{{ ansible_hostname }}.crt \
+  --peer-key-file=/etc/etcd/pki/{{ ansible_hostname }}.key \
   --trusted-ca-file=/etc/etcd/pki/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt \
   --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca-{{ etcd_cluster_name.replace('_', '-') }}.crt \
   --peer-client-cert-auth \
   --client-cert-auth \
-  --initial-advertise-peer-urls https://{{ inventory_hostname }}:2380 \
+  --initial-advertise-peer-urls https://{{ ansible_fqdn }}:2380 \
   --listen-peer-urls https://{{ ansible_default_ipv4.address }}:2380 \
   --listen-client-urls https://127.0.0.1:2379,https://{{ ansible_default_ipv4.address }}:2379 \
-  --advertise-client-urls https://{{ inventory_hostname }}:2379 \
+  --advertise-client-urls https://{{ ansible_fqdn }}:2379 \
   --initial-cluster-token etcd-{{ etcd_cluster_name.replace('_', '-') }}-cluster \
   --initial-cluster {{ initial_cluster_hosts | join(',') }} \
   --initial-cluster-state new

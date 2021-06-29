@@ -21,11 +21,11 @@
 
 - ansible.builtin.set_fact:
     confluent_cluster_name: '{{ item }}'
-  when: (('zookeeper_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].zookeeper_hosts))
+  when: (('zookeeper_hosts' in confluent_config.clusters[item]) and (ansible_fqdn in confluent_config.clusters[item].zookeeper_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - fail:
-    msg: "The ZooKeeper host {{ inventory_hostname }} is not associated with a Confluent cluster"
+    msg: "The ZooKeeper host {{ ansible_fqdn }} is not associated with a Confluent cluster"
   when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
 - ansible.builtin.debug:
@@ -118,23 +118,23 @@
     notify: restart zookeeper
     register: ca_certificate_copy_result
 
-  - name: Copy the host-specific ZooKeeper private key ({{ inventory_hostname_short }}.key)
+  - name: Copy the host-specific ZooKeeper private key ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
-      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.key'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart zookeeper
     register: zookeeper_private_key_copy_result
 
-  - name: Copy the host-specific ZooKeeper certificate ({{ inventory_hostname_short }}.key)
+  - name: Copy the host-specific ZooKeeper certificate ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
-      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.crt'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart zookeeper
     register: zookeeper_certificate_copy_result
 
   - name: Generate or retrieve the password for the ZooKeeper keystore
     ansible.builtin.set_fact:
-      zookeeper_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      zookeeper_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/zookeeper-{{ ansible_hostname }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the ZooKeeper truststore
     ansible.builtin.set_fact:
@@ -145,10 +145,10 @@
     - name: Generate the ZooKeeper PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ confluent_config.zookeeper.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
-        friendly_name: '{{ inventory_hostname_short }}'
-        privatekey_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
-        certificate_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
+        path: '{{ confluent_config.zookeeper.etc_directory }}/pki/{{ ansible_hostname }}.p12'
+        friendly_name: '{{ ansible_hostname }}'
+        privatekey_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key'
+        certificate_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt'
         passphrase: '{{ zookeeper_keystore_password }}'
         owner: '{{ confluent_config.zookeeper.user }}'
         group: '{{ confluent_config.zookeeper.group }}'
@@ -259,7 +259,10 @@
       create: yes
       state: present
       regexp: '^%alias zookeeper-shell'
-      line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.zookeeper.etc_directory }}/conf/zookeeper-jaas.conf" /opt/confluent/bin/zookeeper-shell -zk-tls-config-file {{ confluent_config.zookeeper.etc_directory }}/conf/zookeeper-tls.conf {{ inventory_hostname }}:{{ confluent_config.zookeeper.secure_client_port }}'
+      line: alias zookeeper-shell='KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.zookeeper.etc_directory }}/conf/zookeeper-jaas.conf" /opt/confluent/bin/zookeeper-shell -zk-tls-config-file {{ confluent_config.zookeeper.etc_directory }}/conf/zookeeper-tls.conf {{ ansible_fqdn }}:{{ confluent_config.zookeeper.secure_client_port }}'
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
 
 - name: Configure the zookeeper systemd unit
   ansible.builtin.template:

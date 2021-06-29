@@ -10,7 +10,7 @@ kafkastore.topic.replication.factor=3
 kafkastore.topic.replication.factor=1
 {% endif %}
 
-host.name={{ inventory_hostname }}
+host.name={{ ansible_fqdn }}
 
 listeners=https://0.0.0.0:8443
 
@@ -21,7 +21,7 @@ master.eligibility=true
 kafkastore.security.protocol=SASL_SSL
 kafkastore.ssl.protocol=TLS
 kafkastore.ssl.keystore.type=PKCS12
-kafkastore.ssl.keystore.location={{ confluent_config.schema_registry.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
+kafkastore.ssl.keystore.location={{ confluent_config.schema_registry.etc_directory }}/pki/{{ ansible_hostname }}.p12
 kafkastore.ssl.keystore.password={{ schema_registry_keystore_password }}
 kafkastore.ssl.truststore.type=PKCS12
 kafkastore.ssl.truststore.location={{ confluent_config.schema_registry.etc_directory }}/pki/ca.p12
@@ -31,7 +31,7 @@ kafkastore.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginMod
 
 ssl.protocol=TLS
 ssl.keystore.type=PKCS12
-ssl.keystore.location={{ confluent_config.schema_registry.etc_directory }}/pki/{{ inventory_hostname_short }}.p12
+ssl.keystore.location={{ confluent_config.schema_registry.etc_directory }}/pki/{{ ansible_hostname }}.p12
 ssl.keystore.password={{ schema_registry_keystore_password }}
 ssl.key.password={{ schema_registry_keystore_password }}
 ssl.truststore.type=PKCS12

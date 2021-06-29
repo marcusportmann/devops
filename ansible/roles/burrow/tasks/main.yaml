@@ -5,9 +5,9 @@
   run_once: yes
   delegate_to: localhost
 
-- name: Create the /var/tmp/ansible/burrow directory
+- name: Create the /var/tmp/ansible/{{ role_name }} directory
   ansible.builtin.file:
-    path: /var/tmp/ansible/burrow
+    path: /var/tmp/ansible/{{ role_name }}
     owner: 'root'
     group: 'root'
     mode: '0700'
@@ -33,11 +33,11 @@
 
 - ansible.builtin.set_fact:
     burrow_cluster_name: '{{ item }}'
-  when: (('hosts' in burrow_config.clusters[item]) and (inventory_hostname in burrow_config.clusters[item].hosts))
+  when: (('hosts' in burrow_config.clusters[item]) and (ansible_fqdn in burrow_config.clusters[item].hosts))
   loop: '{{ burrow_config.clusters | flatten(1) }}'
 
 - fail:
-    msg: 'Failed to determine the Burrow cluster name for the host ({{ inventory_hostname }})'
+    msg: 'Failed to determine the Burrow cluster name for the host ({{ ansible_fqdn }})'
   when: (burrow_cluster_name == '')
 
 - fail:
@@ -70,7 +70,7 @@
 
 - ansible.builtin.set_fact:
     burrow_zookeeper_cluster_type: '{{ item }}'
-  when: (('hosts' in burrow_config.clusters[item]) and (inventory_hostname in burrow_config.clusters[item].hosts))
+  when: (('hosts' in burrow_config.clusters[item]) and (ansible_fqdn in burrow_config.clusters[item].hosts))
   loop: '{{ burrow_config.clusters | flatten(1) }}'
 
 - ansible.builtin.set_fact:
@@ -129,7 +129,7 @@
 # | |_) | |_| |  _ <|  _ <| |_| |\ V  V /
 # |____/ \___/|_| \_\_| \_\\___/  \_/\_/
 - name: Create the credentials directory
-  local_action: file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
+  local_action: ansible.builtin.file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
   become: false
 
 - name: Install Burrow
@@ -243,19 +243,19 @@
       mode: '0440'
     notify: restart burrow
 
-  - name: Copy the Burrow private key ({{ inventory_hostname_short }}.key)
+  - name: Copy the Burrow private key ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.key'
-      dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.key'
+      src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ ansible_hostname }}.key'
+      dest: '{{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.key'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
       mode: '0440'
     notify: restart burrow
 
-  - name: Copy the Burrow certificate ({{ inventory_hostname_short }}.crt)
+  - name: Copy the Burrow certificate ({{ ansible_hostname }}.crt)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ inventory_hostname_short }}.crt'
-      dest: '{{ burrow_config.etc_directory }}/pki/{{ inventory_hostname_short }}.crt'
+      src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ ansible_hostname }}.crt'
+      dest: '{{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.crt'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
       mode: '0440'

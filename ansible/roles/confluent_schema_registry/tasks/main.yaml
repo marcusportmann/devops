@@ -21,11 +21,11 @@
 
 - ansible.builtin.set_fact:
     confluent_cluster_name: '{{ item }}'
-  when: (('schema_registry_hosts' in confluent_config.clusters[item]) and (inventory_hostname in confluent_config.clusters[item].schema_registry_hosts))
+  when: (('schema_registry_hosts' in confluent_config.clusters[item]) and (ansible_fqdn in confluent_config.clusters[item].schema_registry_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
 
 - fail:
-    msg: "The Schema Registry host {{ inventory_hostname }} is not associated with a Confluent cluster"
+    msg: "The Schema Registry host {{ ansible_fqdn }} is not associated with a Confluent cluster"
   when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
 - ansible.builtin.debug:
@@ -118,23 +118,23 @@
     notify: restart schema-registry
     register: ca_certificate_copy_result
 
-  - name: Copy the Schema Registry private key ({{ inventory_hostname_short }}.key)
+  - name: Copy the Schema Registry private key ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.key'
-      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.key'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart schema-registry
     register: schema_registry_private_key_copy_result
 
-  - name: Copy the Schema Registry certificate ({{ inventory_hostname_short }}.crt)
+  - name: Copy the Schema Registry certificate ({{ ansible_hostname }}.crt)
     ansible.builtin.copy:
-      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}.crt'
-      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
+      src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.crt'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart schema-registry
     register: schema_registry_certificate_copy_result
 
   - name: Generate or retrieve the password for the Schema Registry keystore
     ansible.builtin.set_fact:
-      schema_registry_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ inventory_hostname_short }}-keystore-password chars=ascii_letters,digits length=16') }}"
+      schema_registry_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ ansible_hostname }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
     ansible.builtin.set_fact:
@@ -145,10 +145,10 @@
     - name: Generate the Schema Registry PKCS12 keystore
       openssl_pkcs12:
         action: export
-        path: '{{ confluent_config.schema_registry.etc_directory }}/pki/{{ inventory_hostname_short }}.p12'
-        friendly_name: "{{ inventory_hostname_short }}"
-        privatekey_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.key'
-        certificate_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ inventory_hostname_short }}.crt'
+        path: '{{ confluent_config.schema_registry.etc_directory }}/pki/{{ ansible_hostname }}.p12'
+        friendly_name: "{{ ansible_hostname }}"
+        privatekey_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key'
+        certificate_path: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt'
         passphrase: '{{ schema_registry_keystore_password }}'
         owner: '{{ confluent_config.schema_registry.user }}'
         group: '{{ confluent_config.schema_registry.group }}'

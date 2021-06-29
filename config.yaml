@@ -72,9 +72,9 @@ variables:
     clusters:
       digital_dev:
         hosts:
-          etcd-digital-dev-01.local
-          etcd-digital-dev-02.local
-          etcd-digital-dev-03.local
+        - etcd-digital-dev-01.local
+        - etcd-digital-dev-02.local
+        - etcd-digital-dev-03.local
 
   k8s:
     cluster_name: digital_dev

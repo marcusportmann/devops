@@ -44,8 +44,8 @@ etcd:
     {% endfor %}
 
     caFile: /etc/kubernetes/pki/etcd/ca.crt
-    certFile: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.crt
-    keyFile: /etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.key
+    certFile: /etc/kubernetes/pki/etcd/{{ ansible_hostname }}.crt
+    keyFile: /etc/kubernetes/pki/etcd/{{ ansible_hostname }}.key
 {% else %}
 
 

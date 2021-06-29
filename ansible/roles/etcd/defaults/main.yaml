@@ -2,14 +2,14 @@
 # file: roles/etcd/defaults/main.yaml
 
 etcd_defaults:
-  package_version: '3.4.8'
-  package_checksum: sha256:a3a332a68fe8dedf20149c1a4b8746fe8061b72d75d3a5850b17e04de9ed7942
+  package_version: '3.5.0'
+  package_checksum: sha256:864baa0437f8368e0713d44b83afe21dce1fb4ee7dae4ca0f9dd5f0df22d01c4
 
   etc_directory: /etc/etcd
 
   user: etcd
   user_id: 320
-  group: etdd
+  group: etcd
   group_id: 320
 
 etcd_config: "{{ etcd_defaults | combine(etcd | default({}), recursive=True) }}"
