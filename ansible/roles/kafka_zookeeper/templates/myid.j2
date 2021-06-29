@@ -1,1 +1,1 @@
-{{ (zookeeper_hosts.index(inventory_hostname) + 1) }}
+{{ (zookeeper_hosts.index(ansible_fqdn) + 1) }}

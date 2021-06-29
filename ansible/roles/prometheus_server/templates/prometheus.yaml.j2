@@ -25,7 +25,7 @@ scrape_configs:
 {% if ('burrow' in groups) -%}
 {% set burrow_hosts = [] -%}
 {% for host in groups['burrow'] -%}
-  {% set _ = burrow_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_server_config.burrow.exporter_port)) -%}
+  {% set _ = burrow_hosts.append("'%s:%d'" % (hostvars[host].ansible_fqdn, prometheus_server_config.burrow.exporter_port)) -%}
 {% endfor -%}
 - job_name: burrow
   static_configs:
@@ -48,7 +48,7 @@ scrape_configs:
   static_configs:
 {% if ('confluent_kafka_server' in groups) %}
 {% for host in groups['confluent_kafka_server'] %}
-  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_server_config.confluent.kafka_server.jmx_exporter_port) }}]
+  - targets: [{{ "'%s:%d'" % (hostvars[host].ansible_fqdn, prometheus_server_config.confluent.kafka_server.jmx_exporter_port) }}]
     labels:
 {% for cluster_name in confluent.clusters -%}
 {% if (host in confluent.clusters[cluster_name].kafka_server_hosts) %}
@@ -59,7 +59,7 @@ scrape_configs:
 {% endif %}
 {% if ('kafka_server' in groups) %}
 {% for host in groups['kafka_server'] %}
-  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_server_config.kafka.kafka_server.jmx_exporter_port) }}]
+  - targets: [{{ "'%s:%d'" % (hostvars[host].ansible_fqdn, prometheus_server_config.kafka.kafka_server.jmx_exporter_port) }}]
     labels:
 {% for cluster_name in kafka.clusters -%}
 {% if (host in kafka.clusters[cluster_name].kafka_server_hosts) %}
@@ -237,7 +237,7 @@ scrape_configs:
 {% if ('monitored' in groups) -%}
 {% set monitored_hosts = [] -%}
 {% for host in groups['monitored'] -%}
-  {% set _ = monitored_hosts.append("'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_server_config.node_exporter.port)) -%}
+  {% set _ = monitored_hosts.append("'%s:%d'" % (hostvars[host].ansible_fqdn, prometheus_server_config.node_exporter.port)) -%}
 {% endfor -%}
 - job_name: nodes
   static_configs:
@@ -273,7 +273,7 @@ scrape_configs:
   static_configs:
 {% if ('confluent_zookeeper' in groups) %}
 {% for host in groups['confluent_zookeeper'] %}
-  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_server_config.confluent.zookeeper.jmx_exporter_port) }}]
+  - targets: [{{ "'%s:%d'" % (hostvars[host].ansible_fqdn, prometheus_server_config.confluent.zookeeper.jmx_exporter_port) }}]
     labels:
 {% for cluster_name in confluent.clusters -%}
 {% if (host in confluent.clusters[cluster_name].zookeeper_hosts) %}
@@ -284,7 +284,7 @@ scrape_configs:
 {% endif %}
 {% if ('kafka_zookeeper' in groups) %}
 {% for host in groups['kafka_zookeeper'] %}
-  - targets: [{{ "'%s:%d'" % (hostvars[host]['inventory_hostname'], prometheus_server_config.kafka.zookeeper.jmx_exporter_port) }}]
+  - targets: [{{ "'%s:%d'" % (hostvars[host].ansible_fqdn, prometheus_server_config.kafka.zookeeper.jmx_exporter_port) }}]
     labels:
 {% for cluster_name in kafka.clusters -%}
 {% if (host in kafka.clusters[cluster_name].zookeeper_hosts) %}

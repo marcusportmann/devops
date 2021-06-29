@@ -59,6 +59,9 @@
   loop: '{{ confluent_config.clusters | flatten(1) }}'
   when: ((confluent_config.clusters[item].replicate_to_cluster is defined) and (confluent_config.clusters[item].replicate_to_cluster != None) and (confluent_config.clusters[item].replicate_to_cluster == confluent_cluster_name))
 
+- debug:
+    msg: 'Kafka MirrorMaker users: {{ kafka_server_mirrormaker_users }}'
+
 - ansible.builtin.set_fact:
     kafka_server_rack: default
 
@@ -66,6 +69,8 @@
     kafka_server_rack: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_racks[ansible_fqdn] }}"
   when: ((confluent_config.clusters[confluent_cluster_name].kafka_server_racks is defined) and (confluent_config.clusters[confluent_cluster_name].kafka_server_racks[ansible_fqdn] is defined))
 
+- debug:
+    msg: 'Kafka server rack: {{ kafka_server_rack }}'
 
 
 #   ___  ____       ____  ____  _____ ____ ___ _____ ___ ____
@@ -95,9 +100,6 @@
   local_action: ansible.builtin.file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
   register: create_credentials_directory_result
-
-- ansible.builtin.debug:
-    msg: "{{ create_credentials_directory_result }}"
 
 - name: Add the {{ confluent_config.kafka_server.group }} group
   ansible.builtin.group:
@@ -265,7 +267,7 @@
 - name: Set the password for the Kafka Server user in ZooKeeper
   ansible.builtin.shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.broker.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_broker_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_broker_user_password }}]'
-  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == ansible_fqdn)
   register: set_kafka_server_broker_user_password_in_zookeeper_result
 
 - meta: flush_handlers
@@ -312,7 +314,7 @@
   - name: Set the password for the Kafka admin user in ZooKeeper
     ansible.builtin.shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.admin.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_admin_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_admin_user_password }}]'
-    when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+    when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == ansible_fqdn)
 
   - name: Create the Kafka admin command configuration file
     ansible.builtin.template:
@@ -332,11 +334,11 @@
     when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
 - name: Setup the Kafka MirrorMaker users
-  include_tasks: roles/confluent_kafka_server/tasks/provision_kafka_mirrormaker_user_for_cluster.yaml
-  loop: '{{ confluent_config.clusters | flatten(1) }}'
+  include_tasks: roles/kafka_server/tasks/provision_kafka_mirrormaker_user.yaml
+  loop: '{{ kafka_server_mirrormaker_users }}'
   loop_control:
-    loop_var: kafka_mirrormaker_user_confluent_cluster_name
-  when: ((confluent_config.clusters[confluent_cluster_name].kafka_mirrormaker_hosts is defined) and (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname))
+    loop_var: kafka_server_mirrormaker_user_username
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == ansible_fqdn)
 
 - name: Create the Kafka profile file
   ansible.builtin.template:
@@ -449,7 +451,7 @@
   - name: Set the password for the Schema Registry user in ZooKeeper
     ansible.builtin.shell:
       cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.schema_registry.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_schema_registry_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_schema_registry_user_password }}]'
-    when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+    when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == ansible_fqdn)
 
   - name: Check if the Schema Registry topic (_schemas) exists
     ansible.builtin.shell:
@@ -469,7 +471,7 @@
     ansible.builtin.shell:
       cmd: /opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }} --add --allow-principal User:schema-registry --operation all --group schema-registry
 
-  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == ansible_fqdn)
 
 - name: Generate or retrieve the password for the Burrow user
   ansible.builtin.set_fact:
@@ -481,5 +483,5 @@
 - name: Set the password for the Burrow user in ZooKeeper
   ansible.builtin.shell:
     cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ confluent_config.kafka_server.users.burrow.username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_burrow_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_burrow_user_password }}]'
-  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == inventory_hostname)
+  when: (kafka_server_hosts[(kafka_server_hosts|length) - 1] == ansible_fqdn)
   register: set_kafka_server_burrow_user_password_in_zookeeper_result

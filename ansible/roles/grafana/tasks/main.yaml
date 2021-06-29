@@ -12,8 +12,8 @@
     prometheus_server_url: http://{{ groups['prometheus_server'][0] }}:9090
 
 - ansible.builtin.set_fact:
-    prometheus_server_url: "http://{{ grafana_config.prometheus_servers[inventory_hostname] }}:9090"
-  when: ((grafana_config.prometheus_servers is defined) and (grafana_config.prometheus_servers[inventory_hostname] is defined))
+    prometheus_server_url: "http://{{ grafana_config.prometheus_servers[ansible_fqdn] }}:9090"
+  when: ((grafana_config.prometheus_servers is defined) and (grafana_config.prometheus_servers[ansible_fqdn] is defined))
 
 - ansible.builtin.debug:
     msg: "Prometheus Server URL: {{ prometheus_server_url }}"

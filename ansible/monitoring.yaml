@@ -1,5 +1,52 @@
 # This playbook configures the monitoring components.
 
+- name: Gather facts from all hosts monitored by prometheus
+  hosts: prometheus_server
+  become: yes
+  become_user: root
+  pre_tasks:
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['burrow'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['confluent_kafka_server'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['confluent_kafka_zookeeper'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['etcd'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['k8s_master'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['kafka_server'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['kafka_zookeeper'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['monitored'] | default([])) }}"
+  tasks: []
+
 - name: Configure a Burrow host
   hosts: burrow
   become: yes

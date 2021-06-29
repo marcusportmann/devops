@@ -93,18 +93,21 @@
       src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/kafka/{{ role_name }}/ca.crt'
     notify: restart mirrormaker
+    register: ca_certificate_copy_result
 
   - name: Copy the Kafka MirrorMaker private key ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ ansible_hostname }}.key'
       dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart mirrormaker
+    register: kafka_mirrormaker_private_key_copy_result
 
   - name: Copy the Kafka MirrorMaker certificate ({{ ansible_hostname }}.crt)
     ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ ansible_hostname }}.crt'
       dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart mirrormaker
+    register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
     ansible.builtin.set_fact:
@@ -158,7 +161,7 @@
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   ansible.builtin.set_fact:
-    kafka_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/mirrormaker-' + kafka_cluster_name.replace('_', '-') + '-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   ansible.builtin.template:

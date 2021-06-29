@@ -13,7 +13,7 @@ variables:
         hosts:
         - monitoring-dev.local
         # One of confluent, kafka, or standalone
-        zookeeper_cluster_type: confluent
+        zookeeper_cluster_type: kafka
         zookeeper_cluster_name: digital_dev
       local:
         hosts:
@@ -410,7 +410,6 @@ hosts:
   virtualbox:
     cpus:             2
     memory:           2560
-    data_disk:        10240
     fqdn:             confluent-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.175/24
@@ -419,7 +418,6 @@ hosts:
   vmware_desktop:
     cpus:             2
     memory:           2560
-    data_disk:        10240
     fqdn:             confluent-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.175/24
@@ -441,8 +439,7 @@ hosts:
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.176/24
@@ -450,8 +447,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.176/24
@@ -473,8 +469,7 @@ hosts:
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.177/24
@@ -482,8 +477,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.177/24
@@ -564,7 +558,6 @@ hosts:
   virtualbox:
     cpus:             2
     memory:           2560
-    data_disk:        10240
     fqdn:             confluent-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.180/24
@@ -573,7 +566,6 @@ hosts:
   vmware_desktop:
     cpus:             2
     memory:           2560
-    data_disk:        10240
     fqdn:             confluent-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.180/24
@@ -595,8 +587,7 @@ hosts:
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.181/24
@@ -604,8 +595,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.181/24
@@ -627,8 +617,7 @@ hosts:
   ansible_groups:     monitored,confluent_zookeeper,confluent_kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.182/24
@@ -636,8 +625,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             confluent-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.182/24
@@ -989,8 +977,7 @@ hosts:
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.165/24
@@ -998,8 +985,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.165/24
@@ -1021,8 +1007,7 @@ hosts:
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.166/24
@@ -1030,8 +1015,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.166/24
@@ -1053,8 +1037,7 @@ hosts:
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.167/24
@@ -1062,8 +1045,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.167/24
@@ -1085,8 +1067,7 @@ hosts:
   ansible_groups:     monitored
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           1024
     fqdn:             kafka-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.184.168/24
@@ -1094,8 +1075,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           1024
     fqdn:             kafka-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.184.168/24
@@ -1103,8 +1083,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
-    memory:           2560
-    data_disk:        40960
+    memory:           1024
     fqdn:             kafka-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.0.68/24
@@ -1117,8 +1096,7 @@ hosts:
   ansible_groups:     monitored,kafka_mirrormaker
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           1024
     fqdn:             kafka-mm-digital-dev-01.local
     domain:           local
     ip:               192.168.184.169/24
@@ -1126,8 +1104,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           1024
     fqdn:             kafka-mm-digital-dev-01.local
     domain:           local
     ip:               192.168.184.169/24
@@ -1135,8 +1112,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
-    memory:           2560
-    data_disk:        40960
+    memory:           1024
     fqdn:             kafka-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.0.69/24
@@ -1149,8 +1125,7 @@ hosts:
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.170/24
@@ -1158,8 +1133,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.170/24
@@ -1181,8 +1155,7 @@ hosts:
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.171/24
@@ -1190,8 +1163,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.171/24
@@ -1213,8 +1185,7 @@ hosts:
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.172/24
@@ -1222,8 +1193,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           2560
     fqdn:             kafka-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.172/24
@@ -1245,8 +1215,7 @@ hosts:
   ansible_groups:     monitored
   virtualbox:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           1024
     fqdn:             kafka-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.173/24
@@ -1254,8 +1223,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
-    memory:           1536
-    data_disk:        10240
+    memory:           1024
     fqdn:             kafka-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.173/24
@@ -1263,8 +1231,7 @@ hosts:
     dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
-    memory:           2560
-    data_disk:        40960
+    memory:           1024
     fqdn:             kafka-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.0.73/24

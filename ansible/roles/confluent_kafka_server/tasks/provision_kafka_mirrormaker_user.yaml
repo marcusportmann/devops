@@ -1,0 +1,12 @@
+---
+
+- name: Generate or retrieve the password for the Kafka MirrorMaker user ({{ kafka_server_mirrormaker_user_username }})
+  ansible.builtin.set_fact:
+    kafka_server_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ kafka_server_mirrormaker_user_username }}-password chars=ascii_letters,digits length=16') }}"
+
+- ansible.builtin.debug:
+    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' with password '{{ kafka_server_mirrormaker_user_password }}' for the Confluent cluster '{{ confluent_cluster_name }}'"
+
+- name: Set the password for the Kafka MirrorMaker user in ZooKeeper
+  ansible.builtin.shell:
+    cmd: KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name {{ kafka_server_mirrormaker_user_username }} --add-config 'SCRAM-SHA-256=[iterations=8192,password={{ kafka_server_mirrormaker_user_password }}],SCRAM-SHA-512=[password={{ kafka_server_mirrormaker_user_password }}]'

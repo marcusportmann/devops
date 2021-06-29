@@ -91,15 +91,15 @@
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/etcd-ca.crt'
           dest: '/etc/kubernetes/pki/etcd/ca.crt'
 
-      - name: Copy the {{ inventory_hostname_short }}.key private key to the /etc/kubernetes/pki/etcd directory
+      - name: Copy the {{ ansible_hostname }}.key private key to the /etc/kubernetes/pki/etcd directory
         ansible.builtin.copy:
-          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.key'
-          dest: '/etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.key'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ ansible_hostname }}.key'
+          dest: '/etc/kubernetes/pki/etcd/{{ ansible_hostname }}.key'
 
-      - name: Copy the {{ inventory_hostname_short }}.crt certificate to the /etc/kubernetes/pki/etcd directory
+      - name: Copy the {{ ansible_hostname }}.crt certificate to the /etc/kubernetes/pki/etcd directory
         ansible.builtin.copy:
-          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ inventory_hostname_short }}.crt'
-          dest: '/etc/kubernetes/pki/etcd/{{ inventory_hostname_short }}.crt'
+          src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ ansible_hostname }}.crt'
+          dest: '/etc/kubernetes/pki/etcd/{{ ansible_hostname }}.crt'
 
       when: k8s_config.etcd_topology == 'external'
 
@@ -267,7 +267,7 @@
       state: started
       enabled: yes
 
-  when: (groups['k8s_master'][0] == inventory_hostname)
+  when: (groups['k8s_master'][0] == ansible_fqdn)
 
 
 #  _  _____ ____       _    ____  ____ ___ _____ ___ ___  _   _    _    _       __  __    _    ____ _____ _____ ____
@@ -293,7 +293,7 @@
 
     - name: Copy the /etc/kubernetes/scheduler/scheduler-config.yaml to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/scheduler/scheduler-config.yaml
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/scheduler/scheduler-config.yaml
         dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
     - name: Fetch the /etc/kubernetes/apiserver/encryption.yaml file from the first master node in the Kubernetes cluster
@@ -304,7 +304,7 @@
 
     - name: Copy the /etc/kubernetes/apiserver/encryption.yaml to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/apiserver/encryption.yaml
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/apiserver/encryption.yaml
         dest: /etc/kubernetes/apiserver/encryption.yaml
 
     - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
@@ -317,7 +317,7 @@
 
     - name: Remove the local copy of the encryption.yaml file
       become: no
-      local_action: file path=fetched_files/{{ inventory_hostname }}/etc/kubernetes/apiserver/encryption.yaml state=absent
+      local_action: ansible.builtin.file path=fetched_files/{{ ansible_fqdn }}/etc/kubernetes/apiserver/encryption.yaml state=absent
 
     - name: Fetch the /etc/kubernetes/pki/sa.key from the first master node in the Kubernetes cluster
       ansible.builtin.fetch:
@@ -327,7 +327,7 @@
 
     - name: Copy the /etc/kubernetes/pki/sa.key to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/sa.key
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/sa.key
         dest: /etc/kubernetes/pki/sa.key
 
     - name: Fetch the /etc/kubernetes/pki/sa.pub from the first master node in the Kubernetes cluster
@@ -338,7 +338,7 @@
 
     - name: Copy the /etc/kubernetes/pki/sa.pub to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/sa.pub
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/sa.pub
         dest: /etc/kubernetes/pki/sa.pub
 
     - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.key from the first master node in the Kubernetes cluster
@@ -349,7 +349,7 @@
 
     - name: Copy the /etc/kubernetes/pki/front-proxy-ca.key to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/front-proxy-ca.key
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/front-proxy-ca.key
         dest: /etc/kubernetes/pki/front-proxy-ca.key
 
     - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.crt from the first master node in the Kubernetes cluster
@@ -360,7 +360,7 @@
 
     - name: Copy the /etc/kubernetes/pki/front-proxy-ca.crt to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/front-proxy-ca.crt
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/front-proxy-ca.crt
         dest: /etc/kubernetes/pki/front-proxy-ca.crt
 
     - name: Fetch the /etc/kubernetes/pki/etcd/ca.key from the first master node in the Kubernetes cluster
@@ -371,7 +371,7 @@
 
     - name: Copy the /etc/kubernetes/pki/etcd/ca.key to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/etcd/ca.key
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/etcd/ca.key
         dest: /etc/kubernetes/pki/etcd/ca.key
 
     - name: Fetch the /etc/kubernetes/pki/etcd/ca.crt from the first master node in the Kubernetes cluster
@@ -382,7 +382,7 @@
 
     - name: Copy the /etc/kubernetes/pki/etcd/ca.crt to the additional master
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/etcd/ca.crt
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/etcd/ca.crt
         dest: /etc/kubernetes/pki/etcd/ca.crt
 
     - ansible.builtin.command:

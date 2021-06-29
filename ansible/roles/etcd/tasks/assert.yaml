@@ -1,26 +1,15 @@
 ---
 # file: roles/etcd/tasks/assert.yaml
 
-- name: Check the ansible_hostname variable is defined and matches the inventory_hostname_short variable
-  ansible.builtin.assert:
-    that:
-    - ansible_hostname is defined
-    - ansible_hostname is string
-    - ansible_hostname != ''
-    - ansible_hostname == inventory_hostname_short
-    quiet: yes
-
-- name: Check the ansible_fqdn variable is defined and matches the inventory_hostname variable
-  ansible.builtin.assert:
-    that:
-    - ansible_fqdn is defined
-    - ansible_fqdn is string
-    - ansible_fqdn != ''
-    - ansible_fqdn == inventory_hostname
-    quiet: yes
-
 - name: Check the etcd variable is defined correctly
   ansible.builtin.assert:
     that:
     - etcd is defined
+    quiet: yes
+
+- name: Check the etcd.clusters variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - etcd.clusters is defined
+    - (etcd.clusters | length) >  0
     quiet: yes

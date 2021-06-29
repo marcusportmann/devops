@@ -1,10 +1,10 @@
 ############################# Server Basics #############################
 
 # The id of the broker. This must be set to a unique integer for each broker
-broker.id={{ (kafka_server_hosts.index(inventory_hostname) + 1) }}
+broker.id={{ (kafka_server_hosts.index(ansible_fqdn) + 1) }}
 
 # The ID of the rack for the broker
-broker.rack={{ (kafka_server_hosts.index(inventory_hostname) + 1) }}
+broker.rack={{ kafka_server_rack }}
 
 
 ############################# Socket Server Settings #############################
@@ -47,6 +47,16 @@ num.partitions={{ ((kafka_server_hosts | length) - 1) }}
 num.partitions=1
 {% endif %}
 
+{% if ((kafka_server_hosts | length) > 3) %}
+default.replication.factor=3
+min.insync.replicas=2
+{% elif ((kafka_server_hosts | length) == 3) %}
+default.replication.factor=3
+min.insync.replicas=1
+{% else %}
+default.replication.factor=1
+min.insync.replicas=1
+{% endif %}
 
 # The number of threads per data directory to be used for log recovery at startup and flushing at shutdown.
 # This value is recommended to be increased for installations with data dirs located in RAID array.

@@ -91,21 +91,21 @@
   - name: Copy the Kafka MirrorMaker CA certificate
     ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/ca.crt'
-      dest: '/var/tmp/ansible/confluent/kafaka_mirrormaker/ca.crt'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/ca.crt'
     notify: restart mirrormaker
     register: ca_certificate_copy_result
 
   - name: Copy the Kafka MirrorMaker private key ({{ ansible_hostname }}.key)
     ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.key'
-      dest: '/var/tmp/ansible/confluent/kafaka_mirrormaker/{{ ansible_hostname }}.key'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart mirrormaker
     register: kafka_mirrormaker_private_key_copy_result
 
   - name: Copy the Kafka MirrorMaker certificate ({{ ansible_hostname }}.crt)
     ansible.builtin.copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.crt'
-      dest: '/var/tmp/ansible/confluent/kafaka_mirrormaker/{{ ansible_hostname }}.crt'
+      dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart mirrormaker
     register: kafka_mirrormaker_certificate_copy_result
 
@@ -124,8 +124,8 @@
         action: export
         path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/{{ ansible_hostname }}.p12'
         friendly_name: "{{ ansible_hostname }}"
-        privatekey_path: /var/tmp/ansible/confluent/kafaka_mirrormaker/{{ ansible_hostname }}.key
-        certificate_path: /var/tmp/ansible/confluent/kafaka_mirrormaker/{{ ansible_hostname }}.crt
+        privatekey_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key
+        certificate_path: /var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt
         passphrase: '{{ kafka_mirrormaker_keystore_password }}'
         owner: '{{ confluent_config.kafka_mirrormaker.user }}'
         group: '{{ confluent_config.kafka_mirrormaker.group }}'
@@ -139,7 +139,7 @@
 
     - name: Generate the Kafka MirrorMaker CA PKCS12 truststore
       ansible.builtin.shell:
-        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/kafaka_mirrormaker/ca.crt -keystore '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
+        cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/{{ role_name }}/ca.crt -keystore '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka MirrorMaker CA PKCS12 truststore
       ansible.builtin.file:
@@ -161,7 +161,7 @@
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
   ansible.builtin.set_fact:
-    kafka_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/kafka-mirrormaker-user-password chars=ascii_letters,digits length=16') }}"
+    kafka_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/mirrormaker-' + confluent_cluster_name.replace('_', '-') + '-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
   ansible.builtin.template:

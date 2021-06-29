@@ -1,7 +1,7 @@
 ############################# Server Basics #############################
 
 # The id of the broker. This must be set to a unique integer for each broker
-broker.id={{ (kafka_server_hosts.index(inventory_hostname) + 1) }}
+broker.id={{ (kafka_server_hosts.index(ansible_fqdn) + 1) }}
 
 # The ID of the rack for the broker
 broker.rack={{ kafka_server_rack }}

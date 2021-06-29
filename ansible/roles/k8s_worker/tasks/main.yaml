@@ -86,7 +86,7 @@
 
   - name: Create the /root/.kube/config file
     ansible.builtin.copy:
-      src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf
+      src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/admin.conf
       dest: /root/.kube/config
 
   - name: Set the permissions for the /root/.kube/config file
@@ -109,7 +109,7 @@
 
   - name: Create the /home/k8s-admin/.kube/config file
     ansible.builtin.copy:
-      src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf
+      src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/admin.conf
       dest: /home/k8s-admin/.kube/config
 
   - name: Set the permissions for the /home/k8s-admin/.kube/config file
@@ -122,6 +122,6 @@
 
 - name: Remove the local copy of the Kubernetes configuration file
   become: no
-  local_action: ansible.builtin.file path=fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf state=absent
+  local_action: ansible.builtin.file path=fetched_files/{{ ansible_fqdn }}/etc/kubernetes/admin.conf state=absent
 
 

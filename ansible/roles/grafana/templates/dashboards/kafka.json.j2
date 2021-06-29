@@ -461,15 +461,15 @@
       "title": "Kafka Broker",
       "type": "row"
     },
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     {
       "aliasColors": {},
       "bars": false,
@@ -521,7 +521,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_totalproducerequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_totalproducerequests_total{cluster=\"$cluster\", topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -529,7 +529,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_failedproducerequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_failedproducerequests_total{cluster=\"$cluster\", topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -629,7 +629,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_totalfetchrequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_totalfetchrequests_total{cluster=\"$cluster\", topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -637,7 +637,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_failedfetchrequests_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_failedfetchrequests_total{cluster=\"$cluster\", topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -685,13 +685,13 @@
         "align": false,
         "alignLevel": null
       }
-    },    
-    
-    
-    
-    
-    
-    
+    },
+
+
+
+
+
+
     {
       "aliasColors": {},
       "bars": false,
@@ -743,7 +743,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_totalproducerequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
+          "expr": "rate(kafka_server_brokertopicmetrics_totalproducerequests_total{cluster=\"$cluster\", node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -751,7 +751,7 @@
           "refId": "A"
         },
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_failedproducerequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
+          "expr": "rate(kafka_server_brokertopicmetrics_failedproducerequests_total{cluster=\"$cluster\", node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -851,7 +851,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_totalfetchrequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
+          "expr": "rate(kafka_server_brokertopicmetrics_totalfetchrequests_total{cluster=\"$cluster\", node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -859,7 +859,7 @@
           "refId": "A"
         },
         {
-          "expr": "rate(kafka_server_brokertopicmetrics_failedfetchrequests_total{node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
+          "expr": "rate(kafka_server_brokertopicmetrics_failedfetchrequests_total{cluster=\"$cluster\", node=~\"[[node]]\", topic != \"\", topic != \"__consumer_offsets\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -908,27 +908,27 @@
         "alignLevel": null
       }
     },
-    
-    
-    
-    
-    
-    
-    
-    
-    
-  
-    
-    
-    
-    
-    
-    
-    
 
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     {
       "aliasColors": {},
       "bars": false,
@@ -980,7 +980,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesin_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesin_total{cluster=\"$cluster\", topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1080,7 +1080,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesout_total{topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
+          "expr": "sum by (topic) (rate(kafka_server_brokertopicmetrics_bytesout_total{cluster=\"$cluster\", topic != \"\", topic != \"__consumer_offsets\"}[1m]))",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1128,36 +1128,36 @@
         "align": false,
         "alignLevel": null
       }
-    },    
-    
-    
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     {
       "aliasColors": {},
       "bars": false,
@@ -1401,7 +1401,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_network_requestmetrics_requests_total{request =~ \"Produce.*|FetchConsumer.*|FetchFollower.*\"}[1m])",
+          "expr": "rate(kafka_network_requestmetrics_requests_total{cluster=\"$cluster\", request =~ \"Produce.*|FetchConsumer.*|FetchFollower.*\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1501,7 +1501,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "kafka_network_requestchannel_requestqueuesize{node=~\"[[node]]\"}",
+          "expr": "kafka_network_requestchannel_requestqueuesize{cluster=\"$cluster\", node=~\"[[node]]\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -1601,7 +1601,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(kafka_server_sessionexpirelistener_zookeepersyncconnectspersec{node=~\"[[node]]\"}[1m])",
+          "expr": "rate(kafka_server_sessionexpirelistener_zookeepersyncconnectspersec{cluster=\"$cluster\", node=~\"[[node]]\"}[1m])",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,

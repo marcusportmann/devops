@@ -2,7 +2,7 @@
 
 {% set initial_cluster_hosts = [] -%}
 {% for host in etcd_config.clusters[etcd_cluster_name].hosts -%}
-  {% set _ = initial_cluster_hosts.append("%s=https://%s:2380" % (hostvars[host]['ansible_hostname'], host)) -%}
+  {% set _ = initial_cluster_hosts.append("%s=https://%s:2380" % (hostvars[host].ansible_hostname, host)) -%}
 {% endfor -%}
 
 [Unit]

@@ -40,7 +40,7 @@ controlPlaneEndpoint: {{  groups['k8s_master'][0] }}
 etcd:
   external:
     endpoints:
-    {% for host in groups["etcd"] %}- https://{{ hostvars[host]['inventory_hostname'] }}:2379
+    {% for host in groups["etcd"] %}- https://{{ hostvars[host].ansible_fqdn }}:2379
     {% endfor %}
 
     caFile: /etc/kubernetes/pki/etcd/ca.crt

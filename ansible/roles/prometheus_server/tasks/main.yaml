@@ -30,8 +30,8 @@
   when: ((groups['prometheus_alert_manager'] is defined) and ((groups['prometheus_alert_manager']|length) > 0))
 
 - ansible.builtin.set_fact:
-    prometheus_alert_manager_target: "{{ prometheus_server_config.alert_managers[inventory_hostname] }}:9093"
-  when: ((prometheus_server_config.alert_managers is defined) and (prometheus_server_config.alert_managers[inventory_hostname] is defined))
+    prometheus_alert_manager_target: "{{ prometheus_server_config.alert_managers[ansible_fqdn] }}:9093"
+  when: ((prometheus_server_config.alert_managers is defined) and (prometheus_server_config.alert_managers[ansible_fqdn] is defined))
 
 - name: Install Prometheus
   block:
@@ -228,7 +228,7 @@
 
     - name: Copy the /etc/kubernetes/pki/ca.crt to the Prometheus host
       ansible.builtin.copy:
-        src: fetched_files/{{ inventory_hostname }}/etc/kubernetes/pki/ca.crt
+        src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/ca.crt
         dest: /etc/prometheus/k8s/ca.crt
         owner: '{{ prometheus_server_config.user }}'
         group: '{{ prometheus_server_config.group }}'
