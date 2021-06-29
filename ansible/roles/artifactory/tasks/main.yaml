@@ -64,12 +64,12 @@
 
     - name: Check whether the Artifactory OSS {{ artifactory_config.package_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz'
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz'
       register: artifactory_oss_package_stat_result
 
     - name: Download the Artifactory OSS {{ artifactory_config.package_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://releases.jfrog.io/artifactory/bintray-artifactory/org/artifactory/oss/jfrog-artifactory-oss/{{ artifactory_config.package_version }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz' dest='{{ packages_root }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz'
+      local_action: ansible.builtin.get_url url='https://releases.jfrog.io/artifactory/bintray-artifactory/org/artifactory/oss/jfrog-artifactory-oss/{{ artifactory_config.package_version }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz'
       when: (artifactory_oss_package_stat_result.stat.exists == False)
 
     - name: Create the {{ artifactory_config.jfrog_directory }} directory
@@ -82,7 +82,7 @@
 
     - name: Extract the Artifactory OSS {{ artifactory_config.package_version }} package
       ansible.builtin.unarchive:
-        src: '{{ packages_root }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz'
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz'
         dest: '{{ artifactory_config.jfrog_directory }}'
         owner: 'root'
         group: 'root'
