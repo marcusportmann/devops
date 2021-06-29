@@ -1,0 +1,7 @@
+---
+# file: roles/artifactory/handlers/main.yaml
+
+- name: restart artifactory
+  ansible.builtin.systemd:
+    name: artifactory
+    state: restarted
