@@ -68,7 +68,7 @@
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
 - name: Create the credentials directory
-  local_action: file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
+  local_action: ansible.builtin.file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
   become: false
 
 - name: Add the {{ kafka_config.zookeeper.group }} group

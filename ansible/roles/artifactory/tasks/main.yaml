@@ -5,9 +5,9 @@
   run_once: yes
   delegate_to: localhost
 
-- name: Create the /var/tmp/ansible/artifactory directory
+- name: Create the /var/tmp/ansible/{{ role_name }} directory
   ansible.builtin.file:
-    path: /var/tmp/ansible/artifactory
+    path: /var/tmp/ansible/{{ role_name }}
     owner: 'root'
     group: 'root'
     mode: '0700'

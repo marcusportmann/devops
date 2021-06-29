@@ -30,7 +30,7 @@
 #  \____|___| |_| |_____/_/   \_\
 #
 - name: Create the Gitea credentials directory
-  local_action: file path="{{ credentials_root }}/gitea" state="directory"
+  local_action: ansible.builtin.file path="{{ credentials_root }}/gitea" state="directory"
   become: false
 
 - name: Install Gitea
@@ -148,7 +148,7 @@
     - ansible.builtin.command:
         cmd: /usr/bin/gitea generate secret JWT_SECRET
       register: generate_jwt_secret_result
-    - local_action: copy content={{ generate_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/jwt-secret'
+    - local_action: ansible.builtin.copy content={{ generate_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/jwt-secret'
       become: no
     when: (gitea_jwt_secret_stat_result.stat.exists == False)
 
@@ -168,7 +168,7 @@
     - ansible.builtin.command:
         cmd: /usr/bin/gitea generate secret JWT_SECRET
       register: generate_lfs_jwt_secret_result
-    - local_action: copy content={{ generate_lfs_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/lfs-jwt-secret'
+    - local_action: ansible.builtin.copy content={{ generate_lfs_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/lfs-jwt-secret'
       become: no
     when: (gitea_lfs_jwt_secret_stat_result.stat.exists == False)
 
@@ -188,7 +188,7 @@
     - ansible.builtin.command:
         cmd: /usr/bin/gitea generate secret SECRET_KEY
       register: generate_secret_key_result
-    - local_action: copy content={{ generate_secret_key_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/secret-key'
+    - local_action: ansible.builtin.copy content={{ generate_secret_key_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/secret-key'
       become: no
     when: (gitea_secret_key_stat_result.stat.exists == False)
 
@@ -208,7 +208,7 @@
     - ansible.builtin.command:
         cmd: /usr/bin/gitea generate secret INTERNAL_TOKEN
       register: generate_internal_token_result
-    - local_action: copy content={{ generate_internal_token_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/internal-token'
+    - local_action: ansible.builtin.copy content={{ generate_internal_token_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/internal-token'
       become: no
     when: (gitea_internal_token_stat_result.stat.exists == False)
 

@@ -68,7 +68,7 @@
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |____/ \____|_| |_|_____|_|  |_/_/   \_\ |_| \_\_____\____|___|____/ |_| |_| \_\|_|
 #
 - name: Create the credentials directory
-  local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
+  local_action: ansible.builtin.file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
 
 - name: Add the {{ confluent_config.schema_registry.group }} group

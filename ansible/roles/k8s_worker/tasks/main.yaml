@@ -122,6 +122,6 @@
 
 - name: Remove the local copy of the Kubernetes configuration file
   become: no
-  local_action: file path=fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf state=absent
+  local_action: ansible.builtin.file path=fetched_files/{{ inventory_hostname }}/etc/kubernetes/admin.conf state=absent
 
 

@@ -68,7 +68,7 @@
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
 - name: Create the credentials directory
-  local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
+  local_action: ansible.builtin.file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
 
 - name: Add the {{ confluent_config.zookeeper.group }} group
