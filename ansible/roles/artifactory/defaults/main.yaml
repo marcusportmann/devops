@@ -1,0 +1,21 @@
+---
+# file: roles/artifactory/defaults/main.yaml
+
+artifactory_defaults:
+  subscription: oss
+  package_version: '7.19.9'
+
+  jfrog_directory: /opt/jfrog
+
+  artifactory_directory: /opt/jfrog/artifactory
+
+  config_directory: /etc/artifactory
+
+  data_directory: /var/lib/artifactory
+
+  user: artifactory
+  user_id: 306
+  group: artifactory
+  group_id: 306
+
+artifactory_config: "{{ artifactory_defaults | combine(artifactory | default({}), recursive=True) }}"

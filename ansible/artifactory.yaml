@@ -1,6 +1,5 @@
-
-#- name: Gather facts from all artifactory_oss hosts
-#  hosts: artifactory_oss
+#- name: Gather facts from all artifactory hosts
+#  hosts: artifactory
 #  become: yes
 #  become_user: root
 #  pre_tasks:
@@ -11,9 +10,9 @@
 #    with_items: "{{ (groups['gitea'] | default([])) }}"
 #  tasks: []
 
-- name: Configure the artifactory_oss hosts
-  hosts: artifactory_oss
+- name: Configure the artifactory hosts
+  hosts: artifactory
   become: yes
   become_user: root
   roles:
-  - artifactory_oss
+  - artifactory

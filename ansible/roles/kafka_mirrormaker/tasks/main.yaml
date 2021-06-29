@@ -1,6 +1,14 @@
 ---
 # file: roles/kafka_mirrormaker/tasks/main.yaml
 
+- name: Create the /var/tmp/ansible/kafka/{{ role_name }} directory
+  ansible.builtin.file:
+    path: /var/tmp/ansible/kafka/{{ role_name }}
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 
 #  ____  _____ _____   _____ _    ____ _____ ____
 # / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|
@@ -36,14 +44,6 @@
 # | . \  / ___ \|  _| | . \  / ___ \  | |  | || ||  _ <|  _ <| |_| |  _ <  | |  | |/ ___ \| . \| |___|  _ <
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |_|  |_|___|_| \_\_| \_\\___/|_| \_\ |_|  |_/_/   \_\_|\_\_____|_| \_\
 #
-- name: Create the /var/tmp/ansible/kafka/{{ role_name }} directory
-  ansible.builtin.file:
-    path: /var/tmp/ansible/kafka/{{ role_name }}
-    owner: 'root'
-    group: 'root'
-    mode: '0700'
-    state: directory
-
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
   become: false

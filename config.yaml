@@ -157,11 +157,20 @@ variables:
         - {type: host, database: all, user: all, address: '0.0.0.0/0', auth_method: 'scram-sha-256'}
         - {type: host, database: all, user: all, address: '::/0', auth_method: 'scram-sha-256'}
       databases:
+      - name: artifactory
+        lc_collate: 'en_US.UTF-8'
+        lc_ctype: 'en_US.UTF-8'
+        encoding: 'UTF-8'
       - name: gitea
         lc_collate: 'en_US.UTF-8'
         lc_ctype: 'en_US.UTF-8'
         encoding: 'UTF-8'
       users:
+      - name: artifactory
+        password: 'SCRAM-SHA-256$4096:iuayp0cyoMKyXBqcy2k4Nw==$7gFDg30WGKa2Z4q7UZnH8PPjrsGJ/oca8Be8x/4thJw=:jwLKZu2NL7cPwfAze4+VwQMuRaci4E2rRnnFcnpTfgE='
+        db: artifactory
+        priv: 'ALL'
+        role_attr_flags: 'LOGIN'
       - name: gitea
         password: 'SCRAM-SHA-256$4096:2qdRzphtj0qlnvcRKr65eg==$q/OaUWuShbOHQ2F0csYeT3uEWbDLrFdwDVTYy8/FJQQ=:kXUF2MFdTxjRA2I3xYbHBuU2Hqv1uKnL9h36/KTxrFU='
         db: gitea
@@ -174,7 +183,8 @@ variables:
     database_username: gitea
     database_password: Password1
 
-  artifactory_oss:
+  artifactory:
+    subscription: oss
     database_host: devops.local
     database_name: artifactory
     database_username: artifactory
@@ -1304,7 +1314,7 @@ hosts:
   domain:             local
   type:               ubuntu-2004
   ansible_playbook:   ansible/all.yaml
-  ansible_groups:     postgresql,gitea,artifactory_oss
+  ansible_groups:     postgresql,gitea,artifactory
   virtualbox:
     cpus:             4
     memory:           8192

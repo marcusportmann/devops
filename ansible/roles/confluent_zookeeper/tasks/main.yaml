@@ -1,6 +1,14 @@
 ---
 # file: roles/confluent_zookeeper/tasks/main.yaml
 
+- name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
+  ansible.builtin.file:
+    path: '/var/tmp/ansible/confluent/{{ role_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+    state: directory
+
 
 #  ____  _____ _____   _____ _    ____ _____ ____
 # / ___|| ____|_   _| |  ___/ \  / ___|_   _/ ___|
@@ -59,14 +67,6 @@
 # | |__| |_| | |\  |  _| | |__| |_| | |___| |\  | | |    / /| |_| | |_| | . \| |___| |___|  __/| |___|  _ <
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
-- name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
-  ansible.builtin.file:
-    path: '/var/tmp/ansible/confluent/{{ role_name }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0700'
-    state: directory
-
 - name: Create the credentials directory
   local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false

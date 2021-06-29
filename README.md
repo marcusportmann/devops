@@ -303,6 +303,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 * General
   * cloud-user (300)
   * git (305)
+  * artifactory (306)
 * Platform Services
   * cp-control-center (310)
   * cp-kafka (311)
@@ -341,6 +342,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 * General
   * cloud-user (300)
   * git (305)
+  * artifactory (306)
 * Platform Services
   * cp-control-center (310)
   * cp-kafka (311)

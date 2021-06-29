@@ -1,0 +1,49 @@
+---
+# file: roles/artifactory/tasks/assert.yaml
+
+- name: Check the artifactory variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory is defined
+    quiet: yes
+
+- name: Check the artifactory.subscription variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory.subscription is defined
+    - artifactory.subscription is string
+    - artifactory.subscription != ''
+    quiet: yes
+
+- name: Check the artifactory.database_host variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory.database_host is defined
+    - artifactory.database_host is string
+    - artifactory.database_host != ''
+    quiet: yes
+
+- name: Check the artifactory.database_name variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory.database_name is defined
+    - artifactory.database_name is string
+    - artifactory.database_name != ''
+    quiet: yes
+
+- name: Check the artifactory.database_username variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory.database_username is defined
+    - artifactory.database_username is string
+    - artifactory.database_username != ''
+    quiet: yes
+
+- name: Check the artifactory.database_password variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory.database_password is defined
+    - artifactory.database_password is string
+    - artifactory.database_password != ''
+    quiet: yes
+

@@ -30,7 +30,7 @@
 # | |_| | |___  \ V /| |_| |  __/ ___) |
 # |____/|_____|  \_/  \___/|_|   |____/
 #
-- import_playbook: artifactory_oss.yaml
+- import_playbook: artifactory.yaml
 
 - import_playbook: gitea.yaml
 
