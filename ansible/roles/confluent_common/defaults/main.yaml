@@ -2,8 +2,8 @@
 # file: roles/confluent_common/defaults/main.yaml
 
 confluent_defaults:
-  major_version: '6.1'
-  package_version: '6.1.1'
+  major_version: '6.2'
+  package_version: '6.2.0'
 
 prometheus_jmx_exporter:
   enabled: true

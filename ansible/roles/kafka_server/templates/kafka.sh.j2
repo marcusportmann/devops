@@ -1,5 +1,18 @@
-kafka-set-user-password() {
+kafka_set_user_password() {
 
 KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ kafka_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name $1 --add-config 'SCRAM-SHA-256=[iterations=8192,password=$2],SCRAM-SHA-512=[password=$2]'
 
 }
+
+alias kafka-acls='/opt/kafka/bin/kafka-acls.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-configs='KAFKA_OPTS="-Djava.security.auth.login.config={{ kafka_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/kafka/bin/kafka-configs.sh --zk-tls-config-file {{ kafka_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ groups['kafka_zookeeper'][0] }}:{{ kafka_config.kafka_server.zookeeper.secure_client_port }}'
+alias kafka-broker-api-versions='/opt/kafka/bin/kafka-broker-api-versions.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-configs='/opt/kafka/bin/kafka-configs.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-consumer-groups='/opt/kafka/bin/kafka-consumer-groups.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-delegation-tokens='/opt/kafka/bin/kafka-delegation-tokens.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-delete-records='/opt/kafka/bin/kafka-delete-records.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-leader-election='/opt/kafka/bin/kafka-leader-election.sh --admin.config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-log-dirs='/opt/kafka/bin/kafka-log-dirs.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-reassign-partitions='/opt/kafka/bin/kafka-reassign-partitions.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+alias kafka-topics='/opt/kafka/bin/kafka-topics.sh --command-config {{ kafka_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ kafka_config.kafka_server.secure_broker_port }}'
+

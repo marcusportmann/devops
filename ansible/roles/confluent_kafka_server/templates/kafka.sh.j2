@@ -1,5 +1,19 @@
-kafka-set-user-password() {
+kafka_set_user_password() {
 
 KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ zookeeper_hosts[0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }} --alter --entity-type users --entity-name $1 --add-config 'SCRAM-SHA-256=[iterations=8192,password=$2],SCRAM-SHA-512=[password=$2]'
 
 }
+
+alias kafka-acls='/opt/confluent/bin/kafka-acls --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-broker-api-versions='/opt/confluent/bin/kafka-broker-api-versions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-configs='KAFKA_OPTS="-Djava.security.auth.login.config={{ confluent_config.kafka_server.etc_directory }}/conf/server-jaas.conf" /opt/confluent/bin/kafka-configs --zk-tls-config-file {{ confluent_config.kafka_server.etc_directory }}/conf/server.properties --zookeeper {{ groups['confluent_zookeeper'][0] }}:{{ confluent_config.kafka_server.zookeeper.secure_client_port }}'
+alias kafka-configs='/opt/confluent/bin/kafka-configs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-consumer-groups='/opt/confluent/bin/kafka-consumer-groups --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-delegation-tokens='/opt/confluent/bin/kafka-delegation-tokens --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-delete-records='/opt/confluent/bin/kafka-delete-records --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-leader-election='/opt/confluent/bin/kafka-leader-election --admin.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-log-dirs='/opt/confluent/bin/kafka-log-dirs --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-reassign-partitions='/opt/confluent/bin/kafka-reassign-partitions --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-topics='/opt/confluent/bin/kafka-topics --command-config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-console-producer='/opt/confluent/bin/kafka-console-producer --producer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
+alias kafka-console-consumer='/opt/confluent/bin/kafka-console-consumer --consumer.config {{ confluent_config.kafka_server.etc_directory }}/conf/admin-command.conf --bootstrap-server {{ ansible_fqdn }}:{{ confluent_config.kafka_server.secure_broker_port }}'
