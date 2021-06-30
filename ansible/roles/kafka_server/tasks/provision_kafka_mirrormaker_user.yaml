@@ -4,8 +4,8 @@
   ansible.builtin.set_fact:
     kafka_server_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_server_mirrormaker_user_username }}-password chars=ascii_letters,digits length=16') }}"
 
-- ansible.builtin.debug:
-    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' with password '{{ kafka_server_mirrormaker_user_password }}' for the Kafka cluster '{{ kafka_cluster_name }}'"
+#- ansible.builtin.debug:
+#    msg: "Provisioning the Kafka MirrorMaker user '{{ kafka_server_mirrormaker_user_username }}' with password '{{ kafka_server_mirrormaker_user_password }}' for the Kafka cluster '{{ kafka_cluster_name }}'"
 
 - name: Set the password for the Kafka MirrorMaker user in ZooKeeper
   ansible.builtin.shell:
