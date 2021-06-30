@@ -13,7 +13,7 @@ variables:
         hosts:
         - monitoring-dev.local
         # One of confluent, kafka, or standalone
-        zookeeper_cluster_type: kafka
+        zookeeper_cluster_type: confluent
         zookeeper_cluster_name: digital_dev
       local:
         hosts:

@@ -334,7 +334,7 @@
     when: ((confluent_config.kafka_server.prometheus_jmx_exporter.enabled is defined) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled != None) and (confluent_config.kafka_server.prometheus_jmx_exporter.enabled == true))
 
 - name: Setup the Kafka MirrorMaker users
-  include_tasks: roles/kafka_server/tasks/provision_kafka_mirrormaker_user.yaml
+  include_tasks: roles/confluent_kafka_server/tasks/provision_kafka_mirrormaker_user.yaml
   loop: '{{ kafka_server_mirrormaker_users }}'
   loop_control:
     loop_var: kafka_server_mirrormaker_user_username
