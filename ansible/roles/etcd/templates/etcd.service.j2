@@ -29,8 +29,8 @@ ExecStart=/usr/bin/etcd $DAEMON_ARGS \
   --peer-client-cert-auth \
   --client-cert-auth \
   --initial-advertise-peer-urls https://{{ ansible_fqdn }}:2380 \
-  --listen-peer-urls https://{{ ansible_default_ipv4.address }}:2380 \
-  --listen-client-urls https://127.0.0.1:2379,https://{{ ansible_default_ipv4.address }}:2379 \
+  --listen-peer-urls https://{{ (ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}:2380 \
+  --listen-client-urls https://127.0.0.1:2379,https://{{ (ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0])) }}:2379 \
   --advertise-client-urls https://{{ ansible_fqdn }}:2379 \
   --initial-cluster-token etcd-{{ etcd_cluster_name.replace('_', '-') }}-cluster \
   --initial-cluster {{ initial_cluster_hosts | join(',') }} \

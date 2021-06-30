@@ -15,6 +15,24 @@
     - artifactory.subscription != ''
     quiet: yes
 
+- name: Check the artifactory_config.database_type variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory_config.database_type is defined
+    - artifactory_config.database_type is string
+    - artifactory_config.database_type != ''
+    - artifactory_config.database_type in ['postgresql']
+    quiet: yes
+
+- name: Check the artifactory_config.database_driver variable is defined correctly
+  ansible.builtin.assert:
+    that:
+    - artifactory_config.database_driver is defined
+    - artifactory_config.database_driver is string
+    - artifactory_config.database_driver != ''
+    - artifactory_config.database_driver in ['org.postgresql.Driver']
+    quiet: yes
+
 - name: Check the artifactory.database_host variable is defined correctly
   ansible.builtin.assert:
     that:

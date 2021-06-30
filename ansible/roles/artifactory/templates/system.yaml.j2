@@ -1,19 +1,21 @@
+# {{ ansible_managed }}
+
 configVersion: 1
 shared:
   security:
-    joinKey: "{{ join_key }}"
-  extraJavaOpts: "{{ artifactory_extra_java_opts }}"
+    joinKey: "{{ artifactory_config.join_key }}"
+  extraJavaOpts: "{{ artifactory_config.extra_java_opts }}"
   node:
     id: {{ ansible_hostname }}
-    ip: {{ ansible_host }}
-    taskAffinity: {{ artifactory_taskAffinity }}
-    haEnabled: {{ artifactory_ha_enabled }}
+    ip: {{ (ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]))) }}
+    taskAffinity: {{ artifactory_config.task_affinity }}
+    haEnabled: {{ artifactory_config.ha_enabled }}
   database:
-    type: "{{ artifactory_db_type }}"
-    driver: "{{ artifactory_db_driver }}"
+    type: "{{ artifactory_config.database_type }}"
+    driver: "{{ artifactory_config.database_driver }}"
     url: "{{ artifactory_db_url }}"
-    username: "{{ artifactory_db_user }}"
-    password: "{{ artifactory_db_password }}"
+    username: "{{ artifactory_config.database_username }}"
+    password: "{{ artifactory_config.database_password }}"
 router:
   entrypoints:
     internalPort: 8046

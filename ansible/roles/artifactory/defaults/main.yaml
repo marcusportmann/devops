@@ -18,4 +18,20 @@ artifactory_defaults:
   group: artifactory
   group_id: 306
 
+  database_type: postgresql
+  database_driver: org.postgresql.Driver
+  database_port: 5432
+
+  extra_java_opts: -server -Xms512m -Xmx2g -Xss256k -XX:+UseG1GC
+
+  # To enable HA, set to true
+  ha_enabled: false
+
+  # By default, all nodes are primary (CNHA) - https://www.jfrog.com/confluence/display/JFROG/High+Availability#HighAvailability-Cloud-NativeHighAvailability
+  task_affinity: any
+
+  master_key: ee69d96880726d3abf6b42b97d2ae589111ea95c2a8bd5876ec5cd9e8ee34f86
+
+  join_key: 83da88eaaa08dfed5b86888fcec85f19ace0c3ff8747bcefcec2c9769ad4043d
+
 artifactory_config: "{{ artifactory_defaults | combine(artifactory | default({}), recursive=True) }}"

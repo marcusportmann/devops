@@ -6,7 +6,7 @@
 
 - name: Allow ZooKeeper hosts access to tcp port 2888
   ansible.posix.firewalld:
-    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=2888 protocol=tcp accept'
+    rich_rule: 'rule family=ipv4 source address={{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }} port port=2888 protocol=tcp accept'
     state: enabled
     permanent: yes
     immediate: yes
@@ -14,7 +14,7 @@
 
 - name: Allow ZooKeeper hosts access to tcp port 3888
   ansible.posix.firewalld:
-    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port=3888 protocol=tcp accept'
+    rich_rule: 'rule family=ipv4 source address={{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }} port port=3888 protocol=tcp accept'
     state: enabled
     permanent: yes
     immediate: yes
@@ -22,7 +22,7 @@
 
 - name: Allow Kafka Server hosts access to tcp port {{ kafka_config.zookeeper.secure_client_port }}
   ansible.posix.firewalld:
-    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port={{ kafka_config.zookeeper.secure_client_port }} protocol=tcp accept'
+    rich_rule: 'rule family=ipv4 source address={{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }} port port={{ kafka_config.zookeeper.secure_client_port }} protocol=tcp accept'
     state: enabled
     permanent: yes
     immediate: yes
@@ -62,7 +62,7 @@
 
 - name: Allow all Burrow hosts access to tcp port {{ kafka_config.zookeeper.secure_client_port }}
   ansible.posix.firewalld:
-    rich_rule: 'rule family=ipv4 source address={{ hostvars[item].ansible_default_ipv4.address }} port port={{ kafka_config.zookeeper.secure_client_port }} protocol=tcp accept'
+    rich_rule: 'rule family=ipv4 source address={{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }} port port={{ kafka_config.zookeeper.secure_client_port }} protocol=tcp accept'
     state: enabled
     permanent: yes
     immediate: yes

@@ -58,7 +58,7 @@
 - name: Update docker to use dnsmasq for DNS
   block:
   - ansible.builtin.shell:
-      cmd: echo "$( jq '.dns = ["{{ ansible_default_ipv4.address }}"]' /etc/docker/daemon.json )" > /etc/docker/daemon.json
+      cmd: echo "$( jq '.dns = ["{{ (ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]))) }}"]' /etc/docker/daemon.json )" > /etc/docker/daemon.json
 
   - ansible.builtin.systemd:
       name: docker
@@ -70,7 +70,7 @@
       name: docker
       state: started
       enabled: yes
-  when: docker_using_dnsmasq_check_result.stdout != ansible_default_ipv4.address
+  when: docker_using_dnsmasq_check_result.stdout != ((ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]))))
 
 - name: Install the git package
   ansible.builtin.yum:
