@@ -2,6 +2,7 @@
 # file: roles/k8s_master/defaults/main.yaml
 
 k8s_defaults:
+  # For latest version of Helm chart see: https://github.com/bitnami-labs/sealed-secrets/blob/main/helm/sealed-secrets/Chart.yaml
   bitnami_labs_sealed_secrets_enabled: true
   bitnami_labs_sealed_secrets_helm_chart_version: '1.16.1'
   bitnami_labs_sealed_secrets_kubeseal_version: '0.16.0'

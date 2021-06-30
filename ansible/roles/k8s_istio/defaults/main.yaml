@@ -4,15 +4,15 @@
 k8s_defaults:
   istio:
     enabled: false
-    package_checksum: sha256:1d00a2ea0cb7608ce2266fc65572ac9316978b01c0c2c8dd8c65efcb63f5fe97
-    package_version: '1.10.0'
+    package_checksum: sha256:23eaa80a0c3edc8271fe82443b33958437c6c5a62f28bc1b7d04a71e416010a4
+    package_version: '1.10.2'
 
-    istioctl_package_checksum: sha256:e1b89b5066afb87e98acc366d983b264c018a54d79221acc670de6a063de494b
+    istioctl_package_checksum: sha256:916447886375d97fb8f3a769645bfcf883f4e725ce628a15c289e36e4c5ce061
 
-
+    # For latest version of Helm chart see: https://github.com/kiali/helm-charts/releases
     kiali:
       enabled: false
-      helm_chart_version: '1.30.0'
+      helm_chart_version: '1.36.0'
       auth:
         strategy: 'anonymous'
 

@@ -24,8 +24,8 @@ k8s_defaults:
 
   cni_provider: weave
 
-  helm_package_checksum: sha256:a8ddb4e30435b5fd45308ecce5eaad676d64a5de9c89660b56face3fe990b318
-  helm_version: '3.5.4'
+  helm_package_checksum: sha256:f3a4be96b8a3b61b14eec1a35072e1d6e695352e7a08751775abf77861a0bf54
+  helm_version: '3.6.2'
 
 k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"
 
