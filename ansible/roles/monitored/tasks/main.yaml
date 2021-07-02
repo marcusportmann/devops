@@ -118,7 +118,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: prometheus_node_exporter_environment_template_result
+  notify: restart prometheus-node-exporter
 
 - name: Create the Prometheus Node Exporter systemd unit
   template:
@@ -127,13 +127,19 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: restart prometheus-node-exporter
   register: prometheus_node_exporter_systemd_unit_template_result
 
-- name: Restart the Prometheus Node Exporter service
+- name: Reload the Prometheus Node Exporter service
   systemd:
-    name: prometheus-node-exporter.service
-    state: restarted
-    enabled: yes
+    name: prometheus-node-exporter
     daemon_reload: yes
-  when: ((prometheus_node_exporter_environment_template_result.changed == True) or (prometheus_node_exporter_systemd_unit_template_result.changed == True))
+  when: (prometheus_node_exporter_systemd_unit_template_result.changed == True)
+  
+- name: Ensure that the Prometheus Node Exporter service is started
+  systemd:
+    name: prometheus-node-exporter
+    state: started
+    enabled: yes
+
 
