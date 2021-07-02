@@ -6,6 +6,8 @@ configVersion: 1
 artifactory:
   port: {{ artifactory_config.artifactory.port }}
 shared:
+  user: "{{ artifactory_config.user }}"
+  group: "{{ artifactory_config.group }}"
   security:
     joinKey: "{{ artifactory_config.join_key }}"
   extraJavaOpts: "{{ artifactory_config.extra_java_opts }}"

@@ -22,7 +22,7 @@ gitea_defaults:
   users_no_log: true
 
   admin_username: gitea
-  admin_password: gitea
+  admin_password: password
   admin_email: gitea@example.org
 
   port: 7073

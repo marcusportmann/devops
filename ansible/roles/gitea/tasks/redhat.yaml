@@ -10,9 +10,9 @@
     - git-core
     state: present
 
-- name: Allow all hosts access to tcp port 80
+- name: Allow all hosts access to tcp port {{ gitea_config.port }}
   ansible.posix.firewalld:
-    port: 80/tcp
+    port: '{{ gitea_config.port }}/tcp'
     permanent: yes
     state: enabled
     immediate: yes
