@@ -1,18 +1,18 @@
 ---
 # file: roles/confluent_schema_registry/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific Confluent Schema Registry configuration
 
 - name: Allow all hosts access to tcp port 8443 (Confluent Schema Registry HTTPS)
-  ansible.posix.firewalld:
+  firewalld:
     port: '8443/tcp'
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port {{ confluent_config.schema_registry.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
-  ansible.posix.firewalld:
+  firewalld:
     port: '{{ confluent_config.schema_registry.prometheus_jmx_exporter.port }}/tcp'
     permanent: yes
     state: enabled

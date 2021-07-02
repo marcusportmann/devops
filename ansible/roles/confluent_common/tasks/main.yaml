@@ -1,12 +1,12 @@
 ---
 # file: roles/confluent_common/tasks/main.yaml
 
-- ansible.builtin.import_tasks: assert.yaml
+- import_tasks: assert.yaml
   run_once: yes
   delegate_to: localhost
 
 - name: Create the /var/tmp/ansible/confluent directory
-  ansible.builtin.file:
+  file:
     path: /var/tmp/ansible/confluent
     owner: 'root'
     group: 'root'
@@ -39,36 +39,36 @@
 #
 - name: Install Confluent
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the Confluent {{ confluent_config.package_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /opt/confluent
     register: confluent_installed_stat_result
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the Confluent {{ confluent_config.package_version }} package
 
     - name: Check whether the Confluent {{ confluent_config.package_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz'
       register: confluent_package_stat_result
 
     - name: Download the Confluent {{ confluent_config.package_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://packages.confluent.io/archive/{{ confluent_config.major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz'
+      local_action: get_url url='https://packages.confluent.io/archive/{{ confluent_config.major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz'
       when: (confluent_package_stat_result.stat.exists == False)
 
     - name: Extract the Confluent {{ confluent_config.package_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/confluent-community-{{ confluent_config.package_version }}.tar.gz'
         dest: /opt
         owner: 'root'
         group: 'root'
 
     - name: Create the symbolic link to the Confluent {{ confluent_config.package_version }} package
-      ansible.builtin.file:
+      file:
         src: /opt/confluent-{{ confluent_config.package_version }}
         dest: /opt/confluent
         owner: 'root'
@@ -79,7 +79,7 @@
     when: ((confluent_installed_stat_result.stat.exists == False) or (confluent_installed_stat_result.stat.lnk_target != ('/opt/confluent-' + confluent_config.package_version)))
 
 - name: Create the {{ confluent_config.data_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ confluent_config.data_directory }}'
     owner: 'root'
     group: 'root'
@@ -96,36 +96,36 @@
 - name: Install the Prometheus JMX Exporter library
   block:
   - name: Create the /opt/prometheus/lib directory
-    ansible.builtin.file:
+    file:
       path: /opt/prometheus/lib
       owner: 'root'
       group: 'root'
       mode: '0755'
       state: directory
 
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
     register: prometheus_jmx_exporter_installed_stat_result
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
 
     - name: Check whether the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
       register: prometheus_jmx_exporter_package_stat_result
 
     - name: Download the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
       become: no
-      local_action: ansible.builtin.get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' checksum={{ prometheus_jmx_exporter.package_checksum }}
+      local_action: get_url url='https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/{{ prometheus_jmx_exporter.package_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar' checksum={{ prometheus_jmx_exporter.package_checksum }}
       when: (prometheus_jmx_exporter_package_stat_result.stat.exists == False)
 
     - name: Copy the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
-      ansible.builtin.copy:
+      copy:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar'
         dest: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
         owner: 'root'
@@ -134,12 +134,12 @@
 
     when: (prometheus_jmx_exporter_installed_stat_result.stat.exists == False)
 
-  - ansible.builtin.stat:
+  - stat:
       path: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
     register: prometheus_jmx_exporter_link_stat_result
 
   - name: Create the symbolic link to the Prometheus JMX Exporter {{ prometheus_jmx_exporter.package_version }} library
-    ansible.builtin.file:
+    file:
       src: /opt/prometheus/lib/jmx_prometheus_javaagent-{{ prometheus_jmx_exporter.package_version }}.jar
       dest: /opt/prometheus/lib/jmx_prometheus_javaagent.jar
       owner: 'root'

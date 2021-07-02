@@ -1,6 +1,6 @@
 # This playbook configures the monitoring components.
 
-- name: Gather facts from all hosts monitored by prometheus
+- name: Gather facts from all hosts monitored by Prometheus
   hosts: prometheus_server
   become: yes
   become_user: root

@@ -1,7 +1,7 @@
 ---
 # file: roles/k8s_common/tasks/main.yaml
 
-- ansible.builtin.import_tasks: assert.yaml
+- import_tasks: assert.yaml
   run_once: yes
   delegate_to: localhost
 
@@ -30,13 +30,13 @@
 # |_|\_\___/____/   \___/|____/|_____|_| \_\____/  /_/   \_\_| \_|____/   \____|_| \_\\___/ \___/|_|   |____/
 #
 - name: Add the k8s-admin group
-  ansible.builtin.group:
+  group:
     name: '{{ k8s_config.admin_group}}'
     gid: '{{ k8s_config.admin_group_id}}'
     state: present
 
 - name: Add the k8s-admin user with a specific uid and a primary group of 'k8s-admin'
-  ansible.builtin.user:
+  user:
     name: '{{ k8s_config.admin_user }}'
     comment: Kubernetes Administrator
     uid: '{{ k8s_config.admin_user_id }}'
@@ -47,7 +47,7 @@
     state: present
 
 - name: Allow k8s-admin group to have passwordless sudo
-  ansible.builtin.lineinfile:
+  lineinfile:
     dest: /etc/sudoers
     state: present
     regexp: '^%k8s-admin'
@@ -63,53 +63,53 @@
 #
 - name: Install crictl
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the crictl {{ k8s_config.crictl_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/crictl
     register: crictl_installed_stat_result
 
-  - ansible.builtin.shell:
+  - shell:
       cmd: /usr/bin/crictl -v | head -1 | awk {'print $3'} | cut -c2-
     register: crictl_installed_version_output
     when: (crictl_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       crictl_installed_version: '{{ crictl_installed_version_output.stdout }}'
     when: (crictl_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       crictl_installed_version: ''
     when: (crictl_installed_stat_result.stat.exists == False)
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the crictl {{ k8s_config.crictl_version }} package
 
     - name: Check whether the crictl {{ k8s_config.crictl_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz'
       register: crictl_package_stat_result
 
     - name: Download the crictl {{ k8s_config.crictl_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ k8s_config.crictl_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.crictl_package_checksum }}
+      local_action: get_url url='https://github.com/kubernetes-sigs/cri-tools/releases/download/v{{ k8s_config.crictl_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.crictl_package_checksum }}
       when: (crictl_package_stat_result.stat.exists == False)
 
     - name: Remove the existing crictl binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/crictl
         state: absent
 
     - name: Extract the crictl binary from the crictl {{ k8s_config.crictl_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/crictl-v{{ k8s_config.crictl_version }}-linux-amd64.tar.gz'
         dest: /usr/bin
         creates: /usr/bin/crictl
 
     - name: Set the runtime endpoint for crictl
-      ansible.builtin.lineinfile:
+      lineinfile:
         path: /etc/crictl.yaml
         regexp: '^runtime-endpoint:'
         line: 'runtime-endpoint: unix:///run/containerd/containerd.sock'
@@ -126,47 +126,47 @@
 #
 - name: Install Helm
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the helm {{ k8s_config.helm_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/helm
     register: helm_installed_stat_result
 
-  - ansible.builtin.shell:
+  - shell:
       cmd: /usr/bin/helm version --short | head -1 | awk -F '+' {'print $1'} | cut -c2-
     register: helm_installed_version_output
     when: (helm_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       helm_installed_version: '{{ helm_installed_version_output.stdout }}'
     when: (helm_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       helm_installed_version: ''
     when: (helm_installed_stat_result.stat.exists == False)
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the helm {{ k8s_config.helm_version }} package
 
     - name: Check whether the helm {{ k8s_config.helm_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz'
       register: helm_package_stat_result
 
     - name: Download the helm {{ k8s_config.helm_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://get.helm.sh/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.helm_package_checksum }}
+      local_action: get_url url='https://get.helm.sh/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz' checksum={{ k8s_config.helm_package_checksum }}
       when: (helm_package_stat_result.stat.exists == False)
 
     - name: Remove the existing helm binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/helm
         state: absent
 
     - name: Extract the helm binary from the helm {{ k8s_config.helm_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/helm-v{{ k8s_config.helm_version }}-linux-amd64.tar.gz'
         dest: /usr/bin
         extra_opts:
@@ -186,24 +186,24 @@
 - name: Configure the Helm repositories
   block:
   - name: Check if the stable Helm repository has been added
-    ansible.builtin.shell:
+    shell:
       cmd: /usr/bin/helm repo list | grep stable | wc -l
     register: helm_stable_repo_added_output
 
   - name: Add the stable Helm repository
-    ansible.builtin.command:
+    command:
       cmd: /usr/bin/helm repo add stable https://charts.helm.sh/stable
     when: helm_stable_repo_added_output.stdout == '0'
 
   - name: Configure the Bitnami Labs Sealed Secrets repository
     block:
     - name: Check if the Bitnami Labs Sealed Secrets Helm repository has been added
-      ansible.builtin.shell:
+      shell:
         cmd: /usr/bin/helm repo list | grep sealed-secrets | wc -l
       register: helm_sealed_secrets_repo_added_output
 
     - name: Add the Bitnami Labs Sealed Secrets Helm repository
-      ansible.builtin.command:
+      command:
         cmd: /usr/bin/helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
       when: helm_sealed_secrets_repo_added_output.stdout == '0'
 
@@ -218,37 +218,37 @@
 #
 - name: Install kustomize
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the kustomize {{ k8s_config.kustomize_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/kustomize
     register: kustomize_installed_stat_result
 
-  - ansible.builtin.shell:
+  - shell:
       cmd: /usr/bin/kustomize version --short | head -1 | awk -F ' ' {'print $1'} | awk -F '/v' {'print $2'}
     register: kustomize_installed_version_output
     when: (kustomize_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       kustomize_installed_version: '{{ kustomize_installed_version_output.stdout }}'
     when: (kustomize_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       kustomize_installed_version: ''
     when: (kustomize_installed_stat_result.stat.exists == False)
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the kustomize {{ k8s_config.kustomize_version }} package
 
     - name: Remove the existing kustomize binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/kustomize
         state: absent
 
     - name: Install the kustomize binary
-      ansible.builtin.shell:
+      shell:
         cmd: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
         chdir: /usr/bin
         warn: false

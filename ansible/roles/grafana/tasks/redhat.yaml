@@ -1,11 +1,11 @@
 ---
 # file: roles/grafana/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific Grafana configuration
 
 - name: Allow all hosts access to tcp port 3000
-  ansible.posix.firewalld:
+  firewalld:
     port: 3000/tcp
     permanent: yes
     state: enabled
@@ -16,7 +16,7 @@
     manager: auto
 
 - name: Retrieve the version of the installed grafana package
-  ansible.builtin.debug:
+  debug:
     msg: Found the installed grafana package ({{ ansible_facts.packages['grafana'][0].version  }})
   when: ('grafana' in ansible_facts.packages)
 
@@ -24,21 +24,21 @@
   block:
   - name: Check whether the {{ grafana_config.redhat_package }} package has been downloaded
     become: no
-    local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ grafana_config.redhat_package }}'
+    local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ grafana_config.redhat_package }}'
     register: grafana_package_stat_result
 
   - name: Download the {{ grafana_config.redhat_package }} package
     become: no
-    local_action: ansible.builtin.get_url url='https://dl.grafana.com/oss/release/{{ grafana_config.redhat_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ grafana_config.redhat_package }}' checksum={{ grafana_config.redhat_package_checksum }}
+    local_action: get_url url='https://dl.grafana.com/oss/release/{{ grafana_config.redhat_package }}' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ grafana_config.redhat_package }}' checksum={{ grafana_config.redhat_package_checksum }}
     when: (grafana_package_stat_result.stat.exists == False)
 
   - name: Copy the {{ grafana_config.redhat_package }} package
-    ansible.builtin.copy:
+    copy:
       src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/{{ grafana_config.redhat_package }}'
       dest: /var/tmp/ansible/{{ grafana_config.redhat_package }}
 
   - name: Install the {{ grafana_config.redhat_package }} package
-    ansible.builtin.yum:
+    yum:
       name: /var/tmp/ansible/{{ grafana_config.redhat_package }}
       state: present
     notify: restart grafana-server

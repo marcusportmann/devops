@@ -1,11 +1,11 @@
 ---
 # file: roles/monitored/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific monitored configuration
 
 - name: Allow all hosts access to tcp port {{ prometheus_node_exporter_port }}
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ prometheus_node_exporter_port }}'
     proto: tcp

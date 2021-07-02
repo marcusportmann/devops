@@ -2,7 +2,7 @@
 # file: roles/confluent_common/tasks/assert.yaml
 
 #- name: Check the ansible_hostname variable is defined and matches the inventory_hostname_short variable
-#  ansible.builtin.assert:
+#  assert:
 #    that:
 #    - ansible_hostname is defined
 #    - ansible_hostname is string
@@ -12,7 +12,7 @@
 #
 #- name: Check the ansible_fqdn variable is defined and matches the inventory_hostname variable
 #- name: Check the etcd variable is defined correctly
-#  ansible.builtin.assert:
+#  assert:
 #    that:
 #    - ansible_fqdn is defined
 #    - ansible_fqdn is string
@@ -22,13 +22,13 @@
 #    quiet: yes
 
 - name: Check the confluent variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - confluent is defined
     quiet: yes
 
 - name: Check the confluent.clusters variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - confluent.clusters is defined
     - (confluent.clusters | length) >  0

@@ -27,38 +27,38 @@
 #
 - name: Install the Prometheus Node Exporter
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/prometheus-node-exporter
     register: prometheus_node_exporter_installed_stat_result
 
-  - ansible.builtin.shell:
+  - shell:
       cmd: /usr/bin/prometheus-node-exporter --version 2>&1 | head -1 | awk {'print $3'}
     register: prometheus_node_exporter_installed_version_output
     when: (prometheus_node_exporter_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       prometheus_node_exporter_installed_version: '{{ prometheus_node_exporter_installed_version_output.stdout }}'
     when: (prometheus_node_exporter_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       prometheus_node_exporter_installed_version: ''
     when: (prometheus_node_exporter_installed_stat_result.stat.exists == False)
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
 
     - name: Add the prometheus group
-      ansible.builtin.group:
+      group:
         name: prometheus
         gid: '{{ prometheus_group_id }}'
         state: present
 
     - name: Add the prometheus user
-      ansible.builtin.user:
+      user:
         name: prometheus
         uid: '{{ prometheus_user_id }}'
         group: prometheus
@@ -67,12 +67,12 @@
         state: present
 
     - name: Check whether the Prometheus Node Exporter service exists
-      ansible.builtin.stat:
+      stat:
         path: /lib/systemd/system/prometheus-node-exporter.service
       register: prometheus_node_exporter_service_stat_result
 
     - name: Stop the Prometheus Node Exporter service
-      ansible.builtin.systemd:
+      systemd:
         name: prometheus-node-exporter
         state: stopped
       when: prometheus_node_exporter_service_stat_result.stat.exists == True
@@ -80,21 +80,21 @@
 
     - name: Check whether the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz'
       register: prometheus_node_exporter_package_stat_result
 
     - name: Download the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' checksum={{ prometheus_node_exporter_package_checksum }}
+      local_action: get_url url='https://github.com/prometheus/node_exporter/releases/download/v{{ prometheus_node_exporter_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz' checksum={{ prometheus_node_exporter_package_checksum }}
       when: (prometheus_node_exporter_package_stat_result.stat.exists == False)
 
     - name: Remove the existing prometheus-node-exporter binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/prometheus-node-exporter
         state: absent
 
     - name: Extract the node_exporter binary from the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/node_exporter-{{ prometheus_node_exporter_version }}.linux-amd64.tar.gz'
         dest: /usr/bin
         owner: 'root'
@@ -106,13 +106,13 @@
         creates: /usr/bin/node_exporter
 
     - name: Rename the node_exporter binary extracted from the Prometheus Node Exporter {{ prometheus_node_exporter_version }} package to prometheus-node-exporter
-      ansible.builtin.command:
+      command:
         cmd: mv /usr/bin/node_exporter /usr/bin/prometheus-node-exporter
 
     when: (prometheus_node_exporter_installed_version != prometheus_node_exporter_version)
 
 - name: Generate the Prometheus Node Exporter environment
-  ansible.builtin.template:
+  template:
     src: prometheus-node-exporter-environment.j2
     dest: /etc/default/prometheus-node-exporter
     owner: 'root'
@@ -121,7 +121,7 @@
   register: prometheus_node_exporter_environment_template_result
 
 - name: Create the Prometheus Node Exporter systemd unit
-  ansible.builtin.template:
+  template:
     src: prometheus-node-exporter.service.j2
     dest: /lib/systemd/system/prometheus-node-exporter.service
     owner: 'root'
@@ -130,7 +130,7 @@
   register: prometheus_node_exporter_systemd_unit_template_result
 
 - name: Restart the Prometheus Node Exporter service
-  ansible.builtin.systemd:
+  systemd:
     name: prometheus-node-exporter.service
     state: restarted
     enabled: yes

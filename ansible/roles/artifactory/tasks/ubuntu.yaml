@@ -1,25 +1,25 @@
 ---
 # file: roles/artifactory_oss/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific Artifactory OSS configuration
 
 - name: Update the Apt cache
-  ansible.builtin.apt: update_cache=yes cache_valid_time=3600
+  apt: update_cache=yes cache_valid_time=3600
 
 - name: Install the openjdk-11-jdk package
-  ansible.builtin.apt:
+  apt:
     name: openjdk-11-jdk
     state: latest
 
 - name: Allow all hosts access to tcp port {{ artifactory_config.artifactory.port }}
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ artifactory_config.artifactory.port }}'
     proto: tcp
 
 - name: Allow all hosts access to tcp port {{ artifactory_config.router.external_port }}
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ artifactory_config.router.external_port }}'
     proto: tcp

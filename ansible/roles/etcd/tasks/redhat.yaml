@@ -1,18 +1,18 @@
 ---
 # file: roles/etcd/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific etcd configuration
 
 - name: Allow all hosts access to tcp port 2379
-  ansible.posix.firewalld:
+  firewalld:
     port: 2379/tcp
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port 2380
-  ansible.posix.firewalld:
+  firewalld:
     port: 2380/tcp
     permanent: yes
     state: enabled

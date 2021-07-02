@@ -1,7 +1,7 @@
 ---
 # file: roles/k8s_common/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific Kubernetes common configuration
 
 - name: Collect the system service facts
@@ -22,17 +22,17 @@
 - name: Install the root CA, Kubernetes intermediate CA and Kubernetes etcd intermediate CA certificates
   block:
   - name: Copy the root CA certificate for the Kubernetes cluster to the /etc/pki/ca-trust/source/anchors directory
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/ca.crt'
       dest: '/etc/pki/ca-trust/source/anchors/ca.crt'
 
   - name: Copy the Kubernetes intermediate CA certificate for the Kubernetes cluster to the /etc/pki/ca-trust/source/anchors directory
-    ansible.builtin.copy:
+    copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
       dest: "/etc/pki/ca-trust/source/anchors/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
 
   - name: Update the certificate index to install the CA certificate for the Kubernetes cluster
-    ansible.builtin.shell:
+    shell:
       cmd: /bin/update-ca-trust
 
 
@@ -43,7 +43,7 @@
 # |____/___|____/_/   \_\____/|_____|_____| |____/  \_/\_/_/   \_\_|
 #
 - name: Disable swap since Kubernetes cannot work with swap enabled (1/2)
-  ansible.builtin.shell: |
+  shell: |
     swapoff -a
   when: ansible_swaptotal_mb > 0
 
@@ -73,17 +73,17 @@
 # |____/ \___/|_|   |_|    \___/|_| \_\|_| |___|_| \_|\____| |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
 #
 - name: Install the arptables package
-  ansible.builtin.yum:
+  yum:
     name: arptables
     state: present
 
 - name: Install the ebtables package
-  ansible.builtin.yum:
+  yum:
     name: ebtables
     state: present
 
 - name: Install the jq package
-  ansible.builtin.yum:
+  yum:
     name: jq
     state: present
 
@@ -105,7 +105,7 @@
     state: present
 
 - name: Ensure the overlay module is persistent
-  ansible.builtin.lineinfile:
+  lineinfile:
     path: /etc/modules-load.d/modules.conf
     line: overlay
     create: yes
@@ -114,7 +114,7 @@
     mode: '0644'
 
 - name: Ensure the br_netfilter module is persistent
-  ansible.builtin.lineinfile:
+  lineinfile:
     path: /etc/modules-load.d/modules.conf
     line: br_netfilter
     create: yes
@@ -139,12 +139,12 @@
     gpgkey: https://download.docker.com/linux/centos/gpg
 
 - name: Check whether the /etc/containerd/config.toml file exists
-  ansible.builtin.stat:
+  stat:
     path: /etc/containerd/config.toml
   register: containerd_config_stat_result
 
 - name: Install the containerd package
-  ansible.builtin.yum:
+  yum:
     name:
     - containerd
     state: latest
@@ -153,7 +153,7 @@
 - name: Create the containerd configuration
   block:
   - name: Create the /etc/containerd directory if it does not exist
-    ansible.builtin.file:
+    file:
       path: /etc/containerd
       state: directory
       mode: '0755'
@@ -161,11 +161,11 @@
       group: root
 
   - name: Create the default containerd configuration
-    ansible.builtin.shell:
+    shell:
       cmd: containerd config default > /etc/containerd/config.toml
 
   - name: Configure the systemd cgroup driver for containerd
-    ansible.builtin.lineinfile:
+    lineinfile:
       path: /etc/containerd/config.toml
       insertafter: '^          \[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options\]'
       line: '            SystemdCgroup = true'
@@ -173,14 +173,14 @@
   when: (containerd_config_stat_result.stat.exists == False)
 
 - name: Restart the containerd service if required
-  ansible.builtin.systemd:
+  systemd:
     name: containerd
     state: restarted
     enabled: yes
   when: (install_containerd_package_result.changed == True)
 
 - name: Ensure that the containerd service is started
-  ansible.builtin.systemd:
+  systemd:
     name: containerd
     state: started
     enabled: yes
@@ -202,42 +202,42 @@
     gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 
 - name: Retrieve the version of the installed kubectl package
-  ansible.builtin.debug:
+  debug:
     msg: Found the installed kubectl package ({{ ansible_facts.packages['kubectl'][0].version }})
   when: ('kubectl' in ansible_facts.packages)
 
 - name: Install the kubectl package
   block:
   - name: Install the kubectl package ({{ k8s_config.k8s_redhat_package_version }})
-    ansible.builtin.yum:
+    yum:
       name: kubectl-{{k8s_config.k8s_redhat_package_version}}*
       state: present
 
   when: (('kubectl' not in ansible_facts.packages) or (ansible_facts.packages['kubectl'][0].version != k8s_config.k8s_redhat_package_version))
 
 - name: Retrieve the version of the installed kubelet package
-  ansible.builtin.debug:
+  debug:
     msg: Found the installed kubelet package ({{ ansible_facts.packages['kubelet'][0].version }})
   when: ('kubelet' in ansible_facts.packages)
 
 - name: Install the kubelet package
   block:
   - name: Install the kubelet package ({{ k8s_config.k8s_redhat_package_version }})
-    ansible.builtin.yum:
+    yum:
       name: kubelet-{{k8s_config.k8s_redhat_package_version}}*
       state: present
 
   when: (('kubelet' not in ansible_facts.packages) or (ansible_facts.packages['kubelet'][0].version != k8s_config.k8s_redhat_package_version))
 
 - name: Retrieve the version of the installed kubeadm package
-  ansible.builtin.debug:
+  debug:
     msg: Found the installed kubeadm package ({{ ansible_facts.packages['kubeadm'][0].version }})
   when: ('kubeadm' in ansible_facts.packages)
 
 - name: Install the kubeadm package
   block:
   - name: Install the kubeadm package ({{ k8s_config.k8s_redhat_package_version }})
-    ansible.builtin.yum:
+    yum:
       name: kubeadm-{{k8s_config.k8s_redhat_package_version}}*
       state: present
 
@@ -251,19 +251,19 @@
 # |_|\_\\___/|____/|_____|_| \_\_| \_|_____| |_| |_____|____/  |____/ |_| |____/ \____| |_| |_____| |____/|_____| |_|   |_| |___|_| \_|\____|____/
 #
 - name: Check whether the /etc/sysctl.d/kubernetes.conf file exists
-  ansible.builtin.stat:
+  stat:
     path: /etc/sysctl.d/kubernetes.conf
   register: kubernetes_sysctl_stat_result
 
 - name: Apply the Kubernetes sysctl configuration
   block:
   - name: Create the /etc/sysctl.d/kubernetes.conf file
-    ansible.builtin.template:
+    template:
       src: kubernetes.conf.j2
       dest: /etc/sysctl.d/kubernetes.conf
 
   - name: Reload the kernel parameter configuration files
-    ansible.builtin.command:
+    command:
       cmd: /sbin/sysctl --system
 
   when: (kubernetes_sysctl_stat_result.stat.exists == False)

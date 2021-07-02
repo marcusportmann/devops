@@ -2,13 +2,13 @@
 # file: roles/k8s_common/tasks/assert.yaml
 
 - name: Check the k8s variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - k8s is defined
     quiet: yes
 
 - name: Check the k8s.cluster_name variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - k8s.cluster_name is defined
     - k8s.cluster_name is string
@@ -16,7 +16,7 @@
     quiet: yes
 
 - name: Check the k8s.cluster_domain variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - k8s.cluster_domain is defined
     - k8s.cluster_domain is string

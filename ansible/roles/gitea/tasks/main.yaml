@@ -1,7 +1,7 @@
 ---
 # file: roles/gitea/tasks/main.yaml
 
-- ansible.builtin.import_tasks: assert.yaml
+- import_tasks: assert.yaml
   run_once: yes
   delegate_to: localhost
 
@@ -30,43 +30,43 @@
 #  \____|___| |_| |_____/_/   \_\
 #
 - name: Create the Gitea credentials directory
-  local_action: ansible.builtin.file path="{{ credentials_root }}/gitea" state="directory"
+  local_action: file path="{{ credentials_root }}/gitea" state="directory"
   become: false
 
 - name: Install Gitea
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the Gitea {{ gitea_config.package_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/gitea
     register: gitea_installed_stat_result
 
-  - ansible.builtin.shell:
+  - shell:
       cmd: /usr/bin/gitea --version 2>&1 | head -1 | awk {'print $3'}
     register: gitea_installed_version_output
     when: (gitea_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       gitea_installed_version: '{{ gitea_installed_version_output.stdout }}'
     when: (gitea_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       gitea_installed_version: ''
     when: (gitea_installed_stat_result.stat.exists == False)
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the Gitea {{ gitea_config.package_version }} package
 
     - name: Add the {{ gitea_config.group }} group
-      ansible.builtin.group:
+      group:
         name: '{{ gitea_config.group }}'
         gid: '{{ gitea_config.group_id }}'
         state: present
 
     - name: Add the {{ gitea_config.user }} user
-      ansible.builtin.user:
+      user:
         name: '{{ gitea_config.user }}'
         uid: '{{ gitea_config.user_id }}'
         group: '{{ gitea_config.group }}'
@@ -76,12 +76,12 @@
         state: present
 
     - name: Check whether the Gitea service exists
-      ansible.builtin.stat:
+      stat:
         path: /lib/systemd/system/gitea.service
       register: gitea_service_stat_result
 
     - name: Stop the Gitea service
-      ansible.builtin.systemd:
+      systemd:
         name: gitea
         state: stopped
       when: gitea_service_stat_result.stat.exists == True
@@ -89,28 +89,28 @@
 
     - name: Check whether the Gitea {{ gitea_config.package_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/gitea-{{ gitea_config.package_version }}-linux-amd64'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/gitea-{{ gitea_config.package_version }}-linux-amd64'
       register: gitea_package_stat_result
 
     - name: Download the Gitea {{ gitea_config.package_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://dl.gitea.io/gitea/{{ gitea_config.package_version }}/gitea-{{ gitea_config.package_version }}-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/gitea-{{ gitea_config.package_version }}-linux-amd64' checksum={{ gitea_config.package_checksum }}
+      local_action: get_url url='https://dl.gitea.io/gitea/{{ gitea_config.package_version }}/gitea-{{ gitea_config.package_version }}-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/gitea-{{ gitea_config.package_version }}-linux-amd64' checksum={{ gitea_config.package_checksum }}
       when: (gitea_package_stat_result.stat.exists == False)
 
     - name: Remove the existing gitea binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/gitea
         state: absent
 
     - name: Copy the gitea binary
-      ansible.builtin.copy:
+      copy:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/gitea-{{ gitea_config.package_version }}-linux-amd64'
         dest: '/usr/bin/gitea'
         mode: '0755'
       notify: restart gitea
 
     - name: Create Gitea config directories
-      ansible.builtin.file:
+      file:
         path: "{{ item }}"
         state: directory
         owner: git
@@ -121,7 +121,7 @@
         - '{{ gitea_config.config_directory }}/conf'
 
     - name: Create Gitea data directories
-      ansible.builtin.file:
+      file:
         path: "{{ item }}"
         state: directory
         owner: git
@@ -140,84 +140,84 @@
   block:
   - name: Check whether the JWT secret for Gitea exists
     become: no
-    local_action: ansible.builtin.stat path='{{ credentials_root }}/gitea/jwt-secret'
+    local_action: stat path='{{ credentials_root }}/gitea/jwt-secret'
     register: gitea_jwt_secret_stat_result
 
   - name: Generate and save the JWT secret for Gitea
     block:
-    - ansible.builtin.command:
+    - command:
         cmd: /usr/bin/gitea generate secret JWT_SECRET
       register: generate_jwt_secret_result
-    - local_action: ansible.builtin.copy content={{ generate_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/jwt-secret'
+    - local_action: copy content={{ generate_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/jwt-secret'
       become: no
     when: (gitea_jwt_secret_stat_result.stat.exists == False)
 
   - name: Retrieve the JWT secret for gitea
-    ansible.builtin.set_fact:
+    set_fact:
       gitea_jwt_secret: "{{ lookup('file', '{{ credentials_root }}/gitea/jwt-secret') }}"
 
 - name: Retrieve the LFS JWT secret for Gitea
   block:
   - name: Check whether the LFS JWT secret for Gitea exists
     become: no
-    local_action: ansible.builtin.stat path='{{ credentials_root }}/gitea/lfs-jwt-secret'
+    local_action: stat path='{{ credentials_root }}/gitea/lfs-jwt-secret'
     register: gitea_lfs_jwt_secret_stat_result
 
   - name: Generate and save the LFS JWT secret for Gitea
     block:
-    - ansible.builtin.command:
+    - command:
         cmd: /usr/bin/gitea generate secret JWT_SECRET
       register: generate_lfs_jwt_secret_result
-    - local_action: ansible.builtin.copy content={{ generate_lfs_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/lfs-jwt-secret'
+    - local_action: copy content={{ generate_lfs_jwt_secret_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/lfs-jwt-secret'
       become: no
     when: (gitea_lfs_jwt_secret_stat_result.stat.exists == False)
 
   - name: Retrieve the LFS JWT secret for gitea
-    ansible.builtin.set_fact:
+    set_fact:
       gitea_lfs_jwt_secret: "{{ lookup('file', '{{ credentials_root }}/gitea/lfs-jwt-secret') }}"
 
 - name: Retrieve the secret key for Gitea
   block:
   - name: Check whether the secret key for Gitea exists
     become: no
-    local_action: ansible.builtin.stat path='{{ credentials_root }}/gitea/secret-key'
+    local_action: stat path='{{ credentials_root }}/gitea/secret-key'
     register: gitea_secret_key_stat_result
 
   - name: Generate and save the secret key for Gitea
     block:
-    - ansible.builtin.command:
+    - command:
         cmd: /usr/bin/gitea generate secret SECRET_KEY
       register: generate_secret_key_result
-    - local_action: ansible.builtin.copy content={{ generate_secret_key_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/secret-key'
+    - local_action: copy content={{ generate_secret_key_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/secret-key'
       become: no
     when: (gitea_secret_key_stat_result.stat.exists == False)
 
   - name: Retrieve the secret key for gitea
-    ansible.builtin.set_fact:
+    set_fact:
       gitea_secret_key: "{{ lookup('file', '{{ credentials_root }}/gitea/secret-key') }}"
 
 - name: Retrieve the internal token for Gitea
   block:
   - name: Check whether the internal token for Gitea exists
     become: no
-    local_action: ansible.builtin.stat path='{{ credentials_root }}/gitea/internal-token'
+    local_action: stat path='{{ credentials_root }}/gitea/internal-token'
     register: gitea_internal_token_stat_result
 
   - name: Generate and save the internal token for Gitea
     block:
-    - ansible.builtin.command:
+    - command:
         cmd: /usr/bin/gitea generate secret INTERNAL_TOKEN
       register: generate_internal_token_result
-    - local_action: ansible.builtin.copy content={{ generate_internal_token_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/internal-token'
+    - local_action: copy content={{ generate_internal_token_result.stdout_lines[0] }} dest='{{ credentials_root }}/gitea/internal-token'
       become: no
     when: (gitea_internal_token_stat_result.stat.exists == False)
 
   - name: Retrieve the internal token for gitea
-    ansible.builtin.set_fact:
+    set_fact:
       gitea_internal_token: "{{ lookup('file', '{{ credentials_root }}/gitea/internal-token') }}"
 
 - name: Generate the Gitea configuration file
-  ansible.builtin.template:
+  template:
     src: app.ini.j2
     dest: '{{ gitea_config.config_directory }}/conf/app.ini'
     owner: '{{ gitea_config.user }}'
@@ -226,7 +226,7 @@
   notify: restart gitea
 
 - name: Generate the Gitea environment
-  ansible.builtin.template:
+  template:
     src: gitea-environment.j2
     dest: /etc/default/gitea
     mode: '0644'
@@ -234,7 +234,7 @@
   register: gitea_environment_template_result
 
 - name: Configure the Gitea systemd unit
-  ansible.builtin.template:
+  template:
     src: gitea.service.j2
     dest: /lib/systemd/system/gitea.service
     owner: 'root'
@@ -244,7 +244,7 @@
   register: gitea_systemd_unit_template_result
 
 - name: Reload the Gitea service
-  ansible.builtin.systemd:
+  systemd:
     name: gitea
     daemon_reload: yes
   when: ((gitea_environment_template_result.changed == True) or (gitea_systemd_unit_template_result.changed == True))
@@ -260,19 +260,19 @@
 #
 - name: Check whether the admin user exists
   block:
-  - ansible.builtin.set_fact:
+  - set_fact:
       gitea_admin_user_exists: False
-  - ansible.builtin.shell:
+  - shell:
       cmd: "/usr/bin/gitea --config /etc/gitea/conf/app.ini admin user list --admin | sed -En '/^[0-9]+( *){{ gitea_config.admin_username }} .*/p'"
     become: true
     become_user: "{{ gitea_config.user }}"
     register: gitea_admin_user_list_result
-  - ansible.builtin.set_fact:
+  - set_fact:
       gitea_admin_user_exists: True
     when: ((gitea_admin_user_list_result.stdout_lines | length) > 0)
 
 - name: Create the admin user
-  ansible.builtin.shell:
+  shell:
     cmd: "/usr/bin/gitea --config /etc/gitea/conf/app.ini admin user create --admin --username {{ gitea_config.admin_username }} --password {{ gitea_config.admin_password }} --email {{ gitea_config.admin_email }}"
   become: true
   become_user: "{{ gitea_config.user }}"

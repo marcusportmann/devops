@@ -2,11 +2,11 @@
 # file: roles/common/tasks/main.yaml
 
 - name: Create the packages directory
-  local_action: ansible.builtin.file path="{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}" state="directory"
+  local_action: file path="{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}" state="directory"
   become: false
 
 - name: Create the /var/tmp/ansible directory
-  ansible.builtin.file:
+  file:
     path: /var/tmp/ansible
     owner: 'root'
     group: 'root'

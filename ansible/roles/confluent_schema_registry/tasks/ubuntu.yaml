@@ -1,17 +1,17 @@
 ---
 # file: roles/confluent_schema_registry/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific Confluent Schema Registry configuration
 
 - name: Allow all hosts access to tcp port 8443 (Confluent Schema Registry HTTPS)
-  community.general.ufw:
+  ufw:
     rule: allow
     port: 8443
     proto: tcp
 
 - name: Allow all hosts access to tcp port {{ confluent_config.schema_registry.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ confluent_config.schema_registry.prometheus_jmx_exporter.port }}'
     proto: tcp

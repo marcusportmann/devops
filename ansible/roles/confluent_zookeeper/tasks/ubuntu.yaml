@@ -1,11 +1,11 @@
 ---
 # file: roles/confluent_zookeeper/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific ZooKeeper configuration
 
 - name: Allow ZooKeeper hosts access to tcp port 2888
-  community.general.ufw:
+  ufw:
     rule: allow
     from_ip: "{{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }}"
     port: '2888'
@@ -13,7 +13,7 @@
   loop: "{{ zookeeper_hosts }}"
 
 - name: Allow ZooKeeper hosts access to tcp port 3888
-  community.general.ufw:
+  ufw:
     rule: allow
     from_ip: "{{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }}"
     port: '3888'
@@ -21,7 +21,7 @@
   loop: "{{ zookeeper_hosts }}"
 
 - name: Allow Kafka Server hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port}}
-  community.general.ufw:
+  ufw:
     rule: allow
     from_ip: "{{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }}"
     port: '{{ confluent_config.zookeeper.secure_client_port }}'
@@ -29,7 +29,7 @@
   loop: "{{ kafka_server_hosts }}"
 
 - name: Allow Prometheus Server hosts access to tcp port {{ confluent_config.zookeeper.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ confluent_config.zookeeper.prometheus_jmx_exporter.port }}'
     proto: tcp
@@ -37,7 +37,7 @@
   when: ((confluent_config.zookeeper.prometheus_jmx_exporter.enabled is defined) and (confluent_config.zookeeper.prometheus_jmx_exporter.enabled != None) and (confluent_config.zookeeper.prometheus_jmx_exporter.enabled == true))
 
 - name: Allow Prometheus Server hosts access to tcp port {{ confluent_config.zookeeper.prometheus_exporter.port }} (ZooKeeper Prometheus Exporter Port)
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ confluent_config.zookeeper.prometheus_exporter.port }}'
     proto: tcp
@@ -46,18 +46,18 @@
 
 - name: Allow access to the remote JMX tcp ports
   block:
-  - community.general.ufw:
+  - ufw:
       rule: allow
       port: '9998'
       proto: tcp
-  - community.general.ufw:
+  - ufw:
       rule: allow
       port: '9999'
       proto: tcp
   when: ((confluent_config.zookeeper.enable_remote_jmx is defined) and (confluent_config.zookeeper.enable_remote_jmx != None) and (confluent_config.zookeeper.enable_remote_jmx == true))
 
 - name: Allow Burrow hosts access to tcp port {{ confluent_config.zookeeper.secure_client_port}}
-  community.general.ufw:
+  ufw:
     rule: allow
     from_ip: "{{ (hostvars[item].ansible_default_ipv4.address|default(hostvars[item].ansible_all_ipv4_addresses[0])) }}"
     port: '{{ confluent_config.zookeeper.secure_client_port }}'

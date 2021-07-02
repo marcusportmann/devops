@@ -2,7 +2,7 @@
 # file: roles/kafka_common/tasks/assert.yaml
 
 - name: Check the ansible_hostname variable is defined and matches the inventory_hostname_short variable
-  ansible.builtin.assert:
+  assert:
     that:
     - ansible_hostname is defined
     - ansible_hostname is string
@@ -11,7 +11,7 @@
     quiet: yes
 
 - name: Check the ansible_fqdn variable is defined and matches the inventory_hostname variable
-  ansible.builtin.assert:
+  assert:
     that:
     - ansible_fqdn is defined
     - ansible_fqdn is string
@@ -20,13 +20,13 @@
     quiet: yes
 
 - name: Check the kafka variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - kafka is defined
     quiet: yes
 
 - name: Check the kafka.clusters variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - kafka.clusters is defined
     - (kafka.clusters | length) >  0

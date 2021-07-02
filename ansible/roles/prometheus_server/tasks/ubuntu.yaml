@@ -1,35 +1,35 @@
 ---
 # file: roles/prometheus_server/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific Prometheus Server configuration
 
 - name: Allow all hosts access to tcp port 9090
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '9090'
     proto: tcp
 
 - name: Allow all hosts access to tcp port 9091
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '9091'
     proto: tcp
 
 - name: Allow all hosts access to tcp port 9092
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '9092'
     proto: tcp
 
 - name: Allow all hosts access to tcp port 9093
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '9093'
     proto: tcp
 
 - name: Allow all hosts access to tcp port 9094
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '9094'
     proto: tcp

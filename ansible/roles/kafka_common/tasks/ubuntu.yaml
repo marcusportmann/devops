@@ -1,13 +1,13 @@
 ---
 # file: roles/kafka_common/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific Kafka common configuration
 
 - name: Update the Apt cache
-  ansible.builtin.apt: update_cache=yes cache_valid_time=3600
+  apt: update_cache=yes cache_valid_time=3600
 
 - name: Install the openjdk-11-jdk package
-  ansible.builtin.apt:
+  apt:
     name: openjdk-11-jdk
     state: latest

@@ -2,7 +2,7 @@
 # file: roles/kafka_zookeeper/tasks/main.yaml
 
 - name: Create the /var/tmp/ansible/kafka/{{ role_name }} directory
-  ansible.builtin.file:
+  file:
     path: /var/tmp/ansible/kafka/{{ role_name }}
     owner: 'root'
     group: 'root'
@@ -16,10 +16,10 @@
 #  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
 # |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
 #
-- ansible.builtin.set_fact:
+- set_fact:
     kafka_cluster_name: ''
 
-- ansible.builtin.set_fact:
+- set_fact:
     kafka_cluster_name: '{{ item }}'
   when: (('zookeeper_hosts' in kafka_config.clusters[item]) and (ansible_fqdn in kafka_config.clusters[item].zookeeper_hosts))
   loop: '{{ kafka_config.clusters | flatten(1) }}'
@@ -28,19 +28,19 @@
     msg: "The ZooKeeper host {{ ansible_fqdn }} is not associated with a Kafka cluster"
   when: ((kafka_cluster_name is not defined) or (kafka_cluster_name == None) or (kafka_cluster_name == ''))
 
-- ansible.builtin.debug:
+- debug:
     msg: 'Kafka Cluster Name: {{ kafka_cluster_name }}'
 
-- ansible.builtin.set_fact:
+- set_fact:
     zookeeper_hosts: "{{ kafka_config.clusters[kafka_cluster_name].zookeeper_hosts | intersect(groups['kafka_zookeeper']|default([])) }}"
 
-- ansible.builtin.debug:
+- debug:
     msg: 'ZooKeeper hosts: {{ zookeeper_hosts }}'
 
-- ansible.builtin.set_fact:
+- set_fact:
     kafka_server_hosts: "{{ kafka_config.clusters[kafka_cluster_name].kafka_server_hosts | intersect(groups['kafka_server']|default([])) }}"
 
-- ansible.builtin.debug:
+- debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
 
 
@@ -68,17 +68,17 @@
 # |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ /____\___/ \___/|_|\_\_____|_____|_|   |_____|_| \_\
 #
 - name: Create the credentials directory
-  local_action: ansible.builtin.file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
+  local_action: file path="{{ credentials_root }}/kafka/{{ kafka_cluster_name }}" state="directory"
   become: false
 
 - name: Add the {{ kafka_config.zookeeper.group }} group
-  ansible.builtin.group:
+  group:
     name: '{{ kafka_config.zookeeper.group }}'
     gid: '{{ kafka_config.zookeeper.group_id }}'
     state: present
 
 - name: Add the {{ kafka_config.zookeeper.user }} user
-  ansible.builtin.user:
+  user:
     name: '{{ kafka_config.zookeeper.user }}'
     uid: '{{ kafka_config.zookeeper.user_id }}'
     group: '{{ kafka_config.zookeeper.group }}'
@@ -86,7 +86,7 @@
     state: present
 
 - name: Create the {{ kafka_config.zookeeper.etc_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ kafka_config.zookeeper.etc_directory }}'
     owner: '{{ kafka_config.zookeeper.user }}'
     group: '{{ kafka_config.zookeeper.group }}'
@@ -94,7 +94,7 @@
     state: directory
 
 - name: Create the {{ kafka_config.zookeeper.etc_directory }}/conf directory
-  ansible.builtin.file:
+  file:
     path: '{{ kafka_config.zookeeper.etc_directory }}/conf'
     owner: '{{ kafka_config.zookeeper.user }}'
     group: '{{ kafka_config.zookeeper.group }}'
@@ -104,7 +104,7 @@
 - name: Setup the ZooKeeper keystore and ZooKeeper CA truststore
   block:
   - name: Create the {{ kafka_config.zookeeper.etc_directory }}/pki directory
-    ansible.builtin.file:
+    file:
       path: '{{ kafka_config.zookeeper.etc_directory }}/pki'
       owner: '{{ kafka_config.zookeeper.user }}'
       group: '{{ kafka_config.zookeeper.group }}'
@@ -112,32 +112,32 @@
       state: directory
 
   - name: Copy the ZooKeeper CA certificate
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/kafka/{{ role_name }}/ca.crt'
     notify: restart zookeeper
     register: ca_certificate_copy_result
 
   - name: Copy the host-specific ZooKeeper private key ({{ ansible_hostname }}.key)
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ ansible_hostname }}.key'
       dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart zookeeper
     register: zookeeper_private_key_copy_result
 
   - name: Copy the host-specific ZooKeeper certificate ({{ ansible_hostname }}.key)
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ kafka_cluster_name }}/{{ ansible_hostname }}.crt'
       dest: '/var/tmp/ansible/kafka/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart zookeeper
     register: zookeeper_certificate_copy_result
 
   - name: Generate or retrieve the password for the ZooKeeper keystore
-    ansible.builtin.set_fact:
+    set_fact:
       zookeeper_keystore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/zookeeper-{{ ansible_hostname }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the ZooKeeper truststore
-    ansible.builtin.set_fact:
+    set_fact:
       ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/zookeeper-ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the ZooKeeper keystore and ZooKeeper CA truststore
@@ -156,16 +156,16 @@
         state: present
 
     - name: Remove the ZooKeeper CA PKCS12 truststore if it already exists
-      ansible.builtin.file:
+      file:
         path: '{{ kafka_config.zookeeper.etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the ZooKeeper CA PKCS12 truststore
-      ansible.builtin.shell:
+      shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/kafka/{{ role_name }}/ca.crt -keystore '{{ kafka_config.zookeeper.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the ZooKeeper CA PKCS12 truststore
-      ansible.builtin.file:
+      file:
         path: '{{ kafka_config.zookeeper.etc_directory }}/pki/ca.p12'
         owner: '{{ kafka_config.zookeeper.user }}'
         group: '{{ kafka_config.zookeeper.group }}'
@@ -174,7 +174,7 @@
     when: ((ca_certificate_copy_result.changed == True) or (zookeeper_private_key_copy_result.changed == True) or (zookeeper_certificate_copy_result.changed == True))
 
 - name: Create the {{ kafka_config.zookeeper.log_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ kafka_config.zookeeper.log_directory }}'
     owner: '{{ kafka_config.zookeeper.user }}'
     group: '{{ kafka_config.zookeeper.group }}'
@@ -182,7 +182,7 @@
     state: directory
 
 - name: Create the {{ kafka_config.zookeeper.data_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ kafka_config.zookeeper.data_directory }}'
     owner: '{{ kafka_config.zookeeper.user }}'
     group: '{{ kafka_config.zookeeper.group }}'
@@ -190,7 +190,7 @@
     state: directory
 
 - name: Create the {{ kafka_config.zookeeper.data_log_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ kafka_config.zookeeper.data_log_directory }}'
     owner: '{{ kafka_config.zookeeper.user }}'
     group: '{{ kafka_config.zookeeper.group }}'
@@ -198,7 +198,7 @@
     state: directory
 
 - name: Create the ZooKeeper configuration file
-  ansible.builtin.template:
+  template:
     src: zookeeper.properties.j2
     dest: '{{ kafka_config.zookeeper.etc_directory }}/conf/zookeeper.properties'
     owner: '{{ kafka_config.zookeeper.user }}'
@@ -207,22 +207,22 @@
   notify: restart zookeeper
 
 - name: Copy the Prometheus JMX Exporter configuration file
-  ansible.builtin.copy:
+  copy:
     src: files/prometheus_jmx_exporter.yaml
     dest: '{{ kafka_config.zookeeper.etc_directory }}/conf/prometheus_jmx_exporter.yaml'
   notify: restart zookeeper
   when: ((prometheus_jmx_exporter.enabled is defined) and (prometheus_jmx_exporter.enabled != None) and (prometheus_jmx_exporter.enabled == true))
 
 - name: Generate or retrieve the password for the ZooKeeper admin user
-  ansible.builtin.set_fact:
+  set_fact:
     zookeeper_admin_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/zookeeper-admin-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Generate or retrieve the password for the ZooKeeper kafka user
-  ansible.builtin.set_fact:
+  set_fact:
     zookeeper_kafka_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ kafka_cluster_name }}/zookeeper-kafka-user-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the ZooKeeper JAAS configuration file
-  ansible.builtin.template:
+  template:
     src: zookeeper-jaas.conf.j2
     dest: '{{ kafka_config.zookeeper.etc_directory }}/conf/zookeeper-jaas.conf'
     owner: '{{ kafka_config.zookeeper.user }}'
@@ -231,7 +231,7 @@
   notify: restart zookeeper
 
 - name: Create the ZooKeeper TLS configuration file
-  ansible.builtin.template:
+  template:
     src: zookeeper-tls.conf.j2
     dest: '{{ kafka_config.zookeeper.etc_directory }}/conf/zookeeper-tls.conf'
     owner: '{{ kafka_config.zookeeper.user }}'
@@ -240,7 +240,7 @@
   notify: restart zookeeper
 
 - name: Create the myid file containing the ZooKeeper instance ID
-  ansible.builtin.template:
+  template:
     src: myid.j2
     dest: '{{ kafka_config.zookeeper.data_directory }}/myid'
     owner: '{{ kafka_config.zookeeper.user }}'
@@ -251,7 +251,7 @@
 - name: Add the aliases for the ZooKeeper tools to the /etc/profile.d/zookeeper.sh file
   block:
   - name: Add the zookeeper-shell alias to the /etc/profile.d/zookeeper.sh file
-    ansible.builtin.lineinfile:
+    lineinfile:
       dest: /etc/profile.d/zookeeper.sh
       create: yes
       state: present
@@ -262,20 +262,20 @@
       mode: '0755'
 
 - name: Configure the zookeper systemd unit
-  ansible.builtin.template:
+  template:
     src: zookeeper.service.j2
     dest: /lib/systemd/system/zookeeper.service
   notify: restart zookeeper
   register: zookeeper_systemd_unit_template_result
 
 - name: Reload the zookeeper service if required
-  ansible.builtin.systemd:
+  systemd:
     name: zookeeper
     daemon_reload: yes
   when: (zookeeper_systemd_unit_template_result.changed == True)
 
 - name: Ensure that the zookeeper service is started
-  ansible.builtin.systemd:
+  systemd:
     name: zookeeper
     state: started
     enabled: yes

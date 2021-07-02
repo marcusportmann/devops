@@ -1,7 +1,7 @@
 ---
 # file: roles/test/tasks/main.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: 'Hello World!'
 
 

@@ -1,17 +1,17 @@
 ---
 # file: roles/gitea/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific Gitea configuration
 
 - name: Install the Git packages
-  ansible.builtin.apt:
+  apt:
     state: present
     name:
      - git
 
 - name: Allow all hosts access to tcp port {{ gitea_config.port }}
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ gitea_config.port }}'
     proto: tcp

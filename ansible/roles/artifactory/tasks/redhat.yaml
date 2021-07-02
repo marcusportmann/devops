@@ -1,16 +1,16 @@
 ---
 # file: roles/artifactory_oss/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific Artifactory OSS configuration
 
 - name: Install the java-11-openjdk package
-  ansible.builtin.yum:
+  yum:
     name: java-11-openjdk
     state: present
 
 - name: Install the java-11-openjdk-devel package
-  ansible.builtin.yum:
+  yum:
     name: java-11-openjdk-devel
     state: present
 
@@ -27,14 +27,14 @@
     link: /usr/bin/keytool
 
 - name: Allow all hosts access to tcp port {{ artifactory_config.artifactory.port }}
-  ansible.posix.firewalld:
+  firewalld:
     port: '{{ artifactory_config.artifactory.port }}/tcp'
     permanent: yes
     state: enabled
     immediate: yes
 
 - name: Allow all hosts access to tcp port {{ artifactory_config.router.external_port }}
-  ansible.posix.firewalld:
+  firewalld:
     port: '{{ artifactory_config.router.external_port }}/tcp'
     permanent: yes
     state: enabled

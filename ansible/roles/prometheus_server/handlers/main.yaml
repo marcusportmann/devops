@@ -2,6 +2,6 @@
 # file: roles/prometheus_server/handlers/main.yaml
 
 - name: restart prometheus
-  ansible.builtin.systemd:
+  systemd:
     name: prometheus
     state: restarted

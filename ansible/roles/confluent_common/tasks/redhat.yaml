@@ -1,16 +1,16 @@
 ---
 # file: roles/confluent_common/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific Confluent common configuration
 
 - name: Install the java-11-openjdk package
-  ansible.builtin.yum:
+  yum:
     name: java-11-openjdk
     state: present
 
 - name: Install the java-11-openjdk-devel package
-  ansible.builtin.yum:
+  yum:
     name: java-11-openjdk-devel
     state: present
 

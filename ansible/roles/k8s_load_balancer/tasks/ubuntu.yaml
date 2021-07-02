@@ -1,11 +1,11 @@
 ---
 # file: roles/k8s_load_balancer/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific Kubernetes load balancer configuration
 
 - name: Create the /run/haproxy directory
-  ansible.builtin.file:
+  file:
     path: /run/haproxy
     owner: 'root'
     group: 'root'
@@ -13,26 +13,26 @@
     state: directory
 
 - name: Update the Apt cache
-  ansible.builtin.apt: update_cache=yes cache_valid_time=3600
+  apt: update_cache=yes cache_valid_time=3600
 
 - name: Install the haproxy package
-  ansible.builtin.apt:
+  apt:
     name: haproxy
     state: latest
 
 - name: Configure the haproxy
-  ansible.builtin.template:
+  template:
     src: haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
 
 - name: Restart the haproxy service
-  ansible.builtin.systemd:
+  systemd:
     name: haproxy
     state: restarted
     enabled: yes
 
 - name: Ensure that the haproxy service is started
-  ansible.builtin.systemd:
+  systemd:
     name: haproxy
     state: started
     enabled: yes

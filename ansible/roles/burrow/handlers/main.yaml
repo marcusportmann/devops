@@ -2,6 +2,6 @@
 # file: roles/burrow/handlers/main.yaml
 
 - name: restart burrow
-  ansible.builtin.systemd:
+  systemd:
     name: burrow
     state: restarted

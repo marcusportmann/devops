@@ -1,24 +1,24 @@
 ---
 # file: roles/awx/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific common configuration
 
 - name: Allow access to tcp port 53 and udp port 53 (DNS)
   block:
-  - ansible.posix.firewalld:
+  - firewalld:
       port: '53/tcp'
       permanent: yes
       state: enabled
       immediate: yes
-  - ansible.posix.firewalld:
+  - firewalld:
       port: '53/udp'
       permanent: yes
       state: enabled
       immediate: yes
 
 - name: Install the python3 package
-  ansible.builtin.yum:
+  yum:
     name: python3
     state: present
   when: ansible_distribution_major_version == '7'
@@ -36,49 +36,49 @@
     executable: pip-3
 
 - name: Install the dnsmasq package
-  ansible.builtin.yum:
+  yum:
     name: dnsmasq
     state: present
 
-- ansible.builtin.systemd:
+- systemd:
     name: dnsmasq
     state: started
     enabled: yes
 
 - name: Install the jq package
-  ansible.builtin.yum:
+  yum:
     name: jq
     state: present
 
 - name: Check if docker has been configured to use dnsmasq for DNS
-  ansible.builtin.shell:
+  shell:
     cmd: jq -r '.dns[0]' /etc/docker/daemon.json
   register: docker_using_dnsmasq_check_result
 
 - name: Update docker to use dnsmasq for DNS
   block:
-  - ansible.builtin.shell:
+  - shell:
       cmd: echo "$( jq '.dns = ["{{ (ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]))) }}"]' /etc/docker/daemon.json )" > /etc/docker/daemon.json
 
-  - ansible.builtin.systemd:
+  - systemd:
       name: docker
       state: restarted
       enabled: yes
       daemon_reload: yes
 
-  - ansible.builtin.systemd:
+  - systemd:
       name: docker
       state: started
       enabled: yes
   when: docker_using_dnsmasq_check_result.stdout != ((ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]))))
 
 - name: Install the git package
-  ansible.builtin.yum:
+  yum:
     name: git
     state: present
 
 - name: Install the ansible package
-  ansible.builtin.yum:
+  yum:
     name: ansible
     state: present
 

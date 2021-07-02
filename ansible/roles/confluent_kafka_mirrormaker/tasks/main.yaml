@@ -2,7 +2,7 @@
 # file: roles/confluent_kafka_mirrormaker/tasks/main.yaml
 
 - name: Create the /var/tmp/ansible/confluent/{{ role_name }} directory
-  ansible.builtin.file:
+  file:
     path: '/var/tmp/ansible/confluent/{{ role_name }}'
     owner: 'root'
     group: 'root'
@@ -16,10 +16,10 @@
 #  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
 # |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
 #
-- ansible.builtin.set_fact:
+- set_fact:
     confluent_cluster_name: ''
 
-- ansible.builtin.set_fact:
+- set_fact:
     confluent_cluster_name: '{{ item }}'
   when: (('kafka_mirrormaker_hosts' in confluent_config.clusters[item]) and (ansible_fqdn in confluent_config.clusters[item].kafka_mirrormaker_hosts))
   loop: '{{ confluent_config.clusters | flatten(1) }}'
@@ -28,13 +28,13 @@
     msg: "The Kafka MirrorMaker host {{ ansible_fqdn }} is not associated with a Confluent cluster"
   when: ((confluent_cluster_name is not defined) or (confluent_cluster_name == None) or (confluent_cluster_name == ''))
 
-- ansible.builtin.debug:
+- debug:
     msg: 'Cluster Name: {{ confluent_cluster_name }}'
 
-- ansible.builtin.set_fact:
+- set_fact:
     kafka_server_hosts: "{{ confluent_config.clusters[confluent_cluster_name].kafka_server_hosts | intersect(groups['confluent_kafka_server']|default([])) }}"
 
-- ansible.builtin.debug:
+- debug:
     msg: 'Kafka Server hosts: {{ kafka_server_hosts }}'
 
 
@@ -45,17 +45,17 @@
 #  \____\___/|_| \_|_|   |_____\___/|_____|_| \_| |_|   |_|\_\/_/   \_\_|   |_|\_\/_/   \_\ |_|  |_|___|_| \_\_| \_\\___/|_| \_\ |_|  |_/_/   \_\_|\_\_____|_| \_\
 #
 - name: Create the credentials directory
-  local_action: ansible.builtin.file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
+  local_action: file path="{{ credentials_root }}/confluent/{{ confluent_cluster_name }}" state="directory"
   become: false
 
 - name: Add the {{ confluent_config.kafka_mirrormaker.group }} group
-  ansible.builtin.group:
+  group:
     name: '{{ confluent_config.kafka_mirrormaker.group }}'
     gid: '{{ confluent_config.kafka_mirrormaker.group_id }}'
     state: present
 
 - name: Add the {{ confluent_config.kafka_mirrormaker.user }} user
-  ansible.builtin.user:
+  user:
     name: '{{ confluent_config.kafka_mirrormaker.user }}'
     uid: '{{ confluent_config.kafka_mirrormaker.user_id }}'
     group: '{{ confluent_config.kafka_mirrormaker.group }}'
@@ -63,7 +63,7 @@
     state: present
 
 - name: Create the {{ confluent_config.kafka_mirrormaker.etc_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}'
     owner: '{{ confluent_config.kafka_mirrormaker.user }}'
     group: '{{ confluent_config.kafka_mirrormaker.group }}'
@@ -71,7 +71,7 @@
     state: directory
 
 - name: Create the {{ confluent_config.kafka_mirrormaker.etc_directory }}/conf directory
-  ansible.builtin.file:
+  file:
     path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/conf'
     owner: '{{ confluent_config.kafka_mirrormaker.user }}'
     group: '{{ confluent_config.kafka_mirrormaker.group }}'
@@ -81,7 +81,7 @@
 - name: Setup the Kafka MirrorMaker keystore and CA truststore
   block:
   - name: Create the {{ confluent_config.kafka_mirrormaker.etc_directory }}/pki directory
-    ansible.builtin.file:
+    file:
       path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki'
       owner: '{{ confluent_config.kafka_mirrormaker.user }}'
       group: '{{ confluent_config.kafka_mirrormaker.group }}'
@@ -89,32 +89,32 @@
       state: directory
 
   - name: Copy the Kafka MirrorMaker CA certificate
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/ca.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/ca.crt'
     notify: restart mirrormaker
     register: ca_certificate_copy_result
 
   - name: Copy the Kafka MirrorMaker private key ({{ ansible_hostname }}.key)
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.key'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.key'
     notify: restart mirrormaker
     register: kafka_mirrormaker_private_key_copy_result
 
   - name: Copy the Kafka MirrorMaker certificate ({{ ansible_hostname }}.crt)
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ confluent_cluster_name }}/{{ ansible_hostname }}.crt'
       dest: '/var/tmp/ansible/confluent/{{ role_name }}/{{ ansible_hostname }}.crt'
     notify: restart mirrormaker
     register: kafka_mirrormaker_certificate_copy_result
 
   - name: Generate or retrieve the password for the Kafka MirrorMaker keystore
-    ansible.builtin.set_fact:
+    set_fact:
       kafka_mirrormaker_keystore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/{{ ansible_hostname }}-keystore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate or retrieve the password for the CA truststore
-    ansible.builtin.set_fact:
+    set_fact:
       ca_truststore_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ confluent_cluster_name }}/ca-truststore-password chars=ascii_letters,digits length=16') }}"
 
   - name: Generate the Kafka MirrorMaker keystore and CA truststore
@@ -133,16 +133,16 @@
         state: present
 
     - name: Remove the Kafka MirrorMaker CA PKCS12 truststore if it already exists
-      ansible.builtin.file:
+      file:
         path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12'
         state: absent
 
     - name: Generate the Kafka MirrorMaker CA PKCS12 truststore
-      ansible.builtin.shell:
+      shell:
         cmd: keytool -importcert -noprompt -trustcacerts -alias "ca" -file /var/tmp/ansible/confluent/{{ role_name }}/ca.crt -keystore '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12' -storetype PKCS12 -storepass '{{ ca_truststore_password }}'
 
     - name: Set the permissions for the Kafka MirrorMaker CA PKCS12 truststore
-      ansible.builtin.file:
+      file:
         path: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/pki/ca.p12'
         owner: '{{ confluent_config.kafka_mirrormaker.user }}'
         group: '{{ confluent_config.kafka_mirrormaker.group }}'
@@ -151,7 +151,7 @@
     when: ((ca_certificate_copy_result.changed == True) or (kafka_mirrormaker_private_key_copy_result.changed == True) or (kafka_mirrormaker_certificate_copy_result.changed == True))
 
 - name: Create the {{ confluent_config.kafka_mirrormaker.log_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ confluent_config.kafka_mirrormaker.log_directory }}'
     owner: '{{ confluent_config.kafka_mirrormaker.user }}'
     group: '{{ confluent_config.kafka_mirrormaker.group }}'
@@ -160,11 +160,11 @@
 
 # NOTE: This is the password Kafka MirrorMaker uses to connect to the Kafka cluster
 - name: Generate or retrieve the password for the Kafka MirrorMaker user
-  ansible.builtin.set_fact:
+  set_fact:
     kafka_mirrormaker_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/mirrormaker-' + confluent_cluster_name.replace('_', '-') + '-password chars=ascii_letters,digits length=16') }}"
 
 - name: Create the Kafka MirrorMaker configuration file
-  ansible.builtin.template:
+  template:
     src: mirrormaker.properties.j2
     dest: '{{ confluent_config.kafka_mirrormaker.etc_directory }}/conf/mirrormaker.properties'
     owner: '{{ confluent_config.kafka_mirrormaker.user }}'
@@ -173,7 +173,7 @@
   notify: restart mirrormaker
 
 - name: Configure the mirrormaker service
-  ansible.builtin.template:
+  template:
     src: mirrormaker.service.j2
     dest: /lib/systemd/system/mirrormaker.service
     owner: 'root'
@@ -183,7 +183,7 @@
   register: kafka_mirrormaker_service_file_template_result
 
 - name: Reload the mirrormaker service if required
-  ansible.builtin.systemd:
+  systemd:
     name: mirrormaker
     daemon_reload: yes
   when: (kafka_mirrormaker_service_file_template_result.changed == True)
@@ -191,7 +191,7 @@
 - meta: flush_handlers
 
 - name: Ensure that the mirrormaker service is started
-  ansible.builtin.systemd:
+  systemd:
     name: mirrormaker
     state: started
     enabled: yes

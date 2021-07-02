@@ -12,7 +12,7 @@
 # |_| /_/   \_\____|_|\_\/_/   \_\____|_____|____/
 #
 - name: Install the python3-pip package
-  ansible.builtin.apt:
+  apt:
     state: present
     name:
      - python3-pip
@@ -52,7 +52,7 @@
 - name: Initialise the /data directory
   block:
   - name: Create the /data directory
-    ansible.builtin.file:
+    file:
       path: /data
       owner: 'root'
       group: 'root'

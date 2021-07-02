@@ -1,17 +1,17 @@
 ---
 # file: roles/kafka_server/tasks/ubuntu.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the Ubuntu-specific Kafka Server configuration
 
 - name: Allow all hosts access to tcp port {{ kafka_config.kafka_server.secure_broker_port }} (Kafka Secure Broker Port)
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ kafka_config.kafka_server.secure_broker_port }}'
     proto: tcp
 
 - name: Allow all hosts access to tcp port {{ kafka_config.kafka_server.prometheus_jmx_exporter.port }} (Prometheus JMX Exporter Port)
-  community.general.ufw:
+  ufw:
     rule: allow
     port: '{{ kafka_config.kafka_server.prometheus_jmx_exporter.port }}'
     proto: tcp
@@ -19,11 +19,11 @@
 
 - name: Allow access to the remote JMX tcp ports
   block:
-  - community.general.ufw:
+  - ufw:
       rule: allow
       port: '9998'
       proto: tcp
-  - community.general.ufw:
+  - ufw:
       rule: allow
       port: '9999'
       proto: tcp

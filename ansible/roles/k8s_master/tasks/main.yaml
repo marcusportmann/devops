@@ -28,29 +28,29 @@
 - name: Create the configuration directories for the Kubernetes API server and scheduler
   block:
   - name: Create the /etc/kubernetes/apiserver directory
-    ansible.builtin.file:
+    file:
       path: /etc/kubernetes/apiserver
       state: directory
 
   - name: Create the /etc/kubernetes/scheduler directory
-    ansible.builtin.file:
+    file:
       path: /etc/kubernetes/scheduler
       state: directory
 
 - name: Copy the standard keys and certificates for the Kubernetes cluster
   block:
   - name: Create the /etc/kubernetes/pki/etcd directory
-    ansible.builtin.file:
+    file:
       path: /etc/kubernetes/pki/etcd
       state: directory
 
   - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki directory
-    ansible.builtin.copy:
+    copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
       dest: '/etc/kubernetes/pki/ca.key'
 
   - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki directory
-    ansible.builtin.copy:
+    copy:
       src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
       dest: '/etc/kubernetes/pki/ca.crt'
 
@@ -64,7 +64,7 @@
 - name: Initialize the first master node in the Kubernetes cluster
   block:
   - name: Check whether the kubelet service has been configured
-    ansible.builtin.stat:
+    stat:
       path: /var/lib/kubelet/config.yaml
     register: kubelet_config_stat_result
 
@@ -73,12 +73,12 @@
     - name: Copy the keys and certificates for the stacked etcd topology
       block:
       - name: Copy the Kubernetes intermediate CA private key to the /etc/kubernetes/pki/etcd directory
-        ansible.builtin.copy:
+        copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.key"
           dest: '/etc/kubernetes/pki/etcd/ca.key'
 
       - name: Copy the Kubernetes intermediate CA certificate to the /etc/kubernetes/pki/etcd directory
-        ansible.builtin.copy:
+        copy:
           src: "{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/k8s-etcd-ca-{{ k8s_config.cluster_name.replace('_', '-') }}.crt"
           dest: '/etc/kubernetes/pki/etcd/ca.crt'
 
@@ -87,45 +87,45 @@
     - name: Copy the keys and certificates for the external etcd topology
       block:
       - name: Copy the etcd-ca.crt certificate to the /etc/kubernetes/pki/etcd directory
-        ansible.builtin.copy:
+        copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/etcd-ca.crt'
           dest: '/etc/kubernetes/pki/etcd/ca.crt'
 
       - name: Copy the {{ ansible_hostname }}.key private key to the /etc/kubernetes/pki/etcd directory
-        ansible.builtin.copy:
+        copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ ansible_hostname }}.key'
           dest: '/etc/kubernetes/pki/etcd/{{ ansible_hostname }}.key'
 
       - name: Copy the {{ ansible_hostname }}.crt certificate to the /etc/kubernetes/pki/etcd directory
-        ansible.builtin.copy:
+        copy:
           src: '{{ pki_root }}/{{ role_name }}/{{ k8s_config.cluster_name }}/{{ ansible_hostname }}.crt'
           dest: '/etc/kubernetes/pki/etcd/{{ ansible_hostname }}.crt'
 
       when: k8s_config.etcd_topology == 'external'
 
-    - ansible.builtin.command:
+    - command:
         cmd: hostname -i
       register: hostname_i_result
 
-    - ansible.builtin.set_fact:
+    - set_fact:
         k8s_apiserver_advertise_address: '{{ hostname_i_result.stdout_lines[0] }}'
 
     - name: Create the Kubernetes API server encryption configuration
       block:
       - name: Generate the Kubernetes API server encryption key
-        ansible.builtin.shell:
+        shell:
           cmd: head -c 32 /dev/urandom | base64
         register: generate_kube_apiserver_encryption_key_result
 
-      - ansible.builtin.set_fact:
+      - set_fact:
           kube_apiserver_encryption_key: '{{ generate_kube_apiserver_encryption_key_result.stdout }}'
 
-      - ansible.builtin.template:
+      - template:
           src: k8s-apiserver-encryption.yaml.j2
           dest: /etc/kubernetes/apiserver/encryption.yaml
 
       - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
-        ansible.builtin.file:
+        file:
           path: /etc/kubernetes/apiserver/encryption.yaml
           owner: 'root'
           group: 'root'
@@ -135,23 +135,23 @@
     - name: Create the Kubernetes scheduler configuration
       block:
       - name: Create the scheduler-config.yaml configuration file under the /etc/kubernetes/scheduler directory
-        ansible.builtin.template:
+        template:
           src: scheduler-config.yaml.j2
           dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
     - name: Create the Kubernetes cluster configuration
-      ansible.builtin.template:
+      template:
         src: k8s-config.yaml.j2
         dest: /var/tmp/ansible/k8s-config.yaml
 
     - name: Initialize the Kubernetes cluster
-      ansible.builtin.shell:
+      shell:
         cmd: /usr/bin/kubeadm init --config /var/tmp/ansible/k8s-config.yaml
 
     - name: Copy the Kubernetes configuration to the root user
       block:
       - name: Create the /root/.kube directory
-        ansible.builtin.file:
+        file:
           path: /root/.kube
           owner: 'root'
           group: 'root'
@@ -159,11 +159,11 @@
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
-        ansible.builtin.command:
+        command:
           cmd: cp /etc/kubernetes/admin.conf /root/.kube/config
 
       - name: Set the permissions for the /root/.kube/config file
-        ansible.builtin.file:
+        file:
           path: /root/.kube/config
           owner: 'root'
           group: 'root'
@@ -173,7 +173,7 @@
     - name: Copy the Kubernetes configuration to the k8s-admin user
       block:
       - name: Create the /home/k8s-admin/.kube directory
-        ansible.builtin.file:
+        file:
           path: /home/k8s-admin/.kube
           owner: k8s-admin
           group: k8s-admin
@@ -181,11 +181,11 @@
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
-        ansible.builtin.command:
+        command:
           cmd: cp /etc/kubernetes/admin.conf /home/k8s-admin/.kube/config
 
       - name: Set the permissions for the /home/k8s-admin/.kube/config file
-        ansible.builtin.file:
+        file:
           path: /home/k8s-admin/.kube/config
           owner: k8s-admin
           group: k8s-admin
@@ -195,12 +195,12 @@
     - name: Setup the kubeshell script
       block:
       - name: Create the kubeshell script
-        ansible.builtin.template:
+        template:
           src: kubeshell.j2
           dest: /usr/bin/kubeshell
 
       - name: Set the permissions for the kubeshell script
-        ansible.builtin.file:
+        file:
           path: /usr/bin/kubeshell
           owner: 'root'
           group: 'root'
@@ -208,30 +208,30 @@
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
-      ansible.builtin.shell:
+      shell:
         cmd: /usr/bin/kubectl taint node `hostname` node-role.kubernetes.io/master:NoSchedule-
       when: ('k8s_worker' not in groups.keys())
 
     - name: Create the Prometheus service account
       block:
-      - ansible.builtin.template:
+      - template:
           src: prometheus-service-account.yaml.j2
           dest: /var/tmp/ansible/prometheus-service-account.yaml
 
-      - ansible.builtin.shell:
+      - shell:
           cmd: /usr/bin/kubectl apply -f /var/tmp/ansible/prometheus-service-account.yaml
 
     when: (kubelet_config_stat_result.stat.exists == False)
 
   - name: Check whether the Weave CNI provider has been configured
-    ansible.builtin.stat:
+    stat:
       path: /etc/cni/net.d/10-weave.conflist
     register: etc_cni_weave_stat_result
 
   - name: Configure the Weave CNI provider
     block:
     - name: Initialize the Weave CNI provider
-      ansible.builtin.shell:
+      shell:
         cmd: /usr/bin/kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(/usr/bin/kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE={{k8s_config.pod_subnet}}"
 
     - name: Sleep for 15 seconds to allow the Weave CNI provider to initialize
@@ -241,14 +241,14 @@
     when: ((etc_cni_weave_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'weave'))
 
   - name: Check whether the Flannel CNI provider has been configured
-    ansible.builtin.stat:
+    stat:
       path: /etc/cni/net.d/10-flannel.conflist
     register: etc_cni_flannel_stat_result
 
   - name: Configure the Flannel CNI provider
     block:
     - name: Initialize the Flannel CNI provider
-      ansible.builtin.shell:
+      shell:
         cmd: /usr/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
     - name: Sleep for 15 seconds to allow the Flannel CNI provider to initialize
@@ -258,11 +258,11 @@
     when: ((etc_cni_flannel_stat_result.stat.exists == False) and (k8s_config.cni_provider == 'flannel'))
 
   - name: Wait for Kubernetes node initialization to complete
-    ansible.builtin.command:
+    command:
       cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
 
   - name: Ensure that the kubelet service is started
-    ansible.builtin.systemd:
+    systemd:
       name: kubelet
       state: started
       enabled: yes
@@ -279,36 +279,36 @@
 - name: Initialize an additional master node in the Kubernetes cluster
   block:
   - name: Check whether the kubelet service has been configured
-    ansible.builtin.stat:
+    stat:
       path: /var/lib/kubelet/config.yaml
     register: kubelet_config_stat_result
 
   - name: Initializing the additional master node in the Kubernetes cluster
     block:
     - name: Fetch the /etc/kubernetes/scheduler/scheduler-config.yaml file from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/scheduler/scheduler-config.yaml
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/scheduler/scheduler-config.yaml to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/scheduler/scheduler-config.yaml
         dest: /etc/kubernetes/scheduler/scheduler-config.yaml
 
     - name: Fetch the /etc/kubernetes/apiserver/encryption.yaml file from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/apiserver/encryption.yaml
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/apiserver/encryption.yaml to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/apiserver/encryption.yaml
         dest: /etc/kubernetes/apiserver/encryption.yaml
 
     - name: Set the permissions for the /etc/kubernetes/apiserver/encryption.yaml file
-      ansible.builtin.file:
+      file:
         path: /etc/kubernetes/apiserver/encryption.yaml
         owner: 'root'
         group: 'root'
@@ -317,102 +317,102 @@
 
     - name: Remove the local copy of the encryption.yaml file
       become: no
-      local_action: ansible.builtin.file path=fetched_files/{{ ansible_fqdn }}/etc/kubernetes/apiserver/encryption.yaml state=absent
+      local_action: file path=fetched_files/{{ ansible_fqdn }}/etc/kubernetes/apiserver/encryption.yaml state=absent
 
     - name: Fetch the /etc/kubernetes/pki/sa.key from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/pki/sa.key
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/pki/sa.key to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/sa.key
         dest: /etc/kubernetes/pki/sa.key
 
     - name: Fetch the /etc/kubernetes/pki/sa.pub from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/pki/sa.pub
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/pki/sa.pub to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/sa.pub
         dest: /etc/kubernetes/pki/sa.pub
 
     - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.key from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/pki/front-proxy-ca.key
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/pki/front-proxy-ca.key to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/front-proxy-ca.key
         dest: /etc/kubernetes/pki/front-proxy-ca.key
 
     - name: Fetch the /etc/kubernetes/pki/front-proxy-ca.crt from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/pki/front-proxy-ca.crt
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/pki/front-proxy-ca.crt to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/front-proxy-ca.crt
         dest: /etc/kubernetes/pki/front-proxy-ca.crt
 
     - name: Fetch the /etc/kubernetes/pki/etcd/ca.key from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/pki/etcd/ca.key
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/pki/etcd/ca.key to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/etcd/ca.key
         dest: /etc/kubernetes/pki/etcd/ca.key
 
     - name: Fetch the /etc/kubernetes/pki/etcd/ca.crt from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/pki/etcd/ca.crt
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/pki/etcd/ca.crt to the additional master
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/etcd/ca.crt
         dest: /etc/kubernetes/pki/etcd/ca.crt
 
-    - ansible.builtin.command:
+    - command:
         cmd: hostname -i
       register: hostname_i_result
 
-    - ansible.builtin.set_fact:
+    - set_fact:
         k8s_apiserver_advertise_address: '{{ hostname_i_result.stdout_lines[0] }}'
 
     - name: Retrieve the Kubernetes join command from the first master
-      ansible.builtin.command:
+      command:
         cmd: /usr/bin/kubeadm token create --print-join-command
       register: kubeadm_join_command_result
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Save the Kubernetes join command
-      ansible.builtin.set_fact:
+      set_fact:
         kubeadm_join_command: '{{ kubeadm_join_command_result.stdout_lines[0] }}'
 
     - name: Execute the command to Join the additional master to the Kubernetes cluster
-      ansible.builtin.command:
+      command:
         cmd: '{{ kubeadm_join_command }} --control-plane --apiserver-advertise-address={{ k8s_apiserver_advertise_address }}'
 
     - name: Wait for Kubernetes node initialization to complete
-      ansible.builtin.command:
+      command:
         cmd: /usr/bin/kubectl wait --namespace=kube-system --for=condition=Ready pods --all --timeout=600s
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Ensure that the kubelet service is started
-      ansible.builtin.systemd:
+      systemd:
         name: kubelet
         state: started
         enabled: yes
@@ -420,7 +420,7 @@
     - name: Copy the Kubernetes configuration to the root user
       block:
       - name: Create the /root/.kube directory
-        ansible.builtin.file:
+        file:
           path: /root/.kube
           owner: 'root'
           group: 'root'
@@ -428,11 +428,11 @@
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /root/.kube directory
-        ansible.builtin.command:
+        command:
           cmd: cp /etc/kubernetes/admin.conf /root/.kube/config
 
       - name: Set the permissions for the /root/.kube/config file
-        ansible.builtin.file:
+        file:
           path: /root/.kube/config
           owner: k8s-admin
           group: k8s-admin
@@ -442,7 +442,7 @@
     - name: Copy the Kubernetes configuration to the k8s-admin user
       block:
       - name: Create the /home/k8s-admin/.kube directory
-        ansible.builtin.file:
+        file:
           path: /home/k8s-admin/.kube
           owner: k8s-admin
           group: k8s-admin
@@ -450,11 +450,11 @@
           state: directory
 
       - name: Copy the /etc/kubernetes/admin.conf file to the /home/k8s-admin/.kube directory
-        ansible.builtin.command:
+        command:
           cmd: cp /etc/kubernetes/admin.conf /home/k8s-admin/.kube/config
 
       - name: Set the permissions for the /home/k8s-admin/.kube/config file
-        ansible.builtin.file:
+        file:
           path: /home/k8s-admin/.kube/config
           owner: k8s-admin
           group: k8s-admin
@@ -464,12 +464,12 @@
     - name: Setup the kubeshell script
       block:
       - name: Create the kubeshell script
-        ansible.builtin.template:
+        template:
           src: kubeshell.j2
           dest: /usr/bin/kubeshell
 
       - name: Set the permissions for the kubeshell script
-        ansible.builtin.file:
+        file:
           path: /usr/bin/kubeshell
           owner: 'root'
           group: 'root'
@@ -477,7 +477,7 @@
           state: file
 
     - name: Allows pods to scheduled on the master if there are no worker nodes
-      ansible.builtin.shell:
+      shell:
         cmd: /usr/bin/kubectl taint node `hostname` node-role.kubernetes.io/master:NoSchedule-
       when: ('k8s_worker' not in groups.keys())
 
@@ -486,7 +486,7 @@
   when: (groups['k8s_master'][0] != inventory_hostname)
 
 - name: Ensure the kubelet service is enabled and started
-  ansible.builtin.systemd:
+  systemd:
     name: kubelet
     enabled: yes
     state: started
@@ -500,58 +500,58 @@
 #
 - name: Install the Bitnami Labs Sealed Secrets Extension
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/kubeseal
     register: kubeseal_installed_stat_result
 
-  - ansible.builtin.shell:
+  - shell:
       cmd: /usr/bin/kubeseal --version |  awk -F ' ' {'print $3'} | cut -c2-
     register: kubeseal_installed_version_output
     when: (kubeseal_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       kubeseal_installed_version: '{{ kubeseal_installed_version_output.stdout }}'
     when: (kubeseal_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       kubeseal_installed_version: ''
     when: (kubeseal_installed_stat_result.stat.exists == False)
 
   - name: Install the Bitnami Labs kubeseal package
     block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the Bitnami Labs kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package
 
     - name: Check whether the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
       register: kubeseal_package_stat_result
 
     - name: Download the kubeseal {{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
+      local_action: get_url url='https://github.com/bitnami-labs/sealed-secrets/releases/download/v{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}/kubeseal-linux-amd64' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
       when: (kubeseal_package_stat_result.stat.exists == False)
 
     - name: Remove the existing kubeseal binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/kubeseal
         state: absent
 
     - name: Copy the kubeseal binary
-      ansible.builtin.copy:
+      copy:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }}'
         dest: /usr/bin
 
     - name: Rename the kubeseal binary
-      ansible.builtin.command:
+      command:
         cmd: mv /usr/bin/kubeseal-linux-amd64-{{ k8s_config.bitnami_labs_sealed_secrets_kubeseal_version }} /usr/bin/kubeseal
         creates: /usr/bin/kubeseal
 
     - name: Set the permissions for the kubeseal binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/kubeseal
         owner: 'root'
         group: 'root'
@@ -561,19 +561,19 @@
     when: (kubeseal_installed_version.startswith(k8s_config.bitnami_labs_sealed_secrets_kubeseal_version) == False)
 
   - name: Check if Bitnami Labs Sealed Secrets is installed
-    ansible.builtin.shell:
+    shell:
       cmd: /usr/bin/helm -n kube-system list --filter 'sealed-secrets' --output json | jq -r '.[0].chart' | cut -s -f3- -d-
     register: sealed_secrets_installed_helm_chart_version_output
 
   - name: Install Bitnami Labs Sealed Secrets
     block:
     - name: Generate the Bitnami Labs Sealed Secrets Helm values
-      ansible.builtin.template:
+      template:
         src: sealed-secrets-values.yaml.j2
         dest: /var/tmp/ansible/sealed-secrets-values.yaml
 
     - name: Install Bitnami Labs Sealed Secrets using Helm
-      ansible.builtin.command:
+      command:
         cmd: /usr/bin/helm upgrade sealed-secrets sealed-secrets/sealed-secrets --install --version={{ k8s_config.bitnami_labs_sealed_secrets_helm_chart_version }} --namespace=kube-system --values=/var/tmp/ansible/sealed-secrets-values.yaml
 
     when: sealed_secrets_installed_helm_chart_version_output.stdout != k8s_config.bitnami_labs_sealed_secrets_helm_chart_version
@@ -590,7 +590,7 @@
 #    \_/\_/  |_____/_/   \_\_/  |_____| |____/ \____|_| \_\___|_|    |_|
 #
 - name: Check if the Weave script is installed
-  ansible.builtin.stat:
+  stat:
     path: /usr/bin/weave
   register: weave_script_installed_stat_result
 
@@ -606,7 +606,7 @@
     delay: 10
 
   - name: Set the permissions for the /usr/bin/weave file
-    ansible.builtin.file:
+    file:
       path: /usr/bin/weave
       owner: 'root'
       group: 'root'

@@ -2,13 +2,13 @@
 # file: roles/burrow/tasks/assert.yaml
 
 - name: Check the burrow variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - burrow is defined
     quiet: yes
 
 - name: Check the burrow.clusters variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - burrow.clusters is defined
     - (burrow.clusters | length) >  0

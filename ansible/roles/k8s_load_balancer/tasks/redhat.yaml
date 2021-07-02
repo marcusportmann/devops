@@ -1,11 +1,11 @@
 ---
 # file: roles/k8s_load_balancer/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific Kubernetes load balancer configuration
 
 - name: Create the /run/haproxy directory
-  ansible.builtin.file:
+  file:
     path: /run/haproxy
     owner: 'root'
     group: 'root'
@@ -13,12 +13,12 @@
     state: directory
 
 - name: Install the haproxy package
-  ansible.builtin.yum:
+  yum:
     name: haproxy
     state: latest
 
 - name: Configure the haproxy
-  ansible.builtin.template:
+  template:
     src: haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
 
@@ -29,13 +29,13 @@
     persistent: yes
 
 - name: Restart the haproxy service
-  ansible.builtin.systemd:
+  systemd:
     name: haproxy
     state: restarted
     enabled: yes
 
 - name: Ensure that the haproxy service is started
-  ansible.builtin.systemd:
+  systemd:
     name: haproxy
     state: started
     enabled: yes

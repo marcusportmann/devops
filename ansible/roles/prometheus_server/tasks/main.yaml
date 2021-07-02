@@ -25,48 +25,48 @@
 # |  __/|  _ <| |_| | |  | | |___  | | |  _  | |___| |_| |___) |  ___) | |___|  _ < \ V / | |___|  _ <
 # |_|   |_| \_\\___/|_|  |_|_____| |_| |_| |_|_____|\___/|____/  |____/|_____|_| \_\ \_/  |_____|_| \_\
 #
-- ansible.builtin.set_fact:
+- set_fact:
     prometheus_alert_manager_target: "{{ groups['prometheus_alert_manager'][0] }}:9093"
   when: ((groups['prometheus_alert_manager'] is defined) and ((groups['prometheus_alert_manager']|length) > 0))
 
-- ansible.builtin.set_fact:
+- set_fact:
     prometheus_alert_manager_target: "{{ prometheus_server_config.alert_managers[ansible_fqdn] }}:9093"
   when: ((prometheus_server_config.alert_managers is defined) and (prometheus_server_config.alert_managers[ansible_fqdn] is defined))
 
 - name: Install Prometheus
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the Prometheus {{ prometheus_server_config.package_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/prometheus
     register: prometheus_installed_stat_result
 
-  - ansible.builtin.shell:
+  - shell:
       cmd: /usr/bin/prometheus --version 2>&1 | head -1 | awk {'print $3'}
     register: prometheus_installed_version_output
     when: (prometheus_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       prometheus_installed_version: '{{ prometheus_installed_version_output.stdout }}'
     when: (prometheus_installed_stat_result.stat.exists == True)
 
-  - ansible.builtin.set_fact:
+  - set_fact:
       prometheus_installed_version: ''
     when: (prometheus_installed_stat_result.stat.exists == False)
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the Prometheus {{ prometheus_server_config.package_version }} package
 
     - name: Add the {{ prometheus_server_config.group }} group
-      ansible.builtin.group:
+      group:
         name: '{{ prometheus_server_config.group }}'
         gid: '{{ prometheus_server_config.group_id }}'
         state: present
 
     - name: Add the {{ prometheus_server_config.user }} user
-      ansible.builtin.user:
+      user:
         name: '{{ prometheus_server_config.user }}'
         uid: '{{ prometheus_server_config.user_id }}'
         group: '{{ prometheus_server_config.group }}'
@@ -75,12 +75,12 @@
         state: present
 
     - name: Check whether the Prometheus service exists
-      ansible.builtin.stat:
+      stat:
         path: /lib/systemd/system/prometheus.service
       register: prometheus_service_stat_result
 
     - name: Stop the Prometheus service
-      ansible.builtin.systemd:
+      systemd:
         name: prometheus
         state: stopped
       when: prometheus_service_stat_result.stat.exists == True
@@ -88,21 +88,21 @@
 
     - name: Check whether the Prometheus {{ prometheus_server_config.package_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
       register: prometheus_package_stat_result
 
     - name: Download the Prometheus {{ prometheus_server_config.package_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_server_config.package_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_server_config.package_checksum }}
+      local_action: get_url url='https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_server_config.package_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz' checksum={{ prometheus_server_config.package_checksum }}
       when: (prometheus_package_stat_result.stat.exists == False)
 
     - name: Remove the existing prometheus binary
-      ansible.builtin.file:
+      file:
         path: /usr/bin/prometheus
         state: absent
 
     - name: Extract the prometheus binary from the Prometheus {{ prometheus_server_config.package_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
         dest: /usr/bin
         owner: 'root'
@@ -115,7 +115,7 @@
       notify: restart prometheus
 
     - name: Create the {{ prometheus_server_config.etc_directory }} directory
-      ansible.builtin.file:
+      file:
         path: '{{ prometheus_server_config.etc_directory }}'
         owner: '{{ prometheus_server_config.user }}'
         group: '{{ prometheus_server_config.group }}'
@@ -123,7 +123,7 @@
         state: directory
 
     - name: Extract the consoles directory from the Prometheus {{ prometheus_server_config.package_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
         dest: '{{ prometheus_server_config.etc_directory }}'
         owner: '{{ prometheus_server_config.user }}'
@@ -136,7 +136,7 @@
       notify: restart prometheus
 
     - name: Extract the console_libraries directory from the Prometheus {{ prometheus_server_config.package_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/prometheus-{{ prometheus_server_config.package_version }}.linux-amd64.tar.gz'
         dest: '{{ prometheus_server_config.etc_directory }}'
         owner: '{{ prometheus_server_config.user }}'
@@ -151,7 +151,7 @@
     when: (prometheus_installed_version != prometheus_server_config.package_version)
 
 - name: Create the {{ prometheus_server_config.data_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ prometheus_server_config.data_directory }}'
     owner: '{{ prometheus_server_config.user }}'
     group: '{{ prometheus_server_config.group }}'
@@ -159,7 +159,7 @@
     state: directory
 
 - name: Create the {{ prometheus_server_config.data_directory }}/metrics2 directory
-  ansible.builtin.file:
+  file:
     path: '{{ prometheus_server_config.data_directory }}/metrics2'
     owner: '{{ prometheus_server_config.user }}'
     group: '{{ prometheus_server_config.group }}'
@@ -167,7 +167,7 @@
     state: directory
 
 - name: Generate the Prometheus Rules configuration
-  ansible.builtin.template:
+  template:
     src: rules.yaml.j2
     dest: '{{ prometheus_server_config.etc_directory }}/rules.yml'
     owner: '{{ prometheus_server_config.user }}'
@@ -176,7 +176,7 @@
   notify: restart prometheus
 
 - name: Generate the Prometheus configuration
-  ansible.builtin.template:
+  template:
     src: prometheus.yaml.j2
     dest: '{{ prometheus_server_config.etc_directory }}/prometheus.yml'
     owner: '{{ prometheus_server_config.user }}'
@@ -185,7 +185,7 @@
   notify: restart prometheus
 
 - name: Generate the Prometheus environment
-  ansible.builtin.template:
+  template:
     src: prometheus-environment.j2
     dest: /etc/default/prometheus
     mode: '0644'
@@ -193,7 +193,7 @@
   register: prometheus_server_environment_template_result
 
 - name: Configure the Prometheus systemd unit
-  ansible.builtin.template:
+  template:
     src: prometheus.service.j2
     dest: /lib/systemd/system/prometheus.service
     owner: 'root'
@@ -203,7 +203,7 @@
   register: prometheus_systemd_unit_template_result
 
 - name: Reload the Prometheus service
-  ansible.builtin.systemd:
+  systemd:
     name: prometheus.service
     daemon_reload: yes
   when: ((prometheus_server_environment_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
@@ -211,7 +211,7 @@
 - name: Setup the Prometheus Kubernetes monitoring configuration
   block:
   - name: Create the /etc/prometheus/k8s directory
-    ansible.builtin.file:
+    file:
       path: /etc/prometheus/k8s
       owner: '{{ prometheus_server_config.user }}'
       group: '{{ prometheus_server_config.group }}'
@@ -221,13 +221,13 @@
   - name: Copy the certificate for the Kubernetes CA to the Prometheus host
     block:
     - name: Fetch the /etc/kubernetes/pki/ca.crt from the first master node in the Kubernetes cluster
-      ansible.builtin.fetch:
+      fetch:
         src: /etc/kubernetes/pki/ca.crt
         dest: fetched_files
       delegate_to: "{{ groups['k8s_master'][0] }}"
 
     - name: Copy the /etc/kubernetes/pki/ca.crt to the Prometheus host
-      ansible.builtin.copy:
+      copy:
         src: fetched_files/{{ ansible_fqdn }}/etc/kubernetes/pki/ca.crt
         dest: /etc/prometheus/k8s/ca.crt
         owner: '{{ prometheus_server_config.user }}'
@@ -237,22 +237,22 @@
 
   - name: Save the token for the Prometheus service account
     block:
-    - ansible.builtin.shell:
+    - shell:
         cmd: kubectl -n kube-system get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='prometheus')].data.token}"|base64 --decode
       delegate_to: "{{ groups['k8s_master'][0] }}"
       register: prometheus_service_account_secret_token_output
 
-    - ansible.builtin.set_fact:
+    - set_fact:
         prometheus_service_account_secret_token: '{{ prometheus_service_account_secret_token_output.stdout }}'
 
-    - ansible.builtin.shell:
+    - shell:
         cmd: echo '{{ prometheus_service_account_secret_token }}' > /etc/prometheus/k8s/token
       notify: restart prometheus
 
   when: ("k8s_master" in groups.keys())
 
 - name: Ensure that the Prometheus service is started
-  ansible.builtin.systemd:
+  systemd:
     name: prometheus.service
     state: started
     enabled: yes

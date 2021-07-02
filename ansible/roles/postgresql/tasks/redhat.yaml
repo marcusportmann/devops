@@ -1,25 +1,25 @@
 ---
 # file: roles/postgresql/tasks/redhat.yaml
 
-- ansible.builtin.debug:
+- debug:
     msg: Applying the RedHat-specific Postgresql configuration
 
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_config_directory: '{{ postgresql_config.data_directory_root|default("/var/lib") }}/pgsql/{{ postgresql_config.version }}/data'
 
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_bin_directory: '/usr/pgsql-{{ postgresql_config.version }}/bin'
 
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_default_data_directory: '/var/lib/pgsql/{{ postgresql_config.version }}/data'
 
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_data_directory: '{{ postgresql_config.data_directory_root|default("/var/lib") }}/pgsql/{{ postgresql_config.version }}/data'
 
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_service_override_directory: '/lib/systemd/system/postgresql-{{ postgresql_config.version }}.service.d'
 
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_service: 'postgresql-{{ postgresql_config.version }}'
 
 - name: Check if PGDG repo is already configured
@@ -29,7 +29,7 @@
 - name: Enable the PGDG YUM repo
   block:
   - name: Disable the PostgreSQL AppStream repository
-    ansible.builtin.command:
+    command:
       cmd: dnf -qy module disable postgresql
     when: (ansible_distribution_major_version == '8')
 
@@ -49,12 +49,12 @@
     when: (pgdg_repo_package_stat_result.stat.exists == False)
 
   - name: Copy the pgdg-redhat-repo-latest.noarch.rpm package
-    ansible.builtin.copy:
+    copy:
       src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/pgdg-redhat-repo-latest.noarch.rpm'
       dest: '/var/tmp/ansible/{{ role_name }}/pgdg-redhat-repo-latest.noarch.rpm'
 
   - name: Install the pgdg-redhat-repo-latest.noarch.rpm package
-    ansible.builtin.yum:
+    yum:
       name: '/var/tmp/ansible/{{ role_name }}/pgdg-redhat-repo-latest.noarch.rpm'
       state: present
   when: (pgdg_repo_file_result.stat.exists == False)
@@ -64,12 +64,12 @@
     manager: auto
 
 - name: Retrieve the version of the installed postgresql-server package
-  ansible.builtin.debug:
+  debug:
     msg: Found the installed postgresql{{ postgresql_config.version }}-server package ({{ ansible_facts.packages['postgresql' + postgresql_config.version + '-server'][0].version  }})
   when: ('postgresql' + postgresql_config.version + '-server' in ansible_facts.packages)
 
 - name: Install the PostgreSQL packages
-  ansible.builtin.yum:
+  yum:
    name:
    - postgresql{{ postgresql_config.version }}-libs-{{ postgresql_config.redhat_package_version }}*
    - postgresql{{ postgresql_config.version }}-server-{{ postgresql_config.redhat_package_version }}*
@@ -83,13 +83,13 @@
   # exclude: python-unversioned-command
 
 - name: Install the python-psycopg2 library
-  ansible.builtin.yum:
+  yum:
    name: python-psycopg2
    state: latest
   when: (ansible_distribution_major_version == '7')
 
 - name: Install the python3-psycopg2 library
-  ansible.builtin.yum:
+  yum:
    name: python3-psycopg2
    state: latest
   when: (ansible_distribution_major_version == '8')
@@ -97,7 +97,7 @@
 - name: Apply the custom data directory configuration
   block:
   - name: Ensure that the {{ postgresql_data_directory }}  directory exists and has the correct permissions
-    ansible.builtin.file:
+    file:
       path: '{{ postgresql_data_directory }}'
       owner: '{{ postgresql_config.user }}'
       group: '{{ postgresql_config.group }}'
@@ -105,7 +105,7 @@
       state: directory
 
   - name: Ensure that the {{ postgresql_service_override_directory }} directory exists and has the correct permissions
-    ansible.builtin.file:
+    file:
       path: '{{ postgresql_service_override_directory }}'
       owner: 'root'
       group: 'root'
@@ -113,7 +113,7 @@
       state: directory
 
   - name: Generate the {{ postgresql_service_override_directory }}/override.conf file
-    ansible.builtin.template:
+    template:
       src: override.conf.j2
       dest: '{{ postgresql_service_override_directory }}/override.conf'
       owner: 'root'
@@ -122,12 +122,12 @@
     register: override_conf_template_result
 
   - name: Remove the {{ postgresql_default_data_directory }} directory
-    ansible.builtin.file:
+    file:
       path: '{{ postgresql_default_data_directory }}'
       state: absent
 
   - name: Reload the systemd daemon
-    ansible.builtin.systemd:
+    systemd:
       daemon_reload: yes
     when: (override_conf_template_result.changed == True)
 
@@ -138,12 +138,12 @@
   register: postgresql_conf_stat_result
 
 - name: Initialize the PostgreSQL database cluster
-  ansible.builtin.shell:
+  shell:
     cmd: "sudo -u postgres {{ postgresql_bin_directory }}/initdb -D {{ postgresql_data_directory }}"
   when: (postgresql_conf_stat_result.stat.exists == False)
 
 - name: Generate the /etc/profile.d/postgresql.sh file
-  ansible.builtin.template:
+  template:
     src: postgresql.sh.j2
     dest: /etc/profile.d/postgresql.sh
     owner: 'root'
@@ -153,7 +153,7 @@
 - meta: flush_handlers
 
 - name: Allow all hosts access to tcp port 5432
-  ansible.posix.firewalld:
+  firewalld:
     port: 5432/tcp
     permanent: yes
     state: enabled

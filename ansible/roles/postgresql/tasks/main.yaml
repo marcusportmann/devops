@@ -1,12 +1,12 @@
 ---
 # file: roles/postgresql/tasks/main.yaml
 
-- ansible.builtin.import_tasks: assert.yaml
+- import_tasks: assert.yaml
   run_once: yes
   delegate_to: localhost
 
 - name: Create the /var/tmp/ansible/{{ role_name }} directory
-  ansible.builtin.file:
+  file:
     path: '/var/tmp/ansible/{{ role_name }}'
     owner: 'root'
     group: 'root'
@@ -20,21 +20,21 @@
 #  ___) | |___  | |   |  _/ ___ \ |___  | |  ___) |
 # |____/|_____| |_|   |_|/_/   \_\____| |_| |____/
 #
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_cluster_config: ''
 
 - name: Finding the PostgreSQL cluster config for the host ({{ ansible_fqdn }})
-  ansible.builtin.set_fact:
+  set_fact:
     postgresql_cluster_config: '{{ item.0 }}'
   when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == ansible_fqdn))
   loop: "{{ postgresql_config.clusters | subelements('servers') }}"
   no_log: True
 
-- ansible.builtin.set_fact:
+- set_fact:
     postgresql_server_config: ''
 
 - name: Finding the PostgreSQL server config for the host ({{ ansible_fqdn }})
-  ansible.builtin.set_fact:
+  set_fact:
     postgresql_server_config: '{{ item.1 }}'
   when: ((item.1.hostname is defined) and (item.1.hostname != None) and (item.1.hostname == ansible_fqdn))
   loop: "{{ postgresql_config.clusters | subelements('servers') }}"
@@ -44,7 +44,7 @@
     msg: "The host {{ ansible_fqdn }} is not associated with a PostgreSQL cluster"
   when: ((postgresql_cluster_config is not defined) or (postgresql_cluster_config == None) or (postgresql_cluster_config == ''))
 
-- ansible.builtin.debug:
+- debug:
     msg: 'PostgreSQL Cluster Name: {{ postgresql_cluster_config.name }}'
 
 
@@ -72,7 +72,7 @@
 # |_|    \___/|____/ |_| \____|_| \_\_____|____/ \__\_\_____|
 #
 - name: Configure global settings
-  ansible.builtin.lineinfile:
+  lineinfile:
     dest: "{{ postgresql_config_directory }}/postgresql.conf"
     regexp: "^#?{{ item.option }}.+$"
     line: "{{ item.option }} = '{{ item.value }}'"
@@ -82,7 +82,7 @@
   notify: restart postgresql
 
 - name: Configure server settings
-  ansible.builtin.lineinfile:
+  lineinfile:
     dest: "{{ postgresql_config_directory }}/postgresql.conf"
     regexp: "^#?{{ item.option }}.+$"
     line: "{{ item.option }} = '{{ item.value }}'"
@@ -93,7 +93,7 @@
   when: ((postgresql_server_config.config_options is defined) and (postgresql_server_config.config_options != None))
 
 - name: Configure host based authentication (if entries are configured)
-  ansible.builtin.template:
+  template:
     src: "pg_hba.conf.j2"
     dest: "{{ postgresql_config_directory }}/pg_hba.conf"
     owner: '{{ postgresql_config.user }}'
@@ -102,7 +102,7 @@
   notify: restart postgresql
 
 - name: Ensure that the {{ postgresql_service }} service is started
-  ansible.builtin.systemd:
+  systemd:
     name: '{{ postgresql_service }}'
     state: started
     enabled: yes

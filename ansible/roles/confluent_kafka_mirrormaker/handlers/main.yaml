@@ -2,6 +2,6 @@
 # file: roles/confluent_kafka_mirrormaker/handlers/main.yaml
 
 - name: restart mirrormaker
-  ansible.builtin.systemd:
+  systemd:
     name: mirrormaker
     state: restarted

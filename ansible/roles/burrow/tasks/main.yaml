@@ -1,12 +1,12 @@
 ---
 # file: roles/burrow/tasks/main.yaml
 
-- ansible.builtin.import_tasks: assert.yaml
+- import_tasks: assert.yaml
   run_once: yes
   delegate_to: localhost
 
 - name: Create the /var/tmp/ansible/{{ role_name }} directory
-  ansible.builtin.file:
+  file:
     path: /var/tmp/ansible/{{ role_name }}
     owner: 'root'
     group: 'root'
@@ -28,10 +28,10 @@
     msg: 'No burrow.clusters configuration specified'
   when: ((burrow_config.clusters is not defined) or (burrow_config.clusters == None))
 
-- ansible.builtin.set_fact:
+- set_fact:
     burrow_cluster_name: ''
 
-- ansible.builtin.set_fact:
+- set_fact:
     burrow_cluster_name: '{{ item }}'
   when: (('hosts' in burrow_config.clusters[item]) and (ansible_fqdn in burrow_config.clusters[item].hosts))
   loop: '{{ burrow_config.clusters | flatten(1) }}'
@@ -68,33 +68,33 @@
     msg: 'The Kafka cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}) is invalid'
   when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "kafka") and (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name not in kafka.clusters))
 
-- ansible.builtin.set_fact:
+- set_fact:
     burrow_zookeeper_cluster_type: '{{ item }}'
   when: (('hosts' in burrow_config.clusters[item]) and (ansible_fqdn in burrow_config.clusters[item].hosts))
   loop: '{{ burrow_config.clusters | flatten(1) }}'
 
-- ansible.builtin.set_fact:
+- set_fact:
     burrow_zookeeper_cluster_type: '{{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }}'
 
-- ansible.builtin.set_fact:
+- set_fact:
     burrow_zookeeper_cluster_name: '{{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}'
 
-- ansible.builtin.debug:
+- debug:
    msg: 'Using Confluent ZooKeeper cluster: {{ burrow_zookeeper_cluster_name }}'
   when: (burrow_zookeeper_cluster_type == "confluent")
 
-- ansible.builtin.debug:
+- debug:
    msg: 'Using Kafka ZooKeeper cluster: {{ burrow_zookeeper_cluster_name }}'
   when: (burrow_zookeeper_cluster_type == "kafka")
 
-- ansible.builtin.set_fact:
+- set_fact:
     zookeeper_hosts: []
 
-- ansible.builtin.set_fact:
+- set_fact:
    zookeeper_hosts: "{{ confluent.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name].zookeeper_hosts | intersect(groups['confluent_zookeeper']|default([])) }}"
   when: ((burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "confluent") and ('zookeeper_hosts' in confluent.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name]))
 
-- ansible.builtin.set_fact:
+- set_fact:
    zookeeper_hosts: "{{ kafka.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name].zookeeper_hosts | intersect(groups['kafka_zookeeper']|default([])) }}"
   when: (burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type == "kafka") and ('zookeeper_hosts' in kafka.clusters[burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name])
 
@@ -102,7 +102,7 @@
     msg: 'No ZooKeeper hosts found using cluster type ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }} and cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}))'
   when: ((zookeeper_hosts | length) == 0)
 
-- ansible.builtin.debug:
+- debug:
     msg: 'Found {{ (zookeeper_hosts | length) }} ZooKeeper hosts using cluster type ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_type }}) and cluster name ({{ burrow_config.clusters[burrow_cluster_name].zookeeper_cluster_name }}))'
 
 
@@ -129,29 +129,29 @@
 # | |_) | |_| |  _ <|  _ <| |_| |\ V  V /
 # |____/ \___/|_| \_\_| \_\\___/  \_/\_/
 - name: Create the credentials directory
-  local_action: ansible.builtin.file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
+  local_action: file path="{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}" state="directory"
   become: false
 
 - name: Install Burrow
   block:
-  - ansible.builtin.debug:
+  - debug:
       msg: Check whether the Burrow {{ burrow_config.package_version }} package has been installed
 
-  - ansible.builtin.stat:
+  - stat:
       path: /usr/bin/burrow-{{ burrow_config.package_version }}
     register: burrow_installed_stat_result
 
   - block:
-    - ansible.builtin.debug:
+    - debug:
         msg: Install the Burrow {{ burrow_config.package_version }} package
 
     - name: Check whether the Burrow service exists
-      ansible.builtin.stat:
+      stat:
         path: /lib/systemd/system/burrow.service
       register: burrow_service_stat_result
 
     - name: Stop the Burrow service
-      ansible.builtin.systemd:
+      systemd:
         name: burrow
         state: stopped
       when: burrow_service_stat_result.stat.exists == True
@@ -159,16 +159,16 @@
 
     - name: Check whether the Burrow {{ burrow_config.package_version }} package has been downloaded
       become: no
-      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
+      local_action: stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
       register: burrow_package_stat_result
 
     - name: Download the Burrow {{ burrow_config.package_version }} package
       become: no
-      local_action: ansible.builtin.get_url url='https://github.com/linkedin/Burrow/releases/download/v{{ burrow_config.package_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' checksum={{ burrow_config.package_checksum }}
+      local_action: get_url url='https://github.com/linkedin/Burrow/releases/download/v{{ burrow_config.package_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz' checksum={{ burrow_config.package_checksum }}
       when: (burrow_package_stat_result.stat.exists == False)
 
     - name: Extract the burrow binary from the Burrow {{ burrow_config.package_version }} package
-      ansible.builtin.unarchive:
+      unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/Burrow_{{ burrow_config.package_version }}_linux_amd64.tar.gz'
         dest: /usr/bin
         owner: 'root'
@@ -180,19 +180,19 @@
       notify: restart burrow
 
     - name: Rename the burrow binary to include the version number
-      ansible.builtin.shell:
+      shell:
         cmd: mv /usr/bin/burrow /usr/bin/burrow-{{ burrow_config.package_version }}
 
     when: (burrow_installed_stat_result.stat.exists == False)
 
 - name: Add the {{ burrow_config.group }} group
-  ansible.builtin.group:
+  group:
     name: '{{ burrow_config.group }}'
     gid: '{{ burrow_config.group_id }}'
     state: present
 
 - name: Add the {{ burrow_config.user }} user
-  ansible.builtin.user:
+  user:
     name: '{{ burrow_config.user }}'
     uid: '{{ burrow_config.user_id }}'
     group: '{{ burrow_config.group }}'
@@ -201,7 +201,7 @@
     state: present
 
 - name: Create the {{ burrow_config.etc_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ burrow_config.etc_directory }}'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -209,7 +209,7 @@
     state: directory
 
 - name: Create the {{ burrow_config.etc_directory }}/conf directory
-  ansible.builtin.file:
+  file:
     path: '{{ burrow_config.etc_directory }}/conf'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -217,7 +217,7 @@
     state: directory
 
 - name: Create the {{ burrow_config.run_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ burrow_config.run_directory }}'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -227,7 +227,7 @@
 - name: Setup the Burrow keystore and CA truststore
   block:
   - name: Create the {{ burrow_config.etc_directory }}/pki directory
-    ansible.builtin.file:
+    file:
       path: '{{ burrow_config.etc_directory }}/pki'
       owner: '{{ burrow_config.user }}'
       group: '{{ burrow_config.group }}'
@@ -235,7 +235,7 @@
       state: directory
 
   - name: Copy the Burrow CA certificate
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/ca.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/ca.crt'
       owner: '{{ burrow_config.user }}'
@@ -244,7 +244,7 @@
     notify: restart burrow
 
   - name: Copy the Burrow private key ({{ ansible_hostname }}.key)
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ ansible_hostname }}.key'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.key'
       owner: '{{ burrow_config.user }}'
@@ -253,7 +253,7 @@
     notify: restart burrow
 
   - name: Copy the Burrow certificate ({{ ansible_hostname }}.crt)
-    ansible.builtin.copy:
+    copy:
       src: '{{ pki_root }}/{{ role_name }}/{{ burrow_cluster_name }}/{{ ansible_hostname }}.crt'
       dest: '{{ burrow_config.etc_directory }}/pki/{{ ansible_hostname }}.crt'
       owner: '{{ burrow_config.user }}'
@@ -263,18 +263,18 @@
 
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Confluent ZooKeeper cluster
-  ansible.builtin.set_fact:
+  set_fact:
     kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/confluent/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "confluent")
 
 # NOTE: When using ZooKeeper as the authentication and authorisation back-end for Kafka the ZooKeeper and Kafka Server credentials are the same for the Burrow user
 - name: Generate or retrieve the password for the Burrow user when using a Kafka ZooKeeper cluster
-  ansible.builtin.set_fact:
+  set_fact:
     kafka_server_burrow_user_password: "{{ lookup('password', '{{ credentials_root }}/kafka/{{ burrow_zookeeper_cluster_name }}/kafka-server-burrow-user-password chars=ascii_letters,digits length=16') }}"
   when: (burrow_zookeeper_cluster_type == "kafka")
 
 - name: Create the {{ burrow_config.log_directory }} directory
-  ansible.builtin.file:
+  file:
     path: '{{ burrow_config.log_directory }}'
     owner: '{{ burrow_config.user }}'
     group: '{{ burrow_config.group }}'
@@ -282,7 +282,7 @@
     state: directory
 
 - name: Generate the Burrow configuration
-  ansible.builtin.template:
+  template:
     src: burrow.yaml.j2
     dest: /etc/burrow/conf/burrow.yaml
     owner: '{{ burrow_config.user }}'
@@ -291,7 +291,7 @@
   notify: restart burrow
 
 - name: Create the Burrow systemd unit
-  ansible.builtin.template:
+  template:
     src: burrow.service.j2
     dest: /lib/systemd/system/burrow.service
     owner: 'root'
@@ -301,7 +301,7 @@
   register: burrow_systemd_unit_template_result
 
 - name: Restart the Burrow service
-  ansible.builtin.systemd:
+  systemd:
     name: burrow
     daemon_reload: yes
   when: (burrow_systemd_unit_template_result.changed == True)
@@ -309,7 +309,7 @@
 - meta: flush_handlers
 
 - name: Ensure that the Burrow service is started
-  ansible.builtin.systemd:
+  systemd:
     name: burrow
     state: started
     enabled: yes

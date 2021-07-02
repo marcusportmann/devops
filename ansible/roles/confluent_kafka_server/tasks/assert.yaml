@@ -2,7 +2,7 @@
 # file: roles/confluent_kafka_server/tasks/assert.yaml
 
 - name: Check the confluent variable is defined correctly
-  ansible.builtin.assert:
+  assert:
     that:
     - confluent is defined
     quiet: yes
