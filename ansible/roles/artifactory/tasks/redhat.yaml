@@ -26,3 +26,16 @@
     path: /usr/lib/jvm/java-11-openjdk/bin/keytool
     link: /usr/bin/keytool
 
+- name: Allow all hosts access to tcp port {{ artifactory_config.artifactory.port }}
+  ansible.posix.firewalld:
+    port: '{{ artifactory_config.artifactory.port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Allow all hosts access to tcp port {{ artifactory_config.router.external_port }}
+  ansible.posix.firewalld:
+    port: '{{ artifactory_config.router.external_port }}/tcp'
+    permanent: yes
+    state: enabled
+    immediate: yes

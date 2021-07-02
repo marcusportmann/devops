@@ -42,6 +42,29 @@
   - unbound
 
 
+#     _    ____ _____ ___ _____ _    ____ _____ ___  ______   __   ____ ___  __  __ __  __  ___  _   _
+#    / \  |  _ \_   _|_ _|  ___/ \  / ___|_   _/ _ \|  _ \ \ / /  / ___/ _ \|  \/  |  \/  |/ _ \| \ | |
+#   / _ \ | |_) || |  | || |_ / _ \| |     | || | | | |_) \ V /  | |  | | | | |\/| | |\/| | | | |  \| |
+#  / ___ \|  _ < | |  | ||  _/ ___ \ |___  | || |_| |  _ < | |   | |__| |_| | |  | | |  | | |_| | |\  |
+# /_/   \_\_| \_\|_| |___|_|/_/   \_\____| |_| \___/|_| \_\|_|    \____\___/|_|  |_|_|  |_|\___/|_| \_|
+#
+- name: Add the {{ artifactory_config.group }} group
+  ansible.builtin.group:
+    name: '{{ artifactory_config.group }}'
+    gid: '{{ artifactory_config.group_id }}'
+    state: present
+
+- name: Add the {{ artifactory_config.user }} user
+  ansible.builtin.user:
+    name: '{{ artifactory_config.user }}'
+    uid: '{{ artifactory_config.user_id }}'
+    group: '{{ artifactory_config.group }}'
+    comment: 'Artifactory'
+    create_home: yes
+    shell: /usr/sbin/nologin
+    state: present
+
+
 #     _    ____ _____ ___ _____ _    ____ _____ ___  ______   __   ___  ____ ____
 #    / \  |  _ \_   _|_ _|  ___/ \  / ___|_   _/ _ \|  _ \ \ / /  / _ \/ ___/ ___|
 #   / _ \ | |_) || |  | || |_ / _ \| |     | || | | | |_) \ V /  | | | \___ \___ \
@@ -63,7 +86,7 @@
 
     - name: Check whether the Artifactory service exists
       ansible.builtin.stat:
-        path: /lib/systemd/system/artifactory.service
+        path: '/lib/systemd/system/artifactory.service'
       register: artifactory_service_stat_result
 
     - name: Stop the Artifactory service
@@ -95,8 +118,8 @@
       ansible.builtin.unarchive:
         src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/jfrog-artifactory-oss-{{ artifactory_config.package_version }}-linux.tar.gz'
         dest: '{{ artifactory_config.jfrog_directory }}'
-        owner: 'root'
-        group: 'root'
+        owner: '{{ artifactory_config.user }}'
+        group: '{{ artifactory_config.group }}'
 
     - name: Create the symbolic link to the Artifactory OSS {{ artifactory_config.package_version }} package
       ansible.builtin.file:
@@ -125,44 +148,38 @@
 #  / ___ \|  _ < | |  | ||  _/ ___ \ |___  | || |_| |  _ < | |
 # /_/   \_\_| \_\|_| |___|_|/_/   \_\____| |_| \___/|_| \_\|_|
 #
-- name: Add the {{ artifactory_config.group }} group
-  ansible.builtin.group:
-    name: '{{ artifactory_config.group }}'
-    gid: '{{ artifactory_config.group_id }}'
-    state: present
-
-- name: Add the {{ artifactory_config.user }} user
-  ansible.builtin.user:
-    name: '{{ artifactory_config.user }}'
-    uid: '{{ artifactory_config.user_id }}'
-    group: '{{ artifactory_config.group }}'
-    comment: 'Artifactory'
-    create_home: yes
-    shell: /usr/sbin/nologin
-    state: present
-
 - name: Create the Artifactory directories
   file:
-    path: "{{ item }}"
+    path: '{{ item }}'
     state: directory
-    recurse: yes
-    owner: "{{ artifactory_config.user }}"
-    group: "{{ artifactory_config.group }}"
+    owner: '{{ artifactory_config.user }}'
+    group: '{{ artifactory_config.group }}'
     mode: '0750'
   loop:
-    - "{{ artifactory_config.artifactory_directory }}/var/data"
-    - "{{ artifactory_config.artifactory_directory }}/var/etc"
-    - "{{ artifactory_config.artifactory_directory }}/var/etc/security/"
-    - "{{ artifactory_config.artifactory_directory }}/var/etc/artifactory/info/"
+  - '{{ artifactory_config.artifactory_directory }}/var/data'
+  - '{{ artifactory_config.artifactory_directory }}/var/etc'
+  - '{{ artifactory_config.artifactory_directory }}/var/etc/security/'
+  - '{{ artifactory_config.artifactory_directory }}/var/etc/artifactory/info/'
 
-- name: Generate the {{ artifactory_config.artifactory_directory }}/var/etc/system.yaml configuration file
+# NOTE: This file is a copy of the system.yaml file and is generated to allow us to detect changes to the system.yaml file as Artifactory changes the system.yaml file on startup when it encrypts the password.
+- name: Generate the {{ artifactory_config.artifactory_directory }}/var/etc/system.yaml.original configuration file
   ansible.builtin.template:
-    src: app.ini.j2
-    dest: '{{ artifactory_config.artifactory_directory }}/var/etc/system.yaml'
+    src: 'system.yaml.j2'
+    dest: '{{ artifactory_config.artifactory_directory }}/var/etc/system.yaml.original'
     owner: '{{ artifactory_config.user }}'
     group: '{{ artifactory_config.group }}'
     mode: '0440'
   notify: restart artifactory
+  register: system_yaml_original_result
+
+- name: Generate the {{ artifactory_config.artifactory_directory }}/var/etc/system.yaml configuration file
+  ansible.builtin.template:
+    src: 'system.yaml.j2'
+    dest: '{{ artifactory_config.artifactory_directory }}/var/etc/system.yaml'
+    owner: '{{ artifactory_config.user }}'
+    group: '{{ artifactory_config.group }}'
+    mode: '0440'
+  when: (system_yaml_original_result.changed == True)
 
 - name: Create the {{ artifactory_config.artifactory_directory }}/var/etc/security/master.key file
   ansible.builtin.copy:
@@ -172,34 +189,16 @@
     group: '{{ artifactory_config.group }}'
     mode: '0440'
 
-
-# TODO: CONFIRM WE NEED THIS AND IF NOT DELETE THE ASSOCIATED TEMPLATE -- MARCUS
-#- name: Generate the {{ artifactory_config.artifactory_directory }}/var/etc/artifactory/info/installer-info.json configuration file
-#  ansible.builtin.template:
-#    src: installer-info.json.j2
-#    dest: '{{ artifactory_config.artifactory_directory }}/var/etc/artifactory/info/installer-info.json'
-#    owner: '{{ artifactory_config.user }}'
-#    group: '{{ artifactory_config.group }}'
-#    mode: '0440'
-#  notify: restart artifactory
-
-
-TODO: CREATE THE BINARY STORE DIRECTORY
-#- name: Create the Artifactory data directories
-#  file:
-#    path: "{{ item }}"
-#    state: directory
-#    recurse: yes
-#    owner: "{{ artifactory_config.user }}"
-#    group: "{{ artifactory_config.group }}"
-#    mode: '0750'
-#  loop:
-#    - "{{ artifactory_config.data_directory }}/data"
-
-
-
-
-
+- name: Create the Artifactory data directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ artifactory_config.user }}"
+    group: "{{ artifactory_config.group }}"
+    mode: '0750'
+  loop:
+  - '{{ artifactory_config.data_directory }}'
+  - '{{ artifactory_config.data_directory }}/filestore'
 
 - name: Create the {{ artifactory_config.artifactory_directory }}/var/etc/artifactory/binarystore.xml file
   ansible.builtin.template:
@@ -209,14 +208,7 @@ TODO: CREATE THE BINARY STORE DIRECTORY
     group: '{{ artifactory_config.group }}'
     mode: '0440'
 
-
-
-TODO CONFIGURE LICENSE IF PRO
-
-
-
-
-#
+# TODO: CONFIGURE LICENSE IF PRO
 #- name: Configure single license
 #  become: yes
 #  template:
@@ -228,9 +220,7 @@ TODO CONFIGURE LICENSE IF PRO
 #  notify: restart artifactory
 #
 
-TODO CONFIGURE HA LICENSE IF????
-
-
+# TODO: CONFIGURE HA LICENSE IF ????
 #- name: Configure HA licenses
 #  become: yes
 #  template:
@@ -242,57 +232,63 @@ TODO CONFIGURE HA LICENSE IF????
 #  notify: restart artifactory
 #
 
+- name: Use the PostgreSQL database driver
+  block:
+  - name: Check if the PostgreSQL database driver exists
+    ansible.builtin.find:
+      paths: '{{ artifactory_config.artifactory_directory }}/app/artifactory/tomcat/lib/'
+      patterns: 'postgresql-*.jar'
+    register: postgresql_database_driver_find_result
 
-TODO INSTALL THE DATABASE DRIVER
+  - ansible.builtin.set_fact:
+      existing_postgresql_database_driver: '{{ postgresql_database_driver_find_result.files[0].path | basename }}'
+    when: (postgresql_database_driver_find_result.matched  > 0)
 
-#- name: Check if database driver exists
-#  become: yes
-#  stat:
-#    path: "{{ artifactory_home }}/app/artifactory/tomcat/lib/jf_postgresql-{{ postgres_driver_version }}.jar"
-#  register: database_driver
-#
-#- name: Download database driver
-#  become: yes
-#  get_url:
-#    url: "{{ postgres_driver_download_url }}"
-#    dest: "{{ artifactory_home }}/var/bootstrap/artifactory/tomcat/lib"
-#    owner: "{{ artifactory_user }}"
-#    group: "{{ artifactory_group }}"
-#  when:
-#    - postgres_driver_download_url is defined
-#    - not database_driver.stat.exists
-#  notify: restart artifactory
-#
+  - name: Delete the old PostgreSQL database driver
+    ansible.builtin.file:
+      path: '{{ postgresql_database_driver_find_result.files[0].path }}'
+      state: absent
+    when: ((existing_postgresql_database_driver is defined) and (existing_postgresql_database_driver != None) and (existing_postgresql_database_driver != 'postgresql-'  + artifactory_config.postgresql_driver_version + '.jar'))
 
-TODO CHECK IF ARTIFACTORY SERVICE EXISTS
+  - name: Install the PostgreSQL database driver
+    block:
+    - name: Check whether the PostgreSQL database driver ({{ artifactory_config.postgresql_driver_version }}) has been downloaded
+      become: no
+      local_action: ansible.builtin.stat path='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/postgresql-{{ artifactory_config.postgresql_driver_version }}.jar'
+      register: postgresql_database_driver_stat_result
 
-TODO IF NOT CREATE THE ARTIFACTORY SERVICE
+    - name: Download the PostgreSQL database driver ({{ artifactory_config.postgresql_driver_version }})
+      become: no
+      local_action: ansible.builtin.get_url url='https://repo1.maven.org/maven2/org/postgresql/postgresql/{{ artifactory_config.postgresql_driver_version }}/postgresql-{{ artifactory_config.postgresql_driver_version }}.jar' dest='{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/postgresql-{{ artifactory_config.postgresql_driver_version }}.jar'
+      when: (postgresql_database_driver_stat_result.stat.exists == False)
 
+    - name: Copy the PostgreSQL database driver ({{ artifactory_config.postgresql_driver_version }})
+      ansible.builtin.copy:
+        src: '{{ packages_root }}/{{ ansible_distribution | lower }}{{ ansible_distribution_major_version }}/postgresql-{{ artifactory_config.postgresql_driver_version }}.jar'
+        dest: '{{ artifactory_config.artifactory_directory }}/app/artifactory/tomcat/lib/postgresql-{{ artifactory_config.postgresql_driver_version }}.jar'
+        owner: '{{ artifactory_config.user }}'
+        group: '{{ artifactory_config.group }}'
 
-#- name: Create artifactory service
-#  become: yes
-#  shell: "{{ artifactory_home }}/app/bin/installService.sh"
-#  args:
-#    creates: "{{ artifactory_service_file }}"
-#
+    when: ((postgresql_database_driver_find_result.matched == 0) or ((existing_postgresql_database_driver is defined) and (existing_postgresql_database_driver != None) and (existing_postgresql_database_driver != 'postgresql-'  + artifactory_config.postgresql_driver_version + '.jar')))
 
-TODO ENSURE PERMISSIONS ARE CORRECT
-TODO MOVE AFTER EXTRACTION
+  when: (artifactory_config.database_type == 'postgresql')
 
-#- name: Ensure permissions are correct
-#  become: yes
-#  file:
-#    path: "{{ jfrog_home_directory }}"
-#    group: "{{ artifactory_group }}"
-#    owner: "{{ artifactory_user }}"
-#    recurse: yes
-#
+- name: Setup the Artifactory service
+  block:
+  - name: Check if the Artifactory service exists
+    ansible.builtin.stat:
+      path: '/lib/systemd/system/artifactory.service'
+    register: artifactory_service_stat_result
 
-TODO FLUSH HANDLERS
+  - name: Create the Artifactory service
+    ansible.builtin.shell:
+      cmd: '{{ artifactory_config.artifactory_directory }}/app/bin/installService.sh'
+    args:
+      creates: '/lib/systemd/system/artifactory.service'
+    when: (artifactory_service_stat_result.stat.exists == False)
 
+- meta: flush_handlers
 
-#- name: Restart artifactory
-#  meta: flush_handlers
 #
 #- name : Wait for artifactory to be fully deployed
 #  uri: url=http://127.0.0.1:8082/router/api/v1/system/health timeout=130
@@ -344,64 +340,5 @@ TODO FLUSH HANDLERS
 
 
 
-
-
-
-
-
-
-#- name: Create the Artifactory run directory
-#  ansible.builtin.file:
-#    path: '/var/run/artifactory'
-#    owner: '{{ artifactory_config.user }}'
-#    group: '{{ artifactory_config.group }}'
-#    mode: '0755'
-#    state: directory
-
-#- name: Create the {{ artifactory_config.data_directory }} directory
-#  ansible.builtin.file:
-#    path: '{{ artifactory_config.data_directory }}'
-#    owner: 'root'
-#    group: 'root'
-#    mode: '0755'
-#    state: directory
-#  when: ((artifactory_config.data_directory is defined) and (artifactory_config.data_directory != None))
-#
-
-#- name: Generate the Gitea configuration file
-#  ansible.builtin.template:
-#    src: app.ini.j2
-#    dest: '{{ gitea_config.config_directory }}/conf/app.ini'
-#    owner: '{{ gitea_config.user }}'
-#    group: '{{ gitea_config.group }}'
-#    mode: '0550'
-#  notify: restart gitea
-
-#- name: Generate the Artifactory environment
-#  ansible.builtin.template:
-#    src: artifactory-environment.j2
-#    dest: /etc/default/artifactory
-#    mode: '0644'
-#  notify: restart artifactory
-#  register: artifactory_environment_template_result
-#
-#- name: Configure the Artifactory systemd unit
-#  ansible.builtin.template:
-#    src: artifactory.service.j2
-#    dest: /lib/systemd/system/artifactory.service
-#    owner: 'root'
-#    group: 'root'
-#    mode: '0644'
-#  notify: restart artifactory
-#  register: artifactory_systemd_unit_template_result
-
-#
-#- name: Reload the Artifactory service
-#  ansible.builtin.systemd:
-#    name: artifactory
-#    daemon_reload: yes
-#  when: ((artifactory_environment_template_result.changed == True) or (artifactory_systemd_unit_template_result.changed == True))
-#
-#- meta: flush_handlers
 
 

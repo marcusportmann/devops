@@ -1282,7 +1282,7 @@ hosts:
   domain:             local
   type:               ubuntu-2004
   ansible_playbook:   ansible/all.yaml
-  ansible_groups:     k8s_master
+  ansible_groups:     postgresql,gitea,artifactory
   virtualbox:
     cpus:             4
     memory:           8192

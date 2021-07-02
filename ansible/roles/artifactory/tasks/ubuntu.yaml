@@ -11,3 +11,15 @@
   ansible.builtin.apt:
     name: openjdk-11-jdk
     state: latest
+
+- name: Allow all hosts access to tcp port {{ artifactory_config.artifactory.port }}
+  community.general.ufw:
+    rule: allow
+    port: '{{ artifactory_config.artifactory.port }}'
+    proto: tcp
+
+- name: Allow all hosts access to tcp port {{ artifactory_config.router.external_port }}
+  community.general.ufw:
+    rule: allow
+    port: '{{ artifactory_config.router.external_port }}'
+    proto: tcp

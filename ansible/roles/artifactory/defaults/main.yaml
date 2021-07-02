@@ -9,8 +9,6 @@ artifactory_defaults:
 
   artifactory_directory: /opt/jfrog/artifactory
 
-  config_directory: /etc/artifactory
-
   data_directory: /var/lib/artifactory
 
   user: artifactory
@@ -33,5 +31,13 @@ artifactory_defaults:
   master_key: ee69d96880726d3abf6b42b97d2ae589111ea95c2a8bd5876ec5cd9e8ee34f86
 
   join_key: 83da88eaaa08dfed5b86888fcec85f19ace0c3ff8747bcefcec2c9769ad4043d
+
+  postgresql_driver_version: 42.2.20
+
+  artifactory:
+    port: 7071
+
+  router:
+    external_port: 7072
 
 artifactory_config: "{{ artifactory_defaults | combine(artifactory | default({}), recursive=True) }}"

@@ -1,13 +1,17 @@
 # {{ ansible_managed }}
 
+# See: https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML
+
 configVersion: 1
+artifactory:
+  port: {{ artifactory_config.artifactory.port }}
 shared:
   security:
     joinKey: "{{ artifactory_config.join_key }}"
   extraJavaOpts: "{{ artifactory_config.extra_java_opts }}"
   node:
     id: {{ ansible_hostname }}
-    ip: {{ (ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]))) }}
+    ip: {{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}
     taskAffinity: {{ artifactory_config.task_affinity }}
     haEnabled: {{ artifactory_config.ha_enabled }}
   database:
@@ -18,4 +22,6 @@ shared:
     password: "{{ artifactory_config.database_password }}"
 router:
   entrypoints:
+    externalPort: {{ artifactory_config.router.external_port }}
     internalPort: 8046
+

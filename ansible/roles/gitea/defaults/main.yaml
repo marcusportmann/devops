@@ -25,4 +25,6 @@ gitea_defaults:
   admin_password: gitea
   admin_email: gitea@example.org
 
+  port: 7073
+
 gitea_config: "{{ gitea_defaults | combine(gitea | default({}), recursive=True) }}"

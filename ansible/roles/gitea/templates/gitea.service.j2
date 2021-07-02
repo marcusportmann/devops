@@ -21,9 +21,13 @@ ExecStart=/usr/bin/gitea web -c {{ gitea_config.config_directory }}/conf/app.ini
 ExecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=20s
 SendSIGKILL=no
+{% if (gitea_config.port < 1024) %}
 # Allow binding to a port below 1024
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_BIND_SERVICE
+{% endif %}
 
 [Install]
 WantedBy=multi-user.target
+
+
