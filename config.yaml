@@ -13,7 +13,7 @@ variables:
         hosts:
         - monitoring-dev.local
         # One of confluent, kafka, or standalone
-        zookeeper_cluster_type: kafka
+        zookeeper_cluster_type: confluent
         zookeeper_cluster_name: digital_dev
       local:
         hosts:
@@ -67,6 +67,15 @@ variables:
         - confluent-zk-local-01.local
         - confluent-zk-local-02.local
         - confluent-zk-local-03.local
+
+  dr_test:
+    hosts:
+    - host: confluent-zkks-digital-dev-02.local
+      services:
+      - name: kafka
+        state: stopped
+      - name: zookeeper
+        state: stopped
 
   etcd:
     clusters:

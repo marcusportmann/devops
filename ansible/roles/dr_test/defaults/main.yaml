@@ -1,0 +1,8 @@
+---
+# file: roles/dr_test/defaults/main.yaml
+
+dr_test_defaults:
+
+
+dr_test_config: "{{ dr_test_defaults | combine(dr_test | default({}), recursive=True) }}"
+

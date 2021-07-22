@@ -1,0 +1,27 @@
+---
+# file: roles/dr_test/tasks/main.yaml
+
+- set_fact:
+    dr_test_services: '[]'
+
+- block:
+  - set_fact:
+       dr_test_services: '{{ item.services }}'
+    when: ((item.host is defined) and (item.host != None) and (item.host == ansible_fqdn) and (item.services is defined) and (item.services != None))
+    loop: '{{ dr_test_config.hosts }}'
+  when: ((dr_test_config.hosts is defined) and (dr_test_config.hosts != None))
+
+
+#  ____  _____ ______     _____ ____ _____ ____
+# / ___|| ____|  _ \ \   / /_ _/ ___| ____/ ___|
+# \___ \|  _| | |_) \ \ / / | | |   |  _| \___ \
+#  ___) | |___|  _ < \ V /  | | |___| |___ ___) |
+# |____/|_____|_| \_\ \_/  |___\____|_____|____/
+#
+- systemd:
+    name: '{{ item.name }}'
+    state: '{{ item.state }}'
+  loop: '{{ dr_test_services  }}'
+
+
+
