@@ -147,7 +147,7 @@ consumer:
     servers: [ {{ servers | join(',') }} ]
     client-profile: {{ confluent_cluster_name }}
     offsets-topic: __consumer_offsets
-    group-blacklist: ^(console-consumer-|python-kafka-consumer-).*$
+    denylist: ^(console-consumer-|python-kafka-consumer-).*$
 {% endif %}
 {% endfor %}
 {% endif %}
@@ -164,7 +164,7 @@ consumer:
     servers: [ {{ servers | join(',') }} ]
     client-profile: {{ kafka_cluster_name }}
     offsets-topic: __consumer_offsets
-    group-blacklist: ^(console-consumer-|python-kafka-consumer-).*$
+    denylist: ^(console-consumer-|python-kafka-consumer-).*$
 {% endif %}
 {% endfor %}
 {% endif %}
