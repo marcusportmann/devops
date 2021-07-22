@@ -2,13 +2,13 @@
 # file: roles/grafana/defaults/main.yaml
 
 grafana_defaults:
-  redhat_package: grafana-8.0.4-1.x86_64.rpm
-  redhat_package_checksum: sha256:4f6c7546f9ea020f552945c1eeeccab16b18dd03d9bfcc3d61d3b9a339cf4740
-  redhat_package_version: '8.0.4'
+  redhat_package: grafana-8.0.6-1.x86_64.rpm
+  redhat_package_checksum: sha256:081a5d6673cb71ea477e66903fcc7e3bdc2c61712a8fc0de4085f64052c818ef
+  redhat_package_version: '8.0.6'
 
-  ubuntu_package: grafana_8.0.4_amd64.deb
-  ubuntu_package_checksum: sha256:22a0ae2ab041eab22eac56aed2b96d975c7749847def30494af8dcbfb33c9b4c
-  ubuntu_package_version: '8.0.4'
+  ubuntu_package: grafana_8.0.6_amd64.deb
+  ubuntu_package_checksum: sha256:7aa819d28f15c7c602258990ed0be68e9fcf4217ced60be2052c8b37746826b7
+  ubuntu_package_version: '8.0.6'
 
   data_directory: /var/lib/grafana
   log_directory: /var/log/grafana

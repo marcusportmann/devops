@@ -1,8 +1,8 @@
 ---
 # file: roles/monitored/defaults/main.yaml
 
-prometheus_node_exporter_version: '1.1.2'
-prometheus_node_exporter_package_checksum: sha256:8c1f6a317457a658e0ae68ad710f6b4098db2cad10204649b51e3c043aa3e70d
+prometheus_node_exporter_version: '1.2.0'
+prometheus_node_exporter_package_checksum: sha256:f7ef26fb10d143dc4211281d7a2e8b13c4fe1bd0d7abbdff6735a6efdb4b5e56
 
 prometheus_user_id: 455
 prometheus_group_id: 455

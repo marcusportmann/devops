@@ -2,8 +2,8 @@
 # file: roles/burrow/defaults/main.yaml
 
 burrow_defaults:
-  package_version: '1.3.4'
-  package_checksum: sha256:9f89c053806dfd37e8568b3cfc5fd224d3e758825cf153c5b16539051cf67f2b
+  package_version: '1.3.6'
+  package_checksum: sha256:2d0f07b65a3840e4c18be7615a5ad32f89cc55c312d3c8d450bb56db3b9e7f68
 
   etc_directory: /etc/burrow
   log_directory: /var/log/burrow

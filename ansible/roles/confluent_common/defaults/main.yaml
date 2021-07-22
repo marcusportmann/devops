@@ -7,7 +7,7 @@ confluent_defaults:
 
 prometheus_jmx_exporter:
   enabled: true
-  package_version: '0.15.0'
-  package_checksum: sha1:a1061f29088ac2709da076a97736de575a872538
+  package_version: '0.16.1'
+  package_checksum: sha1:d3952d71a19007372240657b07f5b1b42994880e
 
 confluent_config: "{{ confluent_defaults | combine(confluent | default({}), recursive=True) }}"
