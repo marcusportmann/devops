@@ -204,7 +204,7 @@
 
 - name: Reload the Prometheus service
   systemd:
-    name: prometheus.service
+    name: prometheus
     daemon_reload: yes
   when: ((prometheus_server_environment_template_result.changed == True) or (prometheus_systemd_unit_template_result.changed == True))
 
@@ -253,6 +253,6 @@
 
 - name: Ensure that the Prometheus service is started
   systemd:
-    name: prometheus.service
+    name: prometheus
     state: started
     enabled: yes
