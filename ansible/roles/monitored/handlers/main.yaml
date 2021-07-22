@@ -1,0 +1,7 @@
+---
+# file: roles/monitored/handlers/main.yaml
+
+- name: restart prometheus-node-exporter
+  systemd:
+    name: prometheus-node-exporter
+    state: restarted
