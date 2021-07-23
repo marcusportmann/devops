@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ "$#" -ne 2 ]; then
+    echo "Illegal number of parameters"
+fi
+
+if [ ! -f /swapfile ]; then
+
+    echo "Creating the new  $2 MB swap file $1"
+
+    dd if=/dev/zero of=$1 count=$2 bs=1MiB
+    chmod 0600 $1
+    mkswap $1
+    swapon $1
+    echo "$1 none  swap  sw 0  0" >> /etc/fstab
+
+fi
+
