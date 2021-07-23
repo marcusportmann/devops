@@ -51,23 +51,19 @@ virtualisation platforms.
    ```
    vagrant plugin install vagrant-vmware-desktop
    ```
-7. Install the license for the Vagrant VMware provider plugin by executing the following command in a Terminal window:
-   ```
-   vagrant plugin license vagrant-vmware-desktop ~/Downloads/license.lic
-   ```
-8. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
+7. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
    ```
    https://code.vmware.com/web/tool/4.3.0/ovf
    ```
-9. Create a link to the ovftool binary in /usr/local/bin.
+8. Create a link to the ovftool binary in /usr/local/bin.
    ```
    ln -s /Applications/VMware\ OVF\ Tool/ovftool /usr/local/bin/ovftool
    ```
-10. OPTIONAL: If required install the Vagrant VMware ESXi plugin.
+9. OPTIONAL: If required install the Vagrant VMware ESXi plugin.
     ```
     vagrant plugin install vagrant-vmware-esxi
     ```
-11. Install Ansible by executing the following command in a Terminal window:
+10. Install Ansible by executing the following command in a Terminal window:
     ```
     brew install ansible
     ```
