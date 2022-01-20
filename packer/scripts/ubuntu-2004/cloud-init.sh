@@ -1,11 +1,15 @@
+# Create the cloud-user user
+groupadd --gid 300 cloud-user
+useradd --gid 300 --uid 300 --create-home --home-dir=/home/cloud-user cloud-user
+
+# Set the password for the cloud user
+echo "cloud-user:cloud" | chpasswd
+
 # Configure SSH for the cloud-user user
 mkdir -m 700 /home/cloud-user/.ssh
 touch /home/cloud-user/.ssh/authorized_keys
 chmod 600 /home/cloud-user/.ssh/authorized_keys
 chown -R cloud-user:cloud-user /home/cloud-user/.ssh
-
-# Set the password for the cloud user
-echo "cloud-user:cloud" | chpasswd
 
 # Enable sudo for the cloud-user user
 echo 'cloud-user             ALL=(ALL)   NOPASSWD: ALL' >> /etc/sudoers.d/cloud-user
@@ -36,8 +40,6 @@ cloud-init clean --log
 rm -rf /var/log/cloud-init*
 
 # Use the default network configuration as the initial cloud-init configuration to ensure that networking is enabled
-mv /etc/netplan/01-netcfg.yaml /etc/netplan/50-cloud-init.yaml
+mv /etc/netplan/00-installer-config.yaml /etc/netplan/50-cloud-init.yaml
 
 fi
-
-

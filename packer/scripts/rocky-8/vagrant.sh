@@ -1,6 +1,6 @@
 # Create the vagrant user
-groupadd --gid 1000 vagrant
-useradd --gid 1000 --uid 1000 --create-home --home-dir=/home/vagrant vagrant
+groupadd --gid 301 vagrant
+useradd --gid 301 --uid 301 --create-home --home-dir=/home/vagrant vagrant
 
 # Configure SSH for the vagrant user
 mkdir -m 700 /home/vagrant/.ssh

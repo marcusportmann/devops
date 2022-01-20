@@ -71,10 +71,10 @@ EOT
 update-ca-certificates
 
 echo "Installing additional packages"
-apt-get -y install python3-pip acl net-tools
+apt-get -y install python3-pip acl net-tools screen
 
-echo "Upgrading pip, setuptools and wheel"
-python3 -m pip install --upgrade pip setuptools wheel
+# echo "Upgrading pip, setuptools and wheel"
+# python3 -m pip install --upgrade pip setuptools wheel
 
 #echo "Removing unnecessary packages"
 
@@ -83,8 +83,8 @@ apt-get -y update
 apt-get -y upgrade
 apt-get -y dist-upgrade
 
-echo "Enabling the ssh-keygen service"
-cp /tmp/ssh-keygen.service /lib/systemd/system
+# echo "Enabling the ssh-keygen service"
+cp /var/tmp/ssh-keygen.service /lib/systemd/system
 systemctl enable ssh-keygen
 
 echo "Stopping and disabling the accounts-daemon service"
@@ -96,9 +96,9 @@ systemctl stop remote-fs.target
 systemctl disable remote-fs.target
 
 echo "Installing custom scripts"
-cp /tmp/configure-network /usr/bin
+cp /var/tmp/configure-network /usr/bin
 chmod a+x /usr/bin/configure-network
-cp /tmp/resize-root-partition /usr/bin
+cp /var/tmp/resize-root-partition /usr/bin
 chmod a+x /usr/bin/resize-root-partition
 
 VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
@@ -112,14 +112,20 @@ sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_conf
 echo "Disabling DNS for SSH"
 echo "UseDNS no" >> /etc/ssh/sshd_config
 
-echo "Install the pyOpenSSL python package"
-pip3 install pyOpenSSL
+# echo "Install the pyOpenSSL python package"
+# pip3 install pyOpenSSL
 
 mkdir /etc/systemd/system/getty@.service.d
 cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
 [Service]
 TTYVTDisallocate=no
 EOT
+
+
+
+
+
+
 
 
 

@@ -8,6 +8,7 @@ umount /mnt
 rm -rf /root/VBoxGuestAdditions_*.iso
 fi
 
+
 if [[ $PACKER_BUILDER_TYPE =~ vmware ]]; then
 apt-get -y install open-vm-tools
 
@@ -17,3 +18,4 @@ primary-nics=eth*
 EOT
 
 fi
+
