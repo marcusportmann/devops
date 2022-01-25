@@ -378,6 +378,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
           end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
+          end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
           end
@@ -489,6 +492,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
           end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
+          end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
           end
@@ -556,6 +562,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
+          end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
           end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
@@ -627,6 +636,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
+          end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
           end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'

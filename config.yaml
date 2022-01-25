@@ -393,6 +393,10 @@ profiles:
   hosts:
   - test-centos-8.local
 
+- name: test-rocky-8
+  hosts:
+  - test-rocky-8.local
+
 - name: test-ubuntu-2004
   hosts:
   - test-ubuntu-2004.local
@@ -1289,7 +1293,7 @@ hosts:
 
 - name:               devops.local
   domain:             local
-  type:               ubuntu-2004
+  type:               rocky-8
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     postgresql,artifactory,gitea
   virtualbox:
@@ -1383,6 +1387,39 @@ hosts:
     fqdn:             test-centos-8.local
     domain:           local
     ip:               192.168.184.148/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
+
+- name:               test-rocky-8.local
+  domain:             local
+  type:               rocky-8
+  ansible_playbook:   ansible/all.yaml
+  ansible_groups:     docker
+  virtualbox:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-rocky-8.local
+    domain:           local
+    ip:               192.168.184.147/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
+  vmware_desktop:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-rocky-8.local
+    domain:           local
+    ip:               192.168.184.147/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
+  vmware_esxi:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-rocky-8.local
+    domain:           local
+    ip:               192.168.184.147/24
     gateway:          192.168.184.1
     dns_server:       192.168.184.1
 
