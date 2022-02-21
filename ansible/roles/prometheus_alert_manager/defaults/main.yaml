@@ -5,8 +5,8 @@ prometheus_alert_manager_defaults:
   etc_directory: /etc/alertmanager
   data_directory: /var/lib/alertmanager
 
-  package_checksum: sha256:9c3b1cce9c74f5cecb07ec4a636111ca52696c0a088dbaecf338594d6e55cd1a
-  package_version: '0.22.2'
+  package_checksum: sha256:77793c4d9bb92be98f7525f8bc50cb8adb8c5de2e944d5500e90ab13918771fc
+  package_version: '0.23.0'
 
   user: alertmanager
   user_id: 456

@@ -438,7 +438,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     config.vm.provider 'vmware_desktop' do |vmware_desktop|
       vmware_desktop.gui = true
-      vmware_desktop.vmx["ethernet0.pcislotnumber"] = "160"
+      # vmware_desktop.vmx["ethernet0.pcislotnumber"] = "160"
     end
 
     $profile['hosts'].each do |host_name|

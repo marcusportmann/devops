@@ -45,6 +45,11 @@
     delegate_facts: True
     when: hostvars[item]['ansible_default_ipv4'] is not defined
     with_items: "{{ (groups['monitored'] | default([])) }}"
+  - setup:
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    when: hostvars[item]['ansible_default_ipv4'] is not defined
+    with_items: "{{ (groups['prometheus_alert_manager'] | default([])) }}"
   tasks: []
 
 - name: Configure a Burrow host
@@ -67,6 +72,13 @@
   become_user: root
   roles:
   - prometheus_server
+  
+- name: Configure a Prometheus Alert Manager host
+  hosts: prometheus_alert_manager
+  become: yes
+  become_user: root
+  roles:
+  - prometheus_alert_manager  
 
 - name: Configure a Grafana host
   hosts: grafana
