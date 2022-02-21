@@ -1,6 +1,6 @@
 # Create the vagrant user
-groupadd --gid 1000 vagrant
-useradd --gid 1000 --uid 1000 --create-home --home-dir=/home/vagrant vagrant
+groupadd --gid 301 vagrant
+useradd --gid 301 --uid 301 --create-home --home-dir=/home/vagrant vagrant
 
 # Configure SSH for the vagrant user
 mkdir -m 700 /home/vagrant/.ssh
@@ -16,3 +16,5 @@ echo 'vagrant             ALL=(ALL)   NOPASSWD: ALL' >> /etc/sudoers.d/vagrant
 echo 'Defaults:vagrant    env_keep += SSH_AUTH_SOCK' >> /etc/sudoers.d/vagrant
 chmod 0440 /etc/sudoers.d/vagrant
 sed -i 's/^.*requiretty/#Defaults requiretty/' /etc/sudoers
+
+

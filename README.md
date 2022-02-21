@@ -100,16 +100,16 @@ images, Packer is able to use tools like Chef or Puppet to install software onto
 
 This project supports the creation of VirtualBox Vagrant boxes, VMware Vagrant boxes, and VMware OVA templates for the following operating systems:
 
-- CentOS 7 (centos7)
-- CentOS 8 (centos8)
-- Ubuntu 18.04 (ubuntu1804)
-- Ubuntu 20.04 (ubuntu2004)
+- CentOS 7 (centos-7)
+- CentOS 8 (centos-8)
+- Ubuntu 20.04 (ubuntu-2004)
+- Rocky 8 (rocky-8)
 
 Build the required templates by executing the *build-os-image.sh* script, under the *packer* directory, in a Terminal window:
 ```
 ./build-os-image.sh -p PROVIDER -o OPERATING_SYSTEM
 
-e.g. ./build.sh -p vmware_desktop -o ubuntu1804
+e.g. ./build.sh -p vmware_desktop -o ubuntu-2004
 ```
 
 
@@ -298,6 +298,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 
 * General
   * cloud-user (300)
+  * vagrant (301)  
   * git (305)
   * artifactory (306)
 * Platform Services
@@ -330,13 +331,13 @@ The following users and groups are provisioned by the various Ansible scripts:
   * jmeter-server (490)
 * Kubernetes
   * k8s-admin (500)
-* Other
-  * vagrant (1000)
+
 
 ### Groups
 
 * General
   * cloud-user (300)
+  * vagrant (301)
   * git (305)
   * artifactory (306)
 * Platform Services
@@ -369,8 +370,7 @@ The following users and groups are provisioned by the various Ansible scripts:
   * jmeter-server (490)
 * Kubernetes
   * k8s-admin (500)
-* Other
-  * vagrant (1000)
+  
 
 
 ## Troubleshooting
@@ -388,7 +388,7 @@ The following users and groups are provisioned by the various Ansible scripts:
 
    e.g.
 
-   vmware-vdiskmanager -x 35GB ubuntu1804-disk001.vmdk
+   vmware-vdiskmanager -x 35GB ubuntu-2004-disk001.vmdk
 
 
 

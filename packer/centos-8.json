@@ -4,6 +4,8 @@
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos-8.cfg<enter><wait>"
       ],
+      "cpus": "1",
+      "memory": "1024",
       "disk_size": "51200",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "guest_additions_sha256": "c5e46533a6ff8df177ed5c9098624f6cec46ca392bab16de2017195580088670",
@@ -18,26 +20,14 @@
       "ssh_password": "{{ user `ssh_password` }}",
       "ssh_timeout": "{{ user `ssh_timeout` }}",
       "ssh_username": "{{ user `ssh_username` }}",
-      "type": "virtualbox-iso",
-      "vboxmanage": [
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--memory",
-          "1024"
-        ],
-        [
-          "modifyvm",
-          "{{.Name}}",
-          "--cpus",
-          "1"
-        ]
-      ]
+      "type": "virtualbox-iso"
     },
     {
       "boot_command": [
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos-8.cfg<enter><wait>"
       ],
+      "cpus": "1",
+      "memory": "1024",
       "disk_size": "51200",
       "disk_type_id": "0",
       "guest_os_type": "centos-64",
@@ -56,9 +46,8 @@
       "vmdk_name": "centos-8",
       "vmx_data": {
         "ethernet0.connectiontype": "nat",
-        "ethernet0.virtualDev": "vmxnet3",
-        "memsize": "1024",
-        "numvcpus": "1"
+        "rtc.diffFromUTC": "0",
+        "disk.EnableUUID": "TRUE"
       }
     },
     {
@@ -66,6 +55,7 @@
         "<tab> net.ifnames=0 biosdevname=0 text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos-8.cfg<enter><wait>"
       ],
       "cpus": "1",
+      "memory": "1024",
       "disk_block_size": "1",
       "disk_size": "51200",
       "generation": 1,
@@ -74,7 +64,6 @@
       "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
       "iso_url": "{{ user `iso_url` }}",
       "keep_registered": "false",
-      "memory": "1024",
       "name": "centos-8-hyperv",
       "output_directory": "{{ user `build_directory` }}/hyperv/centos-8/",
       "shutdown_command": "/sbin/halt -p",

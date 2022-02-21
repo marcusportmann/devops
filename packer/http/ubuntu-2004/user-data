@@ -1,0 +1,116 @@
+#cloud-config
+autoinstall:
+  version: 1
+  early-commands:
+    # Stop ssh for packer
+    - sudo systemctl stop ssh
+  locale: en_US
+  identity:
+    hostname: ubuntu
+    username: root
+    password: '$6$fkvNvo0A$squGKiuM7AUcb5Qs8fPmPbirLfvwLyGupDGvTVyd6uMXwmwVsiJxSS3xw/pGvxytCT3TElk81fFA3.QlmaUVw.'
+  ssh:
+    install-server: yes
+    allow-pw: yes
+  storage:
+    config:
+    - grub_device: true
+      id: disk-sda
+      name: ''
+      path: /dev/sda
+      preserve: false
+      ptable: gpt
+      type: disk
+    - device: disk-sda
+      flag: bios_grub
+      grub_device: false
+      id: partition-0
+      number: 1
+      preserve: false
+      size: 1048576
+      type: partition
+    - device: disk-sda
+      flag: ''
+      grub_device: false
+      id: partition-1
+      number: 2
+      preserve: false
+      size: 1073741824
+      type: partition
+      wipe: superblock
+    - fstype: ext4
+      id: format-0
+      preserve: false
+      type: format
+      volume: partition-1
+    - device: disk-sda
+      flag: ''
+      grub_device: false
+      id: partition-2
+      number: 3
+      preserve: false
+      size: 20397948928
+      type: partition
+      wipe: superblock
+    - devices:
+      - partition-2
+      id: lvm_volgroup-0
+      name: system
+      preserve: false
+      type: lvm_volgroup
+    - id: lvm_partition-0
+      name: swap
+      preserve: false
+      size: 2147483648B
+      type: lvm_partition
+      volgroup: lvm_volgroup-0
+      wipe: superblock
+    - fstype: swap
+      id: format-1
+      preserve: false
+      type: format
+      volume: lvm_partition-0
+    - device: format-1
+      id: mount-1
+      path: ''
+      type: mount
+    - id: lvm_partition-1
+      name: root
+      preserve: false
+      size: 18249416704B
+      type: lvm_partition
+      volgroup: lvm_volgroup-0
+      wipe: superblock
+    - fstype: ext4
+      id: format-2
+      preserve: false
+      type: format
+      volume: lvm_partition-1
+    - device: format-2
+      id: mount-2
+      path: /
+      type: mount
+    - device: format-0
+      id: mount-0
+      path: /boot
+      type: mount
+  user-data:
+    disable_root: false
+  apt:
+      preserve_sources_list: false
+      primary:
+          - arches: [amd64]
+            uri: "http://archive.ubuntu.com/ubuntu"
+          - arches: [default]
+            uri: "http://ports.ubuntu.com/ubuntu-ports"
+      geoip: false
+  late-commands:
+    - sed -i -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g' /target/etc/ssh/sshd_config
+    - sed -i -e 's/^#\?PermitRootLogin.*/PermitRootLogin yes/g' /target/etc/ssh/sshd_config
+    - curtin in-target --target=/target -- passwd -q -u root
+    - curtin in-target --target=/target -- passwd -q -x -1 root
+    - sed -i 's|^root:.:|root:$6$fkvNvo0A$squGKiuM7AUcb5Qs8fPmPbirLfvwLyGupDGvTVyd6uMXwmwVsiJxSS3xw/pGvxytCT3TElk81fFA3.QlmaUVw.:|' /target/etc/shadow
+    - sed -ie 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=30/' /target/etc/default/grub
+    - sed -ie 's/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=\"net.ifnames=0 biosdevname=0\"/' /target/etc/default/grub
+    - curtin in-target --target=/target -- update-grub
+

@@ -56,10 +56,8 @@
       "vmdk_name": "centos-7",
       "vmx_data": {
         "ethernet0.connectiontype": "nat",
-        "ethernet0.virtualDev": "vmxnet3",
-        "ethernet0.vnet": "",
-        "memsize": "1024",
-        "numvcpus": "1"
+        "rtc.diffFromUTC": "0",
+        "disk.EnableUUID": "TRUE"
       }
     },
     {

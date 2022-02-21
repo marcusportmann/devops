@@ -1,6 +1,11 @@
 ---
 # file: roles/confluent_common/defaults/main.yaml
 
+# NOTE: The Confluent version is specified here and in the hierarchical configuration 
+#       below because the hierarchical configuration is not inherited by the other
+#       Confluent roles. The two values MUST be kept in sync.
+confluent_version: '6.2.0'
+
 confluent_defaults:
   major_version: '6.2'
   package_version: '6.2.0'
