@@ -1249,7 +1249,7 @@ hosts:
 
 - name:               monitoring-dev.local
   domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana,burrow
   virtualbox:
