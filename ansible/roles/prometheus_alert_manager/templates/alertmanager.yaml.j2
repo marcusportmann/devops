@@ -7,7 +7,7 @@ route:
   group_interval: 10s
 {% if ((prometheus_alert_manager_config.repeat_interval is defined) and (prometheus_alert_manager_config.repeat_interval != None) and (prometheus_alert_manager_config.repeat_interval != '')) %}
   repeat_interval: {{ prometheus_alert_manager_config.repeat_interval }}
-{% else -%}
+{% else %}
   repeat_interval: 1h
 {% endif %}  
   receiver: default-receiver

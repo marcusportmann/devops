@@ -21,7 +21,7 @@ virtualisation platforms.
    ```
 3. Install HashiCorp Vagrant by executing the following command in a Terminal window:
    ```
-   brew cask install vagrant
+   brew install vagrant
    ```
 4. Download and install VirtualBox from https://virtualbox.org.
 
@@ -43,7 +43,7 @@ virtualisation platforms.
    ```
 3. Install HashiCorp Vagrant by executing the following command in a Terminal window:
    ```
-   brew cask install vagrant
+   brew install vagrant
    ```
 4. Install VMware Fusion Pro.
 5. Download and install the Vagrant VMware Utility for your MacOS from *https://www.vagrantup.com/vmware/downloads.html*.
@@ -53,7 +53,7 @@ virtualisation platforms.
    ```
 7. Download and install the VMware Open Virtualization Format Tool (ovftool) from:
    ```
-   https://code.vmware.com/web/tool/4.3.0/ovf
+   https://code.vmware.com/web/tool/4.4.0/ovf
    ```
 8. Create a link to the ovftool binary in /usr/local/bin.
    ```
