@@ -426,16 +426,16 @@ hosts:
     fqdn:             confluent-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.75/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             confluent-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.75/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -456,16 +456,16 @@ hosts:
     fqdn:             confluent-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.76/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             confluent-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.76/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -486,16 +486,16 @@ hosts:
     fqdn:             confluent-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.77/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             confluent-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.77/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -516,16 +516,16 @@ hosts:
     fqdn:             confluent-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.184.78/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           1024
     fqdn:             confluent-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.184.78/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -545,16 +545,16 @@ hosts:
     fqdn:             confluent-mm-digital-dev-01.local
     domain:           local
     ip:               192.168.184.79/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           1024
     fqdn:             confluent-mm-digital-dev-01.local
     domain:           local
     ip:               192.168.184.79/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -574,16 +574,16 @@ hosts:
     fqdn:             confluent-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.80/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             confluent-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.80/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -604,16 +604,16 @@ hosts:
     fqdn:             confluent-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.81/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             confluent-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.81/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -634,16 +634,16 @@ hosts:
     fqdn:             confluent-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.82/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             confluent-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.82/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -664,16 +664,16 @@ hosts:
     fqdn:             confluent-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.83/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           1024
     fqdn:             confluent-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.83/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -693,16 +693,16 @@ hosts:
     fqdn:             etcd-digital-dev-01.local
     domain:           local
     ip:               192.168.184.41/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             etcd-digital-dev-01.local
     domain:           local
     ip:               192.168.184.41/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           512
@@ -722,16 +722,16 @@ hosts:
     fqdn:             etcd-digital-dev-02.local
     domain:           local
     ip:               192.168.184.42/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             etcd-digital-dev-02.local
     domain:           local
     ip:               192.168.184.42/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           512
@@ -752,16 +752,16 @@ hosts:
     fqdn:             etcd-digital-dev-03.local
     domain:           local
     ip:               192.168.184.43/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             etcd-digital-dev-03.local
     domain:           local
     ip:               192.168.184.43/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           512
@@ -782,16 +782,16 @@ hosts:
     fqdn:             k8s-lb-digital-dev.local
     domain:           local
     ip:               192.168.184.50/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           512
     fqdn:             k8s-lb-digital-dev.local
     domain:           local
     ip:               192.168.184.50/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
@@ -812,16 +812,16 @@ hosts:
     fqdn:             k8s-m-digital-dev-01.local
     domain:           local
     ip:               192.168.184.51/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2048
     fqdn:             k8s-m-digital-dev-01.local
     domain:           local
     ip:               192.168.184.51/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2048
@@ -842,16 +842,16 @@ hosts:
     fqdn:             k8s-m-digital-dev-02.local
     domain:           local
     ip:               192.168.184.52/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2048
     fqdn:             k8s-m-digital-dev-02.local
     domain:           local
     ip:               192.168.184.52/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2048
@@ -872,16 +872,16 @@ hosts:
     fqdn:             k8s-m-digital-dev-03.local
     domain:           local
     ip:               192.168.184.53/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2048
     fqdn:             k8s-m-digital-dev-03.local
     domain:           local
     ip:               192.168.184.53/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2048
@@ -902,16 +902,16 @@ hosts:
     fqdn:             k8s-w-digital-dev-01.local
     domain:           local
     ip:               192.168.184.54/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           4096
     fqdn:             k8s-w-digital-dev-01.local
     domain:           local
     ip:               192.168.184.54/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           4096
@@ -933,16 +933,16 @@ hosts:
     fqdn:             k8s-w-digital-dev-02.local
     domain:           local
     ip:               192.168.184.55/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           4096
     fqdn:             k8s-w-digital-dev-02.local
     domain:           local
     ip:               192.168.184.55/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           4096
@@ -964,16 +964,16 @@ hosts:
     fqdn:             k8s-w-digital-dev-03.local
     domain:           local
     ip:               192.168.184.56/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           4096
     fqdn:             k8s-w-digital-dev-03.local
     domain:           local
     ip:               192.168.184.56/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           4096
@@ -994,16 +994,16 @@ hosts:
     fqdn:             kafka-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.65/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             kafka-zkks-digital-dev-01.local
     domain:           local
     ip:               192.168.184.65/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1024,16 +1024,16 @@ hosts:
     fqdn:             kafka-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.66/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             kafka-zkks-digital-dev-02.local
     domain:           local
     ip:               192.168.184.66/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1054,16 +1054,16 @@ hosts:
     fqdn:             kafka-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.67/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             kafka-zkks-digital-dev-03.local
     domain:           local
     ip:               192.168.184.67/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1084,16 +1084,16 @@ hosts:
     fqdn:             kafka-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.184.68/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           1024
     fqdn:             kafka-sr-digital-dev-01.local
     domain:           local
     ip:               192.168.184.68/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1113,16 +1113,16 @@ hosts:
     fqdn:             kafka-mm-digital-dev-01.local
     domain:           local
     ip:               192.168.184.69/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           1024
     fqdn:             kafka-mm-digital-dev-01.local
     domain:           local
     ip:               192.168.184.69/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1142,16 +1142,16 @@ hosts:
     fqdn:             kafka-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.70/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             kafka-zkks-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.70/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1172,16 +1172,16 @@ hosts:
     fqdn:             kafka-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.71/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             kafka-zkks-analytics-dev-02.local
     domain:           local
     ip:               192.168.184.71/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1202,16 +1202,16 @@ hosts:
     fqdn:             kafka-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.72/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           2560
     fqdn:             kafka-zkks-analytics-dev-03.local
     domain:           local
     ip:               192.168.184.72/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           2560
@@ -1232,16 +1232,16 @@ hosts:
     fqdn:             kafka-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.73/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             2
     memory:           1024
     fqdn:             kafka-sr-analytics-dev-01.local
     domain:           local
     ip:               192.168.184.73/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1262,16 +1262,16 @@ hosts:
     fqdn:             monitoring-dev.local
     domain:           local
     ip:               192.168.184.30/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_desktop:
     cpus:             1
     memory:           1024
     fqdn:             monitoring-dev.local
     domain:           local
     ip:               192.168.184.30/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.1
+    dns_server:       192.168.184.1
   vmware_esxi:
     cpus:             1
     memory:           1024
