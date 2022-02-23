@@ -139,7 +139,7 @@
     "headless": "false",
     "iso_checksum": "0081f8b969d0cef426530f6d618b962c7a01e71eb12a40581a83241f22dfdc25",
     "iso_checksum_type": "sha256",
-    "iso_url": "https://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8.5-x86_64-dvd1.iso",
+    "iso_url": "http://download.rockylinux.org/pub/rocky/8/isos/x86_64/Rocky-8.5-x86_64-dvd1.iso",
     "ssh_password": "root",
     "ssh_timeout": "1200s",
     "ssh_username": "root"

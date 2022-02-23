@@ -378,6 +378,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
           end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
+          end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
           end
@@ -435,7 +438,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     config.vm.provider 'vmware_desktop' do |vmware_desktop|
       vmware_desktop.gui = true
-      vmware_desktop.vmx["ethernet0.pcislotnumber"] = "160"
+      # vmware_desktop.vmx["ethernet0.pcislotnumber"] = "160"
     end
 
     $profile['hosts'].each do |host_name|
@@ -488,6 +491,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
+          end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
           end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
@@ -556,6 +562,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
+          end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
           end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
@@ -627,6 +636,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
           if host['type'] == 'centos-8'
             host_config.vm.box = 'devops/centos-8'
+          end
+          if host['type'] == 'rocky-8'
+            host_config.vm.box = 'devops/rocky-8'
           end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
