@@ -67,6 +67,22 @@ virtualisation platforms.
     ```
     brew install ansible
     ```
+11. Configure the Bridged Network (VNET8) for VMware Fusion.
+    1. Ensure VMware Fusion is not running.
+    2. Execute the following commands in a Terminal window to shutdown the VMware Fusion networking and clean-up the configuration.
+       ```
+       sudo killall vagrant-vmware-utility
+       sudo /Applications/VMware\ Fusion.app/Contents/Library/vmnet-cli --configure
+       sudo /Applications/VMware\ Fusion.app/Contents/Library/vmnet-cli --stop
+       sudo rm -f /Library/Preferences/VMware\ Fusion/vmnet1/*.bak
+       sudo rm -f /Library/Preferences/VMware\ Fusion/vmnet8/*.bak
+       sudo rm -f /Library/Preferences/VMware\ Fusion/networking.bak*
+       ```
+    3. Edit the */Library/Preferences/VMware Fusion/networking* file and change the *VNET_8_HOSTONLY_SUBNET* to *192.168.184.0*.
+    4. Execute the following command in a Terminal window to restart the VMware Fusion networking.
+       ```
+       sudo /Applications/VMware\ Fusion.app/Contents/Library/vmnet-cli --start
+       ```
 
 
 ### Option 3: Install Packer, Vagrant, Hyper-V and Ansible on Windows 64-bit
