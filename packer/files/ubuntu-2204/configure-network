@@ -1,0 +1,164 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import netifaces
+import yaml
+import subprocess
+import argparse
+import os
+import io
+
+# Check we are root
+if os.geteuid() != 0:
+  exit("You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'.")
+
+# Retrieve the command line arguments
+parser = argparse.ArgumentParser(description="Configure the Ubuntu network.")
+
+parser.add_argument("--interface", help="The name of the network interface.")
+parser.add_argument("--ip", help="The static IP and netmask for the network interface.")
+parser.add_argument("--dhcp",  action="store_true", help="Enable DHCP for the interface (yes/no).")
+parser.add_argument("--hostname", help="The optional hostname.")
+parser.add_argument("--gateway", help="The optional gateway IP for the network interface.")
+parser.add_argument("--dnsservers", help="The optional comma delimited list of IPs for the DNS servers for the network interface.")
+parser.add_argument("--dnssearch", help="The optional comma delimited list of DNS search domains.")
+parser.add_argument("--proxy", help="The optional HTTP and HTTPS proxy server.")
+
+args = vars(parser.parse_args())
+
+# Retrieve the list of interface names
+interface_names = netifaces.interfaces()
+
+# Set the hostname if required
+if "hostname" in args and args["hostname"] is not None:
+  
+  print("Setting the hostname to " + args["hostname"] + ".")
+  
+  subprocess_call_result = subprocess.call(["hostname", args["hostname"]])
+  
+  if os.path.isfile("/etc/hostname"):
+    os.remove("/etc/hostname")
+  
+  hostname_file = open("/etc/hostname", "w")
+  hostname_file.write(args["hostname"] + "\n")
+  hostname_file.close()
+
+# Check that the specified network interface exists
+found_network_interface = False
+
+if "interface" in args and args["interface"] is not None:
+  for interface_name in interface_names:
+    if interface_name == args["interface"]:
+      found_network_interface = True
+
+if not found_network_interface:
+  exit("Failed to find the network interface " + args["interface"] + ".")
+
+# Check if there is an existing netplan configuration file that needs to be updated
+found_existing_netplan = False
+
+for netplan_file in os.listdir("/etc/netplan"):
+  with open("/etc/netplan/" + netplan_file, "r") as stream:
+    netplan_config = yaml.load(stream)
+
+    if "network" in netplan_config and netplan_config["network"] is not None:
+      if "ethernets" in netplan_config["network"] and netplan_config["network"]["ethernets"] is not None:
+        if args["interface"] in netplan_config["network"]["ethernets"] and netplan_config["network"]["ethernets"][args["interface"]] is not None:
+
+          print("Updating the existing netplan configuration for the network interface " + args["interface"] + ".")
+
+          found_existing_netplan = True
+
+          # Retrieve the configuration for the interface
+          interface_config = netplan_config["network"]["ethernets"][args["interface"]]
+
+          # Clear the configuration for the interface
+          interface_config.clear()
+
+          # Set the configuration for the interface
+          if "dhcp" in args and args["dhcp"] is not None and args["dhcp"]:
+            interface_config["dhcp4"] = "yes"
+          elif "ip" in args and args["ip"] is not None:
+            interface_config["addresses"] = [args["ip"]]
+
+          if "gateway" in args and args["gateway"] is not None:
+            interface_config["gateway4"] = args["gateway"]
+
+          if ("dnsservers" in args and args["dnsservers"] is not None) or ("dnssearch" in args and args["dnssearch"]):
+            interface_config["nameservers"] = {}
+
+          if "dnsservers" in args and args["dnsservers"] is not None:
+            interface_config["nameservers"]["addresses"] = [args["dnsservers"]]
+
+          if "dnssearch" in args and args["dnssearch"] is not None:
+            interface_config["nameservers"]["search"] = [args["dnssearch"]]
+
+          # TODO: Implement support for dhcp4-overrides when this is supported in the Ubuntu version of netplan
+
+          # Write the updated netplan configuration to disk
+          print("Writing the updated netplan configuration file /etc/netplan/" + netplan_file + " to disk.")
+          with io.open("/etc/netplan/" + netplan_file, "w", encoding="utf8") as outfile:
+            yaml.dump(netplan_config, outfile, default_flow_style=False, allow_unicode=True)
+
+          # Apply the netplan configuration
+          subprocess_call_result = subprocess.call(["netplan", "apply"])
+
+# If we could not find an existing netplan configuration file to update then create a new one
+if not found_existing_netplan:
+
+  print("Creating the new netplan configuration for the network interface " + args["interface"] + ".")
+
+  interface_config = {}
+
+  if "dhcp" in args and args["dhcp"] is not None and args["dhcp"]:
+    interface_config["dhcp4"] = "yes"
+  elif "ip" in args and args["ip"] is not None:
+    interface_config["addresses"] = [args["ip"]]
+
+  if "gateway" in args and args["gateway"] is not None:
+    interface_config["gateway4"] = args["gateway"]
+
+  if ("dnsservers" in args and args["dnsservers"] is not None) or ("dnssearch" in args and args["dnssearch"]):
+    interface_config["nameservers"] = {}
+
+  if "dnsservers" in args and args["dnsservers"] is not None:
+    interface_config["nameservers"]["addresses"] = [args["dnsservers"]]
+
+  if "dnssearch" in args and args["dnssearch"] is not None:
+    interface_config["nameservers"]["search"] = [args["dnssearch"]]
+
+  netplan_config = {"network": {"ethernets": {args["interface"]: interface_config}, "renderer": "networkd", "version": 2}}
+
+  # Write the updated netplan configuration to disk
+  print("Writing the updated netplan configuration file /etc/netplan/custom-netcfg.yaml to disk.")
+  with io.open("/etc/netplan/custom-netcfg.yaml", "w", encoding="utf8") as outfile:
+    yaml.dump(netplan_config, outfile, default_flow_style=False, allow_unicode=True)
+
+  # Apply the netplan configuration
+  subprocess_call_result = subprocess.call(["netplan", "apply"])
+
+
+# Set the proxy configuration file
+if "proxy" in args and args["proxy"] is not None:
+
+  print("Setting the HTTP and HTTPS proxy to " + args["proxy"] + ".")
+  
+  if os.path.isfile("/etc/profile.d/proxy.sh"):
+    os.remove("/etc/profile.d/proxy.sh")
+
+  resolv_conf_file = open("/etc/profile.d/proxy.sh", "w")
+  resolv_conf_file.write("http_proxy=" + args["proxy"] + "\n")
+  resolv_conf_file.write("https_proxy=" + args["proxy"] + "\n")
+  resolv_conf_file.close()
+
+    
+    
+    
+            
+ 
+
+
+
+
+
+

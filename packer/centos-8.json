@@ -137,9 +137,9 @@
   "variables": {
     "build_directory": "build",
     "headless": "false",
-    "iso_checksum": "05d087773fe55d02ab26c8f934a4c9f6615748da8904980fd3bc5397dae51a0e",
+    "iso_checksum": "8ba1071f2b39421c649db10b5567f39d9d382fbb6bdd423ee92b47532fe17281",
     "iso_checksum_type": "sha256",
-    "iso_url": "http://www.ftp.saix.net/linux/distributions/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20220121-dvd1.iso",
+    "iso_url": "https://ftp.dimensiondata.com/linux/distributions/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-20220831-dvd1.iso",
     "ssh_password": "root",
     "ssh_timeout": "1200s",
     "ssh_username": "root"

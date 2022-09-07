@@ -70,11 +70,52 @@ pB5iDj2mUZH1T8lzYtuZy0ZPirxmtsk3135+CKNa2OCAhhFjE0xd
 EOT
 update-ca-trust extract
 
+echo "Install the Discovery Group Root CA certificate"
+cat <<EOT >> /etc/pki/ca-trust/source/anchors/DiscoveryGroupRootCA.crt
+-----BEGIN CERTIFICATE-----
+MIIGSDCCBDCgAwIBAgIQEEQLbZYzbJBGb0iYk6vtEDANBgkqhkiG9w0BAQsFADBl
+MRIwEAYKCZImiZPyLGQBGRYCemExEjAQBgoJkiaJk/IsZAEZFgJjbzEZMBcGCgmS
+JomT8ixkARkWCWRpc2NvdmVyeTEgMB4GA1UEAxMXRGlzY292ZXJ5IEdyb3VwIFJv
+b3QgQ0EwHhcNMTYxMTIxMTcxNzE2WhcNMzYxMTIxMTcxNzE2WjBlMRIwEAYKCZIm
+iZPyLGQBGRYCemExEjAQBgoJkiaJk/IsZAEZFgJjbzEZMBcGCgmSJomT8ixkARkW
+CWRpc2NvdmVyeTEgMB4GA1UEAxMXRGlzY292ZXJ5IEdyb3VwIFJvb3QgQ0EwggIi
+MA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC2XxwbKv267LnkRNgoiRZWwASS
+nQTW8Ak3a0EpRaYeWJgzReTousXsERyocLVPkO91S8fqe62Om9KDWP1mww147WAx
+xaVRHDqqOMFzn2ScMIGxPC8SXJ1D7mWkmfwOJCiFBVUZ4cq2+9Ra9AZbhphbWD9n
+f58khJ3M4FxA5KaJK4URRZeBcJLiTPXp4pFc9qU/eGuKD4v+95KRnYNviyLY0+2m
+9FJq5V0h5LM9u1SFExX/yrI2Cuaf7goB2B0XvNK0OdWZe7YJL2gj3doDZ6wBtrT0
+Z5TWIW1JcOZAmxs2SOcwZRQcbkDTSSgaBxdRac/D9cB4IhojlclxxKDEJLxio4CA
+zIhOQOZ7Ri+hTNN+B0whHHWn0rPUYMMEko5tIic0N40007tt2oxnUlHX4UofZygq
+4g02dgO6erGnBGKBCvHgq75525qxr52bRuhoY7dAzxtFioWuGySwtTWlyHWy9Amj
+su7dOrAj0D5AW+5og6Lst1+6SJPDQiMzMSAHXEWXBwGTYs/T6CyTrKuygAqoGTZL
+aTrmtc7haRpgE6hmskPd7gOfeOXIhk2b0gkjCpoPHU59ofzOisyEZxlYVhx0p8DG
+2CA0e+eYsnqffNKjg2JQsxp13iNOnEVkBxpoSHCSqb7CeIdUgSbkZFxajzeF62fY
+iaytjco17lm/n04S0QIDAQABo4HzMIHwMAsGA1UdDwQEAwIBhjAPBgNVHRMBAf8E
+BTADAQH/MB0GA1UdDgQWBBTQCDSy5TA2YWm5aBCPTPyS97HLUDAQBgkrBgEEAYI3
+FQEEAwIBADCBngYDVR0gBIGWMIGTMIGQBgRVHSAAMIGHMIGEBggrBgEFBQcCAjB4
+HnYAVABoAGkAcwAgAFAASwBJACAAaQBzACAAaQBuAHQAZQBuAGQAZQBkACAAZgBv
+AHIAIABpAG4AdABlAHIAbgBhAGwAIABEAGkAcwBjAG8AdgBlAHIAeQAgAEcAcgBv
+AHUAcAAgAHUAcwBlACAAbwBuAGwAeQAuMA0GCSqGSIb3DQEBCwUAA4ICAQCKTgW9
+wAvdunma3/LoXIpOVnApreOcLMzwDkoMLlk31phRXcWTdzrbfZkRWg2HQoGdKnkJ
+w4ehJw31V9UcKRXqEFk+AU7C6Mg/Oq5EAqAbPfo3JqtjPn3qjCvgnUUVV2TbbP+w
+J/zPwlwvo3Ex5aMHhsGLdvExQJPZIfmVHBqjdMBxeklA+XpiDH/ENQ5LfPwj4U8i
+eSwx5fcApOU5FPCoiDginp+dT/YK/MdyvFkW/BgW02cS9+4t3OC6I+B0irDBU7wl
+Jr679kvbY5LzCDWPTt17/5Q+K01SoweWhmaIIBmNbZeE5Kj4pc+8UgIWBlsv+HtL
+tXyCgNiC8aAoUeu5RN1ICjy9HXkYl26m/ymIfyLtAqWffI6ZMqlMQkI+A1HOcW1r
+tJRjKTXn/mUg5etL7hXOHkhWQRvikiAqtuO9o9A8fhWKe/7ntFk0FqtwAhQCi4h/
+cSwxvq8eyJ/463cvsXszrbQXauBE1AWhDeCSACTX/WDv1otxAxoLwzIq0zLShvSR
+9wygOP0cb8UX0v4FMREG0q4N8+6mBXA/Oq9WMmSpP44QIGErweBP6PGZ7Qjbx8aU
+w3A9jdTf2OPkZMyrhVM58W40c5mNCjeL7exvG0Ad7UC+8Jp0pgdUFSOwU1LzeFOq
+ryNr1QltRC35CWEwuaQyVUXpQU8wjo+9OcgrLA==
+-----END CERTIFICATE-----
+EOT
+update-ca-trust extract
+
 echo "Enabling the EPEL repo"
 yum -y install epel-release
 
-echo "Installing additional packages"
-yum -y install bzip2 ntp ntpdate python-yaml screen net-tools python2-pip
+# echo "Installing additional packages"
+# yum -y install bzip2 ntp ntpdate python-yaml screen net-tools python2-pip
 
 echo "Installing additional python libraries"
 curl -o /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm https://cbs.centos.org/kojifiles/packages/python-netifaces/0.10.4/1.el7/x86_64/python-netifaces-0.10.4-1.el7.x86_64.rpm
@@ -126,7 +167,7 @@ echo "Upgrade pip"
 pip install --upgrade "pip < 21.0"
 
 echo "Install the pyOpenSSL python package"
-pip install pyOpenSSL
+pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org pyOpenSSL
 
 mkdir /etc/systemd/system/getty@.service.d
 cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
