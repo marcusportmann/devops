@@ -684,7 +684,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-01.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -713,7 +713,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-02.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -742,8 +742,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               etcd-digital-dev-03.local
-  domain:             ubuntu-2004
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,etcd
   virtualbox:
@@ -772,8 +771,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               k8s-lb-digital-dev.local
-  domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_load_balancer
   virtualbox:
@@ -802,8 +800,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               k8s-m-digital-dev-01.local
-  domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
@@ -832,8 +829,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               k8s-m-digital-dev-02.local
-  domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
@@ -862,8 +858,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               k8s-m-digital-dev-03.local
-  domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_master,k8s_components
   virtualbox:
@@ -892,8 +887,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               k8s-w-digital-dev-01.local
-  domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -923,8 +917,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               k8s-w-digital-dev-02.local
-  domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -954,8 +947,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               k8s-w-digital-dev-03.local
-  domain:             local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     k8s_worker,k8s_components
   virtualbox:
@@ -985,7 +977,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-01.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1015,7 +1007,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-02.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1045,7 +1037,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-digital-dev-03.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1075,7 +1067,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-sr-digital-dev-01.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored
   virtualbox:
@@ -1104,7 +1096,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-mm-digital-dev-01.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_mirrormaker
   virtualbox:
@@ -1133,7 +1125,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-01.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1163,7 +1155,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-02.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1193,7 +1185,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-zkks-analytics-dev-03.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,kafka_zookeeper,kafka_server
   virtualbox:
@@ -1223,7 +1215,7 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               kafka-sr-analytics-dev-01.local
-  type:               ubuntu-2004
+  type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored
   virtualbox:
@@ -1252,7 +1244,6 @@ hosts:
     dns_server:       192.168.0.1
 
 - name:               monitoring-dev.local
-  domain:             local
   type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     monitored,prometheus_server,prometheus_alert_manager,grafana,burrow

@@ -116,6 +116,7 @@ yum -y install epel-release
 
 # echo "Installing additional packages"
 # yum -y install bzip2 ntp ntpdate python-yaml screen net-tools python2-pip
+yum -y install bzip2 screen net-tools python2-pip
 
 echo "Installing additional python libraries"
 curl -o /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm https://cbs.centos.org/kojifiles/packages/python-netifaces/0.10.4/1.el7/x86_64/python-netifaces-0.10.4-1.el7.x86_64.rpm

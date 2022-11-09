@@ -5,8 +5,8 @@ prometheus_alert_manager_defaults:
   etc_directory: /etc/alertmanager
   data_directory: /var/lib/alertmanager
 
-  package_checksum: sha256:77793c4d9bb92be98f7525f8bc50cb8adb8c5de2e944d5500e90ab13918771fc
-  package_version: '0.23.0'
+  package_checksum: sha256:6fa982232ae7be5524f5b3cd4e90b7c6a75086368200c917644eaa3e806555dc
+  package_version: '0.24.0'
 
   user: alertmanager
   user_id: 456
@@ -14,8 +14,8 @@ prometheus_alert_manager_defaults:
   group_id: 456
 
   prometheus_msteams_etc_directory: /etc/prometheus-msteams
-  prometheus_msteams_package_checksum: sha256:014ade56e57509dac50a004f722c3da7bb144df47d32ffe11c1e653212d9b1ca
-  prometheus_msteams_package_version: 'v1.4.2'
+  prometheus_msteams_package_checksum: sha256:9a589b4417fc116c153c40d1220dca1f46e6bb8e24b4db0d52ee0c0151de2222
+  prometheus_msteams_package_version: 'v1.5.1'
   prometheus_msteams_user: prometheus-msteams
   prometheus_msteams_user_id: 457
   prometheus_msteams_group: prometheus-msteams

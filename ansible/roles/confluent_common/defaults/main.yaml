@@ -4,15 +4,15 @@
 # NOTE: The Confluent version is specified here and in the hierarchical configuration 
 #       below because the hierarchical configuration is not inherited by the other
 #       Confluent roles. The two values MUST be kept in sync.
-confluent_version: '7.0.1'
+confluent_version: '7.3.0'
 
 confluent_defaults:
-  major_version: '7.0'
-  package_version: '7.0.1'
+  major_version: '7.3'
+  package_version: '7.3.0'
 
 prometheus_jmx_exporter:
   enabled: true
-  package_version: '0.16.1'
-  package_checksum: sha1:d3952d71a19007372240657b07f5b1b42994880e
+  package_version: '0.17.2'
+  package_checksum: sha1:614e3c13696f1df9f87640a67c80dc3d5a7f9619
 
 confluent_config: "{{ confluent_defaults | combine(confluent | default({}), recursive=True) }}"
