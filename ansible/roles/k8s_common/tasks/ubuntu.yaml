@@ -168,11 +168,11 @@
       cmd: containerd config default > /etc/containerd/config.toml
 
   - name: Configure the systemd cgroup driver for containerd
-    lineinfile:
+    replace:
       path: /etc/containerd/config.toml
-      insertafter: '^          \[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options\]'
-      line: '            SystemdCgroup = true'
-
+      regexp: 'SystemdCgroup = false'
+      replace: 'SystemdCgroup = true'
+      backup: no
   when: (containerd_config_stat_result.stat.exists == False)
 
 - name: Restart the containerd service if required

@@ -2,20 +2,15 @@
 # file: roles/k8s_common/defaults/main.yaml
 
 k8s_defaults:
-  cri_o_version: '1.20'
-  cri_o_redhat_package_version: '1.20'
-  cri_o_ubuntu_package_version: '1.20.2~0'
-
-  crictl_version: '1.20.0'
-  crictl_package_checksum: sha256:44d5f550ef3f41f9b53155906e0229ffdbee4b19452b4df540265e29572b899c
+  crictl_version: '1.24.2'
+  crictl_package_checksum: sha256:53432dd365f7bf045c1e65ee2e44c74df6a0a8f0a798f640a945c8e07ad8682e
 
   bitnami_labs_sealed_secrets_enabled: true
 
+  k8s_redhat_package_version: '1.24.7'
+  k8s_ubuntu_package_version: '1.24.7-00'
 
-  k8s_redhat_package_version: '1.20.6'
-  k8s_ubuntu_package_version: '1.20.6-00'
-
-  kustomize_version: '4.1.2'
+  kustomize_version: '4.5.7'
 
   admin_user: k8s-admin
   admin_user_id: 500
@@ -24,8 +19,8 @@ k8s_defaults:
 
   cni_provider: weave
 
-  helm_package_checksum: sha256:f3a4be96b8a3b61b14eec1a35072e1d6e695352e7a08751775abf77861a0bf54
-  helm_version: '3.6.2'
+  helm_package_checksum: sha256:2315941a13291c277dac9f65e75ead56386440d3907e0540bf157ae70f188347
+  helm_version: '3.10.2'
 
 k8s_config: "{{ k8s_defaults | combine(k8s | default({}), recursive=True) }}"
 
