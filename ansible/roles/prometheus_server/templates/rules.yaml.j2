@@ -190,7 +190,7 @@ groups:
 
   - alert: KafkaConsumerPartitionLag
     expr: topk(1, burrow_kafka_consumer_partition_lag) by (consumer_group, topic, partition) > 10
-    for: 90m
+    for: 90m 
     labels:
       severity: warning
     annotations:

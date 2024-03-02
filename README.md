@@ -94,16 +94,22 @@ virtualisation platforms.
    New-VMSwitch -SwitchName "Vagrant Switch" -SwitchType Internal
    New-NetIPAddress -IPAddress 192.168.184.1 -PrefixLength 24 -InterfaceAlias "vEthernet (Vagrant Switch)"
    New-NetNat -Name VagrantSwitchNetwork -InternalIPInterfaceAddressPrefix 192.168.184.0/24
+   Set-DNSClientServerAddress -InterfaceAlias "vEthernet (Vagrant Switch)" -ServerAddresses 192.168.0.1,8.8.8.8
    ```
 
-3. Download and install Git for 64-bit Windows from *https://git-scm.com/download/win*.
+3. Allow guest VMs launched by Packer to connect to the host by launching Windows PowerShell as an administrator and executing the following commands:
+   ```
+   New-NetFirewallRule -DisplayName "Allow TCP 8000-9000 for Packer" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol TCP -LocalPort 8000-9000 
+   New-NetFirewallRule -DisplayName "Allow Hyper-V VM Traffic" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -LocalAddress 192.168.184.1
+   ```
 
-4. Download the Packer for 64-bit Windows archive from *https://packer.io/* and extact the packer binary somewhere on your path e.g. C:\DevOpsTools.
+4. Download and install Git for 64-bit Windows from *https://git-scm.com/download/win*.
 
-5. Download Vagrant for 64-bit Windows from *https://www.vagrantup.com/downloads.html* and install.
+5. Download the Packer for 64-bit Windows archive from *https://packer.io/* and extact the packer binary somewhere on your path e.g. C:\DevOpsTools.
 
-6. Launch the Git Bash console as an Administrator.
+6. Download Vagrant for 64-bit Windows from *https://www.vagrantup.com/downloads.html* and install.
 
+7. Launch the *Cygwin64 Terminal* app as an Administrator.
 
 ### Build OS Images
 
@@ -119,6 +125,7 @@ This project supports the creation of VirtualBox Vagrant boxes, VMware Vagrant b
 - CentOS 7 (centos-7)
 - CentOS 8 (centos-8)
 - Ubuntu 20.04 (ubuntu-2004)
+- Ubuntu 22.04 (ubuntu-2204)
 - Rocky 8 (rocky-8)
 
 Build the required templates by executing the *build-os-image.sh* script, under the *packer* directory, in a Terminal window:

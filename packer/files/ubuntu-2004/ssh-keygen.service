@@ -6,7 +6,8 @@ ConditionPathExists=!/etc/ssh/ssh_host_rsa_key
 [Service]
 Environment=DEBIAN_FRONTEND=noninteractive
 Type=oneshot
-ExecStart=/usr/sbin/dpkg-reconfigure --force openssh-server 
+ExecStart=/usr/bin/ssh-keygen -A
+
 
 [Install]
 WantedBy=multi-user.target

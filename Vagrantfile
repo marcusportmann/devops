@@ -384,6 +384,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
           end
+          if host['type'] == 'ubuntu-2204'
+            host_config.vm.box = 'devops/ubuntu-2204'
+          end
 
           host_config.vm.synced_folder '.', '/vagrant', disabled: true
 
@@ -498,6 +501,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
           end
+          if host['type'] == 'ubuntu-2204'
+            host_config.vm.box = 'devops/ubuntu-2204'
+          end
 
           host_config.vm.synced_folder '.', '/vagrant', disabled: true
 
@@ -546,7 +552,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     puts "Using the hyperv Vagrant provider..."
 
-    $profile['hosts'].each do |host_fqdn|
+    config.vm.boot_timeout = 1200
+
+    $profile['hosts'].each do |host_name|
 
       if $hosts.include?(host_name)
 
@@ -569,40 +577,42 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
           end
-
-          host_config.vm.synced_folder '.', '/vagrant', disabled: true
-
-          host_config.vm.network 'private_network', bridge: 'Vagrant Switch'
-
-          host_config.trigger.after :up do |trigger|
-            trigger.info = 'Configuring the VM network...'
-            trigger.run_remote = {inline: "/usr/bin/configure-network --interface eth0 --ip #{host[$provider]['ip']} --hostname #{host_hostname} --gateway #{host[$provider]['gateway']} --dnsservers #{host[$provider]['dns_server']}"}
+          if host['type'] == 'ubuntu-2204'
+            host_config.vm.box = 'devops/ubuntu-2204'
           end
+      
+          # NOTE: We need to share Ansible configuration with the VM in a bi-directional fashion. 
+          #       For Hyper-V we do this using SMB and need a valid IP. Only the Default Switch has DHCP
+          #       and the ability to assign an IP to the VM, which is needed to connect the SMB/CIFS share.
+          host_config.vm.network 'private_network', bridge: 'Default Switch'
+
+          host_config.vm.synced_folder ".", "/vagrant", {type: "smb", mount_options: ["vers=3.0", "dir_mode=0755", "file_mode=0660"]}
+
+          
+          # NOTE: Disabled because we need an IP allocated by DHCP for the SMB Ansible share above.
+          # host_config.trigger.after :up do |trigger|
+          #   trigger.info = 'Configuring the VM network...'
+          #   trigger.run_remote = {inline: "/usr/bin/configure-network --interface eth0 --ip #{host[$provider]['ip']} --hostname #{host_hostname} --gateway #{host[$provider]['gateway']} --dnsservers #{host[$provider]['dns_server']}"}
+          # end
 
           host_config.vm.provider :hyperv do |hyperv|
             hyperv.cpus = host[$provider]['cpus']
             hyperv.memory = host[$provider]['memory']
             hyperv.maxmemory = host[$provider]['memory']
-            hyperv.vmname = hostname
+            hyperv.vmname = host_name
+            hyperv.linked_clone = true
           end
-
-          # Ensure that the /etc/rc.local file exists
-          #host_config.vm.provision 'shell', inline: "if [ ! -f /etc/rc.local ]; then echo -e '#!/bin/sh -e' > /etc/rc.local && chmod 0755 /etc/rc.local; fi"
-
-          # Add the routes for the additional networks to the private network interface and persist them in /etc/rc.local
-          #if host['private_networks']
-          # host['private_networks'].split(/\s*,\s*/).each do |private_network|
-          #   static_route_command = "ip route replace %s dev eth1 src %s" % [private_network, host['ip']]
-          #
-          #   host_config.vm.provision 'shell', inline: static_route_command
-          #   host_config.vm.provision 'shell', inline: "static_route_command_check=`cat /etc/rc.local | grep '#{ static_route_command }' | wc -l`; if [ $static_route_command_check == '0' ]; then echo -e '\n#{ static_route_command }' >> /etc/rc.local; fi"
-          # end
-          #end
 
           # Write out the /etc/hosts file
           host_config.vm.provision 'shell', inline: "sudo cat << EOF > /etc/hosts\n%s\nEOF" %  generate_hosts_file($provider, $profile, $hosts)
 
-          host_config.vm.provision 'ansible' do |ansible|
+          host_config.vm.provision 'ansible_local' do |ansible|
+            #ansible.compatibility_mode = "2.0"
+            #ansible.install_mode = "pip"
+            ansible.galaxy_role_file = 'ansible/requirements.yaml'
+            ansible.galaxy_roles_path = '/home/vagrant/.ansible/roles'
+            ansible.galaxy_command = "sudo ansible-galaxy collection install -r %{role_file} --collections-path /usr/share/ansible/collections --force && sudo ansible-galaxy role install -r %{role_file} --force"
+            
             ansible.playbook = host['ansible_playbook']
             ansible.groups = $ansible_groups
             ansible.extra_vars = $ansible_vars
@@ -642,6 +652,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           end
           if host['type'] == 'ubuntu-2004'
             host_config.vm.box = 'devops/ubuntu-2004'
+          end
+          if host['type'] == 'ubuntu-2204'
+            host_config.vm.box = 'devops/ubuntu-2204'
           end
 
           host_config.vm.provider :vmware_esxi do |vmware_esxi|

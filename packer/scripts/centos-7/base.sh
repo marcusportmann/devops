@@ -114,14 +114,6 @@ update-ca-trust extract
 echo "Enabling the EPEL repo"
 yum -y install epel-release
 
-# echo "Installing additional packages"
-# yum -y install bzip2 ntp ntpdate python-yaml screen net-tools python2-pip
-yum -y install bzip2 screen net-tools python2-pip
-
-echo "Installing additional python libraries"
-curl -o /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm https://cbs.centos.org/kojifiles/packages/python-netifaces/0.10.4/1.el7/x86_64/python-netifaces-0.10.4-1.el7.x86_64.rpm
-rpm -ihv /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm
-
 echo "Removing unnecessary packages"
 yum -y remove avahi-autoipd
 yum -y remove avahi-libs
@@ -129,6 +121,13 @@ yum -y remove dnsmasq
 yum -y remove gsettings-desktop-schemas
 yum -y remove libpcap
 yum -y remove plymouth-core-libs
+
+# echo "Installing additional packages"
+yum -y install bzip2 screen net-tools python2-pip cifs-utils
+
+echo "Installing additional python libraries"
+curl -o /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm https://cbs.centos.org/kojifiles/packages/python-netifaces/0.10.4/1.el7/x86_64/python-netifaces-0.10.4-1.el7.x86_64.rpm
+rpm -ihv /tmp/python-netifaces-0.10.4-1.el7.x86_64.rpm
 
 echo "Updating all packages"
 yum update -y
@@ -166,6 +165,10 @@ EOT
 
 echo "Upgrade pip"
 pip install --upgrade "pip < 21.0"
+pip install --upgrade setuptools
+
+echo "Install the PyYAML python package"
+pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org PyYAML
 
 echo "Install the pyOpenSSL python package"
 pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org pyOpenSSL
@@ -177,5 +180,13 @@ TTYVTDisallocate=no
 EOT
 
 
+# We need to disable SELinux when running under Hyper-V to support the ansible_local provisioner
+if [[ $PACKER_BUILDER_TYPE =~ hyperv ]]; then
+cat <<EOT > /etc/selinux/config
+SELINUX=disabled
+SELINUXTYPE=targeted
+EOT
+
+fi
 
 

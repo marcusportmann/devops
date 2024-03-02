@@ -39,7 +39,20 @@ systemctl enable cloud-init
 cloud-init clean --log
 rm -rf /var/log/cloud-init*
 
-# Use the default network configuration as the initial cloud-init configuration to ensure that networking is enabled
-mv /etc/netplan/00-installer-config.yaml /etc/netplan/50-cloud-init.yaml
+# Enable networking
+rm -f /etc/netplan/*
+cat <<EOT > /etc/netplan/50-cloud-init.yaml
+network:
+    version: 2
+    ethernets:
+        eth0:
+            dhcp4: true
+
+EOT
 
 fi
+
+
+
+
+

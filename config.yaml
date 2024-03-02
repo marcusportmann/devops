@@ -401,6 +401,9 @@ profiles:
   hosts:
   - test-ubuntu-2004.local
 
+- name: test-ubuntu-2204
+  hosts:
+  - test-ubuntu-2204.local
 
 #  _   _  ___  ____ _____ ____
 # | | | |/ _ \/ ___|_   _/ ___|
@@ -1293,6 +1296,15 @@ hosts:
   type:               rocky-8
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     postgresql,artifactory,gitea
+  hyperv:
+    cpus:             4
+    memory:           8192
+    data_disk:        15360
+    fqdn:             devops.local
+    domain:           local
+    ip:               192.168.184.60/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.0.1,8.8.8.8  
   virtualbox:
     cpus:             4
     memory:           8192
@@ -1300,8 +1312,8 @@ hosts:
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.60/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             4
     memory:           8192
@@ -1309,8 +1321,8 @@ hosts:
     fqdn:             devops.local
     domain:           local
     ip:               192.168.184.60/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             4
     memory:           8192
@@ -1326,24 +1338,33 @@ hosts:
   type:               centos-7
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     docker
+  hyperv:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-centos-7.local
+    domain:           local
+    ip:               192.168.184.90/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.0.1,8.8.8.8
   virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos-7.local
     domain:           local
-    ip:               192.168.184.49/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.90/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos-7.local
     domain:           local
-    ip:               192.168.184.49/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.90/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1359,90 +1380,117 @@ hosts:
   type:               centos-8
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     docker
+  hyperv:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-centos-8.local
+    domain:           local
+    ip:               192.168.184.91/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.0.1,8.8.8.8
   virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos-8.local
     domain:           local
-    ip:               192.168.184.48/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.91/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos-8.local
     domain:           local
-    ip:               192.168.184.48/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.91/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-centos-8.local
     domain:           local
-    ip:               192.168.184.48/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.0.48/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
 
 - name:               test-rocky-8.local
   domain:             local
   type:               rocky-8
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     docker
+  hyperv:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-rocky-8.local
+    domain:           local
+    ip:               192.168.184.92/24
+    gateway:          192.168.184.1
+    dns_server:       192.168.0.1,8.8.8.8 
   virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-rocky-8.local
     domain:           local
-    ip:               192.168.184.47/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.92/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-rocky-8.local
     domain:           local
-    ip:               192.168.184.47/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.92/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-rocky-8.local
     domain:           local
-    ip:               192.168.184.47/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.0.47/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
 
 - name:               test-ubuntu-2004.local
   domain:             local
   type:               ubuntu-2004
   ansible_playbook:   ansible/all.yaml
   ansible_groups:     docker
+  hyperv:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu-2004.local
+    domain:           local
+    ip:               192.168.184.95/24
+    gateway:          192.168.184.1
+    dns_server:       8.8.8.8 
   virtualbox:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-ubuntu-2004.local
     domain:           local
-    ip:               192.168.184.44/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.95/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_desktop:
     cpus:             2
     memory:           1024
     data_disk:        4096
     fqdn:             test-ubuntu-2004.local
     domain:           local
-    ip:               192.168.184.44/24
-    gateway:          192.168.184.
-    dns_server:       192.168.184.
+    ip:               192.168.184.95/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
   vmware_esxi:
     cpus:             2
     memory:           1024
@@ -1453,6 +1501,47 @@ hosts:
     gateway:          192.168.0.1
     dns_server:       192.168.0.1
 
+- name:               test-ubuntu-2204.local
+  domain:             local
+  type:               ubuntu-2204
+  ansible_playbook:   ansible/all.yaml
+  ansible_groups:     docker
+  hyperv:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu-2204.local
+    domain:           local
+    ip:               192.168.184.96/24
+    gateway:          192.168.184.1
+    dns_server:       8.8.8.8 
+  virtualbox:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu-2204.local
+    domain:           local
+    ip:               192.168.184.96/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_desktop:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu-2204.local
+    domain:           local
+    ip:               192.168.184.96/24
+    gateway:          192.168.184.2
+    dns_server:       192.168.184.2
+  vmware_esxi:
+    cpus:             2
+    memory:           1024
+    data_disk:        4096
+    fqdn:             test-ubuntu-2204.local
+    domain:           local
+    ip:               192.168.0.96/24
+    gateway:          192.168.0.1
+    dns_server:       192.168.0.1
 
 
 

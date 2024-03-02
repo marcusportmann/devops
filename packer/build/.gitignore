@@ -1,0 +1,4 @@
+boxes/*.box
+hyperv/
+ova/
+vmware/

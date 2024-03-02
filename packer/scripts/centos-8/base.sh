@@ -111,17 +111,14 @@ ryNr1QltRC35CWEwuaQyVUXpQU8wjo+9OcgrLA==
 EOT
 update-ca-trust extract
 
-echo "Installing additional packages"
-yum -y install bzip2 chrony python3 python3-pip python3-yaml net-tools
-
-# echo "Upgrading pip, setuptools and wheel"
-# python3 -m pip install --upgrade pip setuptools wheel
-
 echo "Removing unnecessary packages"
 yum -y remove avahi-autoipd
 yum -y remove avahi-libs
 yum -y remove dnsmasq
 yum -y remove gsettings-desktop-schemas
+
+echo "Installing additional packages"
+yum -y install bzip2 chrony python3 python3-pip python3-yaml net-tools cifs-utils
 
 echo "Updating all packages"
 yum update -y
@@ -150,8 +147,18 @@ dracut --no-hostonly --force
 echo 'LANG=en_US.utf-8' >> /etc/environment
 echo 'LC_ALL=en_US.utf-8' >> /etc/environment
 
+echo "Upgrading pip"
+pip3 install --upgrade pip
+pip3 install --upgrade setuptools
+
+echo "Install additional packages using pip3"
+pip3 install netifaces
+
 echo "Install the pyOpenSSL python package"
 pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org pyOpenSSL
+
+echo "Install the PyYAML python package"
+pip3 install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org PyYAML
 
 mkdir /etc/systemd/system/getty@.service.d
 cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
@@ -159,4 +166,12 @@ cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
 TTYVTDisallocate=no
 EOT
 
+# We need to disable SELinux when running under Hyper-V to support the ansible_local provisioner
+if [[ $PACKER_BUILDER_TYPE =~ hyperv ]]; then
+cat <<EOT > /etc/selinux/config
+SELINUX=disabled
+SELINUXTYPE=targeted
+EOT
+
+fi
 

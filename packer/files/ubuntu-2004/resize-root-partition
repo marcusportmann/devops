@@ -6,9 +6,9 @@ lvdisplay
 
 sgdisk /dev/sda -e
 
-growpart /dev/sda 4
+growpart /dev/sda 3
 
-pvresize /dev/sda4
+pvresize /dev/sda3
 
 lvresize -l +100%FREE /dev/system/root
 

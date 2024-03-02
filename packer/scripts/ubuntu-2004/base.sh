@@ -38,7 +38,7 @@ echo "install rds /bin/false" > /etc/modprobe.d/rds.conf
 echo "install tipc /bin/false" > /etc/modprobe.d/tipc.conf
 
 echo "Install the Zscaler certificate"
-cat <<EOT >> /usr/local/share/ca-certificates/zscaler.crt
+cat <<EOT >> /etc/ssl/certs/zscaler.pem
 -----BEGIN CERTIFICATE-----
 MIIE0zCCA7ugAwIBAgIJANu+mC2Jt3uTMA0GCSqGSIb3DQEBCwUAMIGhMQswCQYD
 VQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTERMA8GA1UEBxMIU2FuIEpvc2Ux
@@ -71,7 +71,7 @@ EOT
 update-ca-certificates
 
 echo "Install the Discovery Group Root CA certificate"
-cat <<EOT >> /etc/pki/ca-trust/source/anchors/DiscoveryGroupRootCA.crt
+cat <<EOT >> /etc/ssl/certs/DiscoveryGroupRootCA.pem
 -----BEGIN CERTIFICATE-----
 MIIGSDCCBDCgAwIBAgIQEEQLbZYzbJBGb0iYk6vtEDANBgkqhkiG9w0BAQsFADBl
 MRIwEAYKCZImiZPyLGQBGRYCemExEjAQBgoJkiaJk/IsZAEZFgJjbzEZMBcGCgmS
@@ -109,12 +109,10 @@ w3A9jdTf2OPkZMyrhVM58W40c5mNCjeL7exvG0Ad7UC+8Jp0pgdUFSOwU1LzeFOq
 ryNr1QltRC35CWEwuaQyVUXpQU8wjo+9OcgrLA==
 -----END CERTIFICATE-----
 EOT
-update-ca-trust extract
+update-ca-certificates
 
 echo "Installing additional packages"
-apt-get -y install python3-pip acl net-tools screen
-
-#echo "Removing unnecessary packages"
+apt-get -y install python3-pip acl net-tools screen cifs-utils
 
 echo "Updating all packages"
 apt-get -y update
@@ -139,10 +137,10 @@ chmod a+x /usr/bin/configure-network
 cp /var/tmp/resize-root-partition /usr/bin
 chmod a+x /usr/bin/resize-root-partition
 
-VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
-if [[ $VIRT == "Microsoft HyperV" || $VIRT == "Microsoft Hyper-V" ]]; then
-	apt-get -y install linux-tools-$(uname -r) linux-cloud-tools-$(uname -r) linux-cloud-tools-common linux-azure
-fi
+# VIRT=`dmesg | grep "Hypervisor detected" | awk -F': ' '{print $2}'`
+# if [[ $VIRT == "Microsoft HyperV" || $VIRT == "Microsoft Hyper-V" ]]; then
+# 	apt-get -y install linux-tools-$(uname -r) linux-cloud-tools-$(uname -r) linux-cloud-tools-common linux-azure
+# fi
 
 echo "Disabling GSSAPI for SSH"
 sed -i 's/GSSAPIAuthentication yes/GSSAPIAuthentication no/g' /etc/ssh/sshd_config
@@ -155,6 +153,23 @@ cat <<EOT >> /etc/systemd/system/getty@.service.d/noclear.conf
 [Service]
 TTYVTDisallocate=no
 EOT
+
+
+# We need to disable SELinux when running under Hyper-V to support the ansible_local provisioner
+if [[ $PACKER_BUILDER_TYPE =~ hyperv ]]; then
+cat <<EOT > /etc/selinux/config
+SELINUX=disabled
+SELINUXTYPE=targeted
+EOT
+
+fi
+
+
+# Disable floppy
+echo "blacklist floppy" > /etc/modprobe.d/blacklist-floppy.conf
+rmmod floppy
+dpkg-reconfigure initramfs-tools
+
 
 
 

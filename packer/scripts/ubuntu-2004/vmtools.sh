@@ -19,3 +19,14 @@ EOT
 
 fi
 
+
+if [[ $PACKER_BUILDER_TYPE =~ hyperv ]]; then
+mkdir /usr/libexec/hypervkvpd/
+ln -s /usr/sbin/hv_get_dhcp_info /usr/libexec/hypervkvpd/hv_get_dhcp_info
+ln -s /usr/sbin/hv_get_dns_info /usr/libexec/hypervkvpd/hv_get_dns_info
+
+fi
+
+
+
+

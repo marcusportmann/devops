@@ -24,7 +24,7 @@ function build_image {
 
     vagrant box remove --force --provider virtualbox --all devops/${operating_system}
 
-    packer build -only=${operating_system}-virtualbox ${operating_system}.json
+    packer build -on-error=ask -only=virtualbox-iso.${operating_system}-virtualbox ${operating_system}.json.pkr.hcl
 
     vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-virtualbox.box
   fi
@@ -37,7 +37,7 @@ function build_image {
 
     vagrant box remove --force --provider vmware_desktop --all devops/${operating_system}
 
-    packer build -only=${operating_system}-vmware ${operating_system}.json
+    packer build -on-error=ask -only=vmware-iso.${operating_system}-vmware ${operating_system}.json.pkr.hcl
 
     vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-vmware.box
 
@@ -58,7 +58,7 @@ function build_image {
 
     vagrant box remove --force --provider hyperv --all devops/${operating_system}
 
-    packer build -only=${operating_system}-hyperv ${operating_system}.json
+    packer build -on-error=ask -only=hyperv-iso.${operating_system}-hyperv ${operating_system}.json.pkr.hcl
 
     vagrant box add --force --name devops/${operating_system} build/boxes/${operating_system}-hyperv.box
   fi
